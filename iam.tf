@@ -27,13 +27,13 @@ data "aws_iam_policy_document" "route53" {
 
 resource "aws_iam_policy" "route53" {
   count  = var.route53_hosted_zone_name != "" ? 1 : 0
-  name   = "${var.deploy_id}-Route53"
+  name   = "${var.deploy_id}-route53"
   path   = "/"
   policy = data.aws_iam_policy_document.route53[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "route53" {
-  for_each   = var.route53_hosted_zone_name != "" ? toset([for r in module.eks.eks_node_roles : r.name]) : []
+  count      = var.route53_hosted_zone_name != "" ? length(module.eks.eks_node_roles) : 0
   policy_arn = aws_iam_policy.route53[0].arn
-  role       = each.value
+  role       = lookup(module.eks.eks_node_roles[count.index], "name")
 }

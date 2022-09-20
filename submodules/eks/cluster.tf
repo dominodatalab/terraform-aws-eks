@@ -46,6 +46,7 @@ resource "aws_security_group" "eks_cluster" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [description, name]
   }
   tags = {
     "Name"                                            = "${local.eks_cluster_name}-eks-cluster"
@@ -118,7 +119,7 @@ resource "aws_eks_addon" "this" {
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
     when    = create
-    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name}"
+    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name} ${var.update_kubeconfig_extra_args}"
   }
   provisioner "local-exec" {
     when    = destroy

@@ -8,6 +8,12 @@ variable "deploy_id" {
   }
 }
 
+variable "update_kubeconfig_extra_args" {
+  type        = string
+  description = "Optional extra args when generating kubeconfig"
+  default     = ""
+}
+
 variable "region" {
   type        = string
   description = "AWS region for the deployment"

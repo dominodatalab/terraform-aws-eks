@@ -124,20 +124,21 @@ module "bastion" {
 }
 
 module "eks" {
-  source                    = "./submodules/eks"
-  deploy_id                 = var.deploy_id
-  region                    = var.region
-  k8s_version               = var.k8s_version
-  vpc_id                    = local.vpc_id
-  private_subnets           = local.private_subnets
-  ssh_pvt_key_path          = aws_key_pair.domino.key_name
-  bastion_security_group_id = try(module.bastion[0].security_group_id, "")
-  create_bastion_sg         = var.bastion != null
-  kubeconfig_path           = local.kubeconfig_path
-  default_node_groups       = var.default_node_groups
-  additional_node_groups    = var.additional_node_groups
-  node_iam_policies         = [module.storage.s3_policy]
-  efs_security_group        = module.storage.efs_security_group
+  source                       = "./submodules/eks"
+  deploy_id                    = var.deploy_id
+  region                       = var.region
+  k8s_version                  = var.k8s_version
+  vpc_id                       = local.vpc_id
+  private_subnets              = local.private_subnets
+  ssh_pvt_key_path             = aws_key_pair.domino.key_name
+  bastion_security_group_id    = try(module.bastion[0].security_group_id, "")
+  create_bastion_sg            = var.bastion != null
+  kubeconfig_path              = local.kubeconfig_path
+  default_node_groups          = var.default_node_groups
+  additional_node_groups       = var.additional_node_groups
+  node_iam_policies            = [module.storage.s3_policy]
+  efs_security_group           = module.storage.efs_security_group
+  update_kubeconfig_extra_args = var.update_kubeconfig_extra_args
 
   depends_on = [
     module.network

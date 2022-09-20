@@ -21,6 +21,12 @@ variable "region" {
   description = "AWS region for the deployment"
 }
 
+variable "update_kubeconfig_extra_args" {
+  type        = string
+  description = "Optional extra args when generating kubeconfig"
+  default     = ""
+}
+
 variable "number_of_azs" {
   type        = number
   description = "Number of AZ to distribute the deployment, EKS needs at least 2."

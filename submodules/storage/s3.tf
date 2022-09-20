@@ -414,7 +414,7 @@ resource "aws_s3_bucket_request_payment_configuration" "buckets_payer" {
 }
 
 resource "aws_s3_bucket_logging" "buckets_logging" {
-  for_each      = { for k, v in local.s3_buckets : k => v if v.bucket_name != aws_s3_bucket.monitoring.bucket }
+  for_each      = { for k, v in local.s3_buckets : k => v if k != "monitoring" }
   bucket        = each.value.id
   target_bucket = aws_s3_bucket.monitoring.bucket
   target_prefix = "${each.value.bucket_name}/"
