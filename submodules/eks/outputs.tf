@@ -14,17 +14,12 @@ output "cluster_endpoint" {
   value       = aws_eks_cluster.this.endpoint
 }
 
-output "managed_nodes_role_arns" {
-  description = "EKS managed nodes arns."
-  value       = [aws_iam_role.eks_nodes.arn]
+output "eks_node_roles" {
+  description = "EKS managed node roles"
+  value       = [aws_iam_role.eks_nodes]
 }
 
-output "eks_master_role_name" {
-  description = "EKS master role arns."
-  value       = [aws_iam_role.eks_cluster.name]
-}
-
-output "hosted_zone_id" {
-  description = "DNS hosted zone ID."
-  value       = data.aws_route53_zone.this.zone_id
+output "eks_master_roles" {
+  description = "EKS master roles."
+  value       = [aws_iam_role.eks_cluster]
 }

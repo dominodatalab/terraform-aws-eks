@@ -48,7 +48,8 @@ variable "availability_zones" {
 
 variable "route53_hosted_zone_name" {
   type        = string
-  description = "AWS Route53 Hosted zone."
+  description = "Optional hosted zone for External DNSone."
+  default     = ""
 }
 
 variable "tags" {
@@ -219,4 +220,10 @@ variable "s3_force_destroy_on_deletion" {
   description = "Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets"
   type        = bool
   default     = false
+}
+
+variable "kubeconfig_path" {
+  description = "fully qualified path name to write the kubeconfig file"
+  type        = string
+  default     = ""
 }

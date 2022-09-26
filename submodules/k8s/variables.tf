@@ -26,14 +26,14 @@ variable "k8s_cluster_endpoint" {
   description = "EKS cluster API endpoint."
 }
 
-variable "managed_nodes_role_arns" {
+variable "eks_node_role_arns" {
   type        = list(string)
-  description = "EKS managed nodes arns to be added to aws-auth for api auth."
+  description = "Roles arns for EKS nodes to be added to aws-auth for api auth."
 }
 
-variable "eks_master_role_names" {
+variable "eks_master_role_arns" {
   type        = list(string)
-  description = "IAM role names to be added as masters in eks."
+  description = "IAM role arns to be added as masters in eks."
   default     = []
 }
 

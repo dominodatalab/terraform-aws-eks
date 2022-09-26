@@ -42,3 +42,8 @@ variable "s3_encryption_use_sse_kms_key" {
   type        = bool
   default     = false
 }
+
+variable "roles" {
+  description = "List of roles to grant s3 permissions"
+  type        = list(any)
+}

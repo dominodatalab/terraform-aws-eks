@@ -38,9 +38,8 @@ locals {
   available_azs_data = zipmap(data.aws_availability_zones.available.names, data.aws_availability_zones.available.zone_ids)
   # Getting the required azs name and id.
   bastion_user     = "ec2-user"
-  working_dir      = path.cwd
-  ssh_pvt_key_path = "${local.working_dir}/${var.ssh_pvt_key_path}"
-  kubeconfig_path  = "${local.working_dir}/kubeconfig"
+  ssh_pvt_key_path = abspath(pathexpand(var.ssh_pvt_key_path))
+  kubeconfig_path  = var.kubeconfig_path != "" ? abspath(pathexpand(var.kubeconfig_path)) : "${path.cwd}/kubeconfig"
 }
 
 # Validate that the number of offered and available zones satisfy the number of required zones. https://github.com/hashicorp/terraform/issues/31122 may result in a more elegant validation and deprecation of the null_data_source
@@ -88,26 +87,12 @@ module "network" {
   deploy_id                = var.deploy_id
   base_cidr_block          = var.base_cidr_block
   vpc_id                   = var.vpc_id
-  monitoring_s3_bucket_arn = module.storage.monitoring_s3_bucket_arn
-
+  monitoring_s3_bucket_arn = module.storage.s3_buckets["monitoring"].arn
 }
 
 locals {
   public_subnets  = module.network.public_subnets
   private_subnets = module.network.private_subnets
-}
-
-module "storage" {
-  source                       = "./submodules/storage"
-  deploy_id                    = var.deploy_id
-  efs_access_point_path        = var.efs_access_point_path
-  s3_force_destroy_on_deletion = var.s3_force_destroy_on_deletion
-  subnets = [for s in local.private_subnets : {
-    name       = s.name
-    id         = s.id
-    cidr_block = s.cidr_block
-  }]
-  vpc_id = module.network.vpc_id
 }
 
 module "bastion" {
@@ -130,24 +115,41 @@ module "eks" {
   deploy_id                 = var.deploy_id
   private_subnets           = local.private_subnets
   ssh_pvt_key_path          = aws_key_pair.domino.key_name
-  route53_hosted_zone_name  = var.route53_hosted_zone_name
   bastion_security_group_id = try(module.bastion[0].security_group_id, "")
   create_bastion_sg         = var.create_bastion
   kubeconfig_path           = local.kubeconfig_path
   default_node_groups       = var.default_node_groups
   additional_node_groups    = var.additional_node_groups
-  s3_buckets                = module.storage.s3_buckets
+}
+
+module "storage" {
+  source                       = "./submodules/storage"
+  deploy_id                    = var.deploy_id
+  efs_access_point_path        = var.efs_access_point_path
+  s3_force_destroy_on_deletion = var.s3_force_destroy_on_deletion
+  subnets = [for s in local.private_subnets : {
+    name       = s.name
+    id         = s.id
+    cidr_block = s.cidr_block
+  }]
+  vpc_id = module.network.vpc_id
+  roles  = module.eks.eks_node_roles
+}
+
+data "aws_iam_role" "eks_master_roles" {
+  for_each = toset(var.eks_master_role_names)
+  name     = each.key
 }
 
 module "k8s_setup" {
-  source                  = "./submodules/k8s"
-  ssh_pvt_key_path        = abspath(local.ssh_pvt_key_path)
-  bastion_user            = local.bastion_user
-  bastion_public_ip       = try(module.bastion[0].public_ip, "")
-  k8s_cluster_endpoint    = module.eks.cluster_endpoint
-  managed_nodes_role_arns = module.eks.managed_nodes_role_arns
-  eks_master_role_names   = concat(var.eks_master_role_names, module.eks.eks_master_role_name)
-  kubeconfig_path         = local.kubeconfig_path
+  source               = "./submodules/k8s"
+  ssh_pvt_key_path     = abspath(local.ssh_pvt_key_path)
+  bastion_user         = local.bastion_user
+  bastion_public_ip    = try(module.bastion[0].public_ip, "")
+  k8s_cluster_endpoint = module.eks.cluster_endpoint
+  eks_node_role_arns   = [for r in module.eks.eks_node_roles : r.arn]
+  eks_master_role_arns = [for r in concat(values(data.aws_iam_role.eks_master_roles), module.eks.eks_master_roles) : r.arn]
+  kubeconfig_path      = local.kubeconfig_path
   depends_on = [
     module.eks,
     module.bastion

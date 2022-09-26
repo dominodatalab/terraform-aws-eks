@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
 data:
   mapRoles: |
-%{ for arn in eks_managed_nodes_role_arns ~}
+%{ for arn in eks_node_role_arns ~}
     - rolearn: ${arn}
       username: system:node:{{EC2PrivateDNSName}}
       groups:

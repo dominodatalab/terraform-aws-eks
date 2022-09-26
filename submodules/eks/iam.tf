@@ -47,41 +47,6 @@ resource "aws_iam_policy" "domino_ecr_restricted" {
   policy = data.aws_iam_policy_document.domino_ecr_restricted.json
 }
 
-data "aws_iam_policy_document" "s3" {
-  statement {
-
-    effect    = "Allow"
-    resources = ["*"]
-
-    actions = [
-      "s3:ListBucket",
-      "s3:GetBucketLocation",
-      "s3:ListBucketMultipartUploads",
-    ]
-  }
-
-  statement {
-    sid    = ""
-    effect = "Allow"
-
-    resources = [for b in var.s3_buckets : "${b.arn}*"]
-
-    actions = [
-      "s3:PutObject",
-      "s3:GetObject",
-      "s3:DeleteObject",
-      "s3:ListMultipartUploadParts",
-      "s3:AbortMultipartUpload",
-    ]
-  }
-}
-
-resource "aws_iam_policy" "s3" {
-  name   = "${var.deploy_id}-S3"
-  path   = "/"
-  policy = data.aws_iam_policy_document.s3.json
-}
-
 data "aws_iam_policy_document" "autoscaler" {
   statement {
 
@@ -228,33 +193,6 @@ resource "aws_iam_policy" "ebs_csi" {
   policy = data.aws_iam_policy_document.ebs_csi.json
 }
 
-data "aws_iam_policy_document" "route53" {
-  statement {
-
-    effect    = "Allow"
-    resources = ["*"]
-    actions   = ["route53:ListHostedZones"]
-  }
-
-  statement {
-
-    effect    = "Allow"
-    resources = [local.aws_route53_zone_arn]
-
-    actions = [
-      "route53:ChangeResourceRecordSets",
-      "route53:ListResourceRecordSets",
-    ]
-  }
-}
-
-resource "aws_iam_policy" "route53" {
-  count  = var.route53_hosted_zone_name != "" ? 1 : 0
-  name   = "${var.deploy_id}-Route53"
-  path   = "/"
-  policy = data.aws_iam_policy_document.route53.json
-}
-
 data "aws_iam_policy_document" "snapshot" {
   statement {
 
@@ -290,10 +228,8 @@ locals {
 
   eks_custom_node_iam_policies = {
     "domino_ecr_restricted" = aws_iam_policy.domino_ecr_restricted.arn,
-    "s3"                    = aws_iam_policy.s3.arn,
     "autoscaler"            = aws_iam_policy.autoscaler.arn,
     "ebs_csi"               = aws_iam_policy.ebs_csi.arn,
-    "route53"               = try(aws_iam_policy.route53[0].arn, ""),
     "snapshot"              = aws_iam_policy.snapshot.arn
   }
 }
@@ -305,13 +241,7 @@ resource "aws_iam_role_policy_attachment" "aws_eks_nodes" {
 }
 
 resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
-  for_each   = { for name, arn in local.eks_custom_node_iam_policies : name => arn if name != "route53" }
+  for_each   = { for name, arn in local.eks_custom_node_iam_policies : name => arn }
   policy_arn = each.value
-  role       = aws_iam_role.eks_nodes.name
-}
-
-resource "aws_iam_role_policy_attachment" "custom_eks_nodes_route53" {
-  count      = var.route53_hosted_zone_name != "" ? 1 : 0
-  policy_arn = local.eks_custom_node_iam_policies["route53"]
   role       = aws_iam_role.eks_nodes.name
 }

@@ -11,18 +11,12 @@ data "aws_iam_policy_document" "eks_nodes" {
   }
 }
 
-data "aws_route53_zone" "this" {
-  name         = var.route53_hosted_zone_name
-  private_zone = false
-}
-
 resource "aws_iam_role" "eks_nodes" {
   name               = "${local.eks_cluster_name}-eks-nodes"
   assume_role_policy = data.aws_iam_policy_document.eks_nodes.json
 }
 
 locals {
-  aws_route53_zone_arn     = data.aws_route53_zone.this.arn
   gpu_bootstrap_extra_args = ""
   gpu_user_data = base64encode(templatefile("${path.module}/templates/linux_custom.tpl", {
     cluster_name             = aws_eks_cluster.this.name

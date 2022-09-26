@@ -116,10 +116,7 @@ resource "aws_eks_addon" "this" {
 
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
-    environment = {
-      KUBECONFIG = var.kubeconfig_path
-    }
-    command = "aws eks update-kubeconfig --region ${var.region} --name ${aws_eks_cluster.this.name}"
+    command = "aws eks update-kubeconfig --kubeconfig ${var.kubeconfig_path} --region ${var.region} --name ${aws_eks_cluster.this.name}"
   }
   triggers = {
     domino_eks_cluster_ca = aws_eks_cluster.this.certificate_authority[0].data

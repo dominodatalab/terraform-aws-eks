@@ -137,11 +137,6 @@ variable "ssh_pvt_key_path" {
   description = "SSH private key filepath."
 }
 
-variable "route53_hosted_zone_name" {
-  type        = string
-  description = "Route53 zone"
-}
-
 variable "bastion_security_group_id" {
   type        = string
   description = "Bastion security group id."
@@ -171,13 +166,4 @@ variable "eks_security_group_rules" {
 variable "create_bastion_sg" {
   description = "Create bastion access rules toggle."
   type        = bool
-}
-
-variable "s3_buckets" {
-  description = "S3 buckets information that the nodegroups need access to"
-  type = list(object({
-    bucket_name = string
-    arn         = string
-  }))
-
 }

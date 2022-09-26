@@ -1,8 +1,3 @@
-data "aws_iam_role" "eks_master_roles" {
-  for_each = toset(var.eks_master_role_names)
-  name     = each.key
-}
-
 locals {
   mallory_config_filename       = "mallory.json"
   mallory_container_name        = "mallory_k8s_tunnel"
@@ -61,14 +56,12 @@ locals {
       filename = local.aws_auth_filename
       content = templatefile("${local.templates_dir}/${local.aws_auth_template}",
         {
-          eks_managed_nodes_role_arns = sort(var.managed_nodes_role_arns)
-          eks_master_role_arns        = try({ for r in sort(var.eks_master_role_names) : r => data.aws_iam_role.eks_master_roles[r].arn }, {})
-
+          eks_node_role_arns   = toset(var.eks_node_role_arns)
+          eks_master_role_arns = toset(var.eks_master_role_arns)
       })
 
     }
   }
-
 }
 
 resource "local_file" "templates" {
