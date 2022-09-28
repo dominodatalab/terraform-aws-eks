@@ -23,7 +23,7 @@ locals {
     k8s_functions_sh = {
       filename = local.k8s_functions_sh_filename
       content = templatefile("${local.templates_dir}/${local.k8s_functions_sh_template}", {
-        kubeconfig_path             = basename(var.kubeconfig_path)
+        kubeconfig_path             = var.kubeconfig_path
         k8s_tunnel_command          = local.k8s_tunnel_command
         mallory_port                = var.mallory_local_smart_port
         mallory_container_name      = local.mallory_container_name

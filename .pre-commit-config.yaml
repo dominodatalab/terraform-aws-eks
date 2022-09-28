@@ -16,6 +16,7 @@ repos:
           - '--hook-config=--create-file-if-not-exist=true'
           - '--hook-config=--recursive.enabled=true'
           - '--hook-config=--recursive.path=submodules'
+          - '--hook-config=--lockfile=false'
       - id: terraform_fmt
       - id: terraform_tflint
         args:

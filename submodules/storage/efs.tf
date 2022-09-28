@@ -29,11 +29,11 @@ resource "aws_security_group_rule" "efs" {
   to_port           = 2049
   type              = "ingress"
   description       = "EFS access"
-  cidr_blocks       = [for sb in var.subnets : sb.cidr_block]
+  cidr_blocks       = [for s in var.subnets : s.cidr_block]
 }
 
 resource "aws_efs_mount_target" "eks" {
-  for_each        = { for sb in var.subnets : sb.name => sb }
+  for_each        = var.subnets
   file_system_id  = aws_efs_file_system.eks.id
   security_groups = [aws_security_group.efs.id]
   subnet_id       = each.value.id

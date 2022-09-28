@@ -17,12 +17,11 @@ variable "efs_access_point_path" {
 }
 
 variable "subnets" {
-  type = list(object({
-    name       = string
+  type = map(object({
     id         = string
     cidr_block = string
   }))
-  description = "List of subnet ids to create EFS mount targets"
+  description = "Subnets to create EFS mount targets"
 }
 
 variable "vpc_id" {

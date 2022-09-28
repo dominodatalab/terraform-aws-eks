@@ -1,19 +1,4 @@
-## Example
-```hcl
-  module "subnets" {
-    source                    = "../submodules/cidr-subnets"
-    availability_zones        = var.availability_zones
-    pod_base_cidr_block       = var.pod_base_cidr_block
-    base_cidr_block           = var.base_cidr_block
-    public_cidr_network_bits  = var.public_cidr_mask
-    private_cidr_network_bits = var.private_cidr_mask
-    subnet_name_prefix        = var.deploy_id
-  }
-
-  output "subnets" {
-    value = module.subnets_cidr
-  }
-```
+# subnets-cidr
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

@@ -103,7 +103,7 @@ module "bastion" {
   vpc_id                   = module.network.vpc_id
   deploy_id                = var.deploy_id
   ssh_pvt_key_path         = aws_key_pair.domino.key_name
-  bastion_public_subnet_id = local.public_subnets[0].id
+  bastion_public_subnet_id = values(local.public_subnets)[0].id
   bastion_ami_id           = var.bastion_ami_id
 }
 
@@ -127,13 +127,9 @@ module "storage" {
   deploy_id                    = var.deploy_id
   efs_access_point_path        = var.efs_access_point_path
   s3_force_destroy_on_deletion = var.s3_force_destroy_on_deletion
-  subnets = [for s in local.private_subnets : {
-    name       = s.name
-    id         = s.id
-    cidr_block = s.cidr_block
-  }]
-  vpc_id = module.network.vpc_id
-  roles  = module.eks.eks_node_roles
+  subnets                      = local.private_subnets
+  vpc_id                       = module.network.vpc_id
+  roles                        = module.eks.eks_node_roles
 }
 
 data "aws_iam_role" "eks_master_roles" {
@@ -142,6 +138,7 @@ data "aws_iam_role" "eks_master_roles" {
 }
 
 module "k8s_setup" {
+  count                = var.create_bastion ? 1 : 0
   source               = "./submodules/k8s"
   ssh_pvt_key_path     = abspath(local.ssh_pvt_key_path)
   bastion_user         = local.bastion_user

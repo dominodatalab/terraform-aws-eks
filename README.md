@@ -136,13 +136,13 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 
 | Name | Description |
 |------|-------------|
-| <a name="output_bastion_ip"></a> [bastion\_ip](#output\_bastion\_ip) | n/a |
+| <a name="output_bastion_ip"></a> [bastion\_ip](#output\_bastion\_ip) | public ip of the bastion |
 | <a name="output_domino_key_pair"></a> [domino\_key\_pair](#output\_domino\_key\_pair) | Domino key pair |
 | <a name="output_efs_access_point"></a> [efs\_access\_point](#output\_efs\_access\_point) | EFS access point |
 | <a name="output_efs_file_system"></a> [efs\_file\_system](#output\_efs\_file\_system) | EFS file system |
 | <a name="output_hostname"></a> [hostname](#output\_hostname) | Domino instance URL. |
 | <a name="output_k8s_tunnel_command"></a> [k8s\_tunnel\_command](#output\_k8s\_tunnel\_command) | Command to run the k8s tunnel mallory. |
-| <a name="output_kubeconfig"></a> [kubeconfig](#output\_kubeconfig) | n/a |
+| <a name="output_kubeconfig"></a> [kubeconfig](#output\_kubeconfig) | location of kubeconfig |
 | <a name="output_s3_buckets"></a> [s3\_buckets](#output\_s3\_buckets) | S3 buckets |
 | <a name="output_ssh_bastion_command"></a> [ssh\_bastion\_command](#output\_ssh\_bastion\_command) | Command to ssh into the bastion host |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

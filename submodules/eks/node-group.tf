@@ -110,9 +110,9 @@ resource "aws_launch_template" "compute" {
 }
 
 resource "aws_eks_node_group" "compute" {
-  for_each        = { for sb in var.private_subnets : sb.zone => sb if lookup(var.default_node_groups, "compute", {}) != {} }
+  for_each        = var.private_subnets
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "${local.eks_cluster_name}-compute-${each.value.zone}"
+  node_group_name = "${local.eks_cluster_name}-compute-${each.value.availability_zone}"
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = [each.value.id]
   scaling_config {
@@ -186,9 +186,9 @@ resource "aws_launch_template" "platform" {
 }
 
 resource "aws_eks_node_group" "platform" {
-  for_each        = { for sb in var.private_subnets : sb.zone => sb if lookup(var.default_node_groups, "platform", {}) != {} }
+  for_each        = var.private_subnets
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "${local.eks_cluster_name}-platform-${each.value.zone}"
+  node_group_name = "${local.eks_cluster_name}-platform-${each.value.availability_zone}"
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = [each.value.id]
   scaling_config {
@@ -262,9 +262,9 @@ resource "aws_launch_template" "gpu" {
 }
 
 resource "aws_eks_node_group" "gpu" {
-  for_each        = { for sb in var.private_subnets : sb.zone => sb if lookup(var.default_node_groups, "gpu", {}) != {} }
+  for_each        = var.private_subnets
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "${local.eks_cluster_name}-gpu-${each.value.zone}"
+  node_group_name = "${local.eks_cluster_name}-gpu-${each.value.availability_zone}"
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = [each.value.id]
   scaling_config {
@@ -310,9 +310,8 @@ locals {
     for sb in var.private_subnets : [
       for ng in var.additional_node_groups : {
         # ng_resource_id = "${ng.name}-${sb.zone}"
-        subnet_zone = sb.zone
-        subnet_id   = sb.id
-        node_group  = ng
+        subnet     = sb
+        node_group = ng
       }
     ]
   ]) : []
@@ -360,11 +359,11 @@ resource "aws_launch_template" "additional_node_groups" {
 }
 
 resource "aws_eks_node_group" "additional_node_groups" {
-  for_each        = { for ng in local.additional_node_groups_per_zone : "${ng.node_group.name}-${ng.subnet_zone}" => ng }
+  for_each        = { for ng in local.additional_node_groups_per_zone : "${ng.node_group.name}-${ng.subnet.availability_zone}" => ng }
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "${local.eks_cluster_name}-platform-${each.value.subnet_zone}"
+  node_group_name = "${local.eks_cluster_name}-platform-${each.value.subnet.availability_zone}"
   node_role_arn   = aws_iam_role.eks_nodes.arn
-  subnet_ids      = [each.value.subnet_id]
+  subnet_ids      = [each.value.subnet.id]
   scaling_config {
     min_size     = each.value.node_group.min_per_az
     max_size     = each.value.node_group.max_per_az

@@ -12,7 +12,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.32.0 |
 
 ## Modules
 
@@ -55,7 +55,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_private_subnets"></a> [private\_subnets](#output\_private\_subnets) | Private subnets object. Adds id to the object |
-| <a name="output_public_subnets"></a> [public\_subnets](#output\_public\_subnets) | Public subnets object. Adds id to the object |
+| <a name="output_private_subnets"></a> [private\_subnets](#output\_private\_subnets) | Private subnets object. |
+| <a name="output_public_subnets"></a> [public\_subnets](#output\_public\_subnets) | Public subnets object. |
 | <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | VPC id. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

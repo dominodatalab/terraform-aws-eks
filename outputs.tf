@@ -4,12 +4,13 @@ output "ssh_bastion_command" {
 }
 
 output "bastion_ip" {
-  value = var.create_bastion ? module.bastion[0].public_ip : ""
+  description = "public ip of the bastion"
+  value       = var.create_bastion ? module.bastion[0].public_ip : ""
 }
 
 output "k8s_tunnel_command" {
   description = "Command to run the k8s tunnel mallory."
-  value       = module.k8s_setup.k8s_tunnel_command
+  value       = try(module.k8s_setup.k8s_tunnel_command, "")
 }
 
 output "hostname" {
@@ -38,5 +39,6 @@ output "domino_key_pair" {
 }
 
 output "kubeconfig" {
-  value = local.kubeconfig_path
+  description = "location of kubeconfig"
+  value       = local.kubeconfig_path
 }

@@ -1,4 +1,4 @@
-# example
+# tests
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

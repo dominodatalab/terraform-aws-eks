@@ -113,13 +113,10 @@ variable "kubeconfig_path" {
 
 variable "private_subnets" {
   description = "Private subnets object"
-  type = list(object({
-    cidr_block = string
-    name       = string
-    type       = string
-    zone       = string
-    zone_id    = string
-    id         = string
+  type = map(object({
+    id                = string
+    availability_zone = string
+    cidr_block        = string
   }))
   validation {
     condition     = length(var.private_subnets) >= 2
