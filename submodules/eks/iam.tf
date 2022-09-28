@@ -41,12 +41,6 @@ data "aws_iam_policy_document" "domino_ecr_restricted" {
   }
 }
 
-resource "aws_iam_policy" "domino_ecr_restricted" {
-  name   = "${var.deploy_id}-DominoEcrRestricted"
-  path   = "/"
-  policy = data.aws_iam_policy_document.domino_ecr_restricted.json
-}
-
 data "aws_iam_policy_document" "autoscaler" {
   statement {
 
@@ -78,12 +72,6 @@ data "aws_iam_policy_document" "autoscaler" {
       values   = [var.deploy_id]
     }
   }
-}
-
-resource "aws_iam_policy" "autoscaler" {
-  name   = "${var.deploy_id}-Autoscaler"
-  path   = "/"
-  policy = data.aws_iam_policy_document.autoscaler.json
 }
 
 data "aws_iam_policy_document" "ebs_csi" {
@@ -187,12 +175,6 @@ data "aws_iam_policy_document" "ebs_csi" {
   }
 }
 
-resource "aws_iam_policy" "ebs_csi" {
-  name   = "${var.deploy_id}-ebs-csi"
-  path   = "/"
-  policy = data.aws_iam_policy_document.ebs_csi.json
-}
-
 data "aws_iam_policy_document" "snapshot" {
   statement {
 
@@ -211,27 +193,29 @@ data "aws_iam_policy_document" "snapshot" {
   }
 }
 
-resource "aws_iam_policy" "snapshot" {
-  name   = "${var.deploy_id}-snapshot"
+data "aws_iam_policy_document" "custom_eks_node_policy" {
+  source_policy_documents = [
+    data.aws_iam_policy_document.domino_ecr_restricted.json,
+    data.aws_iam_policy_document.autoscaler.json,
+    data.aws_iam_policy_document.ebs_csi.json,
+    data.aws_iam_policy_document.snapshot.json
+  ]
+}
+
+resource "aws_iam_policy" "custom_eks_node_policy" {
+  name   = "${var.deploy_id}-nodes-custom"
   path   = "/"
-  policy = data.aws_iam_policy_document.snapshot.json
+  policy = data.aws_iam_policy_document.custom_eks_node_policy.json
 }
 
 locals {
-
   eks_aws_node_iam_policies = toset([
     "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
-    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    "arn:aws:iam::aws:policy/AmazonElasticFileSystemReadOnlyAccess",
   ])
-
-  eks_custom_node_iam_policies = {
-    "domino_ecr_restricted" = aws_iam_policy.domino_ecr_restricted.arn,
-    "autoscaler"            = aws_iam_policy.autoscaler.arn,
-    "ebs_csi"               = aws_iam_policy.ebs_csi.arn,
-    "snapshot"              = aws_iam_policy.snapshot.arn
-  }
 }
 
 resource "aws_iam_role_policy_attachment" "aws_eks_nodes" {
@@ -241,7 +225,6 @@ resource "aws_iam_role_policy_attachment" "aws_eks_nodes" {
 }
 
 resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
-  for_each   = { for name, arn in local.eks_custom_node_iam_policies : name => arn }
-  policy_arn = each.value
+  policy_arn = aws_iam_policy.custom_eks_node_policy.arn
   role       = aws_iam_role.eks_nodes.name
 }

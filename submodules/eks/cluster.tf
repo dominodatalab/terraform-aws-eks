@@ -48,7 +48,8 @@ resource "aws_security_group" "eks_cluster" {
     create_before_destroy = true
   }
   tags = {
-    "Name" = "${local.eks_cluster_name}-eks-cluster"
+    "Name"                                            = "${local.eks_cluster_name}-eks-cluster"
+    "kubernetes.io/cluster/${local.eks_cluster_name}" = "owned"
   }
 }
 
@@ -97,6 +98,8 @@ resource "aws_eks_cluster" "this" {
   }
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster,
+    aws_security_group_rule.eks_cluster,
+    aws_security_group_rule.node,
     aws_cloudwatch_log_group.eks_cluster
   ]
 }
@@ -108,9 +111,7 @@ resource "aws_eks_addon" "this" {
   addon_name        = each.key
 
   depends_on = [
-    aws_eks_node_group.compute,
-    aws_eks_node_group.platform,
-    aws_eks_node_group.gpu,
+    aws_eks_node_group.node_groups,
   ]
 }
 

@@ -82,12 +82,14 @@ variable "default_node_groups" {
     {
       compute = object(
         {
-          name           = optional(string, "compute")
           ami            = optional(string)
           instance_type  = optional(string, "m5.2xlarge")
           min_per_az     = optional(number, 0)
           max_per_az     = optional(number, 10)
           desired_per_az = optional(number, 1)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "default"
+          })
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -101,12 +103,14 @@ variable "default_node_groups" {
       }),
       platform = object(
         {
-          name           = optional(string, "platform")
           ami            = optional(string)
           instance_type  = optional(string, "m5.4xlarge")
           min_per_az     = optional(number, 0)
           max_per_az     = optional(number, 10)
           desired_per_az = optional(number, 1)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "platform"
+          })
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -120,12 +124,15 @@ variable "default_node_groups" {
       }),
       gpu = object(
         {
-          name           = optional(string, "gpu")
           ami            = optional(string)
           instance_type  = optional(string, "g4dn.xlarge")
           min_per_az     = optional(number, 0)
           max_per_az     = optional(number, 10)
           desired_per_az = optional(number, 0)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "default-gpu"
+            "nvidia.com/gpu"              = true
+          })
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -149,12 +156,11 @@ variable "additional_node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
     ami            = optional(string)
-    name           = string
     instance_type  = string
     min_per_az     = number
     max_per_az     = number
     desired_per_az = number
-    label          = string
+    labels         = map(string)
     volume = object({
       size = string
       type = string
