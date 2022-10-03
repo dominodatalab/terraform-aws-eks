@@ -8,11 +8,6 @@ output "bastion_ip" {
   value       = var.create_bastion ? module.bastion[0].public_ip : ""
 }
 
-output "k8s_tunnel_command" {
-  description = "Command to run the k8s tunnel mallory."
-  value       = try(module.k8s_setup.k8s_tunnel_command, "")
-}
-
 output "hostname" {
   description = "Domino instance URL."
   value       = "${var.deploy_id}.${var.route53_hosted_zone_name}"

@@ -3,6 +3,10 @@
 ## Create SSH Key pair
 ### Prerequisites
 * Host with `ssh-keygen` installed
+* [awscli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+* [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started#install-terraform) >= v1.3.0
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) cli >= 1.24.0
+
 
 ### Command
 ```bash
@@ -11,10 +15,6 @@
 
 ## Create terraform remote state bucket(OPTIONAL)
 * Authenticate with aws, make sure that environment variables: `AWS_REGION`, `AWS_ACCESS_KEY_ID` ,`AWS_SECRET_ACCESS_KEY` are set. If your account has MFA set up you will also need `AWS_SESSION_TOKEN`.
-
-### Prerequisites
-* [awscli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-* jq (Optional, it parses the api response)
 
 #### 1. Create Bucket(if you already have a bucket just set the `AWS_TERRAFORM_REMOTE_STATE_BUCKET` to its name, and skip this step):
 ```bash
@@ -77,7 +77,7 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.32.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 4.33.0 |
 | <a name="provider_null"></a> [null](#provider\_null) | 3.1.1 |
 | <a name="provider_tls"></a> [tls](#provider\_tls) | 4.0.3 |
 
@@ -141,7 +141,6 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="output_efs_access_point"></a> [efs\_access\_point](#output\_efs\_access\_point) | EFS access point |
 | <a name="output_efs_file_system"></a> [efs\_file\_system](#output\_efs\_file\_system) | EFS file system |
 | <a name="output_hostname"></a> [hostname](#output\_hostname) | Domino instance URL. |
-| <a name="output_k8s_tunnel_command"></a> [k8s\_tunnel\_command](#output\_k8s\_tunnel\_command) | Command to run the k8s tunnel mallory. |
 | <a name="output_kubeconfig"></a> [kubeconfig](#output\_kubeconfig) | location of kubeconfig |
 | <a name="output_s3_buckets"></a> [s3\_buckets](#output\_s3\_buckets) | S3 buckets |
 | <a name="output_ssh_bastion_command"></a> [ssh\_bastion\_command](#output\_ssh\_bastion\_command) | Command to ssh into the bastion host |

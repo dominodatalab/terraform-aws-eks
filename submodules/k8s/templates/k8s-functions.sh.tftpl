@@ -5,25 +5,13 @@ GREEN="\e[32m"
 EC="\e[0m"
 
 open_ssh_tunnel_to_k8s_api() {
-  printf "$GREEN Setting up mallory k8s tunnel... $EC \n"
-  if [[ -z "$https_proxy" ]]; then
-    MALLORY_PORT=${mallory_port}
-    https_proxy=http://localhost:$MALLORY_PORT
-    export https_proxy
-  fi
-
-  if test -f "${mallory_config_file}"; then
-    { docker kill ${mallory_container_name} && docker rm ${mallory_container_name}; } || true
-    eval ${k8s_tunnel_command} && sleep 3
-  else
-    echo "Mallory config file ${mallory_config_file} does not exist." && exit 1
-  fi
-
-  echo
+  TUNNEL_SOCKET_FILE=$${TUNNEL_SOCKET_FILE:-/tmp/k8s-tunnel-socket}
+  printf "$GREEN Openning k8s tunnel ... $EC \n"
+  ssh -q -N -f -M -o "StrictHostKeyChecking no" -o "ExitOnForwardFailure=yes" -i ${ssh_pvt_key_path} -D ${k8s_tunnel_port} -S "$TUNNEL_SOCKET_FILE" ${bastion_user}@${bastion_public_ip}
 }
 
 check_kubeconfig() {
-  KUBECONFIG="${kubeconfig_path}"
+  local KUBECONFIG="${kubeconfig_path}"
   printf "$GREEN Checking if $KUBECONFIG exists... $EC \n"
   if test -f "$KUBECONFIG"; then
     echo "$KUBECONFIG exists." && export KUBECONFIG
@@ -34,10 +22,10 @@ check_kubeconfig() {
 }
 
 set_k8s_auth() {
-  AWS_AUTH_YAML="${aws_auth_yaml}"
+  local AWS_AUTH_YAML="${aws_auth_yaml}"
   if test -f "$AWS_AUTH_YAML"; then
     printf "$GREEN Updating $AWS_AUTH_YAML... $EC \n"
-    kubectl apply -f "$AWS_AUTH_YAML"
+    kubectl_apply "$AWS_AUTH_YAML"
   else
     printf "$RED $AWS_AUTH_YAML does not exist. $EC \n" && exit 1
   fi
@@ -45,31 +33,38 @@ set_k8s_auth() {
 }
 
 install_calico() {
-  CALICO_OPERATOR_YAML_URL=${calico_operator_url}
+  local CALICO_OPERATOR_YAML_URL=${calico_operator_url}
   printf "$GREEN Installing Calico Operator $EC \n"
-  kubectl apply -f $CALICO_OPERATOR_YAML_URL || printf "$RED There was an error installing the calico operator"
+  kubectl_apply $CALICO_OPERATOR_YAML_URL || printf "$RED There was an error installing the calico operator"
   echo
-  CALICO_CRD_YAML_URL=${calico_custom_resources_url}
+  local CALICO_CRD_YAML_URL=${calico_custom_resources_url}
   printf "$GREEN Installing Calico Custom resources $EC \n" || printf "$RED There was an error installing the calico CRD"
-  kubectl apply -f $CALICO_CRD_YAML_URL
+  kubectl_apply $CALICO_CRD_YAML_URL
   echo
+}
+
+validate_url() {
+  local url="$1"
+  if curl --head --silent --fail -o /dev/null "$url"; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 kubectl_apply() {
-  k8s_manifest="$1"
-  if test -f "$k8s_manifest"; then
+  local k8s_manifest="$1"
+  if test -f "$k8s_manifest" || validate_url "$k8s_manifest"; then
     echo "Applying $k8s_manifest..."
-    kubectl apply -f $k8s_manifest
+    (
+      export HTTPS_PROXY=socks5://127.0.0.1:${k8s_tunnel_port} && kubectl apply -f $k8s_manifest
+    )
   else
     printf "$RED $k8s_manifest does not exist. $EC \n" && exit 1
   fi
-
-  kubectl apply -f "$k8s_manifest"
 }
 
 close_ssh_tunnel_to_k8s_api() {
-  printf "$GREEN Shutting down mallory k8s tunnel ${mallory_container_name} ... $EC"
-  docker kill "${mallory_container_name}"
-  docker rm "${mallory_container_name}" || true
-  echo
+  printf "$GREEN Shutting down k8s tunnel ... $EC"
+  ssh -S $TUNNEL_SOCKET_FILE -O exit ${bastion_user}@${bastion_public_ip}
 }

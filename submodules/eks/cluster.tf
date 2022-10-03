@@ -119,8 +119,13 @@ resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
     command = "aws eks update-kubeconfig --kubeconfig ${var.kubeconfig_path} --region ${var.region} --name ${aws_eks_cluster.this.name}"
   }
+  provisioner "local-exec" {
+    when    = destroy
+    command = "rm -f ${self.triggers.kubeconfig_file}"
+  }
   triggers = {
     domino_eks_cluster_ca = aws_eks_cluster.this.certificate_authority[0].data
+    kubeconfig_file       = var.kubeconfig_path
   }
   depends_on = [aws_eks_cluster.this]
 }

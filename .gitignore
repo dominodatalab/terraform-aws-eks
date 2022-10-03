@@ -35,7 +35,6 @@ domino.pem.pub
 k8s-functions.sh
 k8s-pre-setup.sh
 kubeconfig
-mallory.json
 domino.yml
 terraform_tflint.txt
 terraform_tfsec.txt

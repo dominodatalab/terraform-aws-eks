@@ -21,10 +21,6 @@ variable "bastion_public_ip" {
   type        = string
   description = "Bastion host public ip."
 }
-variable "k8s_cluster_endpoint" {
-  type        = string
-  description = "EKS cluster API endpoint."
-}
 
 variable "eks_node_role_arns" {
   type        = list(string)
@@ -37,16 +33,10 @@ variable "eks_master_role_arns" {
   default     = []
 }
 
-variable "mallory_local_normal_port" {
+variable "k8s_tunnel_port" {
   type        = string
-  description = "Mallory k8s tunnel normal port."
-  default     = "1315"
-}
-
-variable "mallory_local_smart_port" {
-  type        = string
-  description = "Mallory k8s tunnel smart(filters based on the blocked list) port."
-  default     = "1316"
+  description = "K8s ssh tunnel port"
+  default     = "1080"
 }
 
 variable "calico_version" {
