@@ -117,15 +117,25 @@ resource "aws_eks_addon" "this" {
 
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
-    command = "aws eks update-kubeconfig --kubeconfig ${var.kubeconfig_path} --region ${var.region} --name ${aws_eks_cluster.this.name}"
+    when    = create
+    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name}"
   }
   provisioner "local-exec" {
     when    = destroy
-    command = "rm -f ${self.triggers.kubeconfig_file}"
+    command = <<EOT
+      if (($(kubectl config --kubeconfig ${self.triggers.kubeconfig_file} get-contexts -o name | grep -v ${self.triggers.cluster_name}| wc -l) > 0 )); then
+        kubectl config --kubeconfig ${self.triggers.kubeconfig_file} delete-cluster ${self.triggers.cluster_name}
+        kubectl config --kubeconfig ${self.triggers.kubeconfig_file} delete-context ${self.triggers.cluster_name}
+      else
+        rm -f ${self.triggers.kubeconfig_file}
+      fi
+    EOT
   }
   triggers = {
     domino_eks_cluster_ca = aws_eks_cluster.this.certificate_authority[0].data
+    cluster_name          = aws_eks_cluster.this.name
     kubeconfig_file       = var.kubeconfig_path
+    region                = var.region
   }
   depends_on = [aws_eks_cluster.this]
 }

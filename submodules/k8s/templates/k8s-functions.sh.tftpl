@@ -45,10 +45,11 @@ install_calico() {
 
 validate_url() {
   local url="$1"
-  if curl --head --silent --fail -o /dev/null "$url"; then
-    return 0
+  local log_file="validate-url.log"
+  if curl --head --fail --max-time 10 --output "$log_file" --stderr "$log_file" "$url"; then
+    rm "$log_file" && return 0
   else
-    return 1
+    cat "$log_file" && return 1
   fi
 }
 
@@ -57,7 +58,7 @@ kubectl_apply() {
   if test -f "$k8s_manifest" || validate_url "$k8s_manifest"; then
     echo "Applying $k8s_manifest..."
     (
-      export HTTPS_PROXY=socks5://127.0.0.1:${k8s_tunnel_port} && kubectl apply -f $k8s_manifest
+      export HTTPS_PROXY=socks5://127.0.0.1:${k8s_tunnel_port} && kubectl apply -f "$k8s_manifest"
     )
   else
     printf "$RED $k8s_manifest does not exist. $EC \n" && exit 1
