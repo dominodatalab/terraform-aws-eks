@@ -83,6 +83,22 @@ data "aws_ec2_instance_type" "all" {
   instance_type = each.value
 }
 
+data "template_file" "bootstrap" {
+  for_each = { for ng_name, ng in local.node_groups : ng_name => ng if ng.ami != null }
+
+  template = file("${path.module}/templates/user_data.sh.tpl")
+  vars = {
+    apiserver_endpoint   = aws_eks_cluster.this.endpoint
+    cluster_ca           = aws_eks_cluster.this.certificate_authority.0.data
+    name                 = local.eks_cluster_name
+    kubelet_extra_args   = <<-EOF
+    --node-labels=${join(",", [for key, value in merge(each.value.labels, { "dominodatalab.com/domino-node" = true }) : "${key}=${value}"])}
+    --register-with-taints=${join(",", [for taint in each.value.taints : "${taint.key}=${taint.value}:${local.taint_effects[taint.effect]}"])}
+    EOF
+    enable_docker_bridge = false
+  }
+}
+
 resource "aws_launch_template" "node_groups" {
   for_each                = local.node_groups
   name                    = "${local.eks_cluster_name}-${each.key}"
@@ -91,6 +107,7 @@ resource "aws_launch_template" "node_groups" {
   key_name                = var.ssh_pvt_key_path
   vpc_security_group_ids  = [aws_security_group.eks_nodes.id]
   image_id                = each.value.ami
+  user_data               = each.value.ami != null ? base64encode(data.template_file.bootstrap[each.key].rendered) : ""
 
   block_device_mappings {
     device_name = "/dev/xvda"
