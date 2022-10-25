@@ -59,6 +59,12 @@ resource "aws_security_group_rule" "efs" {
 }
 
 locals {
+  taint_effects = {
+    NO_SCHEDULE        = "NoSchedule"
+    NO_EXECUTE         = "NoExecute"
+    PREFER_NO_SCHEDULE = "PreferNoSchedule"
+  }
+
   node_groups = merge(var.additional_node_groups, var.default_node_groups)
   node_groups_per_zone = flatten([
     for ng_name, ng in local.node_groups : [
@@ -143,10 +149,18 @@ resource "aws_eks_node_group" "node_groups" {
     version = aws_launch_template.node_groups[each.value.ng_name].latest_version
   }
 
-
   labels = merge(each.value.node_group.labels, {
     "dominodatalab.com/domino-node" = true
   })
+
+  dynamic "taint" {
+    for_each = each.value.node_group.taints
+    content {
+      key    = taint.value.key
+      value  = taint.value.value
+      effect = taint.value.effect
+    }
+  }
 
   lifecycle {
     ignore_changes = [

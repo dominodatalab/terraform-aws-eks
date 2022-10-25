@@ -161,6 +161,7 @@ variable "additional_node_groups" {
     max_per_az     = number
     desired_per_az = number
     labels         = map(string)
+    taints         = list(map(string))
     volume = object({
       size = string
       type = string
