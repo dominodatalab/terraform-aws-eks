@@ -6,6 +6,11 @@ repos:
       - id: end-of-file-fixer
       - id: no-commit-to-branch
       - id: check-case-conflict
+  - repo: https://github.com/dominodatalab/pre-commit-circleci
+    rev: v0.0.3
+    hooks:
+    -   id: circleci-validate
+        args: [--org-slug, github/cerebrotech]
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.75.0
     hooks:

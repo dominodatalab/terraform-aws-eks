@@ -118,7 +118,7 @@ resource "aws_eks_addon" "this" {
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
     when    = create
-    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name}"
+    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name}"
   }
   provisioner "local-exec" {
     when    = destroy

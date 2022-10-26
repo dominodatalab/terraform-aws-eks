@@ -1,0 +1,56 @@
+version: "2.1"
+
+orbs:
+  terraform: circleci/terraform@3.2.0
+
+jobs:
+  build:
+    docker:
+      - image: cimg/aws:2022.09
+    parameters:
+      workspace:
+        type: string
+        default: circleci-<< pipeline.number >>
+    environment:
+      WORKSPACE: << parameters.workspace >>
+
+    steps:
+      - checkout
+
+      - terraform/install:
+          terraform_version: '1.3.3'
+
+      - terraform/fmt:
+          path: .
+
+      - run:
+          name: Configure test cluster env
+          command: |
+            echo export TF_VAR_deploy_id=\"${WORKSPACE}\" >> $BASH_ENV
+            echo 'export TF_VAR_tags=\{\"CIRCLE_BUILD_URL\"=\"${CIRCLE_BUILD_URL}\",\"CIRCLE_PR_NUMBER\"=\"${CIRCLE_PR_NUMBER}\",\"CIRCLE_PULL_REQUEST\"=\"${CIRCLE_PULL_REQUEST}\",\"CIRCLE_REPOSITORY_URL\"=\"${CIRCLE_REPOSITORY_URL}\"\}' >> $BASH_ENV
+
+      - run:
+          name: Test Terraform
+          working_directory: tests
+          command: |
+            ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem
+            terraform init
+            terraform validate
+            terraform workspace new ${WORKSPACE}
+            terraform apply -auto-approve
+            # we will always have drift
+            # terraform plan -detailed-exitcode
+
+      - run:
+          name: Terraform destroy
+          working_directory: tests
+          command: |
+            terraform destroy -auto-approve
+          when: always
+
+      - run:
+          name: Terraform workspace delete
+          working_directory: tests
+          command: |
+            terraform workspace select default
+            terraform workspace delete ${WORKSPACE}
