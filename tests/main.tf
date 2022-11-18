@@ -1,3 +1,14 @@
+data "aws_ami" "eks_node" {
+  provider    = aws.local
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amazon-eks-node-${var.k8s_version}-*"]
+  }
+}
+
 module "domino_eks" {
   source                       = "./.."
   deploy_id                    = var.deploy_id
@@ -13,13 +24,9 @@ module "domino_eks" {
   default_node_groups = {
     compute = {
       spot = true
-      labels = {
-        label1 = "value1"
-      }
+      ami  = data.aws_ami.eks_node.image_id
     }
     platform = {}
-    gpu = {
-      taints = [{ key = "abc", effect = "NO_SCHEDULE" }]
-    }
+    gpu      = {}
   }
 }

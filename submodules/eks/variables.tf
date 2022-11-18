@@ -24,12 +24,13 @@ variable "default_node_groups" {
     {
       compute = object(
         {
-          ami            = optional(string)
-          instance_types = optional(list(string), ["m5.2xlarge"])
-          spot           = optional(bool, false)
-          min_per_az     = optional(number, 0)
-          max_per_az     = optional(number, 10)
-          desired_per_az = optional(number, 1)
+          ami                  = optional(string)
+          bootstrap_extra_args = optional(string, "")
+          instance_types       = optional(list(string), ["m5.2xlarge"])
+          spot                 = optional(bool, false)
+          min_per_az           = optional(number, 0)
+          max_per_az           = optional(number, 10)
+          desired_per_az       = optional(number, 1)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default"
           })
@@ -48,12 +49,13 @@ variable "default_node_groups" {
       }),
       platform = object(
         {
-          ami            = optional(string)
-          instance_types = optional(list(string), ["m5.4xlarge"])
-          spot           = optional(bool, false)
-          min_per_az     = optional(number, 0)
-          max_per_az     = optional(number, 10)
-          desired_per_az = optional(number, 1)
+          ami                  = optional(string)
+          bootstrap_extra_args = optional(string, "")
+          instance_types       = optional(list(string), ["m5.4xlarge"])
+          spot                 = optional(bool, false)
+          min_per_az           = optional(number, 0)
+          max_per_az           = optional(number, 10)
+          desired_per_az       = optional(number, 1)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "platform"
           })
@@ -72,12 +74,13 @@ variable "default_node_groups" {
       }),
       gpu = object(
         {
-          ami            = optional(string)
-          instance_types = optional(list(string), ["g4dn.xlarge"])
-          spot           = optional(bool, false)
-          min_per_az     = optional(number, 0)
-          max_per_az     = optional(number, 10)
-          desired_per_az = optional(number, 0)
+          ami                  = optional(string)
+          bootstrap_extra_args = optional(string, "")
+          instance_types       = optional(list(string), ["g4dn.xlarge"])
+          spot                 = optional(bool, false)
+          min_per_az           = optional(number, 0)
+          max_per_az           = optional(number, 10)
+          desired_per_az       = optional(number, 0)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default-gpu"
             "nvidia.com/gpu"              = true
@@ -106,15 +109,16 @@ variable "default_node_groups" {
 variable "additional_node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
-    ami            = optional(string)
-    instance_types = list(string)
-    spot           = optional(bool, false)
-    min_per_az     = number
-    max_per_az     = number
-    desired_per_az = number
-    labels         = map(string)
-    taints         = optional(list(object({ key = string, value = optional(string), effect = string })), [])
-    tags           = optional(map(string), {})
+    ami                  = optional(string)
+    bootstrap_extra_args = optional(string, "")
+    instance_types       = list(string)
+    spot                 = optional(bool, false)
+    min_per_az           = number
+    max_per_az           = number
+    desired_per_az       = number
+    labels               = map(string)
+    taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
+    tags                 = optional(map(string), {})
     volume = object({
       size = string
       type = string

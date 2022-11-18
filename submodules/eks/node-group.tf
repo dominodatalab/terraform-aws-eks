@@ -87,8 +87,22 @@ resource "aws_launch_template" "node_groups" {
   name                    = "${local.eks_cluster_name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_pvt_key_path
-  vpc_security_group_ids  = [aws_security_group.eks_nodes.id]
-  image_id                = each.value.ami
+  user_data = each.value.ami == null ? null : base64encode(templatefile(
+    "${path.module}/templates/linux_user_data.tpl",
+    {
+      # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-custom-ami
+      # Required to bootstrap node
+      cluster_name        = aws_eks_cluster.this.name
+      cluster_endpoint    = aws_eks_cluster.this.endpoint
+      cluster_auth_base64 = aws_eks_cluster.this.certificate_authority[0].data
+      # Optional
+      cluster_service_ipv4_cidr = aws_eks_cluster.this.kubernetes_network_config[0].service_ipv4_cidr != null ? aws_eks_cluster.this.kubernetes_network_config[0].service_ipv4_cidr : ""
+      bootstrap_extra_args      = each.value.bootstrap_extra_args
+      pre_bootstrap_user_data   = ""
+      post_bootstrap_user_data  = ""
+  }))
+  vpc_security_group_ids = [aws_security_group.eks_nodes.id]
+  image_id               = each.value.ami
 
   block_device_mappings {
     device_name = "/dev/xvda"
