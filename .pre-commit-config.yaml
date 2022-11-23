@@ -14,6 +14,11 @@ repos:
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.75.0
     hooks:
+      - id: terraform_providers_lock
+        args:
+         - --tf-init-args=-upgrade
+      - id: terraform_fmt
+      - id: terraform_validate
       - id: terraform_docs
         args:
           - '--hook-config=--path-to-file=README.md'
@@ -22,7 +27,6 @@ repos:
           - '--hook-config=--recursive.enabled=true'
           - '--hook-config=--recursive.path=submodules'
           - '--hook-config=--lockfile=false'
-      - id: terraform_fmt
       - id: terraform_tflint
         args:
           - '--args=--config=__GIT_WORKING_DIR__/.tflint.hcl'
@@ -39,7 +43,6 @@ repos:
           - '--args=--only=terraform_required_providers'
           - '--args=--only=terraform_standard_module_structure'
           - '--args=--only=terraform_workspace_remote'
-      - id: terraform_validate
       # - id: terrascan # Skipping until they update lifecycle block; Data resources do not have lifecycle settings, so a lifecycle block is not allowed.
         # args:
         #   - '--args=--non-recursive'

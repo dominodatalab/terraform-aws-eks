@@ -111,15 +111,16 @@ locals {
 }
 
 module "bastion" {
-  count = var.create_bastion ? 1 : 0
+  count = var.bastion != null ? 1 : 0
 
-  source                   = "./submodules/bastion"
-  deploy_id                = var.deploy_id
-  region                   = var.region
-  vpc_id                   = local.vpc_id
-  ssh_pvt_key_path         = aws_key_pair.domino.key_name
-  bastion_public_subnet_id = local.public_subnets[0].subnet_id
-  bastion_ami_id           = var.bastion_ami_id
+  source           = "./submodules/bastion"
+  deploy_id        = var.deploy_id
+  region           = var.region
+  vpc_id           = local.vpc_id
+  ssh_pvt_key_path = aws_key_pair.domino.key_name
+  public_subnet_id = local.public_subnets[0].subnet_id
+  ami_id           = var.bastion.ami
+  instance_type    = var.bastion.instance_type
 }
 
 module "eks" {
@@ -131,7 +132,7 @@ module "eks" {
   private_subnets           = local.private_subnets
   ssh_pvt_key_path          = aws_key_pair.domino.key_name
   bastion_security_group_id = try(module.bastion[0].security_group_id, "")
-  create_bastion_sg         = var.create_bastion
+  create_bastion_sg         = var.bastion != null
   kubeconfig_path           = local.kubeconfig_path
   default_node_groups       = var.default_node_groups
   additional_node_groups    = var.additional_node_groups
@@ -144,12 +145,12 @@ module "eks" {
 }
 
 data "aws_iam_role" "eks_master_roles" {
-  for_each = var.create_bastion ? toset(var.eks_master_role_names) : []
+  for_each = var.bastion != null ? toset(var.eks_master_role_names) : []
   name     = each.key
 }
 
 module "k8s_setup" {
-  count                = var.create_bastion ? 1 : 0
+  count                = var.bastion != null ? 1 : 0
   source               = "./submodules/k8s"
   ssh_pvt_key_path     = local.ssh_pvt_key_path
   bastion_user         = local.bastion_user

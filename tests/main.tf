@@ -18,7 +18,7 @@ module "domino_eks" {
   route53_hosted_zone_name     = "deploys-delta.domino.tech"
   eks_master_role_names        = ["okta-poweruser", "okta-fulladmin"]
   s3_force_destroy_on_deletion = true
-  create_bastion               = true
+  bastion                      = {}
   ssh_pvt_key_path             = "domino.pem"
   tags                         = var.tags
   default_node_groups = {

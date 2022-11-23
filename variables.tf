@@ -224,23 +224,19 @@ variable "private_subnets" {
   default     = null
 }
 
-variable "create_bastion" {
-  type        = bool
-  description = "Create bastion toggle."
-  default     = false
-}
-
-variable "bastion_ami_id" {
-  description = "AMI ID for the bastion EC2 instance, otherwise we will use the latest 'amazon_linux_2' ami"
-  type        = string
-  default     = ""
+variable "bastion" {
+  type = object({
+    ami           = optional(string, null) # default will use the latest 'amazon_linux_2' ami
+    instance_type = optional(string, "t2.micro")
+  })
+  description = "if specifed, a bastion is created with the specified details"
+  default     = null
 }
 
 variable "efs_access_point_path" {
   type        = string
   description = "Filesystem path for efs."
   default     = "/domino"
-
 }
 
 variable "ssh_pvt_key_path" {

@@ -20,7 +20,7 @@ resource "aws_security_group" "bastion" {
   }
 }
 resource "aws_security_group_rule" "bastion" {
-  for_each = var.bastion_security_group_rules
+  for_each = var.security_group_rules
 
   security_group_id        = aws_security_group.bastion.id
   protocol                 = each.value.protocol
@@ -72,7 +72,7 @@ resource "aws_iam_instance_profile" "bastion" {
 }
 
 data "aws_ami" "amazon_linux_2" {
-  count       = var.bastion_ami_id == "" ? 1 : 0
+  count       = var.ami_id == null ? 1 : 0
   most_recent = true
   owners      = ["amazon"]
 
@@ -83,11 +83,11 @@ data "aws_ami" "amazon_linux_2" {
 }
 
 locals {
-  bastion_ami_id = var.bastion_ami_id != "" ? var.bastion_ami_id : data.aws_ami.amazon_linux_2[0].id
+  ami_id = var.ami_id != null ? var.ami_id : data.aws_ami.amazon_linux_2[0].id
 }
 
 resource "aws_instance" "bastion" {
-  ami                         = local.bastion_ami_id
+  ami                         = local.ami_id
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.bastion.name
   monitoring                  = true
@@ -106,7 +106,7 @@ resource "aws_instance" "bastion" {
   get_password_data                    = false
   hibernation                          = false
   instance_initiated_shutdown_behavior = "stop"
-  instance_type                        = "t2.micro"
+  instance_type                        = var.instance_type != null ? var.instance_type : "t2.micro"
   key_name                             = var.ssh_pvt_key_path
 
   metadata_options {
@@ -126,7 +126,7 @@ resource "aws_instance" "bastion" {
   }
 
   source_dest_check = true
-  subnet_id         = var.bastion_public_subnet_id
+  subnet_id         = var.public_subnet_id
 
   vpc_security_group_ids = [aws_security_group.bastion.id]
   tags = {

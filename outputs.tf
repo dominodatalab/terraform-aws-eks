@@ -5,7 +5,7 @@ output "ssh_bastion_command" {
 
 output "bastion_ip" {
   description = "public ip of the bastion"
-  value       = var.create_bastion ? module.bastion[0].public_ip : ""
+  value       = var.bastion != null ? module.bastion[0].public_ip : ""
 }
 
 output "hostname" {

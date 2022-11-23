@@ -3,11 +3,18 @@ variable "deploy_id" {
   description = "Domino Deployment ID"
 }
 
-variable "bastion_ami_id" {
+variable "ami_id" {
   description = "AMI ID for the bastion EC2 instance, otherwise we will use the latest 'amazon_linux_2' ami."
   type        = string
-  default     = ""
+  default     = null
 }
+
+variable "instance_type" {
+  description = "the bastion's instance type, if null, t2.micro is used"
+  type        = string
+  default     = null
+}
+
 variable "region" {
   description = "AWS region for the deployment"
   type        = string
@@ -23,12 +30,12 @@ variable "ssh_pvt_key_path" {
   type        = string
 }
 
-variable "bastion_public_subnet_id" {
+variable "public_subnet_id" {
   description = "Public subnet to create bastion host in."
   type        = string
 }
 
-variable "bastion_security_group_rules" {
+variable "security_group_rules" {
 
   description = "Bastion host security group rules."
   type = map(object({
@@ -62,5 +69,4 @@ variable "bastion_security_group_rules" {
       source_security_group_id = null
     }
   }
-
 }
