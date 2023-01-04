@@ -239,7 +239,7 @@ variable "eks_master_role_names" {
 
 variable "vpc_id" {
   type        = string
-  description = "Optional VPC ID, it will bypass creation of such. public_subnets and private_subnets are also required."
+  description = "Optional VPC ID, it will bypass creation of such, public_subnets and private_subnets are also required."
   default     = null
 }
 

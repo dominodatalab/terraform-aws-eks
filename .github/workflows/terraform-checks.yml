@@ -1,0 +1,95 @@
+
+name: Lint-Format-Scan
+on: [push]
+jobs:
+  terraform_fmt:
+    name: Run terraform fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Terraform fmt
+        uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: terraform_fmt --all-files
+  terraform_lint:
+    name: Run tflint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Install tflint
+        uses: nick-fields/retry@v2.8.3
+        with:
+          timeout_seconds: 15
+          max_attempts: 3
+          retry_on: error
+          command: curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+      - uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: terraform_tflint --all-files
+  terraform_tfsec:
+    name: Run tfsec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Install tfsec
+        uses: nick-fields/retry@v2.8.3
+        with:
+          timeout_seconds: 15
+          max_attempts: 3
+          retry_on: error
+          command: curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+      - uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: terraform_tfsec --all-files
+  terraform_validate:
+    name: Run terraform validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Generate pvt key
+        run: >-
+          ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
+      - name: Terraform validate
+        uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: terraform_validate --all-files
+  terraform_providers_lock:
+    name: Run terraform providers_lock
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Generate pvt key
+        run: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
+      - name: Terraform providers_lock
+        uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: terraform_providers_lock --all-files
+  terraform_docs:
+    name: Run terraform docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Install terraform docs
+        uses: nick-fields/retry@v2.8.3
+        with:
+          timeout_seconds: 15
+          max_attempts: 3
+          retry_on: error
+          command: >-
+            curl -L https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz | tar -C /tmp -xzf - && chmod +x /tmp/terraform-docs && sudo mv /tmp/terraform-docs /usr/local/bin
+      - name: Terraform docs
+        uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: terraform_docs --all-files
+  checkov:
+    name: Run checkov scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v3
+      - name: Install checkov
+        run: pip3 install checkov
+      - name: Run Checkov scan
+        uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: terraform_checkov --all-files
