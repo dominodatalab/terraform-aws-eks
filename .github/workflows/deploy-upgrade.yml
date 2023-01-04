@@ -1,0 +1,21 @@
+name: Trigger Deploy-Upgrade
+on:
+  pull_request:
+    types: [opened, synchronize]
+jobs:
+  test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test-Deploy
+        id: test-deploy-workflow
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.6
+        env:
+          CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}
+  test-upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test-Module-Upgrade
+        id: test-upgrade-workflow
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.6
+        env:
+          CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}
