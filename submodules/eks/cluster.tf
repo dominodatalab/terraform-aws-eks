@@ -46,7 +46,7 @@ resource "aws_security_group" "eks_cluster" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [description, name]
+    ignore_changes        = [description, name]
   }
   tags = {
     "Name"                                            = "${local.eks_cluster_name}-eks-cluster"

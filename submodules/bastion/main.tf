@@ -14,7 +14,7 @@ resource "aws_security_group" "bastion" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [description]
+    ignore_changes        = [description]
   }
 
   tags = {
