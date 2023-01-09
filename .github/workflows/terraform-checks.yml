@@ -19,10 +19,11 @@ jobs:
       - name: Install tflint
         uses: nick-fields/retry@v2.8.3
         with:
-          timeout_seconds: 15
-          max_attempts: 3
+          timeout_seconds: 30
+          max_attempts: 5
           retry_on: error
-          command: curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+          command: >-
+            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
       - uses: pre-commit/action@v3.0.0
         with:
           extra_args: terraform_tflint --all-files
@@ -34,10 +35,12 @@ jobs:
       - name: Install tfsec
         uses: nick-fields/retry@v2.8.3
         with:
-          timeout_seconds: 15
-          max_attempts: 3
+          timeout_seconds: 60
+          max_attempts: 5
+          retry_wait_seconds: 20
           retry_on: error
-          command: curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+          command: >-
+            curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
       - uses: pre-commit/action@v3.0.0
         with:
           extra_args: terraform_tfsec --all-files
@@ -72,8 +75,9 @@ jobs:
       - name: Install terraform docs
         uses: nick-fields/retry@v2.8.3
         with:
-          timeout_seconds: 15
-          max_attempts: 3
+          timeout_seconds: 60
+          max_attempts: 5
+          retry_wait_seconds: 20
           retry_on: error
           command: >-
             curl -L https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz | tar -C /tmp -xzf - && chmod +x /tmp/terraform-docs && sudo mv /tmp/terraform-docs /usr/local/bin
