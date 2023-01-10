@@ -13,7 +13,7 @@ locals {
 }
 
 resource "aws_vpc_ipv4_cidr_block_association" "pod_cidr" {
-  count      = var.use_pod_cidr != null ? 1 : 0
+  count      = var.use_pod_cidr ? 1 : 0
   vpc_id     = aws_vpc.this.id
   cidr_block = var.pod_cidr
 }
