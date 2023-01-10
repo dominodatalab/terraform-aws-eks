@@ -37,7 +37,6 @@ set_eniconfig() {
   if [ -z "$ENICONFIG_YAML" ]; then
       return
   fi
-  kubectl_cmd -n kube-system set env daemonset aws-node AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG=true
   if test -f "$ENICONFIG_YAML"; then
     printf "$GREEN Updating $ENICONFIG_YAML... $EC \n"
     kubectl_apply "$ENICONFIG_YAML"
@@ -45,7 +44,7 @@ set_eniconfig() {
     printf "$RED $ENICONFIG_YAML does not exist. $EC \n" && exit 1
   fi
   echo
-  kubectl_cmd -n kube-system set env daemonset aws-node ENI_CONFIG_LABEL_DEF=topology.kubernetes.io/zone
+  kubectl_cmd -n kube-system set env daemonset aws-node AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG=true ENI_CONFIG_LABEL_DEF=topology.kubernetes.io/zone
 }
 
 install_calico() {
