@@ -17,6 +17,58 @@ parameters:
 orbs:
   terraform: circleci/terraform@3.2.0
 
+commands:
+  set_env_vars:
+    steps:
+      - run:
+          name: Configure test cluster env
+          command: |
+            echo export TF_VAR_deploy_id=\"${WORKSPACE}\" >> $BASH_ENV
+            echo 'export TF_VAR_tags=\{\"CIRCLE_BUILD_URL\"=\"${CIRCLE_BUILD_URL}\",\"CIRCLE_PR_NUMBER\"=\"${CIRCLE_PR_NUMBER}\",\"CIRCLE_PULL_REQUEST\"=\"${CIRCLE_PULL_REQUEST}\",\"CIRCLE_REPOSITORY_URL\"=\"${CIRCLE_REPOSITORY_URL}\"\}' >> $BASH_ENV
+  install_tf:
+    parameters:
+      terraform_version:
+        type: string
+        default: << pipeline.parameters.terraform_version >>
+    steps:
+      - terraform/install:
+          terraform_version: << parameters.terraform_version >>
+  gen_pvt_key:
+    steps:
+      - run:
+          name: Generate pvt key
+          command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
+  tf_init_apply:
+    steps:
+      - run:
+          name: Terraform init/validate/apply
+          working_directory: tests
+          command: |
+            echo "Current dir: $(pwd)"
+            terraform init
+            terraform validate
+            terraform workspace new ${WORKSPACE}
+            terraform apply -auto-approve
+  tf_destroy:
+    steps:
+      - run:
+          name: Terraform destroy
+          working_directory: tests
+          command: |
+            echo "Current dir: $(pwd)"
+            terraform destroy --auto-approve || terraform destroy --auto-approve --refresh=false
+          when: always
+  tf_ws_delete:
+    steps:
+      - run:
+          name: Terraform workspace delete
+          working_directory: tests
+          command: |
+            echo "Current dir: $(pwd)"
+            terraform workspace select default
+            terraform workspace delete ${WORKSPACE}
+          when: always
+
 jobs:
   test-deploy:
     docker:
@@ -29,45 +81,14 @@ jobs:
         type: string
     environment:
       WORKSPACE: << parameters.workspace >>
-
     steps:
       - checkout
-
-      - terraform/install:
-          terraform_version: <<parameters.terraform_version>>
-
-      - run: &configure_test_cluster
-          name: Configure test cluster env
-          command: |
-            echo export TF_VAR_deploy_id=\"${WORKSPACE}\" >> $BASH_ENV
-            echo 'export TF_VAR_tags=\{\"CIRCLE_BUILD_URL\"=\"${CIRCLE_BUILD_URL}\",\"CIRCLE_PR_NUMBER\"=\"${CIRCLE_PR_NUMBER}\",\"CIRCLE_PULL_REQUEST\"=\"${CIRCLE_PULL_REQUEST}\",\"CIRCLE_REPOSITORY_URL\"=\"${CIRCLE_REPOSITORY_URL}\"\}' >> $BASH_ENV
-
-      - run:
-          name: Test Terraform
-          working_directory: tests
-          command: |
-            ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem
-            terraform init
-            terraform validate
-            terraform workspace new ${WORKSPACE}
-            terraform apply -auto-approve
-            # we will always have drift
-            # terraform plan -detailed-exitcode
-
-      - run: &terraform_destroy
-          name: Terraform destroy
-          working_directory: tests
-          command: |
-            terraform destroy --auto-approve || terraform destroy --auto-approve --refresh=false
-          when: always
-
-      - run: &terraform_ws_delete
-          name: Terraform workspace delete
-          working_directory: tests
-          command: |
-            terraform workspace select default
-            terraform workspace delete ${WORKSPACE}
-
+      - install_tf
+      - set_env_vars
+      - gen_pvt_key
+      - tf_init_apply
+      - tf_destroy
+      - tf_ws_delete
   test-upgrade:
     docker:
       - image: cimg/aws:2022.11.1
@@ -81,11 +102,11 @@ jobs:
       WORKSPACE: << parameters.workspace >>
     steps:
       - checkout
-      - terraform/install:
-          terraform_version: <<parameters.terraform_version>>
-      - run: *configure_test_cluster
+      - install_tf
+      - set_env_vars
+      - gen_pvt_key
       - run:
-          name: "Provision using latest published release"
+          name: "Set module source to latest published release"
           working_directory: tests
           command: |
             latest_release_commit="$(git rev-list --tags --max-count=1)"
@@ -94,11 +115,7 @@ jobs:
             echo "Latest published release tag is: ${latest_release_tag}"
             echo "Setting module source to: ${MOD_SOURCE}"
             cat \<<< $(jq --arg mod_source "${MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
-            ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem
-            terraform init
-            terraform validate
-            terraform workspace new ${WORKSPACE}
-            terraform apply --auto-approve
+      - tf_init_apply
       - run:
           name: "Upgrade module by applying this commit"
           working_directory: tests
@@ -110,8 +127,8 @@ jobs:
             terraform init --reconfigure --upgrade
             terraform validate
             terraform apply --auto-approve
-      - run: *terraform_destroy
-      - run: *terraform_ws_delete
+      - tf_destroy
+      - tf_ws_delete
 
 workflows:
   test-deploy-workflow:
