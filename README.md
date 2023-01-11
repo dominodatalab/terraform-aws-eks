@@ -135,7 +135,7 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="input_tags"></a> [tags](#input\_tags) | Deployment tags. | `map(string)` | `{}` | no |
 | <a name="input_update_kubeconfig_extra_args"></a> [update\_kubeconfig\_extra\_args](#input\_update\_kubeconfig\_extra\_args) | Optional extra args when generating kubeconfig | `string` | `""` | no |
 | <a name="input_use_pod_cidr"></a> [use\_pod\_cidr](#input\_use\_pod\_cidr) | Use additional pod CIDR range (ie 100.64.0.0/16) for pod/service networking | `bool` | `true` | no |
-| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | Optional VPC ID, it will bypass creation of such. public\_subnets and private\_subnets are also required. | `string` | `null` | no |
+| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | Optional VPC ID, it will bypass creation of such, public\_subnets and private\_subnets are also required. | `string` | `null` | no |
 
 ## Outputs
 
