@@ -1,7 +1,6 @@
 name: Trigger Deploy-Upgrade
 on:
-  pull_request:
-    types: [opened, synchronize]
+  pull_request
 jobs:
   test-deploy:
     runs-on: ubuntu-latest
