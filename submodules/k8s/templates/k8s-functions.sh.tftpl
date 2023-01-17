@@ -4,6 +4,9 @@ RED="\e[31m"
 GREEN="\e[32m"
 EC="\e[0m"
 
+KUBECONFIG="${kubeconfig_path}"
+KUBECONFIG_PROXY="$KUBECONFIG-proxy"
+
 open_ssh_tunnel_to_k8s_api() {
   TUNNEL_SOCKET_FILE=$${TUNNEL_SOCKET_FILE:-/tmp/k8s-tunnel-socket}
   printf "$GREEN Openning k8s tunnel ... $EC \n"
@@ -11,10 +14,10 @@ open_ssh_tunnel_to_k8s_api() {
 }
 
 check_kubeconfig() {
-  local KUBECONFIG="${kubeconfig_path}"
   printf "$GREEN Checking if $KUBECONFIG exists... $EC \n"
   if test -f "$KUBECONFIG"; then
-    echo "$KUBECONFIG exists." && export KUBECONFIG
+    echo "$KUBECONFIG exists, creating $KUBECONFIG_PROXY for proxy use."
+    sed -e '/server:/a\' -e '    proxy-url: socks5://127.0.0.1:1080' $KUBECONFIG > $KUBECONFIG_PROXY
   else
     echo "$KUBECONFIG does not exist." && exit 1
   fi
@@ -72,7 +75,7 @@ kubectl_apply() {
   local k8s_manifest="$1"
   if test -f "$k8s_manifest" || validate_url "$k8s_manifest"; then
     echo "Applying $k8s_manifest..."
-    HTTPS_PROXY=socks5://127.0.0.1:${k8s_tunnel_port} kubectl --kubeconfig "${kubeconfig_path}" apply -f "$k8s_manifest"
+    kubectl --kubeconfig "$KUBECONFIG_PROXY" apply -f "$k8s_manifest"
     if [ $? -ne 0 ]; then
       printf "$RED Error applying $k8s_manifest \n"
       exit 1
@@ -85,7 +88,7 @@ kubectl_apply() {
 
 kubectl_cmd() {
   echo "Running kubectl $@..."
-  HTTPS_PROXY=socks5://127.0.0.1:${k8s_tunnel_port} kubectl --kubeconfig "${kubeconfig_path}" $@
+  kubectl --kubeconfig "$KUBECONFIG_PROXY" $@
   if [ $? -ne 0 ]; then
     printf "$RED Error running kubectl $@ \n"
     exit 1
