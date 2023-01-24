@@ -17,7 +17,7 @@ check_kubeconfig() {
   printf "$GREEN Checking if $KUBECONFIG exists... $EC \n"
   if test -f "$KUBECONFIG"; then
     echo "$KUBECONFIG exists, creating $KUBECONFIG_PROXY for proxy use."
-    sed -e '/server:/a\' -e '    proxy-url: socks5://127.0.0.1:1080' $KUBECONFIG > $KUBECONFIG_PROXY
+    sed -e '/server:/a\' -e "    proxy-url: socks5://127.0.0.1:${k8s_tunnel_port}" $KUBECONFIG > $KUBECONFIG_PROXY
   else
     echo "$KUBECONFIG does not exist." && exit 1
   fi
