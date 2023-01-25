@@ -22,6 +22,11 @@ variable "bastion_public_ip" {
   description = "Bastion host public ip."
 }
 
+variable "eks_cluster_arn" {
+  type        = string
+  description = "ARN of the EKS cluster"
+}
+
 variable "eks_node_role_arns" {
   type        = list(string)
   description = "Roles arns for EKS nodes to be added to aws-auth for api auth."

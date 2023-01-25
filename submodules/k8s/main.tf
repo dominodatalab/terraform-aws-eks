@@ -28,6 +28,7 @@ locals {
         bastion_user                = var.bastion_user
         bastion_public_ip           = var.bastion_public_ip
         ssh_pvt_key_path            = var.ssh_pvt_key_path
+        eks_cluster_arn             = var.eks_cluster_arn
       })
     }
 

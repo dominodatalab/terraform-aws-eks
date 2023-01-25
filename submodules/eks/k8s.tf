@@ -9,6 +9,7 @@ module "k8s_setup" {
   ssh_pvt_key_path     = var.ssh_pvt_key_path
   bastion_user         = var.bastion_user
   bastion_public_ip    = try(var.bastion_public_ip, "")
+  eks_cluster_arn      = aws_eks_cluster.this.arn
   eks_node_role_arns   = [aws_iam_role.eks_nodes.arn]
   eks_master_role_arns = [for r in concat(values(data.aws_iam_role.eks_master_roles), [aws_iam_role.eks_cluster]) : r.arn]
   kubeconfig_path      = var.kubeconfig_path

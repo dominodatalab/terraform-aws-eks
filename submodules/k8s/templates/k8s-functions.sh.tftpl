@@ -17,7 +17,8 @@ check_kubeconfig() {
   printf "$GREEN Checking if $KUBECONFIG exists... $EC \n"
   if test -f "$KUBECONFIG"; then
     echo "$KUBECONFIG exists, creating $KUBECONFIG_PROXY for proxy use."
-    sed -e '/server:/a\' -e "    proxy-url: socks5://127.0.0.1:${k8s_tunnel_port}" $KUBECONFIG > $KUBECONFIG_PROXY
+    cp $KUBECONFIG $KUBECONFIG_PROXY
+    kubectl --kubeconfig $KUBECONFIG_PROXY config set "clusters.${eks_cluster_arn}.proxy-url" "socks5://127.0.0.1:${k8s_tunnel_port}"
   else
     echo "$KUBECONFIG does not exist." && exit 1
   fi
