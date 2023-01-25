@@ -87,7 +87,7 @@ resource "aws_launch_template" "node_groups" {
   name                    = "${local.eks_cluster_name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_key_pair_name
-  user_data = each.value.ami == null ? null : base64encode(templatefile(
+  user_data = each.value.ami == null ? local.any_gpu[each.key] ? base64encode(file("${path.module}/templates/gpu_cert_setup.tpl")) : null : base64encode(templatefile(
     "${path.module}/templates/linux_user_data.tpl",
     {
       # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-custom-ami
