@@ -54,6 +54,8 @@ locals {
 
   # error -> "Availability of the instance types does not satisfy the desired number of zones, or the desired number of zones is higher than the available/offered zones"
   azs_to_use = slice(tolist(local.offered_azs), 0, local.num_of_azs)
+
+  kms_key = var.use_kms ? data.aws_kms_key.key[0].arn : null
 }
 
 locals {
@@ -78,10 +80,10 @@ module "storage" {
   deploy_id                     = var.deploy_id
   efs_access_point_path         = var.efs_access_point_path
   s3_force_destroy_on_deletion  = var.s3_force_destroy_on_deletion
-  s3_kms_key                    = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  s3_kms_key                    = local.kms_key
   ecr_force_destroy_on_deletion = var.ecr_force_destroy_on_deletion
-  ecr_kms_key                   = var.use_kms ? data.aws_kms_key.key[0].arn : null
-  efs_kms_key                   = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  ecr_kms_key                   = local.kms_key
+  efs_kms_key                   = local.kms_key
   vpc_id                        = local.vpc_id
   subnet_ids                    = [for s in local.private_subnets : s.subnet_id]
 }
@@ -140,7 +142,7 @@ module "bastion" {
   public_subnet_id = local.public_subnets[0].subnet_id
   ami_id           = var.bastion.ami
   instance_type    = var.bastion.instance_type
-  kms_key          = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  kms_key          = local.kms_key
 }
 
 module "eks" {
@@ -164,7 +166,7 @@ module "eks" {
   ssh_pvt_key_path             = local.ssh_pvt_key_path
   bastion_user                 = local.bastion_user
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
-  kms_key                      = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  kms_key                      = local.kms_key
 
   depends_on = [
     module.network
