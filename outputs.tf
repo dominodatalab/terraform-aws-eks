@@ -40,7 +40,7 @@ output "kubeconfig" {
 
 output "kms_key_id" {
   description = "KMS key ARN, if enabled"
-  value       = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  value       = local.kms_key
 }
 
 output "container_registry" {
