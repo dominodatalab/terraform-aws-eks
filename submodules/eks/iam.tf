@@ -24,26 +24,6 @@ resource "aws_iam_role_policy_attachment" "eks_cluster" {
   role       = aws_iam_role.eks_cluster.name
 }
 
-data "aws_iam_policy_document" "domino_ecr_restricted" {
-  statement {
-
-    effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:ecr:*:${local.aws_account_id}:*"]
-
-    actions = [
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:BatchGetImage",
-      "ecr:GetDownloadUrlForLayer",
-    ]
-
-    condition {
-      test     = "StringNotEqualsIfExists"
-      variable = "ecr:ResourceTag/domino-deploy-id"
-      values   = [var.deploy_id]
-    }
-  }
-}
-
 data "aws_iam_policy_document" "autoscaler" {
   statement {
 
@@ -176,6 +156,17 @@ data "aws_iam_policy_document" "ebs_csi" {
       values   = [var.deploy_id]
     }
   }
+
+  statement {
+
+    effect    = "Allow"
+    resources = ["*"]
+    actions = [
+      "kms:Decrypt",
+      "kms:GenerateDataKeyWithoutPlaintext",
+      "kms:CreateGrant"
+    ]
+  }
 }
 
 data "aws_iam_policy_document" "snapshot" {
@@ -198,7 +189,6 @@ data "aws_iam_policy_document" "snapshot" {
 
 data "aws_iam_policy_document" "custom_eks_node_policy" {
   source_policy_documents = [
-    data.aws_iam_policy_document.domino_ecr_restricted.json,
     data.aws_iam_policy_document.autoscaler.json,
     data.aws_iam_policy_document.ebs_csi.json,
     data.aws_iam_policy_document.snapshot.json

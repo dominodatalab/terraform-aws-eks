@@ -33,8 +33,26 @@ variable "s3_force_destroy_on_deletion" {
   default     = false
 }
 
-variable "s3_encryption_use_sse_kms_key" {
-  description = "if true use 'aws:kms' else 'AES256' for the s3 server-side-encryption."
+variable "ecr_force_destroy_on_deletion" {
+  description = "Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories"
   type        = bool
   default     = false
+}
+
+variable "s3_kms_key" {
+  description = "if set, use specified key for S3 buckets"
+  type        = string
+  default     = null
+}
+
+variable "ecr_kms_key" {
+  description = "if set, use specified key for ECR repositories"
+  type        = string
+  default     = null
+}
+
+variable "efs_kms_key" {
+  description = "if set, use specified key for EFS"
+  type        = string
+  default     = null
 }

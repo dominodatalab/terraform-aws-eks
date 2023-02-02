@@ -1,7 +1,7 @@
-
 locals {
-  s3_server_side_encryption = var.s3_encryption_use_sse_kms_key ? "aws:kms" : "AES256"
+  s3_server_side_encryption = var.s3_kms_key != null ? "aws:kms" : "AES256"
 }
+
 resource "aws_s3_bucket" "backups" {
   bucket              = "${var.deploy_id}-backups"
   force_destroy       = var.s3_force_destroy_on_deletion
@@ -401,7 +401,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryptio
   bucket = each.value.bucket_name
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = local.s3_server_side_encryption
+      sse_algorithm     = local.s3_server_side_encryption
+      kms_master_key_id = var.s3_kms_key
     }
     bucket_key_enabled = false
   }

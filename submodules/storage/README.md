@@ -22,9 +22,12 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [aws_ecr_repository.environment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository) | resource |
+| [aws_ecr_repository.model](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository) | resource |
 | [aws_efs_access_point.eks](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_access_point) | resource |
 | [aws_efs_file_system.eks](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_file_system) | resource |
 | [aws_efs_mount_target.eks](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_mount_target) | resource |
+| [aws_iam_policy.ecr](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.s3](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_s3_bucket.backups](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.blobs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
@@ -43,6 +46,7 @@ No modules.
 | [aws_elb_service_account.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/elb_service_account) | data source |
 | [aws_iam_policy_document.backups](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.blobs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.ecr](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.monitoring](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.registry](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -54,9 +58,12 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
+| <a name="input_ecr_force_destroy_on_deletion"></a> [ecr\_force\_destroy\_on\_deletion](#input\_ecr\_force\_destroy\_on\_deletion) | Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories | `bool` | `false` | no |
+| <a name="input_ecr_kms_key"></a> [ecr\_kms\_key](#input\_ecr\_kms\_key) | if set, use specified key for ECR repositories | `string` | `null` | no |
 | <a name="input_efs_access_point_path"></a> [efs\_access\_point\_path](#input\_efs\_access\_point\_path) | Filesystem path for efs. | `string` | `"/domino"` | no |
-| <a name="input_s3_encryption_use_sse_kms_key"></a> [s3\_encryption\_use\_sse\_kms\_key](#input\_s3\_encryption\_use\_sse\_kms\_key) | if true use 'aws:kms' else 'AES256' for the s3 server-side-encryption. | `bool` | `false` | no |
+| <a name="input_efs_kms_key"></a> [efs\_kms\_key](#input\_efs\_kms\_key) | if set, use specified key for EFS | `string` | `null` | no |
 | <a name="input_s3_force_destroy_on_deletion"></a> [s3\_force\_destroy\_on\_deletion](#input\_s3\_force\_destroy\_on\_deletion) | Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets | `bool` | `false` | no |
+| <a name="input_s3_kms_key"></a> [s3\_kms\_key](#input\_s3\_kms\_key) | if set, use specified key for S3 buckets | `string` | `null` | no |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | List of Subnets IDs to create EFS mount targets | `list(string)` | n/a | yes |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID | `string` | n/a | yes |
 
@@ -64,9 +71,10 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_container_registry"></a> [container\_registry](#output\_container\_registry) | ECR base registry URL |
 | <a name="output_efs_access_point"></a> [efs\_access\_point](#output\_efs\_access\_point) | efs access point |
 | <a name="output_efs_file_system"></a> [efs\_file\_system](#output\_efs\_file\_system) | efs file system |
 | <a name="output_efs_security_group"></a> [efs\_security\_group](#output\_efs\_security\_group) | EFS security group id |
+| <a name="output_iam_policies"></a> [iam\_policies](#output\_iam\_policies) | IAM Policy ARNs |
 | <a name="output_s3_buckets"></a> [s3\_buckets](#output\_s3\_buckets) | S3 buckets name and arn |
-| <a name="output_s3_policy"></a> [s3\_policy](#output\_s3\_policy) | s3 IAM Policy arn |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

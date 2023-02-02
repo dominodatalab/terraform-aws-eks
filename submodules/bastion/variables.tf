@@ -70,3 +70,9 @@ variable "security_group_rules" {
     }
   }
 }
+
+variable "kms_key" {
+  type        = string
+  description = "if set, use specified key for EBS volumes"
+  default     = null
+}

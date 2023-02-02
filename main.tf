@@ -74,12 +74,16 @@ resource "aws_key_pair" "domino" {
 }
 
 module "storage" {
-  source                       = "./submodules/storage"
-  deploy_id                    = var.deploy_id
-  efs_access_point_path        = var.efs_access_point_path
-  s3_force_destroy_on_deletion = var.s3_force_destroy_on_deletion
-  vpc_id                       = local.vpc_id
-  subnet_ids                   = [for s in local.private_subnets : s.subnet_id]
+  source                        = "./submodules/storage"
+  deploy_id                     = var.deploy_id
+  efs_access_point_path         = var.efs_access_point_path
+  s3_force_destroy_on_deletion  = var.s3_force_destroy_on_deletion
+  s3_kms_key                    = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  ecr_force_destroy_on_deletion = var.ecr_force_destroy_on_deletion
+  ecr_kms_key                   = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  efs_kms_key                   = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  vpc_id                        = local.vpc_id
+  subnet_ids                    = [for s in local.private_subnets : s.subnet_id]
 }
 
 locals {
@@ -136,6 +140,7 @@ module "bastion" {
   public_subnet_id = local.public_subnets[0].subnet_id
   ami_id           = var.bastion.ami
   instance_type    = var.bastion.instance_type
+  kms_key          = var.use_kms ? data.aws_kms_key.key[0].arn : null
 }
 
 module "eks" {
@@ -152,13 +157,14 @@ module "eks" {
   kubeconfig_path              = local.kubeconfig_path
   default_node_groups          = var.default_node_groups
   additional_node_groups       = var.additional_node_groups
-  node_iam_policies            = [module.storage.s3_policy]
+  node_iam_policies            = module.storage.iam_policies
   efs_security_group           = module.storage.efs_security_group
   update_kubeconfig_extra_args = var.update_kubeconfig_extra_args
   eks_master_role_names        = var.eks_master_role_names
   ssh_pvt_key_path             = local.ssh_pvt_key_path
   bastion_user                 = local.bastion_user
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
+  kms_key                      = var.use_kms ? data.aws_kms_key.key[0].arn : null
 
   depends_on = [
     module.network

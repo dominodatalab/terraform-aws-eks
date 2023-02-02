@@ -1,4 +1,3 @@
-
 ## EKS Nodes
 data "aws_iam_policy_document" "eks_nodes" {
   statement {
@@ -112,6 +111,7 @@ resource "aws_launch_template" "node_groups" {
       encrypted             = true
       volume_size           = each.value.volume.size
       volume_type           = each.value.volume.type
+      kms_key_id            = var.kms_key
     }
   }
 

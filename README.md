@@ -97,9 +97,15 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | [aws_iam_policy.route53](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role_policy_attachment.route53](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_key_pair.domino](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair) | resource |
+| [aws_kms_alias.domino](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
+| [aws_kms_key.domino](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
+| [aws_caller_identity.aws_account](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ec2_instance_type_offerings.nodes](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_type_offerings) | data source |
+| [aws_iam_policy_document.kms_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.route53](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_kms_key.key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
+| [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
 | [aws_route53_zone.hosted](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [aws_subnet.pod](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 | [aws_subnet.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
@@ -116,9 +122,11 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="input_cidr"></a> [cidr](#input\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_default_node_groups"></a> [default\_node\_groups](#input\_default\_node\_groups) | EKS managed node groups definition. | <pre>object(<br>    {<br>      compute = object(<br>        {<br>          ami                  = optional(string)<br>          bootstrap_extra_args = optional(string, "")<br>          instance_types       = optional(list(string), ["m5.2xlarge"])<br>          spot                 = optional(bool, false)<br>          min_per_az           = optional(number, 0)<br>          max_per_az           = optional(number, 10)<br>          desired_per_az       = optional(number, 1)<br>          labels = optional(map(string), {<br>            "dominodatalab.com/node-pool" = "default"<br>          })<br>          taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])<br>          tags   = optional(map(string), {})<br>          volume = optional(object(<br>            {<br>              size = optional(number, 100)<br>              type = optional(string, "gp3")<br>            }),<br>            {<br>              size = 100<br>              type = "gp3"<br>            }<br>          )<br>      }),<br>      platform = object(<br>        {<br>          ami                  = optional(string)<br>          bootstrap_extra_args = optional(string, "")<br>          instance_types       = optional(list(string), ["m5.4xlarge"])<br>          spot                 = optional(bool, false)<br>          min_per_az           = optional(number, 1)<br>          max_per_az           = optional(number, 10)<br>          desired_per_az       = optional(number, 1)<br>          labels = optional(map(string), {<br>            "dominodatalab.com/node-pool" = "platform"<br>          })<br>          taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])<br>          tags   = optional(map(string), {})<br>          volume = optional(object(<br>            {<br>              size = optional(number, 100)<br>              type = optional(string, "gp3")<br>            }),<br>            {<br>              size = 100<br>              type = "gp3"<br>            }<br>          )<br>      }),<br>      gpu = object(<br>        {<br>          ami                  = optional(string)<br>          bootstrap_extra_args = optional(string, "")<br>          instance_types       = optional(list(string), ["g4dn.xlarge"])<br>          spot                 = optional(bool, false)<br>          min_per_az           = optional(number, 0)<br>          max_per_az           = optional(number, 10)<br>          desired_per_az       = optional(number, 0)<br>          labels = optional(map(string), {<br>            "dominodatalab.com/node-pool" = "default-gpu"<br>            "nvidia.com/gpu"              = true<br>          })<br>          taints = optional(list(object({ key = string, value = optional(string), effect = string })), [<br>            { key = "nvidia.com/gpu", value = "true", effect = "NO_SCHEDULE" }<br>          ])<br>          tags = optional(map(string), {})<br>          volume = optional(object(<br>            {<br>              size = optional(number, 100)<br>              type = optional(string, "gp3")<br>            }),<br>            {<br>              size = 100<br>              type = "gp3"<br>            }<br>          )<br>      })<br>  })</pre> | <pre>{<br>  "compute": {},<br>  "gpu": {},<br>  "platform": {}<br>}</pre> | no |
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID. | `string` | `"domino-eks"` | no |
+| <a name="input_ecr_force_destroy_on_deletion"></a> [ecr\_force\_destroy\_on\_deletion](#input\_ecr\_force\_destroy\_on\_deletion) | Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories | `bool` | `false` | no |
 | <a name="input_efs_access_point_path"></a> [efs\_access\_point\_path](#input\_efs\_access\_point\_path) | Filesystem path for efs. | `string` | `"/domino"` | no |
 | <a name="input_eks_master_role_names"></a> [eks\_master\_role\_names](#input\_eks\_master\_role\_names) | IAM role names to be added as masters in eks. | `list(string)` | `[]` | no |
 | <a name="input_k8s_version"></a> [k8s\_version](#input\_k8s\_version) | EKS cluster k8s version. | `string` | `"1.24"` | no |
+| <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | if use\_kms is set, use the specified KMS key ARN | `string` | `null` | no |
 | <a name="input_kubeconfig_path"></a> [kubeconfig\_path](#input\_kubeconfig\_path) | fully qualified path name to write the kubeconfig file | `string` | `""` | no |
 | <a name="input_number_of_azs"></a> [number\_of\_azs](#input\_number\_of\_azs) | Number of AZ to distribute the deployment, EKS needs at least 2. | `number` | `3` | no |
 | <a name="input_pod_cidr"></a> [pod\_cidr](#input\_pod\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"100.64.0.0/16"` | no |
@@ -134,6 +142,7 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="input_ssh_pvt_key_path"></a> [ssh\_pvt\_key\_path](#input\_ssh\_pvt\_key\_path) | SSH private key filepath. | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Deployment tags. | `map(string)` | `{}` | no |
 | <a name="input_update_kubeconfig_extra_args"></a> [update\_kubeconfig\_extra\_args](#input\_update\_kubeconfig\_extra\_args) | Optional extra args when generating kubeconfig | `string` | `""` | no |
+| <a name="input_use_kms"></a> [use\_kms](#input\_use\_kms) | if set, use either the specified KMS key or a Domino-generated one | `bool` | `false` | no |
 | <a name="input_use_pod_cidr"></a> [use\_pod\_cidr](#input\_use\_pod\_cidr) | Use additional pod CIDR range (ie 100.64.0.0/16) for pod/service networking | `bool` | `true` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | Optional VPC ID, it will bypass creation of such, public\_subnets and private\_subnets are also required. | `string` | `null` | no |
 
@@ -142,10 +151,12 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | Name | Description |
 |------|-------------|
 | <a name="output_bastion_ip"></a> [bastion\_ip](#output\_bastion\_ip) | public ip of the bastion |
+| <a name="output_container_registry"></a> [container\_registry](#output\_container\_registry) | ECR base registry URL |
 | <a name="output_domino_key_pair"></a> [domino\_key\_pair](#output\_domino\_key\_pair) | Domino key pair |
 | <a name="output_efs_access_point"></a> [efs\_access\_point](#output\_efs\_access\_point) | EFS access point |
 | <a name="output_efs_file_system"></a> [efs\_file\_system](#output\_efs\_file\_system) | EFS file system |
 | <a name="output_hostname"></a> [hostname](#output\_hostname) | Domino instance URL. |
+| <a name="output_kms_key_id"></a> [kms\_key\_id](#output\_kms\_key\_id) | KMS key ARN, if enabled |
 | <a name="output_kubeconfig"></a> [kubeconfig](#output\_kubeconfig) | location of kubeconfig |
 | <a name="output_s3_buckets"></a> [s3\_buckets](#output\_s3\_buckets) | S3 buckets |
 | <a name="output_ssh_bastion_command"></a> [ssh\_bastion\_command](#output\_ssh\_bastion\_command) | Command to ssh into the bastion host |

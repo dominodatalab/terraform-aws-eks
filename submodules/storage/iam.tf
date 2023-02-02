@@ -1,6 +1,5 @@
 data "aws_iam_policy_document" "s3" {
   statement {
-
     effect    = "Allow"
     resources = [for b in local.s3_buckets : b.arn]
 
@@ -31,4 +30,36 @@ resource "aws_iam_policy" "s3" {
   name   = "${var.deploy_id}-S3"
   path   = "/"
   policy = data.aws_iam_policy_document.s3.json
+}
+
+data "aws_iam_policy_document" "ecr" {
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+    actions   = ["ecr:GetAuthorizationToken"]
+  }
+
+  statement {
+    effect = "Allow"
+
+    resources = [aws_ecr_repository.environment.arn, aws_ecr_repository.model.arn]
+
+    actions = [
+      # Pull
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      # Push
+      "ecr:CompleteLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:InitiateLayerUpload",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:PutImage"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "ecr" {
+  name   = "${var.deploy_id}-ECR"
+  path   = "/"
+  policy = data.aws_iam_policy_document.ecr.json
 }

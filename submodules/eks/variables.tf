@@ -218,3 +218,9 @@ variable "bastion_public_ip" {
   description = "Public IP of bastion instance"
   default     = ""
 }
+
+variable "kms_key" {
+  type        = string
+  description = "if set, use specified key for the EKS cluster"
+  default     = null
+}

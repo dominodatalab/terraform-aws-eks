@@ -291,6 +291,24 @@ variable "s3_force_destroy_on_deletion" {
   default     = false
 }
 
+variable "ecr_force_destroy_on_deletion" {
+  description = "Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories"
+  type        = bool
+  default     = false
+}
+
+variable "kms_key_id" {
+  description = "if use_kms is set, use the specified KMS key ARN"
+  type        = string
+  default     = null
+}
+
+variable "use_kms" {
+  description = "if set, use either the specified KMS key or a Domino-generated one"
+  type        = bool
+  default     = false
+}
+
 variable "kubeconfig_path" {
   description = "fully qualified path name to write the kubeconfig file"
   type        = string

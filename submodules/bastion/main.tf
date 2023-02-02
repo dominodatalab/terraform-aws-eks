@@ -21,6 +21,7 @@ resource "aws_security_group" "bastion" {
     "Name" = "${var.deploy_id}-bastion"
   }
 }
+
 resource "aws_security_group_rule" "bastion" {
   for_each = var.security_group_rules
 
@@ -33,6 +34,7 @@ resource "aws_security_group_rule" "bastion" {
   cidr_blocks              = try(each.value.cidr_blocks, null)
   source_security_group_id = try(each.value.source_security_group_id, null)
 }
+
 ## Bastion iam role
 data "aws_iam_policy_document" "bastion" {
   statement {
@@ -130,6 +132,7 @@ resource "aws_instance" "bastion" {
     throughput            = "125"
     volume_size           = "40"
     volume_type           = "gp3"
+    kms_key_id            = var.kms_key
   }
 
   source_dest_check = true
