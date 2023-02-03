@@ -5,7 +5,7 @@ locals {
   aws_account_id = data.aws_caller_identity.aws_account.account_id
 }
 
-data "aws_iam_policy_document" "kms_key" {
+data "aws_iam_policy_document" "kms_key_global" {
   count = var.use_kms && var.kms_key_id == null ? 1 : 0
   statement {
     actions = [
@@ -63,7 +63,7 @@ resource "aws_kms_key" "domino" {
   is_enabled               = true
   key_usage                = "ENCRYPT_DECRYPT"
   multi_region             = false
-  policy                   = data.aws_iam_policy_document.kms_key[0].json
+  policy                   = data.aws_iam_policy_document.kms_key_global[0].json
   tags = {
     "Name" = var.deploy_id
   }
@@ -78,4 +78,49 @@ resource "aws_kms_alias" "domino" {
 data "aws_kms_key" "key" {
   count  = var.use_kms ? 1 : 0
   key_id = coalesce(var.kms_key_id, try(aws_kms_key.domino[0].arn, null))
+}
+
+## EKS key
+data "aws_iam_policy_document" "kms_key_eks" {
+  count = var.use_kms ? 0 : 1
+
+  statement {
+    actions = [
+      "kms:Create*",
+      "kms:Describe*",
+      "kms:Enable*",
+      "kms:List*",
+      "kms:Put*",
+      "kms:Update*",
+      "kms:Revoke*",
+      "kms:Disable*",
+      "kms:Get*",
+      "kms:Delete*",
+      "kms:ScheduleKeyDeletion",
+      "kms:CancelKeyDeletion",
+      "kubeconms:GenerateDataKey",
+      "kms:TagResource",
+      "kms:UntagResource"
+    ]
+    resources = ["*"]
+    effect    = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:root"]
+    }
+  }
+}
+
+resource "aws_kms_key" "eks_cluster" {
+  count = var.use_kms ? 0 : 1
+
+  customer_master_key_spec = "SYMMETRIC_DEFAULT"
+  enable_key_rotation      = true
+  is_enabled               = true
+  key_usage                = "ENCRYPT_DECRYPT"
+  multi_region             = false
+  policy                   = data.aws_iam_policy_document.kms_key_eks[0].json
+  tags = {
+    "Name" = "${var.deploy_id}-eks-cluster"
+  }
 }
