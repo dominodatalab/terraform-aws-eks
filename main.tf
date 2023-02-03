@@ -178,7 +178,7 @@ module "eks" {
   ssh_pvt_key_path             = local.ssh_pvt_key_path
   bastion_user                 = local.bastion_user
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
-  cluster_kms_key              = local.kms_key_arn
+  secrets_kms_key              = local.kms_key_arn
   node_groups_kms_key          = local.kms_key_arn
 
   depends_on = [

@@ -65,7 +65,6 @@
 | <a name="input_bastion_public_ip"></a> [bastion\_public\_ip](#input\_bastion\_public\_ip) | Public IP of bastion instance | `string` | `""` | no |
 | <a name="input_bastion_security_group_id"></a> [bastion\_security\_group\_id](#input\_bastion\_security\_group\_id) | Bastion security group id. | `string` | `""` | no |
 | <a name="input_bastion_user"></a> [bastion\_user](#input\_bastion\_user) | Username for bastion instance | `string` | `""` | no |
-| <a name="input_cluster_kms_key"></a> [cluster\_kms\_key](#input\_cluster\_kms\_key) | if set, use specified key for the EKS cluster | `string` | `null` | no |
 | <a name="input_create_bastion_sg"></a> [create\_bastion\_sg](#input\_create\_bastion\_sg) | Create bastion access rules toggle. | `bool` | `false` | no |
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
 | <a name="input_efs_security_group"></a> [efs\_security\_group](#input\_efs\_security\_group) | Security Group ID for EFS | `string` | n/a | yes |
@@ -79,6 +78,7 @@
 | <a name="input_pod_subnets"></a> [pod\_subnets](#input\_pod\_subnets) | List of POD subnets IDs and AZ | `list(object({ subnet_id = string, az = string }))` | n/a | yes |
 | <a name="input_private_subnets"></a> [private\_subnets](#input\_private\_subnets) | List of Private subnets IDs and AZ | `list(object({ subnet_id = string, az = string }))` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
+| <a name="input_secrets_kms_key"></a> [secrets\_kms\_key](#input\_secrets\_kms\_key) | if set, use specified key for the EKS cluster secrets | `string` | `null` | no |
 | <a name="input_ssh_key_pair_name"></a> [ssh\_key\_pair\_name](#input\_ssh\_key\_pair\_name) | SSH key pair name. | `string` | n/a | yes |
 | <a name="input_ssh_pvt_key_path"></a> [ssh\_pvt\_key\_path](#input\_ssh\_pvt\_key\_path) | Path to SSH private key | `string` | `""` | no |
 | <a name="input_update_kubeconfig_extra_args"></a> [update\_kubeconfig\_extra\_args](#input\_update\_kubeconfig\_extra\_args) | Optional extra args when generating kubeconfig | `string` | `""` | no |

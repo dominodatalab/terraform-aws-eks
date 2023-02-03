@@ -132,9 +132,9 @@ variable "bastion_public_ip" {
   default     = ""
 }
 
-variable "cluster_kms_key" {
+variable "secrets_kms_key" {
   type        = string
-  description = "if set, use specified key for the EKS cluster"
+  description = "if set, use specified key for the EKS cluster secrets"
   default     = null
 }
 
