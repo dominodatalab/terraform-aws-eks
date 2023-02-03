@@ -55,7 +55,7 @@ locals {
   # error -> "Availability of the instance types does not satisfy the desired number of zones, or the desired number of zones is higher than the available/offered zones"
   azs_to_use = slice(tolist(local.offered_azs), 0, local.num_of_azs)
 
-  kms_key_arn = var.use_kms ? (var.kms_key_id == null ? resource.aws_kms_key.domino[0].arn : data.aws_kms_key.key[0].arn) : null
+  kms_key_arn = var.use_kms ? try(data.aws_kms_key.key[0].arn, resource.aws_kms_key.domino[0].arn) : null
 }
 
 locals {
