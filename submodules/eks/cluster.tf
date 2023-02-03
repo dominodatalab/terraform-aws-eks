@@ -14,7 +14,7 @@ data "aws_iam_policy_document" "kms_key" {
       "kms:Delete*",
       "kms:ScheduleKeyDeletion",
       "kms:CancelKeyDeletion",
-      "kubeconms:GenerateDataKey",
+      "kms:GenerateDataKey",
       "kms:TagResource",
       "kms:UntagResource"
     ]
