@@ -1,3 +1,44 @@
+## EKS key, kept for existing legacy clusters. Setting use_kms is preferred.
+data "aws_iam_policy_document" "kms_key" {
+  statement {
+    actions = [
+      "kms:Create*",
+      "kms:Describe*",
+      "kms:Enable*",
+      "kms:List*",
+      "kms:Put*",
+      "kms:Update*",
+      "kms:Revoke*",
+      "kms:Disable*",
+      "kms:Get*",
+      "kms:Delete*",
+      "kms:ScheduleKeyDeletion",
+      "kms:CancelKeyDeletion",
+      "kubeconms:GenerateDataKey",
+      "kms:TagResource",
+      "kms:UntagResource"
+    ]
+    resources = ["*"]
+    effect    = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:root"]
+    }
+  }
+}
+
+resource "aws_kms_key" "eks_cluster" {
+  customer_master_key_spec = "SYMMETRIC_DEFAULT"
+  enable_key_rotation      = true
+  is_enabled               = true
+  key_usage                = "ENCRYPT_DECRYPT"
+  multi_region             = false
+  policy                   = data.aws_iam_policy_document.kms_key.json
+  tags = {
+    "Name" = "${local.eks_cluster_name}-eks-cluster"
+  }
+}
+
 resource "aws_security_group" "eks_cluster" {
   name        = "${local.eks_cluster_name}-cluster"
   description = "EKS cluster security group"
@@ -39,7 +80,7 @@ resource "aws_eks_cluster" "this" {
 
   encryption_config {
     provider {
-      key_arn = var.cluster_kms_key
+      key_arn = var.cluster_kms_key == null ? aws_kms_key.eks_cluster.arn : var.cluster_kms_key
     }
 
     resources = ["secrets"]
