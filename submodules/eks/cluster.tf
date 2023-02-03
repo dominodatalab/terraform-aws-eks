@@ -39,7 +39,7 @@ resource "aws_eks_cluster" "this" {
 
   encryption_config {
     provider {
-      key_arn = var.kms_key != null ? var.kms_key : aws_kms_key.eks_cluster.arn
+      key_arn = var.kms_key
     }
 
     resources = ["secrets"]
