@@ -40,7 +40,7 @@ output "kubeconfig" {
 
 output "kms_key_id" {
   description = "KMS key ID, if enabled"
-  value       = var.use_kms ? data.aws_kms_key.key[0].id : null
+  value       = var.use_kms ? (var.kms_key_id == null ? resource.aws_kms_key.domino[0].id : data.aws_kms_key.key[0].id) : null
 }
 
 output "kms_key_arn" {
