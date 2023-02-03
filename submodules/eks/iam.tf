@@ -163,7 +163,7 @@ data "aws_iam_policy_document" "ebs_csi" {
     resources = ["*"]
     actions = [
       "kms:Decrypt",
-      "kms:GenerateDataKeyWithoutPlaintext",
+      "kms:GenerateDataKey*",
       "kms:CreateGrant"
     ]
   }

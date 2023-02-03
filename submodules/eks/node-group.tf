@@ -58,9 +58,8 @@ resource "aws_security_group_rule" "efs" {
 }
 
 locals {
-  node_groups = merge(var.additional_node_groups, var.default_node_groups)
   node_groups_per_zone = flatten([
-    for ng_name, ng in local.node_groups : [
+    for ng_name, ng in var.node_groups : [
       for sb_name, sb in var.private_subnets : {
         ng_name    = ng_name
         sb_name    = sb_name
@@ -72,21 +71,12 @@ locals {
   node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
-data "aws_ec2_instance_type" "all" {
-  for_each      = toset(flatten([for ng in local.node_groups : ng.instance_types]))
-  instance_type = each.value
-}
-
-locals {
-  any_gpu = { for name, ng in local.node_groups : name => anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]) }
-}
-
 resource "aws_launch_template" "node_groups" {
-  for_each                = local.node_groups
+  for_each                = var.node_groups
   name                    = "${local.eks_cluster_name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_key_pair_name
-  user_data = each.value.ami == null ? local.any_gpu[each.key] ? base64encode(file("${path.module}/templates/gpu_cert_setup.tpl")) : null : base64encode(templatefile(
+  user_data = each.value.ami == null ? each.value.gpu ? base64encode(file("${path.module}/templates/gpu_cert_setup.tpl")) : null : base64encode(templatefile(
     "${path.module}/templates/linux_user_data.tpl",
     {
       # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-custom-ami
@@ -156,7 +146,7 @@ resource "aws_eks_node_group" "node_groups" {
     desired_size = each.value.node_group.desired_per_az
   }
 
-  ami_type       = each.value.node_group.ami != null ? "CUSTOM" : local.any_gpu[each.value.ng_name] ? "AL2_x86_64_GPU" : "AL2_x86_64"
+  ami_type       = each.value.node_group.ami != null ? "CUSTOM" : each.value.node_group.gpu ? "AL2_x86_64_GPU" : "AL2_x86_64"
   capacity_type  = each.value.node_group.spot ? "SPOT" : "ON_DEMAND"
   instance_types = each.value.node_group.instance_types
   launch_template {

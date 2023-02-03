@@ -1,3 +1,44 @@
+## EKS key
+data "aws_iam_policy_document" "kms_key" {
+  statement {
+    actions = [
+      "kms:Create*",
+      "kms:Describe*",
+      "kms:Enable*",
+      "kms:List*",
+      "kms:Put*",
+      "kms:Update*",
+      "kms:Revoke*",
+      "kms:Disable*",
+      "kms:Get*",
+      "kms:Delete*",
+      "kms:ScheduleKeyDeletion",
+      "kms:CancelKeyDeletion",
+      "kubeconms:GenerateDataKey",
+      "kms:TagResource",
+      "kms:UntagResource"
+    ]
+    resources = ["*"]
+    effect    = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:root"]
+    }
+  }
+}
+
+resource "aws_kms_key" "eks_cluster" {
+  customer_master_key_spec = "SYMMETRIC_DEFAULT"
+  enable_key_rotation      = true
+  is_enabled               = true
+  key_usage                = "ENCRYPT_DECRYPT"
+  multi_region             = false
+  policy                   = data.aws_iam_policy_document.kms_key.json
+  tags = {
+    "Name" = "${local.eks_cluster_name}-eks-cluster"
+  }
+}
+
 resource "aws_security_group" "eks_cluster" {
   name        = "${local.eks_cluster_name}-cluster"
   description = "EKS cluster security group"
@@ -37,14 +78,12 @@ resource "aws_eks_cluster" "this" {
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
   version                   = var.k8s_version
 
-  dynamic "encryption_config" {
-    for_each = var.kms_key != null ? [var.kms_key] : []
-    content {
-      provider {
-        key_arn = var.kms_key
-      }
-      resources = ["secrets"]
+  encryption_config {
+    provider {
+      key_arn = var.kms_key != null ? var.kms_key : aws_kms_key.eks_cluster.arn
     }
+
+    resources = ["secrets"]
   }
 
   kubernetes_network_config {
@@ -52,13 +91,13 @@ resource "aws_eks_cluster" "this" {
     service_ipv4_cidr = "172.20.0.0/16"
   }
 
-
   vpc_config {
     endpoint_private_access = true
     endpoint_public_access  = false
     security_group_ids      = [aws_security_group.eks_cluster.id]
     subnet_ids              = [for s in var.private_subnets : s.subnet_id]
   }
+
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster,
     aws_security_group_rule.eks_cluster,

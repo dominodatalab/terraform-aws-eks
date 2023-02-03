@@ -55,7 +55,7 @@ locals {
   # error -> "Availability of the instance types does not satisfy the desired number of zones, or the desired number of zones is higher than the available/offered zones"
   azs_to_use = slice(tolist(local.offered_azs), 0, local.num_of_azs)
 
-  kms_key = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  kms_key_arn = var.use_kms ? data.aws_kms_key.key[0].arn : null
 }
 
 locals {
@@ -80,10 +80,10 @@ module "storage" {
   deploy_id                     = var.deploy_id
   efs_access_point_path         = var.efs_access_point_path
   s3_force_destroy_on_deletion  = var.s3_force_destroy_on_deletion
-  s3_kms_key                    = local.kms_key
+  s3_kms_key                    = local.kms_key_arn
   ecr_force_destroy_on_deletion = var.ecr_force_destroy_on_deletion
-  ecr_kms_key                   = local.kms_key
-  efs_kms_key                   = local.kms_key
+  ecr_kms_key                   = local.kms_key_arn
+  efs_kms_key                   = local.kms_key_arn
   vpc_id                        = local.vpc_id
   subnet_ids                    = [for s in local.private_subnets : s.subnet_id]
 }
@@ -142,7 +142,20 @@ module "bastion" {
   public_subnet_id = local.public_subnets[0].subnet_id
   ami_id           = var.bastion.ami
   instance_type    = var.bastion.instance_type
-  kms_key          = local.kms_key
+  kms_key          = local.kms_key_arn
+}
+
+locals {
+  node_groups = {
+    for name, ng in
+    merge(var.additional_node_groups, var.default_node_groups) :
+    name => merge(ng, { gpu = anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]) })
+  }
+}
+
+data "aws_ec2_instance_type" "all" {
+  for_each      = toset(flatten([for ng in merge(var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
+  instance_type = each.value
 }
 
 module "eks" {
@@ -157,8 +170,7 @@ module "eks" {
   bastion_security_group_id    = try(module.bastion[0].security_group_id, "")
   create_bastion_sg            = var.bastion != null
   kubeconfig_path              = local.kubeconfig_path
-  default_node_groups          = var.default_node_groups
-  additional_node_groups       = var.additional_node_groups
+  node_groups                  = local.node_groups
   node_iam_policies            = module.storage.iam_policies
   efs_security_group           = module.storage.efs_security_group
   update_kubeconfig_extra_args = var.update_kubeconfig_extra_args
@@ -166,7 +178,7 @@ module "eks" {
   ssh_pvt_key_path             = local.ssh_pvt_key_path
   bastion_user                 = local.bastion_user
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
-  kms_key                      = local.kms_key
+  kms_key                      = local.kms_key_arn
 
   depends_on = [
     module.network

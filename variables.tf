@@ -106,6 +106,7 @@ variable "default_node_groups" {
           })
           taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
           tags   = optional(map(string), {})
+          gpu    = optional(bool, false)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -191,6 +192,7 @@ variable "additional_node_groups" {
     labels               = map(string)
     taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                 = optional(map(string), {})
+    gpu                  = optional(bool, false)
     volume = object({
       size = string
       type = string
@@ -298,9 +300,13 @@ variable "ecr_force_destroy_on_deletion" {
 }
 
 variable "kms_key_id" {
-  description = "if use_kms is set, use the specified KMS key ARN"
+  description = "if use_kms is set, use the specified KMS key"
   type        = string
   default     = null
+  validation {
+    condition     = var.kms_key_id == null ? true : length(var.kms_key_id) > 0
+    error_message = "KMS key ID must be null or set to a non-empty string"
+  }
 }
 
 variable "use_kms" {
