@@ -28,5 +28,7 @@ output "efs_security_group" {
 
 output "container_registry" {
   description = "ECR base registry URL"
-  value       = trimsuffix(aws_ecr_repository.environment.repository_url, "/environment")
+
+  # Grab the base AWS account ECR URL and add the deploy_id. Domino will append /environment and /model
+  value = join("/", concat(slice(split("/", aws_ecr_repository.environment.repository_url), 0, 0), [var.deploy_id]))
 }

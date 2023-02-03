@@ -16,6 +16,7 @@ data "aws_iam_policy_document" "kms_key_global" {
       "kms:Put*",
       "kms:Update*",
       "kms:Revoke*",
+      "kms:Decrypt",
       "kms:ReEncrypt*",
       "kms:Disable*",
       "kms:Get*",
@@ -76,8 +77,8 @@ resource "aws_kms_alias" "domino" {
 }
 
 data "aws_kms_key" "key" {
-  count  = var.use_kms ? 1 : 0
-  key_id = coalesce(var.kms_key_id, try(aws_kms_key.domino[0].arn, null))
+  count  = var.use_kms && var.kms_key_id != null ? 1 : 0
+  key_id = var.kms_key_id
 }
 
 ## EKS key

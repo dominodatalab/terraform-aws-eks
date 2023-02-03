@@ -55,7 +55,7 @@ locals {
   # error -> "Availability of the instance types does not satisfy the desired number of zones, or the desired number of zones is higher than the available/offered zones"
   azs_to_use = slice(tolist(local.offered_azs), 0, local.num_of_azs)
 
-  kms_key_arn = var.use_kms ? data.aws_kms_key.key[0].arn : null
+  kms_key_arn = var.use_kms ? (var.kms_key_id == null ? resource.aws_kms_key.domino[0].arn : data.aws_kms_key.key[0].arn) : null
 }
 
 locals {
@@ -178,7 +178,8 @@ module "eks" {
   ssh_pvt_key_path             = local.ssh_pvt_key_path
   bastion_user                 = local.bastion_user
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
-  kms_key                      = coalesce(local.kms_key_arn, aws_kms_key.eks_cluster[0].arn)
+  cluster_kms_key              = var.use_kms ? (var.kms_key_id == null ? resource.aws_kms_key.domino[0].arn : data.aws_kms_key.key[0].arn) : aws_kms_key.eks_cluster[0].arn
+  node_groups_kms_key          = local.kms_key_arn
 
   depends_on = [
     module.network
