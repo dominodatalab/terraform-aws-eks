@@ -320,3 +320,33 @@ variable "kubeconfig_path" {
   type        = string
   default     = ""
 }
+
+variable "create_efs_backup_vault" {
+  description = "Create backup vault for EFS toggle."
+  type        = bool
+  default     = true
+}
+
+variable "efs_backup_vault_force_destroy" {
+  description = "Toggle to allow automatic destruction of all backups when destroying."
+  type        = bool
+  default     = false
+}
+
+variable "efs_backup_schedule" {
+  type        = string
+  description = "Cron-style schedule for EFS backup vault (default: once a day at 12pm)"
+  default     = "0 12 * * ? *"
+}
+
+variable "efs_backup_cold_storage_after" {
+  type        = number
+  description = "Move backup data to cold storage after this many days"
+  default     = 35
+}
+
+variable "efs_backup_delete_after" {
+  type        = number
+  description = "Delete backup data after this many days"
+  default     = 125
+}

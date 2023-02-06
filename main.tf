@@ -76,16 +76,22 @@ resource "aws_key_pair" "domino" {
 }
 
 module "storage" {
-  source                        = "./submodules/storage"
-  deploy_id                     = var.deploy_id
-  efs_access_point_path         = var.efs_access_point_path
-  s3_force_destroy_on_deletion  = var.s3_force_destroy_on_deletion
-  s3_kms_key                    = local.kms_key_arn
-  ecr_force_destroy_on_deletion = var.ecr_force_destroy_on_deletion
-  ecr_kms_key                   = local.kms_key_arn
-  efs_kms_key                   = local.kms_key_arn
-  vpc_id                        = local.vpc_id
-  subnet_ids                    = [for s in local.private_subnets : s.subnet_id]
+  source                         = "./submodules/storage"
+  deploy_id                      = var.deploy_id
+  efs_access_point_path          = var.efs_access_point_path
+  s3_force_destroy_on_deletion   = var.s3_force_destroy_on_deletion
+  s3_kms_key                     = local.kms_key_arn
+  ecr_force_destroy_on_deletion  = var.ecr_force_destroy_on_deletion
+  ecr_kms_key                    = local.kms_key_arn
+  efs_kms_key                    = local.kms_key_arn
+  efs_backup_vault_kms_key       = local.kms_key_arn
+  vpc_id                         = local.vpc_id
+  subnet_ids                     = [for s in local.private_subnets : s.subnet_id]
+  create_efs_backup_vault        = var.create_efs_backup_vault
+  efs_backup_vault_force_destroy = var.efs_backup_vault_force_destroy
+  efs_backup_schedule            = var.efs_backup_schedule
+  efs_backup_cold_storage_after  = var.efs_backup_cold_storage_after
+  efs_backup_delete_after        = var.efs_backup_delete_after
 }
 
 locals {
