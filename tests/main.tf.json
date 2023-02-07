@@ -5,15 +5,11 @@
         "eks_node": {
           "provider": "aws.local",
           "most_recent": true,
-          "owners": [
-            "amazon"
-          ],
+          "owners": ["amazon"],
           "filter": [
             {
               "name": "name",
-              "values": [
-                "amazon-eks-node-${var.k8s_version}-*"
-              ]
+              "values": ["amazon-eks-node-${var.k8s_version}-*"]
             }
           ]
         }
@@ -29,10 +25,7 @@
         "number_of_azs": 2,
         "k8s_version": "${var.k8s_version}",
         "route53_hosted_zone_name": "deploys-delta.domino.tech",
-        "eks_master_role_names": [
-          "okta-poweruser",
-          "okta-fulladmin"
-        ],
+        "eks_master_role_names": ["okta-poweruser", "okta-fulladmin"],
         "s3_force_destroy_on_deletion": true,
         "bastion": {},
         "ssh_pvt_key_path": "domino.pem",
@@ -52,7 +45,8 @@
     {
       "deploy_id": {
         "type": "string",
-        "description": "Domino Deployment ID."
+        "description": "Domino Deployment ID.",
+        "default": "mh1test"
       }
     },
     {
@@ -65,7 +59,10 @@
     {
       "tags": {
         "type": "map(string)",
-        "description": "Deployment tags."
+        "description": "Deployment tags.",
+        "default": {
+          "deploy": "test"
+        }
       }
     },
     {
