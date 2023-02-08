@@ -265,8 +265,9 @@ variable "pod_subnets" {
 
 variable "bastion" {
   type = object({
-    ami           = optional(string, null) # default will use the latest 'amazon_linux_2' ami
-    instance_type = optional(string, "t2.micro")
+    ami                      = optional(string, null) # default will use the latest 'amazon_linux_2' ami
+    instance_type            = optional(string, "t2.micro")
+    authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
   })
   description = "if specifed, a bastion is created with the specified details"
   default     = null
