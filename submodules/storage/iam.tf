@@ -42,7 +42,7 @@ data "aws_iam_policy_document" "ecr" {
   statement {
     effect = "Allow"
 
-    resources = aws_ecr_repository.this[*].arn
+    resources = [for k, repo in aws_ecr_repository.this : repo.arn]
 
     actions = [
       # Pull
