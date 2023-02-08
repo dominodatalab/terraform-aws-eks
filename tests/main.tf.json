@@ -34,7 +34,6 @@
           "okta-fulladmin"
         ],
         "s3_force_destroy_on_deletion": true,
-        "ecr_force_destroy_on_deletion": true,
         "bastion": {},
         "ssh_pvt_key_path": "domino.pem",
         "tags": "${var.tags}",
