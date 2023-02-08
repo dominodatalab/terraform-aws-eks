@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
       - name: Install checkov
         run: pip3 install checkov
       - name: Run Checkov scan
