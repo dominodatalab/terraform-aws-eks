@@ -101,6 +101,7 @@ variable "default_node_groups" {
           min_per_az           = optional(number, 0)
           max_per_az           = optional(number, 10)
           desired_per_az       = optional(number, 1)
+          number_of_azs        = optional(number, null)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default"
           })
@@ -127,6 +128,7 @@ variable "default_node_groups" {
           min_per_az           = optional(number, 1)
           max_per_az           = optional(number, 10)
           desired_per_az       = optional(number, 1)
+          number_of_azs        = optional(number, null)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "platform"
           })
@@ -153,6 +155,7 @@ variable "default_node_groups" {
           min_per_az           = optional(number, 0)
           max_per_az           = optional(number, 10)
           desired_per_az       = optional(number, 0)
+          number_of_azs        = optional(number, null)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default-gpu"
             "nvidia.com/gpu"              = true
@@ -191,6 +194,7 @@ variable "additional_node_groups" {
     min_per_az           = number
     max_per_az           = number
     desired_per_az       = number
+    number_of_azs        = optional(number, null)
     labels               = map(string)
     taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                 = optional(map(string), {})

@@ -34,6 +34,7 @@ variable "node_groups" {
     min_per_az           = number
     max_per_az           = number
     desired_per_az       = number
+    number_of_azs        = optional(number, null)
     labels               = map(string)
     taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                 = optional(map(string), {})
