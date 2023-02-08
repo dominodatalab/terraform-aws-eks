@@ -14,14 +14,14 @@ variable "region" {
   description = "AWS region for the deployment"
 }
 
-variable "availability_zones" {
+variable "availability_zone_ids" {
   type        = list(string)
-  description = "List of availability zone names where the subnets will be created"
+  description = "List of availability zone IDs where the subnets will be created"
   validation {
     condition = (
-      length(compact(distinct(var.availability_zones))) == length(var.availability_zones)
+      length(compact(distinct(var.availability_zone_ids))) == length(var.availability_zone_ids)
     )
-    error_message = "Argument availability_zones must not contain any duplicate/empty values."
+    error_message = "Argument availability_zones_ids must not contain any duplicate/empty values."
   }
 }
 

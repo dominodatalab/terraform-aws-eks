@@ -1,25 +1,3 @@
-# Validating zone offerings.
-
-# Check the zones where the instance types are being offered
-data "aws_ec2_instance_type_offerings" "nodes" {
-  for_each = { for name, ng in merge(var.default_node_groups, var.additional_node_groups) : name => ng.instance_types }
-
-  filter {
-    name   = "instance-type"
-    values = each.value
-  }
-
-  location_type = "availability-zone"
-
-  lifecycle {
-    # Validating the number of zones is greater than 2. EKS needs at least 2.
-    postcondition {
-      condition     = length(toset(self.locations)) >= 2
-      error_message = "Availability of the instance types does not satisfy the number of zones"
-    }
-  }
-}
-
 # Get "available" azs for the region
 data "aws_availability_zones" "available" {
   state = "available"
@@ -45,15 +23,14 @@ data "aws_subnet" "pod" {
 }
 
 locals {
-  # Get zones where ALL instance types are offered(intersection).
-  zone_intersection_instance_offerings = setintersection([for k, v in data.aws_ec2_instance_type_offerings.nodes : toset(v.locations)]...)
-  # Get the zones that are available and offered in the region for the instance types.
-  az_names    = var.vpc_id != null ? distinct(data.aws_subnet.private[*].availability_zone) : length(var.availability_zones) > 0 ? var.availability_zones : data.aws_availability_zones.available.names
-  offered_azs = setintersection(local.zone_intersection_instance_offerings, toset(local.az_names))
-  num_of_azs  = var.vpc_id != null ? length(local.az_names) : var.number_of_azs
+  zones_by_id = {
+    for zone_id in data.aws_availability_zones.available.zone_ids :
+    regex("[[:alnum:]]+-az([[:digit:]]+)", zone_id)[0] => zone_id
+  }
 
-  # error -> "Availability of the instance types does not satisfy the desired number of zones, or the desired number of zones is higher than the available/offered zones"
-  azs_to_use = slice(tolist(local.offered_azs), 0, local.num_of_azs)
+  # Get the zones that are available and offered in the region for the instance types.
+  az_ids     = var.vpc_id != null ? distinct(data.aws_subnet.private[*].availability_zone) : toset(sort(flatten([for name, ng in local.node_groups : ng.availability_zone_ids])))
+  num_of_azs = length(local.az_ids)
 
   kms_key_arn = var.use_kms ? try(data.aws_kms_key.key[0].arn, resource.aws_kms_key.domino[0].arn) : null
 }
@@ -117,24 +94,24 @@ locals {
 module "network" {
   count = var.vpc_id == null ? 1 : 0
 
-  source              = "./submodules/network"
-  deploy_id           = var.deploy_id
-  region              = var.region
-  cidr                = var.cidr
-  pod_cidr            = var.pod_cidr
-  use_pod_cidr        = var.use_pod_cidr
-  availability_zones  = local.azs_to_use
-  public_cidrs        = local.public_cidr_blocks
-  private_cidrs       = local.private_cidr_blocks
-  pod_cidrs           = local.pod_cidr_blocks
-  flow_log_bucket_arn = { arn = module.storage.s3_buckets["monitoring"].arn }
+  source                = "./submodules/network"
+  deploy_id             = var.deploy_id
+  region                = var.region
+  cidr                  = var.cidr
+  pod_cidr              = var.pod_cidr
+  use_pod_cidr          = var.use_pod_cidr
+  availability_zone_ids = local.az_ids
+  public_cidrs          = local.public_cidr_blocks
+  private_cidrs         = local.private_cidr_blocks
+  pod_cidrs             = local.pod_cidr_blocks
+  flow_log_bucket_arn   = { arn = module.storage.s3_buckets["monitoring"].arn }
 }
 
 locals {
   vpc_id          = var.vpc_id != null ? var.vpc_id : module.network[0].vpc_id
-  public_subnets  = var.vpc_id != null ? [for s in data.aws_subnet.public : { subnet_id = s.id, az = s.availability_zone }] : module.network[0].public_subnets
-  private_subnets = var.vpc_id != null ? [for s in data.aws_subnet.private : { subnet_id = s.id, az = s.availability_zone }] : module.network[0].private_subnets
-  pod_subnets     = var.vpc_id != null ? [for s in data.aws_subnet.pod : { subnet_id = s.id, az = s.availability_zone }] : module.network[0].pod_subnets
+  public_subnets  = var.vpc_id != null ? [for s in data.aws_subnet.public : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].public_subnets
+  private_subnets = var.vpc_id != null ? [for s in data.aws_subnet.private : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].private_subnets
+  pod_subnets     = var.vpc_id != null ? [for s in data.aws_subnet.pod : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].pod_subnets
 }
 
 module "bastion" {
@@ -169,8 +146,9 @@ locals {
     for name, ng in
     merge(var.additional_node_groups, var.default_node_groups) :
     name => merge(ng, {
-      gpu           = ng.gpu != null ? ng.gpu : anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]),
-      instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
+      gpu                   = ng.gpu != null ? ng.gpu : anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]),
+      instance_tags         = merge(data.aws_default_tags.this.tags, ng.tags)
+      availability_zone_ids = [for az_id in ng.availability_zone_ids : local.zones_by_id[az_id]]
     })
   }
 }

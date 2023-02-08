@@ -3,7 +3,7 @@
 apiVersion: crd.k8s.amazonaws.com/v1alpha1
 kind: ENIConfig
 metadata:
- name: ${subnet.az}
+ name: ${subnet.az_id}
 spec:
   securityGroups:
     - ${security_group_id}

@@ -40,6 +40,7 @@ No modules.
 | [aws_vpc.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc) | resource |
 | [aws_vpc_endpoint.s3](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_endpoint) | resource |
 | [aws_vpc_ipv4_cidr_block_association.pod_cidr](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_ipv4_cidr_block_association) | resource |
+| [aws_availability_zone.zones](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zone) | data source |
 | [aws_network_acls.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/network_acls) | data source |
 
 ## Inputs
@@ -47,7 +48,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_add_eks_elb_tags"></a> [add\_eks\_elb\_tags](#input\_add\_eks\_elb\_tags) | Toggle k8s cluster tag on subnet | `bool` | `true` | no |
-| <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | List of availability zone names where the subnets will be created | `list(string)` | n/a | yes |
+| <a name="input_availability_zone_ids"></a> [availability\_zone\_ids](#input\_availability\_zone\_ids) | List of availability zone IDs where the subnets will be created | `list(string)` | n/a | yes |
 | <a name="input_cidr"></a> [cidr](#input\_cidr) | The IPv4 CIDR block for the VPC. | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | `""` | no |
 | <a name="input_flow_log_bucket_arn"></a> [flow\_log\_bucket\_arn](#input\_flow\_log\_bucket\_arn) | Bucket for vpc flow logging | `object({ arn = string })` | `null` | no |

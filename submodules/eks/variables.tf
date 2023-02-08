@@ -27,18 +27,19 @@ variable "k8s_version" {
 variable "node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
-    ami                  = optional(string, null)
-    bootstrap_extra_args = optional(string, "")
-    instance_types       = list(string)
-    spot                 = optional(bool, false)
-    min_per_az           = number
-    max_per_az           = number
-    desired_per_az       = number
-    labels               = map(string)
-    taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
-    tags                 = optional(map(string), {})
-    instance_tags        = optional(map(string), {})
-    gpu                  = optional(bool, false)
+    ami                   = optional(string, null)
+    bootstrap_extra_args  = optional(string, "")
+    instance_types        = list(string)
+    spot                  = optional(bool, false)
+    min_per_az            = number
+    max_per_az            = number
+    desired_per_az        = number
+    availability_zone_ids = list(string)
+    labels                = map(string)
+    taints                = optional(list(object({ key = string, value = optional(string), effect = string })), [])
+    tags                  = optional(map(string), {})
+    instance_tags         = optional(map(string), {})
+    gpu                   = optional(bool, false)
     volume = object({
       size = string
       type = string
@@ -55,7 +56,7 @@ variable "kubeconfig_path" {
 
 variable "private_subnets" {
   description = "List of Private subnets IDs and AZ"
-  type        = list(object({ subnet_id = string, az = string }))
+  type        = list(object({ subnet_id = string, az = string, az_id = string }))
   validation {
     condition     = length(var.private_subnets) >= 2
     error_message = "EKS deployment needs at least 2 subnets. https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html."
@@ -64,7 +65,7 @@ variable "private_subnets" {
 
 variable "pod_subnets" {
   description = "List of POD subnets IDs and AZ"
-  type        = list(object({ subnet_id = string, az = string }))
+  type        = list(object({ subnet_id = string, az = string, az_id = string }))
   validation {
     condition     = length(var.pod_subnets) != 1
     error_message = "EKS deployment needs at least 2 subnets. https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html."

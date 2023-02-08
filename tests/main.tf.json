@@ -22,7 +22,6 @@
         "source": "./..",
         "deploy_id": "${var.deploy_id}",
         "region": "${var.region}",
-        "number_of_azs": 2,
         "k8s_version": "${var.k8s_version}",
         "route53_hosted_zone_name": "deploys-delta.domino.tech",
         "eks_master_role_names": ["okta-poweruser", "okta-fulladmin"],
@@ -38,6 +37,17 @@
           },
           "platform": {},
           "gpu": {}
+        },
+        "additional_node_groups": {
+          "specific_azs": {
+            "instance_types": ["m5.2xlarge"],
+            "availability_zone_ids": [4],
+            "desired_per_az": 0,
+            "min_per_az": 0,
+            "max_per_az": 10,
+            "labels": {"dominodatalab.com/node-pool": "specific-azs"},
+            "volume": {"size": 100, "type": "gp3"}
+          }
         }
       }
     }
@@ -47,7 +57,7 @@
       "deploy_id": {
         "type": "string",
         "description": "Domino Deployment ID.",
-        "default": "mh1test"
+        "default": "dominotf"
       }
     },
     {
@@ -82,6 +92,10 @@
           "aws": {
             "source": "hashicorp/aws",
             "version": ">= 4.0"
+          },
+          "random": {
+            "source": "hashicorp/random",
+            "version": "~> 3.0"
           }
         }
       ]

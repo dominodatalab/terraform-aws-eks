@@ -56,7 +56,7 @@ variable "security_group_id" {
 }
 
 variable "pod_subnets" {
-  type        = list(object({ subnet_id = string, az = string }))
+  type        = list(object({ subnet_id = string, az_id = string }))
   description = "Pod subnets and az to setup with vpc-cni"
 }
 

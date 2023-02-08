@@ -27,31 +27,6 @@ variable "update_kubeconfig_extra_args" {
   default     = ""
 }
 
-variable "number_of_azs" {
-  type        = number
-  description = "Number of AZ to distribute the deployment, EKS needs at least 2."
-  default     = 3
-  validation {
-    condition     = var.number_of_azs >= 2
-    error_message = "EKS deployment needs at least 2 zones."
-  }
-}
-
-variable "availability_zones" {
-  type        = list(string)
-  description = <<EOT
-    List of Availibility zones to distribute the deployment, EKS needs at least 2,https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html.
-    Note that setting this variable bypasses validation of the status of the zones data 'aws_availability_zones' 'available'.
-    Caller is responsible for validating status of these zones.
-  EOT
-
-  validation {
-    condition     = length(var.availability_zones) == 0 || length(var.availability_zones) >= 2
-    error_message = "EKS deployment needs at least 2 zones."
-  }
-  default = []
-}
-
 variable "route53_hosted_zone_name" {
   type        = string
   description = "Optional hosted zone for External DNSone."
@@ -94,13 +69,14 @@ variable "default_node_groups" {
     {
       compute = object(
         {
-          ami                  = optional(string, null)
-          bootstrap_extra_args = optional(string, "")
-          instance_types       = optional(list(string), ["m5.2xlarge"])
-          spot                 = optional(bool, false)
-          min_per_az           = optional(number, 0)
-          max_per_az           = optional(number, 10)
-          desired_per_az       = optional(number, 1)
+          ami                   = optional(string, null)
+          bootstrap_extra_args  = optional(string, "")
+          instance_types        = optional(list(string), ["m5.2xlarge"])
+          spot                  = optional(bool, false)
+          min_per_az            = optional(number, 0)
+          max_per_az            = optional(number, 10)
+          desired_per_az        = optional(number, 1)
+          availability_zone_ids = optional(list(number), [1, 2, 3])
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default"
           })
@@ -120,13 +96,14 @@ variable "default_node_groups" {
       }),
       platform = object(
         {
-          ami                  = optional(string, null)
-          bootstrap_extra_args = optional(string, "")
-          instance_types       = optional(list(string), ["m5.4xlarge"])
-          spot                 = optional(bool, false)
-          min_per_az           = optional(number, 1)
-          max_per_az           = optional(number, 10)
-          desired_per_az       = optional(number, 1)
+          ami                   = optional(string, null)
+          bootstrap_extra_args  = optional(string, "")
+          instance_types        = optional(list(string), ["m5.4xlarge"])
+          spot                  = optional(bool, false)
+          min_per_az            = optional(number, 1)
+          max_per_az            = optional(number, 10)
+          desired_per_az        = optional(number, 1)
+          availability_zone_ids = optional(list(number), [1, 2, 3])
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "platform"
           })
@@ -146,13 +123,14 @@ variable "default_node_groups" {
       }),
       gpu = object(
         {
-          ami                  = optional(string, null)
-          bootstrap_extra_args = optional(string, "")
-          instance_types       = optional(list(string), ["g4dn.xlarge"])
-          spot                 = optional(bool, false)
-          min_per_az           = optional(number, 0)
-          max_per_az           = optional(number, 10)
-          desired_per_az       = optional(number, 0)
+          ami                   = optional(string, null)
+          bootstrap_extra_args  = optional(string, "")
+          instance_types        = optional(list(string), ["g4dn.xlarge"])
+          spot                  = optional(bool, false)
+          min_per_az            = optional(number, 0)
+          max_per_az            = optional(number, 10)
+          desired_per_az        = optional(number, 0)
+          availability_zone_ids = optional(list(number), [1, 2, 3])
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default-gpu"
             "nvidia.com/gpu"              = true
@@ -184,17 +162,18 @@ variable "default_node_groups" {
 variable "additional_node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
-    ami                  = optional(string, null)
-    bootstrap_extra_args = optional(string, "")
-    instance_types       = list(string)
-    spot                 = optional(bool, false)
-    min_per_az           = number
-    max_per_az           = number
-    desired_per_az       = number
-    labels               = map(string)
-    taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
-    tags                 = optional(map(string), {})
-    gpu                  = optional(bool, null)
+    ami                   = optional(string, null)
+    bootstrap_extra_args  = optional(string, "")
+    instance_types        = list(string)
+    spot                  = optional(bool, false)
+    min_per_az            = number
+    max_per_az            = number
+    desired_per_az        = number
+    availability_zone_ids = list(number)
+    labels                = map(string)
+    taints                = optional(list(object({ key = string, value = optional(string), effect = string })), [])
+    tags                  = optional(map(string), {})
+    gpu                   = optional(bool, null)
     volume = object({
       size = string
       type = string
