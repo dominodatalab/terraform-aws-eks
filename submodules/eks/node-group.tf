@@ -177,31 +177,45 @@ resource "aws_eks_node_group" "node_groups" {
   }
 }
 
+data "aws_default_tags" "this" {}
+
 locals {
   asg_tags = flatten([for name, v in local.node_groups_by_name : [
     {
-      name  = name
-      key   = "k8s.io/cluster-autoscaler/node-template/label/topology.ebs.csi.aws.com/zone"
-      value = v.subnet.az
+      name                = name
+      key                 = "k8s.io/cluster-autoscaler/node-template/label/topology.ebs.csi.aws.com/zone"
+      value               = v.subnet.az
+      propagate_at_launch = false
     },
     {
-      name  = name
-      key   = "k8s.io/cluster-autoscaler/node-template/resources/smarter-devices/fuse"
-      value = "20"
+      name                = name
+      key                 = "k8s.io/cluster-autoscaler/node-template/resources/smarter-devices/fuse"
+      value               = "20"
+      propagate_at_launch = false
     },
     # this is necessary until cluster-autoscaler v1.24, labels and taints are from the nodegroup
     # https://github.com/kubernetes/autoscaler/commit/b4cadfb4e25b6660c41dbe2b73e66e9a2f3a2cc9
     [for lkey, lvalue in v.node_group.labels : [
       {
-        name  = name
-        key   = format("k8s.io/cluster-autoscaler/node-template/label/%v", lkey)
-        value = lvalue
+        name                = name
+        key                 = format("k8s.io/cluster-autoscaler/node-template/label/%v", lkey)
+        value               = lvalue
+        propagate_at_launch = false
     }]],
     [for t in v.node_group.taints : [
       {
-        name  = name
-        key   = format("k8s.io/cluster-autoscaler/node-template/taint/%v", t.key)
-        value = "${t.value == null ? "" : t.value}:${local.taint_effect_map[t.effect]}"
+        name                = name
+        key                 = format("k8s.io/cluster-autoscaler/node-template/taint/%v", t.key)
+        value               = "${t.value == null ? "" : t.value}:${local.taint_effect_map[t.effect]}"
+        propagate_at_launch = false
+      }
+    ]],
+    [for key, value in data.aws_default_tags.this.tags : [
+      {
+        name                = name
+        key                 = key
+        value               = value
+        propagate_at_launch = true
       }
     ]]
   ]])
@@ -222,6 +236,6 @@ resource "aws_autoscaling_group_tag" "tag" {
   tag {
     key                 = each.value.key
     value               = each.value.value
-    propagate_at_launch = false
+    propagate_at_launch = each.value.propagate_at_launch
   }
 }
