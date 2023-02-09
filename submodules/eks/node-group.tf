@@ -71,6 +71,8 @@ locals {
   node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
+data "aws_default_tags" "this" {}
+
 resource "aws_launch_template" "node_groups" {
   for_each                = var.node_groups
   name                    = "${local.eks_cluster_name}-${each.key}"
@@ -111,19 +113,19 @@ resource "aws_launch_template" "node_groups" {
     http_tokens                 = "required"
   }
 
-  # add any tagtag_specifications and additional ones are magically created
+  # add any tag_specifications and additional ones are magically created
   tag_specifications {
     resource_type = "instance"
-    tags = {
+    tags = merge(data.aws_default_tags.this.tags, each.value.tags, {
       "Name" = "${local.eks_cluster_name}-${each.key}"
-    }
+    })
   }
 
   tag_specifications {
     resource_type = "volume"
-    tags = {
+    tags = merge(data.aws_default_tags.this.tags, each.value.tags, {
       "Name" = "${local.eks_cluster_name}-${each.key}"
-    }
+    })
   }
 
   depends_on = [
@@ -180,40 +182,28 @@ resource "aws_eks_node_group" "node_groups" {
 locals {
   asg_tags = flatten([for name, v in local.node_groups_by_name : [
     {
-      name                = name
-      key                 = "k8s.io/cluster-autoscaler/node-template/label/topology.ebs.csi.aws.com/zone"
-      value               = v.subnet.az
-      propagate_at_launch = false
+      name  = name
+      key   = "k8s.io/cluster-autoscaler/node-template/label/topology.ebs.csi.aws.com/zone"
+      value = v.subnet.az
     },
     {
-      name                = name
-      key                 = "k8s.io/cluster-autoscaler/node-template/resources/smarter-devices/fuse"
-      value               = "20"
-      propagate_at_launch = false
+      name  = name
+      key   = "k8s.io/cluster-autoscaler/node-template/resources/smarter-devices/fuse"
+      value = "20"
     },
     # this is necessary until cluster-autoscaler v1.24, labels and taints are from the nodegroup
     # https://github.com/kubernetes/autoscaler/commit/b4cadfb4e25b6660c41dbe2b73e66e9a2f3a2cc9
     [for lkey, lvalue in v.node_group.labels : [
       {
-        name                = name
-        key                 = format("k8s.io/cluster-autoscaler/node-template/label/%v", lkey)
-        value               = lvalue
-        propagate_at_launch = false
+        name  = name
+        key   = format("k8s.io/cluster-autoscaler/node-template/label/%v", lkey)
+        value = lvalue
     }]],
     [for t in v.node_group.taints : [
       {
-        name                = name
-        key                 = format("k8s.io/cluster-autoscaler/node-template/taint/%v", t.key)
-        value               = "${t.value == null ? "" : t.value}:${local.taint_effect_map[t.effect]}"
-        propagate_at_launch = false
-      }
-    ]],
-    [for key, value in v.node_group.instance_tags : [
-      {
-        name                = name
-        key                 = key
-        value               = value
-        propagate_at_launch = true
+        name  = name
+        key   = format("k8s.io/cluster-autoscaler/node-template/taint/%v", t.key)
+        value = "${t.value == null ? "" : t.value}:${local.taint_effect_map[t.effect]}"
       }
     ]]
   ]])
@@ -234,6 +224,6 @@ resource "aws_autoscaling_group_tag" "tag" {
   tag {
     key                 = each.value.key
     value               = each.value.value
-    propagate_at_launch = each.value.propagate_at_launch
+    propagate_at_launch = false
   }
 }
