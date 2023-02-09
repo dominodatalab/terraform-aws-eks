@@ -114,18 +114,14 @@ resource "aws_launch_template" "node_groups" {
   }
 
   # add any tag_specifications and additional ones are magically created
-  tag_specifications {
-    resource_type = "instance"
-    tags = merge(data.aws_default_tags.this.tags, each.value.tags, {
-      "Name" = "${local.eks_cluster_name}-${each.key}"
-    })
-  }
-
-  tag_specifications {
-    resource_type = "volume"
-    tags = merge(data.aws_default_tags.this.tags, each.value.tags, {
-      "Name" = "${local.eks_cluster_name}-${each.key}"
-    })
+  dynamic "tag_specifications" {
+    for_each = toset(["instance", "volume"])
+    content {
+      resource_type = each.value
+      tags = merge(data.aws_default_tags.this.tags, each.value.tags, {
+        "Name" = "${local.eks_cluster_name}-${each.key}"
+      })
+    }
   }
 
   depends_on = [
