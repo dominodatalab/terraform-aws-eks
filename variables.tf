@@ -106,7 +106,7 @@ variable "default_node_groups" {
           })
           taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
           tags   = optional(map(string), {})
-          gpu    = optional(bool, false)
+          gpu    = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -132,6 +132,7 @@ variable "default_node_groups" {
           })
           taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
           tags   = optional(map(string), {})
+          gpu    = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -160,6 +161,7 @@ variable "default_node_groups" {
             { key = "nvidia.com/gpu", value = "true", effect = "NO_SCHEDULE" }
           ])
           tags = optional(map(string), {})
+          gpu  = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -192,7 +194,7 @@ variable "additional_node_groups" {
     labels               = map(string)
     taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                 = optional(map(string), {})
-    gpu                  = optional(bool, false)
+    gpu                  = optional(bool, null)
     volume = object({
       size = string
       type = string

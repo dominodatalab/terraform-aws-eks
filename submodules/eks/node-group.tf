@@ -177,8 +177,6 @@ resource "aws_eks_node_group" "node_groups" {
   }
 }
 
-data "aws_default_tags" "this" {}
-
 locals {
   asg_tags = flatten([for name, v in local.node_groups_by_name : [
     {
@@ -210,7 +208,7 @@ locals {
         propagate_at_launch = false
       }
     ]],
-    [for key, value in data.aws_default_tags.this.tags : [
+    [for key, value in v.node_group.instance_tags : [
       {
         name                = name
         key                 = key

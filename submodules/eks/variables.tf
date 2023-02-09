@@ -37,6 +37,7 @@ variable "node_groups" {
     labels               = map(string)
     taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                 = optional(map(string), {})
+    instance_tags        = optional(map(string), {})
     gpu                  = optional(bool, false)
     volume = object({
       size = string
