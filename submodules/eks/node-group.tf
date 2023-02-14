@@ -65,7 +65,7 @@ locals {
       sb_name    = sb_name
       subnet     = sb
       node_group = ng
-    } if ng.availability_zones == null || contains(coalesce(ng.availability_zones, []), sb.az)]
+    } if contains(coalesce(ng.availability_zones, [sb.az]), sb.az)]
   ])
   node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
