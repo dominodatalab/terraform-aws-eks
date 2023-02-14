@@ -36,7 +36,6 @@ variable "public_subnet_id" {
 }
 
 variable "security_group_rules" {
-
   description = "Bastion host security group rules."
   type = map(object({
     protocol                 = string
@@ -46,27 +45,13 @@ variable "security_group_rules" {
     description              = string
     cidr_blocks              = list(string)
     source_security_group_id = string
-
   }))
 
-  default = {
-    bastion_outbound_traffic = {
-      protocol                 = "-1"
-      from_port                = "0"
-      to_port                  = "0"
-      type                     = "egress"
-      description              = "Allow all outbound traffic by default"
-      cidr_blocks              = ["0.0.0.0/0"]
-      source_security_group_id = null
-    }
-    bastion_inbound_ssh = {
-      protocol                 = "tcp"
-      from_port                = "22"
-      to_port                  = "22"
-      type                     = "ingress"
-      description              = "Inbound ssh"
-      cidr_blocks              = ["0.0.0.0/0"]
-      source_security_group_id = null
-    }
-  }
+  default = {}
+}
+
+variable "kms_key" {
+  type        = string
+  description = "if set, use specified key for EBS volumes"
+  default     = null
 }

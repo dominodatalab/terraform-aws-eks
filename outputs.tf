@@ -37,3 +37,18 @@ output "kubeconfig" {
   description = "location of kubeconfig"
   value       = local.kubeconfig_path
 }
+
+output "kms_key_id" {
+  description = "KMS key ID, if enabled"
+  value       = var.use_kms ? try(data.aws_kms_key.key[0].id, resource.aws_kms_key.domino[0].id) : null
+}
+
+output "kms_key_arn" {
+  description = "KMS key ARN, if enabled"
+  value       = local.kms_key_arn
+}
+
+output "container_registry" {
+  description = "ECR base registry URL"
+  value       = module.storage.container_registry
+}

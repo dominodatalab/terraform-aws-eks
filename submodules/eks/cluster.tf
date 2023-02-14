@@ -1,4 +1,4 @@
-## EKS key
+## EKS key, kept for existing legacy clusters. Setting use_kms is preferred.
 data "aws_iam_policy_document" "kms_key" {
   statement {
     actions = [
@@ -14,7 +14,7 @@ data "aws_iam_policy_document" "kms_key" {
       "kms:Delete*",
       "kms:ScheduleKeyDeletion",
       "kms:CancelKeyDeletion",
-      "kubeconms:GenerateDataKey",
+      "kms:GenerateDataKey",
       "kms:TagResource",
       "kms:UntagResource"
     ]
@@ -80,8 +80,9 @@ resource "aws_eks_cluster" "this" {
 
   encryption_config {
     provider {
-      key_arn = aws_kms_key.eks_cluster.arn
+      key_arn = var.secrets_kms_key == null ? aws_kms_key.eks_cluster.arn : var.secrets_kms_key
     }
+
     resources = ["secrets"]
   }
 
@@ -90,13 +91,13 @@ resource "aws_eks_cluster" "this" {
     service_ipv4_cidr = "172.20.0.0/16"
   }
 
-
   vpc_config {
     endpoint_private_access = true
     endpoint_public_access  = false
     security_group_ids      = [aws_security_group.eks_cluster.id]
     subnet_ids              = [for s in var.private_subnets : s.subnet_id]
   }
+
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster,
     aws_security_group_rule.eks_cluster,

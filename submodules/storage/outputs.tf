@@ -16,12 +16,19 @@ output "s3_buckets" {
   } }
 }
 
-output "s3_policy" {
-  description = "s3 IAM Policy arn"
-  value       = aws_iam_policy.s3.arn
+output "iam_policies" {
+  description = "IAM Policy ARNs"
+  value       = [aws_iam_policy.s3.arn, aws_iam_policy.ecr.arn]
 }
 
 output "efs_security_group" {
   description = "EFS security group id"
   value       = aws_security_group.efs.id
+}
+
+output "container_registry" {
+  description = "ECR base registry URL"
+
+  # Grab the base AWS account ECR URL and add the deploy_id. Domino will append /environment and /model
+  value = join("/", concat(slice(split("/", aws_ecr_repository.this["environment"].repository_url), 0, 1), [var.deploy_id]))
 }

@@ -24,95 +24,7 @@ variable "k8s_version" {
   description = "EKS cluster k8s version."
 }
 
-variable "default_node_groups" {
-  description = "EKS managed node groups definition."
-  type = object(
-    {
-      compute = object(
-        {
-          ami                  = optional(string)
-          bootstrap_extra_args = optional(string, "")
-          instance_types       = optional(list(string), ["m5.2xlarge"])
-          spot                 = optional(bool, false)
-          min_per_az           = optional(number, 0)
-          max_per_az           = optional(number, 10)
-          desired_per_az       = optional(number, 1)
-          labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "default"
-          })
-          taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
-          tags   = optional(map(string), {})
-          volume = optional(object(
-            {
-              size = optional(number, 100)
-              type = optional(string, "gp3")
-            }),
-            {
-              size = 100
-              type = "gp3"
-            }
-          )
-      }),
-      platform = object(
-        {
-          ami                  = optional(string)
-          bootstrap_extra_args = optional(string, "")
-          instance_types       = optional(list(string), ["m5.4xlarge"])
-          spot                 = optional(bool, false)
-          min_per_az           = optional(number, 0)
-          max_per_az           = optional(number, 10)
-          desired_per_az       = optional(number, 1)
-          labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "platform"
-          })
-          taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
-          tags   = optional(map(string), {})
-          volume = optional(object(
-            {
-              size = optional(number, 100)
-              type = optional(string, "gp3")
-            }),
-            {
-              size = 100
-              type = "gp3"
-            }
-          )
-      }),
-      gpu = object(
-        {
-          ami                  = optional(string)
-          bootstrap_extra_args = optional(string, "")
-          instance_types       = optional(list(string), ["g4dn.xlarge"])
-          spot                 = optional(bool, false)
-          min_per_az           = optional(number, 0)
-          max_per_az           = optional(number, 10)
-          desired_per_az       = optional(number, 0)
-          labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "default-gpu"
-            "nvidia.com/gpu"              = true
-          })
-          taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
-          tags   = optional(map(string), {})
-          volume = optional(object(
-            {
-              size = optional(number, 100)
-              type = optional(string, "gp3")
-            }),
-            {
-              size = 100
-              type = "gp3"
-            }
-          )
-      })
-  })
-  default = {
-    compute  = {}
-    platform = {}
-    gpu      = {}
-  }
-}
-
-variable "additional_node_groups" {
+variable "node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
     ami                  = optional(string)
@@ -125,6 +37,8 @@ variable "additional_node_groups" {
     labels               = map(string)
     taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                 = optional(map(string), {})
+    instance_tags        = optional(map(string), {})
+    gpu                  = optional(bool, false)
     volume = object({
       size = string
       type = string
@@ -217,4 +131,16 @@ variable "bastion_public_ip" {
   type        = string
   description = "Public IP of bastion instance"
   default     = ""
+}
+
+variable "secrets_kms_key" {
+  type        = string
+  description = "if set, use specified key for the EKS cluster secrets"
+  default     = null
+}
+
+variable "node_groups_kms_key" {
+  type        = string
+  description = "if set, use specified key for the EKS node groups"
+  default     = null
 }

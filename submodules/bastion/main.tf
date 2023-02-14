@@ -1,5 +1,6 @@
 data "aws_partition" "current" {}
 data "aws_caller_identity" "aws_account" {}
+data "aws_default_tags" "this" {}
 
 locals {
   dns_suffix     = data.aws_partition.current.dns_suffix
@@ -21,6 +22,18 @@ resource "aws_security_group" "bastion" {
     "Name" = "${var.deploy_id}-bastion"
   }
 }
+
+resource "aws_security_group_rule" "bastion_outbound" {
+  security_group_id = aws_security_group.bastion.id
+
+  protocol    = "-1"
+  from_port   = "0"
+  to_port     = "0"
+  type        = "egress"
+  description = "Allow all outbound traffic by default"
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
 resource "aws_security_group_rule" "bastion" {
   for_each = var.security_group_rules
 
@@ -33,6 +46,7 @@ resource "aws_security_group_rule" "bastion" {
   cidr_blocks              = try(each.value.cidr_blocks, null)
   source_security_group_id = try(each.value.source_security_group_id, null)
 }
+
 ## Bastion iam role
 data "aws_iam_policy_document" "bastion" {
   statement {
@@ -130,6 +144,10 @@ resource "aws_instance" "bastion" {
     throughput            = "125"
     volume_size           = "40"
     volume_type           = "gp3"
+    kms_key_id            = var.kms_key
+    tags = merge(data.aws_default_tags.this.tags, {
+      "Name" = "${var.deploy_id}-bastion"
+    })
   }
 
   source_dest_check = true

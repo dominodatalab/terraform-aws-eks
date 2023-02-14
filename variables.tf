@@ -106,6 +106,7 @@ variable "default_node_groups" {
           })
           taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
           tags   = optional(map(string), {})
+          gpu    = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -131,6 +132,7 @@ variable "default_node_groups" {
           })
           taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
           tags   = optional(map(string), {})
+          gpu    = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -159,6 +161,7 @@ variable "default_node_groups" {
             { key = "nvidia.com/gpu", value = "true", effect = "NO_SCHEDULE" }
           ])
           tags = optional(map(string), {})
+          gpu  = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -191,6 +194,7 @@ variable "additional_node_groups" {
     labels               = map(string)
     taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                 = optional(map(string), {})
+    gpu                  = optional(bool, null)
     volume = object({
       size = string
       type = string
@@ -263,8 +267,9 @@ variable "pod_subnets" {
 
 variable "bastion" {
   type = object({
-    ami           = optional(string, null) # default will use the latest 'amazon_linux_2' ami
-    instance_type = optional(string, "t2.micro")
+    ami                      = optional(string, null) # default will use the latest 'amazon_linux_2' ami
+    instance_type            = optional(string, "t2.micro")
+    authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
   })
   description = "if specifed, a bastion is created with the specified details"
   default     = null
@@ -291,8 +296,60 @@ variable "s3_force_destroy_on_deletion" {
   default     = false
 }
 
+variable "ecr_force_destroy_on_deletion" {
+  description = "Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories"
+  type        = bool
+  default     = false
+}
+
+variable "kms_key_id" {
+  description = "if use_kms is set, use the specified KMS key"
+  type        = string
+  default     = null
+  validation {
+    condition     = var.kms_key_id == null ? true : length(var.kms_key_id) > 0
+    error_message = "KMS key ID must be null or set to a non-empty string"
+  }
+}
+
+variable "use_kms" {
+  description = "if set, use either the specified KMS key or a Domino-generated one"
+  type        = bool
+  default     = false
+}
+
 variable "kubeconfig_path" {
   description = "fully qualified path name to write the kubeconfig file"
   type        = string
   default     = ""
+}
+
+variable "create_efs_backup_vault" {
+  description = "Create backup vault for EFS toggle."
+  type        = bool
+  default     = true
+}
+
+variable "efs_backup_vault_force_destroy" {
+  description = "Toggle to allow automatic destruction of all backups when destroying."
+  type        = bool
+  default     = false
+}
+
+variable "efs_backup_schedule" {
+  type        = string
+  description = "Cron-style schedule for EFS backup vault (default: once a day at 12pm)"
+  default     = "0 12 * * ? *"
+}
+
+variable "efs_backup_cold_storage_after" {
+  type        = number
+  description = "Move backup data to cold storage after this many days"
+  default     = 35
+}
+
+variable "efs_backup_delete_after" {
+  type        = number
+  description = "Delete backup data after this many days"
+  default     = 125
 }

@@ -1,7 +1,7 @@
-
 locals {
-  s3_server_side_encryption = var.s3_encryption_use_sse_kms_key ? "aws:kms" : "AES256"
+  s3_server_side_encryption = var.s3_kms_key != null ? "aws:kms" : "AES256"
 }
+
 resource "aws_s3_bucket" "backups" {
   bucket              = "${var.deploy_id}-backups"
   force_destroy       = var.s3_force_destroy_on_deletion
@@ -288,6 +288,16 @@ data "aws_iam_policy_document" "monitoring" {
   }
 }
 
+resource "aws_s3_bucket_server_side_encryption_configuration" "monitoring" {
+  bucket = aws_s3_bucket.monitoring.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+    bucket_key_enabled = false
+  }
+}
+
 resource "aws_s3_bucket_acl" "monitoring" {
   bucket = aws_s3_bucket.monitoring.id
 
@@ -396,12 +406,13 @@ resource "aws_s3_bucket_policy" "buckets_policies" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryption" {
-  for_each = local.s3_buckets
+  for_each = { for k, v in local.s3_buckets : k => v if k != "monitoring" }
 
   bucket = each.value.bucket_name
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = local.s3_server_side_encryption
+      sse_algorithm     = local.s3_server_side_encryption
+      kms_master_key_id = var.s3_kms_key
     }
     bucket_key_enabled = false
   }

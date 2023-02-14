@@ -54,6 +54,8 @@ locals {
 
   # error -> "Availability of the instance types does not satisfy the desired number of zones, or the desired number of zones is higher than the available/offered zones"
   azs_to_use = slice(tolist(local.offered_azs), 0, local.num_of_azs)
+
+  kms_key_arn = var.use_kms ? try(data.aws_kms_key.key[0].arn, resource.aws_kms_key.domino[0].arn) : null
 }
 
 locals {
@@ -74,12 +76,22 @@ resource "aws_key_pair" "domino" {
 }
 
 module "storage" {
-  source                       = "./submodules/storage"
-  deploy_id                    = var.deploy_id
-  efs_access_point_path        = var.efs_access_point_path
-  s3_force_destroy_on_deletion = var.s3_force_destroy_on_deletion
-  vpc_id                       = local.vpc_id
-  subnet_ids                   = [for s in local.private_subnets : s.subnet_id]
+  source                         = "./submodules/storage"
+  deploy_id                      = var.deploy_id
+  efs_access_point_path          = var.efs_access_point_path
+  s3_force_destroy_on_deletion   = var.s3_force_destroy_on_deletion
+  s3_kms_key                     = local.kms_key_arn
+  ecr_force_destroy_on_deletion  = var.ecr_force_destroy_on_deletion
+  ecr_kms_key                    = local.kms_key_arn
+  efs_kms_key                    = local.kms_key_arn
+  efs_backup_vault_kms_key       = local.kms_key_arn
+  vpc_id                         = local.vpc_id
+  subnet_ids                     = [for s in local.private_subnets : s.subnet_id]
+  create_efs_backup_vault        = var.create_efs_backup_vault
+  efs_backup_vault_force_destroy = var.efs_backup_vault_force_destroy
+  efs_backup_schedule            = var.efs_backup_schedule
+  efs_backup_cold_storage_after  = var.efs_backup_cold_storage_after
+  efs_backup_delete_after        = var.efs_backup_delete_after
 }
 
 locals {
@@ -136,6 +148,33 @@ module "bastion" {
   public_subnet_id = local.public_subnets[0].subnet_id
   ami_id           = var.bastion.ami
   instance_type    = var.bastion.instance_type
+  kms_key          = local.kms_key_arn
+  security_group_rules = {
+    bastion_inbound_ssh = {
+      protocol                 = "tcp"
+      from_port                = "22"
+      to_port                  = "22"
+      type                     = "ingress"
+      description              = "Inbound ssh"
+      cidr_blocks              = var.bastion.authorized_ssh_ip_ranges
+      source_security_group_id = null
+    }
+  }
+}
+
+locals {
+  node_groups = {
+    for name, ng in
+    merge(var.additional_node_groups, var.default_node_groups) :
+    name => merge(ng, {
+      gpu = ng.gpu != null ? ng.gpu : anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]),
+    })
+  }
+}
+
+data "aws_ec2_instance_type" "all" {
+  for_each      = toset(flatten([for ng in merge(var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
+  instance_type = each.value
 }
 
 module "eks" {
@@ -150,15 +189,16 @@ module "eks" {
   bastion_security_group_id    = try(module.bastion[0].security_group_id, "")
   create_bastion_sg            = var.bastion != null
   kubeconfig_path              = local.kubeconfig_path
-  default_node_groups          = var.default_node_groups
-  additional_node_groups       = var.additional_node_groups
-  node_iam_policies            = [module.storage.s3_policy]
+  node_groups                  = local.node_groups
+  node_iam_policies            = module.storage.iam_policies
   efs_security_group           = module.storage.efs_security_group
   update_kubeconfig_extra_args = var.update_kubeconfig_extra_args
   eks_master_role_names        = var.eks_master_role_names
   ssh_pvt_key_path             = local.ssh_pvt_key_path
   bastion_user                 = local.bastion_user
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
+  secrets_kms_key              = local.kms_key_arn
+  node_groups_kms_key          = local.kms_key_arn
 
   depends_on = [
     module.network
