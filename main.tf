@@ -149,6 +149,17 @@ module "bastion" {
   ami_id           = var.bastion.ami
   instance_type    = var.bastion.instance_type
   kms_key          = local.kms_key_arn
+  security_group_rules = {
+    bastion_inbound_ssh = {
+      protocol                 = "tcp"
+      from_port                = "22"
+      to_port                  = "22"
+      type                     = "ingress"
+      description              = "Inbound ssh"
+      cidr_blocks              = var.bastion.authorized_ssh_ip_ranges
+      source_security_group_id = null
+    }
+  }
 }
 
 locals {

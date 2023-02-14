@@ -23,6 +23,17 @@ resource "aws_security_group" "bastion" {
   }
 }
 
+resource "aws_security_group_rule" "bastion_outbound" {
+  security_group_id = aws_security_group.bastion.id
+
+  protocol    = "-1"
+  from_port   = "0"
+  to_port     = "0"
+  type        = "egress"
+  description = "Allow all outbound traffic by default"
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
 resource "aws_security_group_rule" "bastion" {
   for_each = var.security_group_rules
 
