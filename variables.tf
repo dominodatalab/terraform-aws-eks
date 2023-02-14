@@ -353,3 +353,9 @@ variable "efs_backup_delete_after" {
   description = "Delete backup data after this many days"
   default     = 125
 }
+
+variable "eks_custom_role_maps" {
+  type        = list(object({rolearn = string, username = string, groups = list(string)}))
+  description = "Custom role maps for aws auth configmap"
+  default     = []
+}

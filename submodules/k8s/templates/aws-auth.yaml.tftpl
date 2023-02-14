@@ -18,3 +18,6 @@ data:
       groups:
         - system:masters
 %{ endfor ~}
+%{ for rolemap in eks_custom_role_maps ~}
+    - ${jsonencode(rolemap)}
+%{ endfor ~}

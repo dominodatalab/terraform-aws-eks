@@ -144,3 +144,8 @@ variable "node_groups_kms_key" {
   description = "if set, use specified key for the EKS node groups"
   default     = null
 }
+
+variable "eks_custom_role_maps" {
+  type        = list(object({rolearn = string, username = string, groups = list(string)}))
+  description = "Custom role maps for aws auth configmap"
+}

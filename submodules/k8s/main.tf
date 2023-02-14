@@ -45,6 +45,7 @@ locals {
         {
           eks_node_role_arns   = toset(var.eks_node_role_arns)
           eks_master_role_arns = toset(var.eks_master_role_arns)
+          eks_custom_role_maps = var.eks_custom_role_maps
       })
 
     }

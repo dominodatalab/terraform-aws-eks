@@ -199,6 +199,7 @@ module "eks" {
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
   secrets_kms_key              = local.kms_key_arn
   node_groups_kms_key          = local.kms_key_arn
+  eks_custom_role_maps         = var.eks_custom_role_maps
 
   depends_on = [
     module.network

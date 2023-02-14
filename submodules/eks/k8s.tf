@@ -13,6 +13,7 @@ module "k8s_setup" {
   eks_node_role_arns   = [aws_iam_role.eks_nodes.arn]
   eks_master_role_arns = [for r in concat(values(data.aws_iam_role.eks_master_roles), [aws_iam_role.eks_cluster]) : r.arn]
   kubeconfig_path      = var.kubeconfig_path
+  eks_custom_role_maps = var.eks_custom_role_maps
 
   security_group_id = aws_security_group.eks_nodes.id
   pod_subnets       = var.pod_subnets

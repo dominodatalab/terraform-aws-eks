@@ -59,3 +59,8 @@ variable "pod_subnets" {
   type        = list(object({ subnet_id = string, az = string }))
   description = "Pod subnets and az to setup with vpc-cni"
 }
+
+variable "eks_custom_role_maps" {
+  type        = list(object({rolearn = string, username = string, groups = list(string)}))
+  description = "Custom role maps for aws auth configmap"
+}
