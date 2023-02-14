@@ -36,7 +36,7 @@ No modules.
 | <a name="input_bastion_user"></a> [bastion\_user](#input\_bastion\_user) | ec2 instance user. | `string` | `"ec2-user"` | no |
 | <a name="input_calico_version"></a> [calico\_version](#input\_calico\_version) | Calico operator version. | `string` | `"v1.11.0"` | no |
 | <a name="input_eks_cluster_arn"></a> [eks\_cluster\_arn](#input\_eks\_cluster\_arn) | ARN of the EKS cluster | `string` | n/a | yes |
-| <a name="input_eks_custom_role_maps"></a> [eks\_custom\_role\_maps](#input\_eks\_custom\_role\_maps) | Custom role maps for aws auth configmap | `list(object({rolearn = string, username = string, groups = list(string)}))` | n/a | yes |
+| <a name="input_eks_custom_role_maps"></a> [eks\_custom\_role\_maps](#input\_eks\_custom\_role\_maps) | Custom role maps for aws auth configmap | `list(object({ rolearn = string, username = string, groups = list(string) }))` | n/a | yes |
 | <a name="input_eks_master_role_arns"></a> [eks\_master\_role\_arns](#input\_eks\_master\_role\_arns) | IAM role arns to be added as masters in eks. | `list(string)` | `[]` | no |
 | <a name="input_eks_node_role_arns"></a> [eks\_node\_role\_arns](#input\_eks\_node\_role\_arns) | Roles arns for EKS nodes to be added to aws-auth for api auth. | `list(string)` | n/a | yes |
 | <a name="input_k8s_tunnel_port"></a> [k8s\_tunnel\_port](#input\_k8s\_tunnel\_port) | K8s ssh tunnel port | `string` | `"1080"` | no |

@@ -130,7 +130,7 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="input_efs_backup_delete_after"></a> [efs\_backup\_delete\_after](#input\_efs\_backup\_delete\_after) | Delete backup data after this many days | `number` | `125` | no |
 | <a name="input_efs_backup_schedule"></a> [efs\_backup\_schedule](#input\_efs\_backup\_schedule) | Cron-style schedule for EFS backup vault (default: once a day at 12pm) | `string` | `"0 12 * * ? *"` | no |
 | <a name="input_efs_backup_vault_force_destroy"></a> [efs\_backup\_vault\_force\_destroy](#input\_efs\_backup\_vault\_force\_destroy) | Toggle to allow automatic destruction of all backups when destroying. | `bool` | `false` | no |
-| <a name="input_eks_custom_role_maps"></a> [eks\_custom\_role\_maps](#input\_eks\_custom\_role\_maps) | Custom role maps for aws auth configmap | `list(object({rolearn = string, username = string, groups = list(string)}))` | `[]` | no |
+| <a name="input_eks_custom_role_maps"></a> [eks\_custom\_role\_maps](#input\_eks\_custom\_role\_maps) | Custom role maps for aws auth configmap | `list(object({ rolearn = string, username = string, groups = list(string) }))` | `[]` | no |
 | <a name="input_eks_master_role_names"></a> [eks\_master\_role\_names](#input\_eks\_master\_role\_names) | IAM role names to be added as masters in eks. | `list(string)` | `[]` | no |
 | <a name="input_k8s_version"></a> [k8s\_version](#input\_k8s\_version) | EKS cluster k8s version. | `string` | `"1.24"` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | if use\_kms is set, use the specified KMS key | `string` | `null` | no |
