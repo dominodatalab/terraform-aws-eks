@@ -58,30 +58,14 @@ resource "aws_security_group_rule" "efs" {
 }
 
 locals {
-  subnets_by_az = {
-    for sb_name, sb in var.private_subnets :
-    sb.az => sb_name
-  }
-
   node_groups_per_zone = flatten([
     for ng_name, ng in var.node_groups :
-    ng.availability_zones != null ?
-
-    [for az in ng.availability_zones : {
-      ng_name    = ng_name
-      sb_name    = local.subnets_by_az[az]
-      subnet     = var.private_subnets[local.subnets_by_az[az]]
-      node_group = ng
-    }]
-
-    :
-
     [for sb_name, sb in slice(var.private_subnets, 0, ng.number_of_azs != null ? ng.number_of_azs : length(var.private_subnets)) : {
       ng_name    = ng_name
       sb_name    = sb_name
       subnet     = sb
       node_group = ng
-    }]
+    } if ng.availability_zones == null || contains(ng.availability_zones, sb.az)]
   ])
   node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
