@@ -71,6 +71,8 @@ locals {
   node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
+data "aws_default_tags" "this" {}
+
 resource "aws_launch_template" "node_groups" {
   for_each                = var.node_groups
   name                    = "${local.eks_cluster_name}-${each.key}"
@@ -111,18 +113,14 @@ resource "aws_launch_template" "node_groups" {
     http_tokens                 = "required"
   }
 
-  # add any tagtag_specifications and additional ones are magically created
-  tag_specifications {
-    resource_type = "instance"
-    tags = {
-      "Name" = "${local.eks_cluster_name}-${each.key}"
-    }
-  }
-
-  tag_specifications {
-    resource_type = "volume"
-    tags = {
-      "Name" = "${local.eks_cluster_name}-${each.key}"
+  # add any tag_specifications and additional ones are magically created
+  dynamic "tag_specifications" {
+    for_each = toset(["instance", "volume"])
+    content {
+      resource_type = tag_specifications.value
+      tags = merge(data.aws_default_tags.this.tags, each.value.tags, {
+        "Name" = "${local.eks_cluster_name}-${each.key}"
+      })
     }
   }
 

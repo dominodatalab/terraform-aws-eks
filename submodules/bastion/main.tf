@@ -1,5 +1,6 @@
 data "aws_partition" "current" {}
 data "aws_caller_identity" "aws_account" {}
+data "aws_default_tags" "this" {}
 
 locals {
   dns_suffix     = data.aws_partition.current.dns_suffix
@@ -144,6 +145,9 @@ resource "aws_instance" "bastion" {
     volume_size           = "40"
     volume_type           = "gp3"
     kms_key_id            = var.kms_key
+    tags = merge(data.aws_default_tags.this.tags, {
+      "Name" = "${var.deploy_id}-bastion"
+    })
   }
 
   source_dest_check = true

@@ -106,7 +106,7 @@ variable "default_node_groups" {
           })
           taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
           tags   = optional(map(string), {})
-          gpu    = optional(bool, false)
+          gpu    = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -132,6 +132,7 @@ variable "default_node_groups" {
           })
           taints = optional(list(object({ key = string, value = optional(string), effect = string })), [])
           tags   = optional(map(string), {})
+          gpu    = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -160,6 +161,7 @@ variable "default_node_groups" {
             { key = "nvidia.com/gpu", value = "true", effect = "NO_SCHEDULE" }
           ])
           tags = optional(map(string), {})
+          gpu  = optional(bool, null)
           volume = optional(object(
             {
               size = optional(number, 100)
@@ -192,7 +194,7 @@ variable "additional_node_groups" {
     labels               = map(string)
     taints               = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                 = optional(map(string), {})
-    gpu                  = optional(bool, false)
+    gpu                  = optional(bool, null)
     volume = object({
       size = string
       type = string
@@ -320,4 +322,34 @@ variable "kubeconfig_path" {
   description = "fully qualified path name to write the kubeconfig file"
   type        = string
   default     = ""
+}
+
+variable "create_efs_backup_vault" {
+  description = "Create backup vault for EFS toggle."
+  type        = bool
+  default     = true
+}
+
+variable "efs_backup_vault_force_destroy" {
+  description = "Toggle to allow automatic destruction of all backups when destroying."
+  type        = bool
+  default     = false
+}
+
+variable "efs_backup_schedule" {
+  type        = string
+  description = "Cron-style schedule for EFS backup vault (default: once a day at 12pm)"
+  default     = "0 12 * * ? *"
+}
+
+variable "efs_backup_cold_storage_after" {
+  type        = number
+  description = "Move backup data to cold storage after this many days"
+  default     = 35
+}
+
+variable "efs_backup_delete_after" {
+  type        = number
+  description = "Delete backup data after this many days"
+  default     = 125
 }
