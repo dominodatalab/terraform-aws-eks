@@ -61,6 +61,6 @@ variable "pod_subnets" {
 }
 
 variable "eks_custom_role_maps" {
-  type        = list(object({rolearn = string, username = string, groups = list(string)}))
+  type        = list(object({ rolearn = string, username = string, groups = list(string) }))
   description = "Custom role maps for aws auth configmap"
 }
