@@ -45,6 +45,26 @@
           },
           "platform": {},
           "gpu": {}
+        },
+        "additional_node_groups": {
+          "specific_azs": {
+            "instance_types": ["m5.2xlarge"],
+            "availability_zones": ["us-west-2a"],
+            "desired_per_az": 0,
+            "min_per_az": 0,
+            "max_per_az": 10,
+            "labels": {"dominodatalab.com/node-pool": "specific-azs"},
+            "volume": {"size": 100, "type": "gp3"}
+          },
+          "num_of_azs": {
+            "instance_types": ["m5.2xlarge"],
+            "number_of_azs": 1,
+            "desired_per_az": 0,
+            "min_per_az": 0,
+            "max_per_az": 10,
+            "labels": {"dominodatalab.com/node-pool": "num-of-azs"},
+            "volume": {"size": 100, "type": "gp3"}
+          }
         }
       }
     }
