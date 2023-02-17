@@ -27,7 +27,7 @@ variable "k8s_version" {
 variable "node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
-    ami                  = optional(string)
+    ami                  = optional(string, null)
     bootstrap_extra_args = optional(string, "")
     instance_types       = list(string)
     spot                 = optional(bool, false)

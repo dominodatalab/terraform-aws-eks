@@ -135,10 +135,20 @@ resource "aws_launch_template" "node_groups" {
   ]
 }
 
+data "aws_ssm_parameter" "eks_ami_release_version" {
+  name = "/aws/service/eks/optimized-ami/${aws_eks_cluster.this.version}/amazon-linux-2/recommended/release_version"
+}
+
+data "aws_ssm_parameter" "eks_gpu_ami_release_version" {
+  name = "/aws/service/eks/optimized-ami/${aws_eks_cluster.this.version}/amazon-linux-2-gpu/recommended/release_version"
+}
+
 resource "aws_eks_node_group" "node_groups" {
   depends_on      = [module.k8s_setup]
   for_each        = local.node_groups_by_name
   cluster_name    = aws_eks_cluster.this.name
+  version         = aws_eks_cluster.this.version
+  release_version = each.value.node_group.ami != null ? null : (each.value.node_group.gpu ? nonsensitive(data.aws_ssm_parameter.eks_gpu_ami_release_version.value) : nonsensitive(data.aws_ssm_parameter.eks_ami_release_version.value))
   node_group_name = "${local.eks_cluster_name}-${each.key}"
   node_role_arn   = aws_iam_role.eks_nodes.arn
   subnet_ids      = [each.value.subnet.subnet_id]
@@ -176,6 +186,10 @@ resource "aws_eks_node_group" "node_groups" {
     ignore_changes = [
       scaling_config[0].desired_size,
     ]
+  }
+
+  update_config {
+    max_unavailable = 1
   }
 }
 
