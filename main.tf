@@ -73,6 +73,9 @@ data "tls_public_key" "domino" {
 resource "aws_key_pair" "domino" {
   key_name   = var.deploy_id
   public_key = trimspace(data.tls_public_key.domino.public_key_openssh)
+  tags = {
+    "Name" = "${var.deploy_id}-eks"
+  }
 }
 
 module "storage" {

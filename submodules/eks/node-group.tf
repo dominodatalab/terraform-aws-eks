@@ -13,6 +13,12 @@ data "aws_iam_policy_document" "eks_nodes" {
 resource "aws_iam_role" "eks_nodes" {
   name               = "${local.eks_cluster_name}-eks-nodes"
   assume_role_policy = data.aws_iam_policy_document.eks_nodes.json
+  tags = {
+    "Name" = "${var.deploy_id}-eks-nodes"
+  }
+  lifecycle {
+    ignore_changes = [managed_policy_arns]
+  }
 }
 
 resource "aws_security_group" "eks_nodes" {
@@ -133,6 +139,10 @@ resource "aws_launch_template" "node_groups" {
     aws_iam_role_policy_attachment.aws_eks_nodes,
     aws_iam_role_policy_attachment.custom_eks_nodes,
   ]
+
+  lifecycle {
+    ignore_changes = [security_group_names]
+  }
 }
 
 data "aws_ssm_parameter" "eks_ami_release_version" {
