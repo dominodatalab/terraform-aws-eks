@@ -76,7 +76,7 @@ variable "default_node_groups" {
           min_per_az            = optional(number, 0)
           max_per_az            = optional(number, 10)
           desired_per_az        = optional(number, 1)
-          availability_zone_ids = optional(list(number), [1, 2, 3])
+          availability_zone_ids = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default"
           })
@@ -103,7 +103,7 @@ variable "default_node_groups" {
           min_per_az            = optional(number, 1)
           max_per_az            = optional(number, 10)
           desired_per_az        = optional(number, 1)
-          availability_zone_ids = optional(list(number), [1, 2, 3])
+          availability_zone_ids = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "platform"
           })
@@ -130,7 +130,7 @@ variable "default_node_groups" {
           min_per_az            = optional(number, 0)
           max_per_az            = optional(number, 10)
           desired_per_az        = optional(number, 0)
-          availability_zone_ids = optional(list(number), [1, 2, 3])
+          availability_zone_ids = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default-gpu"
             "nvidia.com/gpu"              = true
@@ -152,11 +152,6 @@ variable "default_node_groups" {
           )
       })
   })
-  default = {
-    compute  = {}
-    platform = {}
-    gpu      = {}
-  }
 }
 
 variable "additional_node_groups" {
@@ -169,7 +164,7 @@ variable "additional_node_groups" {
     min_per_az            = number
     max_per_az            = number
     desired_per_az        = number
-    availability_zone_ids = list(number)
+    availability_zone_ids = list(string)
     labels                = map(string)
     taints                = optional(list(object({ key = string, value = optional(string), effect = string })), [])
     tags                  = optional(map(string), {})

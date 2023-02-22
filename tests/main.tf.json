@@ -33,6 +33,7 @@
         "default_node_groups": {
           "compute": {
             "spot": true,
+            "availability_zone_ids": ["usw2-az1", "usw2-az2"],
             "instance_types": [
               "m4.2xlarge",
               "m5.2xlarge",
@@ -46,17 +47,21 @@
             ],
             "ami": "${data.aws_ami.eks_node.image_id}"
           },
-          "platform": {},
-          "gpu": {}
+          "platform": {
+            "availability_zone_ids": ["usw2-az1", "usw2-az2"]
+          },
+          "gpu": {
+            "availability_zone_ids": ["usw2-az1", "usw2-az2"]
+          }
         },
         "additional_node_groups": {
-          "specific_azs": {
+          "other_az": {
             "instance_types": ["m5.2xlarge"],
-            "availability_zone_ids": [4],
+            "availability_zone_ids": ["usw2-az3"],
             "desired_per_az": 0,
             "min_per_az": 0,
             "max_per_az": 10,
-            "labels": {"dominodatalab.com/node-pool": "specific-azs"},
+            "labels": {"dominodatalab.com/node-pool": "other-az"},
             "volume": {"size": 100, "type": "gp3"}
           }
         }

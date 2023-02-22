@@ -1,12 +1,3 @@
-# Get "available" azs for the region
-data "aws_availability_zones" "available" {
-  state = "available"
-  filter {
-    name   = "region-name"
-    values = [var.region]
-  }
-}
-
 data "aws_subnet" "public" {
   count = var.vpc_id != null ? length(var.public_subnets) : 0
   id    = var.public_subnets[count.index]
@@ -23,11 +14,6 @@ data "aws_subnet" "pod" {
 }
 
 locals {
-  zones_by_id = {
-    for zone_id in data.aws_availability_zones.available.zone_ids :
-    regex("[[:alnum:]]+-az([[:digit:]]+)", zone_id)[0] => zone_id
-  }
-
   # Get the zones that are available and offered in the region for the instance types.
   az_ids     = var.vpc_id != null ? distinct(data.aws_subnet.private[*].availability_zone) : toset(sort(flatten([for name, ng in local.node_groups : ng.availability_zone_ids])))
   num_of_azs = length(local.az_ids)
@@ -146,9 +132,8 @@ locals {
     for name, ng in
     merge(var.additional_node_groups, var.default_node_groups) :
     name => merge(ng, {
-      gpu                   = ng.gpu != null ? ng.gpu : anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]),
-      instance_tags         = merge(data.aws_default_tags.this.tags, ng.tags)
-      availability_zone_ids = [for az_id in ng.availability_zone_ids : local.zones_by_id[az_id]]
+      gpu           = ng.gpu != null ? ng.gpu : anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]),
+      instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
     })
   }
 }
