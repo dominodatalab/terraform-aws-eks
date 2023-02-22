@@ -1,3 +1,8 @@
+data "aws_availability_zone" "zones" {
+  for_each = toset(var.availability_zone_ids)
+  zone_id  = each.value
+}
+
 locals {
   zone_id_by_name = { for az_id in var.availability_zone_ids : data.aws_availability_zone.zones[az_id].name => az_id }
   az_names        = sort(keys(local.zone_id_by_name))
@@ -28,11 +33,6 @@ locals {
       "name"  = "${var.deploy_id}-pod-${local.az_names[i]}"
     }
   }
-}
-
-data "aws_availability_zone" "zones" {
-  for_each = toset(var.availability_zone_ids)
-  zone_id  = each.value
 }
 
 resource "aws_subnet" "public" {

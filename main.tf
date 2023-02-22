@@ -15,7 +15,7 @@ data "aws_subnet" "pod" {
 
 locals {
   # Get the zones that are available and offered in the region for the instance types.
-  az_ids     = var.vpc_id != null ? distinct(data.aws_subnet.private[*].availability_zone) : toset(sort(flatten([for name, ng in local.node_groups : ng.availability_zone_ids])))
+  az_ids     = var.vpc_id != null ? distinct(data.aws_subnet.private[*].availability_zone) : distinct(flatten([for name, ng in local.node_groups : ng.availability_zone_ids]))
   num_of_azs = length(local.az_ids)
 
   kms_key_arn = var.use_kms ? try(data.aws_kms_key.key[0].arn, resource.aws_kms_key.domino[0].arn) : null

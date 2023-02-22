@@ -80,13 +80,14 @@ resource "aws_security_group_rule" "efs" {
 
 locals {
   node_groups_per_zone = flatten([
-    for ng_name, ng in var.node_groups :
-    [for sb_name, sb in var.private_subnets : {
-      ng_name    = ng_name
-      sb_name    = sb_name
-      subnet     = sb
-      node_group = ng
-    } if contains(ng.availability_zone_ids, sb.az_id)]
+    for ng_name, ng in var.node_groups : [
+      for sb_name, sb in var.private_subnets : {
+        ng_name    = ng_name
+        sb_name    = sb_name
+        subnet     = sb
+        node_group = ng
+      } if contains(ng.availability_zone_ids, sb.az_id)
+    ]
   ])
   node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
@@ -150,7 +151,7 @@ resource "aws_launch_template" "node_groups" {
 
   lifecycle {
     precondition {
-      condition     = length(setsubtract(each.value.availability_zone_ids, toset(data.aws_ec2_instance_type_offerings.nodes[each.key].locations))) == 0
+      condition     = length(setsubtract(each.value.availability_zone_ids, data.aws_ec2_instance_type_offerings.nodes[each.key].locations)) == 0
       error_message = <<-EOM
         Instance type(s) ${jsonencode(each.value.instance_types)} for node group ${format("%q", each.key)} are not available in all the given zones:
         given = ${jsonencode(each.value.availability_zone_ids)}
