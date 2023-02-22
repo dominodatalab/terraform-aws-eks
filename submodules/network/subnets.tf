@@ -1,36 +1,37 @@
 locals {
-  az = sort(var.availability_zone_ids)
+  zone_id_by_name = { for az_id in var.availability_zone_ids : data.aws_availability_zone.zones[az_id].name => az_id }
+  az_names        = sort(keys(local.zone_id_by_name))
 
   ## Get the public subnets by matching the mask and populating its params
   public_cidrs = { for i, cidr in var.public_cidrs : cidr =>
     {
-      "az_id" = element(local.az, i)
-      "az"    = data.aws_availability_zone.zones[element(local.az, i)].name
-      "name"  = "${var.deploy_id}-public-${element(local.az, i)}"
+      "az_id" = local.zone_id_by_name[local.az_names[i]]
+      "az"    = local.az_names[i]
+      "name"  = "${var.deploy_id}-public-${local.az_names[i]}"
     }
   }
 
   ## Get the private subnets by matching the mask and populating its params
   private_cidrs = { for i, cidr in var.private_cidrs : cidr =>
     {
-      "az_id" = element(local.az, i)
-      "az"    = data.aws_availability_zone.zones[element(local.az, i)].name
-      "name"  = "${var.deploy_id}-private-${element(local.az, i)}"
+      "az_id" = local.zone_id_by_name[local.az_names[i]]
+      "az"    = local.az_names[i]
+      "name"  = "${var.deploy_id}-private-${local.az_names[i]}"
     }
   }
 
   ## Get the pod subnets by matching the mask and populating its params
   pod_cidrs = { for i, cidr in var.pod_cidrs : cidr =>
     {
-      "az_id" = element(local.az, i)
-      "az"    = data.aws_availability_zone.zones[element(local.az, i)].name
-      "name"  = "${var.deploy_id}-pod-${element(local.az, i)}"
+      "az_id" = local.zone_id_by_name[local.az_names[i]]
+      "az"    = local.az_names[i]
+      "name"  = "${var.deploy_id}-pod-${local.az_names[i]}"
     }
   }
 }
 
 data "aws_availability_zone" "zones" {
-  for_each = toset(local.az)
+  for_each = toset(var.availability_zone_ids)
   zone_id  = each.value
 }
 

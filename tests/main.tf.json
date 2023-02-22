@@ -33,6 +33,17 @@
         "default_node_groups": {
           "compute": {
             "spot": true,
+            "instance_types": [
+              "m4.2xlarge",
+              "m5.2xlarge",
+              "m5a.2xlarge",
+              "m5ad.2xlarge",
+              "m5d.2xlarge",
+              "m5dn.2xlarge",
+              "m5n.2xlarge",
+              "m5zn.2xlarge",
+              "m6id.2xlarge"
+            ],
             "ami": "${data.aws_ami.eks_node.image_id}"
           },
           "platform": {},
