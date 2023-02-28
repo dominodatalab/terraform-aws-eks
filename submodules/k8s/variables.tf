@@ -47,7 +47,7 @@ variable "k8s_tunnel_port" {
 variable "calico_version" {
   type        = string
   description = "Calico operator version."
-  default     = "v1.11.0"
+  default     = "v3.25.0"
 }
 
 variable "security_group_id" {

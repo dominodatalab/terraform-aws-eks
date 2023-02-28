@@ -39,7 +39,7 @@ set_k8s_auth() {
 set_eniconfig() {
   local ENICONFIG_YAML="${eniconfig_yaml}"
   if [ -z "$ENICONFIG_YAML" ]; then
-      return
+    return
   fi
   if test -f "$ENICONFIG_YAML"; then
     printf "$GREEN Updating $ENICONFIG_YAML... $EC \n"
@@ -54,11 +54,22 @@ set_eniconfig() {
 install_calico() {
   local CALICO_OPERATOR_YAML_URL=${calico_operator_url}
   printf "$GREEN Installing Calico Operator $EC \n"
-  kubectl_apply $CALICO_OPERATOR_YAML_URL
+  ## Workaround for https://github.com/projectcalico/calico/issues/6491#issuecomment-1253970628
+  (kubectl_cmd create -f $CALICO_OPERATOR_YAML_URL) || true
+  kubectl_cmd replace -f $CALICO_OPERATOR_YAML_URL
   echo
-  local CALICO_CRD_YAML_URL=${calico_custom_resources_url}
+
   printf "$GREEN Installing Calico Custom resources $EC \n"
-  kubectl_apply $CALICO_CRD_YAML_URL
+  kubectl_cmd create -f - <<EOF
+kind: Installation
+apiVersion: operator.tigera.io/v1
+metadata:
+  name: default
+spec:
+  kubernetesProvider: EKS
+  cni:
+    type: AmazonVPC
+EOF
   echo
 }
 
@@ -91,7 +102,7 @@ kubectl_cmd() {
   echo "Running kubectl $@..."
   kubectl --kubeconfig "$KUBECONFIG_PROXY" $@
   if [ $? -ne 0 ]; then
-    printf "$RED Error running kubectl $@ \n"
+    printf "$RED Error running kubectl $@ $EC \n"
     exit 1
   fi
 }
