@@ -69,7 +69,10 @@ resource "local_file" "templates" {
 
 resource "null_resource" "run_k8s_pre_setup" {
   triggers = {
-    script_hash = md5(local_file.templates["k8s_presetup"].content)
+    k8s_presetup_hash     = md5(local_file.templates["k8s_presetup"].content)
+    k8s_functions_sh_hash = md5(local_file.templates["k8s_functions_sh"].content)
+    aws_auth_hash         = md5(local_file.templates["aws_auth"].content)
+    eni_config_hash       = md5(local_file.templates["eni_config"].content)
   }
 
   provisioner "local-exec" {
