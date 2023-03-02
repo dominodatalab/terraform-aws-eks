@@ -56,11 +56,11 @@ install_calico() {
   printf "$GREEN Installing Calico Operator $EC \n"
   ## Workaround for https://github.com/projectcalico/calico/issues/6491#issuecomment-1253970628
   (kubectl_cmd create -f $CALICO_OPERATOR_YAML_URL) || true
-  kubectl_cmd replace --force -f $CALICO_OPERATOR_YAML_URL
+  kubectl_cmd replace -f $CALICO_OPERATOR_YAML_URL
   echo
 
   printf "$GREEN Installing Calico Custom resources $EC \n"
-  kubectl_cmd create -f - <<EOF
+  kubectl_cmd apply -f - <<EOF
 kind: Installation
 apiVersion: operator.tigera.io/v1
 metadata:
