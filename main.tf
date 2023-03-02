@@ -22,7 +22,6 @@ locals {
 }
 
 locals {
-  bastion_user     = "ec2-user"
   ssh_pvt_key_path = abspath(pathexpand(var.ssh_pvt_key_path))
   kubeconfig_path  = var.kubeconfig_path != "" ? abspath(pathexpand(var.kubeconfig_path)) : "${path.cwd}/kubeconfig"
 }
@@ -161,7 +160,7 @@ module "eks" {
   update_kubeconfig_extra_args = var.update_kubeconfig_extra_args
   eks_master_role_names        = var.eks_master_role_names
   ssh_pvt_key_path             = local.ssh_pvt_key_path
-  bastion_user                 = local.bastion_user
+  bastion_user                 = try(var.bastion.username, null)
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
   secrets_kms_key              = local.kms_key_arn
   node_groups_kms_key          = local.kms_key_arn

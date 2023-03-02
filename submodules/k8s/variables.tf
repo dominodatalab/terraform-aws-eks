@@ -9,12 +9,10 @@ variable "ssh_pvt_key_path" {
   description = "SSH private key filepath."
 }
 
-
 variable "bastion_user" {
   type        = string
   description = "ec2 instance user."
   default     = "ec2-user"
-
 }
 
 variable "bastion_public_ip" {
