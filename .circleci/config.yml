@@ -16,6 +16,7 @@ parameters:
 
 orbs:
   terraform: circleci/terraform@3.2.0
+  aws-cli: circleci/aws-cli@3.1
 
 commands:
   set_env_vars:
@@ -84,6 +85,11 @@ jobs:
     steps:
       - checkout
       - install_tf
+      - run: |
+          echo "export AWS_ACCESS_KEY_ID=" >> $BASH_ENV
+          echo "export AWS_SECRET_ACCESS_KEY=" >> $BASH_ENV
+      - aws-cli/setup:
+         role-arn: "${AWS_IAM_ROLE}"
       - set_env_vars
       - gen_pvt_key
       - tf_init_apply
@@ -103,6 +109,11 @@ jobs:
     steps:
       - checkout
       - install_tf
+      - run: |
+          echo "export AWS_ACCESS_KEY_ID=" >> $BASH_ENV
+          echo "export AWS_SECRET_ACCESS_KEY=" >> $BASH_ENV
+      - aws-cli/setup:
+         role-arn: "${AWS_IAM_ROLE}"
       - set_env_vars
       - gen_pvt_key
       - run:
@@ -136,10 +147,12 @@ workflows:
       equal: ["test-deploy-workflow", << pipeline.parameters.GHA_Action >> ]
     jobs:
       - test-deploy:
+          context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
   test-upgrade-workflow:
     when:
       equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >> ]
     jobs:
       - test-upgrade:
+          context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
