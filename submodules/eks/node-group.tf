@@ -92,6 +92,15 @@ locals {
   node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
+data "aws_ami" "custom" {
+  for_each = toset([for k, v in var.node_groups : v.ami if v.ami != null])
+
+  filter {
+    name   = "image-id"
+    values = [each.value]
+  }
+}
+
 resource "aws_launch_template" "node_groups" {
   for_each                = var.node_groups
   name                    = "${local.eks_cluster_name}-${each.key}"
@@ -115,7 +124,7 @@ resource "aws_launch_template" "node_groups" {
   image_id               = each.value.ami
 
   block_device_mappings {
-    device_name = "/dev/xvda"
+    device_name = each.value.ami == null ? "/dev/xvda" : data.aws_ami.custom[each.value.ami].root_device_name
 
     ebs {
       delete_on_termination = true
