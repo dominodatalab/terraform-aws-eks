@@ -19,6 +19,8 @@ variable "bastion_user" {
 variable "bastion_public_ip" {
   type        = string
   description = "Bastion host public ip."
+  default     = ""
+  nullable    = false
 }
 
 variable "eks_cluster_arn" {

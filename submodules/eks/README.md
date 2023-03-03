@@ -66,8 +66,8 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_bastion_public_ip"></a> [bastion\_public\_ip](#input\_bastion\_public\_ip) | Public IP of bastion instance | `string` | `""` | no |
-| <a name="input_bastion_security_group_id"></a> [bastion\_security\_group\_id](#input\_bastion\_security\_group\_id) | Bastion security group id. | `string` | `""` | no |
+| <a name="input_bastion_public_ip"></a> [bastion\_public\_ip](#input\_bastion\_public\_ip) | Public IP of bastion instance | `string` | `null` | no |
+| <a name="input_bastion_security_group_id"></a> [bastion\_security\_group\_id](#input\_bastion\_security\_group\_id) | Bastion security group id. | `string` | `null` | no |
 | <a name="input_bastion_user"></a> [bastion\_user](#input\_bastion\_user) | Username for bastion instance | `string` | `""` | no |
 | <a name="input_create_bastion_sg"></a> [create\_bastion\_sg](#input\_create\_bastion\_sg) | Create bastion access rules toggle. | `bool` | `false` | no |
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
@@ -75,6 +75,8 @@
 | <a name="input_eks_cluster_addons"></a> [eks\_cluster\_addons](#input\_eks\_cluster\_addons) | EKS cluster addons. vpc-cni is installed separately. | `list(string)` | <pre>[<br>  "kube-proxy",<br>  "coredns"<br>]</pre> | no |
 | <a name="input_eks_custom_role_maps"></a> [eks\_custom\_role\_maps](#input\_eks\_custom\_role\_maps) | Custom role maps for aws auth configmap | `list(object({ rolearn = string, username = string, groups = list(string) }))` | `[]` | no |
 | <a name="input_eks_master_role_names"></a> [eks\_master\_role\_names](#input\_eks\_master\_role\_names) | IAM role names to be added as masters in eks | `list(string)` | `[]` | no |
+| <a name="input_eks_public_access"></a> [eks\_public\_access](#input\_eks\_public\_access) | EKS API endpoint public access | `bool` | `false` | no |
+| <a name="input_eks_public_access_cidrs"></a> [eks\_public\_access\_cidrs](#input\_eks\_public\_access\_cidrs) | EKS API endpoint public access CIDRs | `list(string)` | <pre>[<br>  "127.0.0.1/32"<br>]</pre> | no |
 | <a name="input_k8s_version"></a> [k8s\_version](#input\_k8s\_version) | EKS cluster k8s version. | `string` | n/a | yes |
 | <a name="input_kubeconfig_path"></a> [kubeconfig\_path](#input\_kubeconfig\_path) | Kubeconfig file path. | `string` | `"kubeconfig"` | no |
 | <a name="input_node_groups"></a> [node\_groups](#input\_node\_groups) | Additional EKS managed node groups definition. | <pre>map(object({<br>    ami                   = optional(string, null)<br>    bootstrap_extra_args  = optional(string, "")<br>    instance_types        = list(string)<br>    spot                  = optional(bool, false)<br>    min_per_az            = number<br>    max_per_az            = number<br>    desired_per_az        = number<br>    availability_zone_ids = list(string)<br>    labels                = map(string)<br>    taints                = optional(list(object({ key = string, value = optional(string), effect = string })), [])<br>    tags                  = optional(map(string), {})<br>    instance_tags         = optional(map(string), {})<br>    gpu                   = optional(bool, false)<br>    volume = object({<br>      size = string<br>      type = string<br>    })<br>  }))</pre> | `{}` | no |

@@ -151,8 +151,10 @@ module "eks" {
   private_subnets              = local.private_subnets
   pod_subnets                  = local.pod_subnets
   ssh_key_pair_name            = aws_key_pair.domino.key_name
-  bastion_security_group_id    = try(module.bastion[0].security_group_id, "")
   create_bastion_sg            = var.bastion != null
+  bastion_security_group_id    = try(module.bastion[0].security_group_id, null)
+  bastion_public_ip            = try(module.bastion[0].public_ip, null)
+  bastion_user                 = try(var.bastion.username, null)
   kubeconfig_path              = local.kubeconfig_path
   node_groups                  = local.node_groups
   node_iam_policies            = module.storage.iam_policies
@@ -160,11 +162,11 @@ module "eks" {
   update_kubeconfig_extra_args = var.update_kubeconfig_extra_args
   eks_master_role_names        = var.eks_master_role_names
   ssh_pvt_key_path             = local.ssh_pvt_key_path
-  bastion_user                 = var.bastion.username
-  bastion_public_ip            = try(module.bastion[0].public_ip, "")
   secrets_kms_key              = local.kms_key_arn
   node_groups_kms_key          = local.kms_key_arn
   eks_custom_role_maps         = var.eks_custom_role_maps
+  eks_public_access            = var.eks_public_access
+  eks_public_access_cidrs      = var.eks_public_access_cidrs
 
   depends_on = [
     module.network

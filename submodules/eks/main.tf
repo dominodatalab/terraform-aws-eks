@@ -147,43 +147,4 @@ locals {
       self        = true
     }
   }
-
-  bastion_eks_security_group_rules = {
-    bastion_to_eks_api = {
-      description              = "To ${local.eks_cluster_name}:443"
-      protocol                 = "tcp"
-      from_port                = "443"
-      to_port                  = "443"
-      type                     = "egress"
-      security_group_id        = var.bastion_security_group_id
-      source_security_group_id = aws_security_group.eks_cluster.id
-    }
-    bastion_to_eks_nodes_ssh = {
-      description              = "To eks nodes over ssh"
-      protocol                 = "tcp"
-      from_port                = "22"
-      to_port                  = "22"
-      type                     = "egress"
-      security_group_id        = var.bastion_security_group_id
-      source_security_group_id = aws_security_group.eks_nodes.id
-    }
-    eks_api_from_bastion = {
-      description              = "From Bastion over https"
-      protocol                 = "tcp"
-      from_port                = "443"
-      to_port                  = "443"
-      type                     = "ingress"
-      security_group_id        = aws_security_group.eks_cluster.id
-      source_security_group_id = var.bastion_security_group_id
-    }
-    eks_nodes_ssh_from_bastion = {
-      description              = "From Bastion over ssh"
-      protocol                 = "tcp"
-      from_port                = "22"
-      to_port                  = "22"
-      type                     = "ingress"
-      security_group_id        = aws_security_group.eks_nodes.id
-      source_security_group_id = var.bastion_security_group_id
-    }
-  }
 }

@@ -334,3 +334,15 @@ variable "eks_custom_role_maps" {
   description = "Custom role maps for aws auth configmap"
   default     = []
 }
+
+variable "eks_public_access" {
+  type        = bool
+  description = "EKS API endpoint public access"
+  default     = null
+}
+
+variable "eks_public_access_cidrs" {
+  type        = list(string)
+  description = "EKS API endpoint public access CIDRs"
+  default     = null
+}

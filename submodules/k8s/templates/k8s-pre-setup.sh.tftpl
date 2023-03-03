@@ -2,19 +2,11 @@
 
 set -ex
 
-RED="\e[31m"
-GREEN="\e[32m"
-EC="\e[0m"
-
 source ${k8s_functions_sh_filename}
 
-main() {
-  open_ssh_tunnel_to_k8s_api
-  check_kubeconfig
-  set_k8s_auth
-  set_eniconfig
-  install_calico
-}
-
 trap close_ssh_tunnel_to_k8s_api EXIT
-main
+open_ssh_tunnel_to_k8s_api
+check_kubeconfig
+set_k8s_auth
+set_eniconfig
+install_calico
