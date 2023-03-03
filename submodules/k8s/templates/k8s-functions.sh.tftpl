@@ -60,7 +60,7 @@ install_calico() {
   echo
 
   printf "$GREEN Installing Calico Custom resources $EC \n"
-  kubectl_apply - <<EOF
+  kubectl_cmd apply -f - <<EOF
 kind: Installation
 apiVersion: operator.tigera.io/v1
 metadata:
