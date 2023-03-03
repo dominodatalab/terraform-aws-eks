@@ -85,9 +85,6 @@ jobs:
     steps:
       - checkout
       - install_tf
-      - run: |
-          echo "export AWS_ACCESS_KEY_ID=" >> $BASH_ENV
-          echo "export AWS_SECRET_ACCESS_KEY=" >> $BASH_ENV
       - aws-cli/setup:
          role-arn: "${AWS_IAM_ROLE}"
       - set_env_vars
@@ -109,9 +106,6 @@ jobs:
     steps:
       - checkout
       - install_tf
-      - run: |
-          echo "export AWS_ACCESS_KEY_ID=" >> $BASH_ENV
-          echo "export AWS_SECRET_ACCESS_KEY=" >> $BASH_ENV
       - aws-cli/setup:
          role-arn: "${AWS_IAM_ROLE}"
       - set_env_vars
