@@ -41,6 +41,8 @@ commands:
           command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
   tf_init_apply:
     steps:
+      - aws-cli/setup:
+         role-arn: "${AWS_IAM_ROLE}"
       - run:
           name: Terraform init/validate/apply
           working_directory: tests
@@ -52,6 +54,8 @@ commands:
             terraform apply -auto-approve
   tf_destroy:
     steps:
+      - aws-cli/setup:
+         role-arn: "${AWS_IAM_ROLE}"
       - run:
           name: Terraform destroy
           working_directory: tests
@@ -85,8 +89,6 @@ jobs:
     steps:
       - checkout
       - install_tf
-      - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
       - set_env_vars
       - gen_pvt_key
       - tf_init_apply
@@ -121,6 +123,8 @@ jobs:
             echo "Setting module source to: ${MOD_SOURCE}"
             cat \<<< $(jq --arg mod_source "${MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
       - tf_init_apply
+      - aws-cli/setup:
+         role-arn: "${AWS_IAM_ROLE}"
       - run:
           name: "Upgrade module by applying this commit"
           working_directory: tests
