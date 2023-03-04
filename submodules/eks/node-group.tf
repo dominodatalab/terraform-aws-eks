@@ -124,7 +124,7 @@ resource "aws_launch_template" "node_groups" {
   image_id               = each.value.ami
 
   block_device_mappings {
-    device_name = each.value.ami == null ? "/dev/xvda" : data.aws_ami.custom[each.value.ami].root_device_name
+    device_name = try(data.aws_ami.custom[each.value.ami].root_device_name, "/dev/xvda")
 
     ebs {
       delete_on_termination = true
