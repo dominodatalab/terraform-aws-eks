@@ -27,7 +27,9 @@
         "eks_master_role_names": ["okta-poweruser", "okta-fulladmin"],
         "s3_force_destroy_on_deletion": true,
         "ecr_force_destroy_on_deletion": true,
-        "bastion": {},
+        "bastion": {
+          "install_binaries": true
+        },
         "ssh_pvt_key_path": "domino.pem",
         "tags": "${var.tags}",
         "default_node_groups": {
@@ -61,8 +63,8 @@
             "desired_per_az": 0,
             "min_per_az": 0,
             "max_per_az": 10,
-            "labels": {"dominodatalab.com/node-pool": "other-az"},
-            "volume": {"size": 100, "type": "gp3"}
+            "labels": { "dominodatalab.com/node-pool": "other-az" },
+            "volume": { "size": 100, "type": "gp3" }
           }
         }
       }
