@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # Install the AWS CLI
-curl 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o awscliv2.zip
+curl --silent 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o awscliv2.zip
 unzip awscliv2.zip
-sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update && rm -fr aws awscliv2.zip
+sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update >/dev/null 2>&1 && rm -fr aws awscliv2.zip
 
 # Install Docker
-sudo yum install -y docker
+sudo yum install -y -q docker
 sudo systemctl start docker
 sudo usermod -a -G docker ${bastion_user}
 
 # Install kubectl
 version=$(curl -s https://api.github.com/repos/kubernetes/kubernetes/releases | grep -oE "v${k8s_version}\.[0-9]+(\.[0-9]+)*" | sort -rV | head -n 1)
-curl -LO "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl"
+curl --silent -LO "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl"
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/

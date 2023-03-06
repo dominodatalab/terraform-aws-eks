@@ -170,6 +170,11 @@ resource "aws_eip" "bastion" {
   vpc                  = true
 }
 
+resource "aws_eip_association" "bastion" {
+  instance_id   = aws_instance.bastion.id
+  allocation_id = aws_eip.bastion.id
+}
+
 data "aws_iam_policy_document" "bastion_assume_role" {
   statement {
 
@@ -200,7 +205,7 @@ resource "null_resource" "install_binaries" {
     type        = "ssh"
     user        = var.bastion_user
     private_key = file(var.ssh_pvt_key_path)
-    host        = self.triggers.bastion_public_ip
+    host        = self.triggers.bastion_elastic_ip
   }
   provisioner "file" {
     content = templatefile("${path.module}/templates/install-binaries.sh.tftpl", {
@@ -222,6 +227,11 @@ resource "null_resource" "install_binaries" {
       k8s_version  = var.k8s_version
       bastion_user = var.bastion_user
     }))
-    bastion_public_ip = aws_instance.bastion.public_ip
+    bastion_elastic_ip = aws_eip.bastion.public_ip
   }
+
+  depends_on = [
+    aws_instance.bastion,
+    aws_eip_association.bastion
+  ]
 }
