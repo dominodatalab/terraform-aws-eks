@@ -102,15 +102,18 @@ locals {
 module "bastion" {
   count = var.bastion != null ? 1 : 0
 
-  source           = "./submodules/bastion"
-  deploy_id        = var.deploy_id
-  region           = var.region
-  vpc_id           = local.vpc_id
-  ssh_pvt_key_path = aws_key_pair.domino.key_name
-  public_subnet_id = local.public_subnets[0].subnet_id
-  ami_id           = var.bastion.ami
-  instance_type    = var.bastion.instance_type
-  kms_key          = local.kms_key_arn
+  source            = "./submodules/bastion"
+  deploy_id         = var.deploy_id
+  region            = var.region
+  vpc_id            = local.vpc_id
+  ssh_key_pair_name = aws_key_pair.domino.key_name
+  ssh_pvt_key_path  = local.ssh_pvt_key_path
+  public_subnet_id  = local.public_subnets[0].subnet_id
+  ami_id            = var.bastion.ami
+  instance_type     = var.bastion.instance_type
+  kms_key           = local.kms_key_arn
+  install_binaries  = var.bastion.install_binaries
+  k8s_version       = var.k8s_version
   security_group_rules = {
     bastion_inbound_ssh = {
       protocol                 = "tcp"

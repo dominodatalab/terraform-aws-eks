@@ -30,6 +30,11 @@ variable "ssh_pvt_key_path" {
   type        = string
 }
 
+variable "ssh_key_pair_name" {
+  description = "AWS key_pair name."
+  type        = string
+}
+
 variable "public_subnet_id" {
   description = "Public subnet to create bastion host in."
   type        = string
@@ -54,4 +59,23 @@ variable "kms_key" {
   type        = string
   description = "if set, use specified key for EBS volumes"
   default     = null
+}
+
+variable "install_binaries" {
+  type        = bool
+  description = "Install binaries on bastion host"
+  default     = false
+}
+
+variable "k8s_version" {
+  type        = string
+  description = "K8s version used to download/install the kubectl binary"
+  default     = "1.25"
+}
+
+variable "bastion_user" {
+  type        = string
+  description = "ec2 instance user."
+  default     = "ec2-user"
+
 }

@@ -128,7 +128,7 @@ resource "aws_instance" "bastion" {
   hibernation                          = false
   instance_initiated_shutdown_behavior = "stop"
   instance_type                        = var.instance_type != null ? var.instance_type : "t2.micro"
-  key_name                             = var.ssh_pvt_key_path
+  key_name                             = var.ssh_key_pair_name
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -170,6 +170,11 @@ resource "aws_eip" "bastion" {
   vpc                  = true
 }
 
+resource "aws_eip_association" "bastion" {
+  instance_id   = aws_instance.bastion.id
+  allocation_id = aws_eip.bastion.id
+}
+
 data "aws_iam_policy_document" "bastion_assume_role" {
   statement {
 
@@ -190,4 +195,43 @@ resource "aws_iam_policy" "bastion_assume_role" {
 resource "aws_iam_role_policy_attachment" "bastion_assume_role" {
   policy_arn = aws_iam_policy.bastion_assume_role.arn
   role       = aws_iam_role.bastion.name
+}
+
+
+resource "null_resource" "install_binaries" {
+  count = var.install_binaries ? 1 : 0
+
+  connection {
+    type        = "ssh"
+    user        = var.bastion_user
+    private_key = file(var.ssh_pvt_key_path)
+    host        = self.triggers.bastion_elastic_ip
+  }
+  provisioner "file" {
+    content = templatefile("${path.module}/templates/install-binaries.sh.tftpl", {
+      k8s_version  = var.k8s_version
+      bastion_user = var.bastion_user
+    })
+    destination = self.triggers.sh_filepath
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x ${self.triggers.sh_filepath}",
+      "sudo ${self.triggers.sh_filepath} && rm -f ${self.triggers.sh_filepath}",
+    ]
+  }
+  triggers = {
+    sh_filepath = "/home/ec2-user/install-binaries.sh"
+    sh_content_hash = md5(templatefile("${path.module}/templates/install-binaries.sh.tftpl", {
+      k8s_version  = var.k8s_version
+      bastion_user = var.bastion_user
+    }))
+    bastion_elastic_ip = aws_eip.bastion.public_ip
+  }
+
+  depends_on = [
+    aws_instance.bastion,
+    aws_eip_association.bastion
+  ]
 }

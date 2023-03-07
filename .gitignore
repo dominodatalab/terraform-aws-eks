@@ -38,3 +38,5 @@ kubeconfig
 domino.yml
 terraform_tflint.txt
 terraform_tfsec.txt
+eniconfig.yaml
+kubeconfig-proxy
