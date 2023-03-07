@@ -207,6 +207,13 @@ resource "null_resource" "install_binaries" {
     private_key = file(var.ssh_pvt_key_path)
     host        = self.triggers.bastion_elastic_ip
   }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo cloud-init status --wait",
+    ]
+  }
+
   provisioner "file" {
     content = templatefile("${path.module}/templates/install-binaries.sh.tftpl", {
       k8s_version  = var.k8s_version
@@ -221,6 +228,7 @@ resource "null_resource" "install_binaries" {
       "sudo ${self.triggers.sh_filepath} && rm -f ${self.triggers.sh_filepath}",
     ]
   }
+
   triggers = {
     sh_filepath = "/home/ec2-user/install-binaries.sh"
     sh_content_hash = md5(templatefile("${path.module}/templates/install-binaries.sh.tftpl", {

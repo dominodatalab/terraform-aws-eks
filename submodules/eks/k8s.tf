@@ -4,6 +4,8 @@ data "aws_iam_role" "eks_master_roles" {
 }
 
 module "k8s_setup" {
+  count = var.create_bastion_sg || var.eks_public_access.enabled ? 1 : 0
+
   source               = "../k8s"
   ssh_pvt_key_path     = var.ssh_pvt_key_path
   bastion_user         = var.bastion_user

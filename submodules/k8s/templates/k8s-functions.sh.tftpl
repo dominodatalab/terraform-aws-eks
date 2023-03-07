@@ -18,9 +18,9 @@ open_ssh_tunnel_to_k8s_api() {
 check_kubeconfig() {
   printf "$GREEN Checking if $KUBECONFIG exists... $EC \n"
   if test -f "$KUBECONFIG"; then
-    echo "$KUBECONFIG exists, creating $KUBECONFIG_PROXY for proxy use."
-    cp $KUBECONFIG $KUBECONFIG_PROXY
     if [[ -n "${bastion_public_ip}" ]]; then
+      echo "$KUBECONFIG exists, creating $KUBECONFIG_PROXY for proxy use."
+      cp $KUBECONFIG $KUBECONFIG_PROXY
       kubectl --kubeconfig $KUBECONFIG_PROXY config set "clusters.${eks_cluster_arn}.proxy-url" "socks5://127.0.0.1:${k8s_tunnel_port}"
     fi
   else
@@ -91,11 +91,7 @@ kubectl_apply() {
   local k8s_manifest="$1"
   if test -f "$k8s_manifest" || validate_url "$k8s_manifest"; then
     echo "Applying $k8s_manifest..."
-    kubectl --kubeconfig "$KUBECONFIG_PROXY" apply -f "$k8s_manifest"
-    if [ $? -ne 0 ]; then
-      printf "$RED Error applying $k8s_manifest \n"
-      exit 1
-    fi
+    kubectl_cmd apply -f "$k8s_manifest"
   else
     printf "$RED $k8s_manifest does not exist. $EC \n"
     exit 1
@@ -103,8 +99,13 @@ kubectl_apply() {
 }
 
 kubectl_cmd() {
+  kubeconfig=$KUBECONFIG
+  if [[ -n "${bastion_public_ip}" ]]; then
+    kubeconfig=$KUBECONFIG_PROXY
+  fi
+
   echo "Running kubectl $@..."
-  kubectl --kubeconfig "$KUBECONFIG_PROXY" $@
+  kubectl --kubeconfig "$kubeconfig" $@
   if [ $? -ne 0 ]; then
     printf "$RED Error running kubectl $@ $EC \n"
     exit 1
