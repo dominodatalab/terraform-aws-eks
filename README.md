@@ -130,7 +130,7 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="input_efs_backup_vault_force_destroy"></a> [efs\_backup\_vault\_force\_destroy](#input\_efs\_backup\_vault\_force\_destroy) | Toggle to allow automatic destruction of all backups when destroying. | `bool` | `false` | no |
 | <a name="input_eks_custom_role_maps"></a> [eks\_custom\_role\_maps](#input\_eks\_custom\_role\_maps) | Custom role maps for aws auth configmap | `list(object({ rolearn = string, username = string, groups = list(string) }))` | `[]` | no |
 | <a name="input_eks_master_role_names"></a> [eks\_master\_role\_names](#input\_eks\_master\_role\_names) | IAM role names to be added as masters in eks. | `list(string)` | `[]` | no |
-| <a name="input_eks_public_access_cidrs"></a> [eks\_public\_access\_cidrs](#input\_eks\_public\_access\_cidrs) | EKS API endpoint public access CIDRs | `list(string)` | `null` | no |
+| <a name="input_eks_public_access"></a> [eks\_public\_access](#input\_eks\_public\_access) | EKS API endpoint public access configuration | <pre>object({<br>    enabled = optional(bool, false)<br>    cidrs   = optional(list(string), [])<br>  })</pre> | `null` | no |
 | <a name="input_k8s_version"></a> [k8s\_version](#input\_k8s\_version) | EKS cluster k8s version. | `string` | `"1.25"` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | if use\_kms is set, use the specified KMS key | `string` | `null` | no |
 | <a name="input_kubeconfig_path"></a> [kubeconfig\_path](#input\_kubeconfig\_path) | fully qualified path name to write the kubeconfig file | `string` | `""` | no |

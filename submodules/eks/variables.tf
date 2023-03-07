@@ -152,13 +152,27 @@ variable "eks_custom_role_maps" {
   default     = []
 }
 
-variable "eks_public_access_cidrs" {
-  type        = list(string)
-  description = "EKS API endpoint public access CIDRs"
-  default     = null
+
+variable "eks_public_access" {
+  type = object({
+    enabled = optional(bool, false)
+    cidrs   = optional(list(string), [])
+  })
+  description = "EKS API endpoint public access configuration"
+  nullable    = false
+  default     = { enabled = false }
 
   validation {
-    condition     = var.eks_public_access_cidrs == null ? true : length(var.eks_public_access_cidrs) > 0
-    error_message = "EKS cluster access should not be accessible by the general public if enabled"
+    condition     = var.eks_public_access.enabled ? length(var.eks_public_access.cidrs) > 0 : true
+    error_message = "eks_public_access.cidrs must be configured when public access is enabled"
+  }
+
+  validation {
+    condition = !var.eks_public_access.enabled ? true : alltrue([
+      for cidr in var.eks_public_access.cidrs :
+      try(cidrhost(cidr, 0), null) == regex("^(.*)/", cidr)[0] &&
+      try(cidrnetmask(cidr), null) != null
+    ])
+    error_message = "All elements in eks_public_access.cidrs list must be valid CIDR blocks"
   }
 }

@@ -336,8 +336,11 @@ variable "eks_custom_role_maps" {
   default     = []
 }
 
-variable "eks_public_access_cidrs" {
-  type        = list(string)
-  description = "EKS API endpoint public access CIDRs"
+variable "eks_public_access" {
+  type = object({
+    enabled = optional(bool, false)
+    cidrs   = optional(list(string), [])
+  })
+  description = "EKS API endpoint public access configuration"
   default     = null
 }
