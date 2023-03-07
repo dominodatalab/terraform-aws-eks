@@ -160,7 +160,7 @@ module "eks" {
   update_kubeconfig_extra_args = var.update_kubeconfig_extra_args
   eks_master_role_names        = var.eks_master_role_names
   ssh_pvt_key_path             = local.ssh_pvt_key_path
-  bastion_user                 = try(var.bastion.username, null)
+  bastion_user                 = var.bastion.username
   bastion_public_ip            = try(module.bastion[0].public_ip, "")
   secrets_kms_key              = local.kms_key_arn
   node_groups_kms_key          = local.kms_key_arn

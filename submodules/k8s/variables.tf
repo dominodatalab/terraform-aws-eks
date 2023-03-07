@@ -13,6 +13,7 @@ variable "bastion_user" {
   type        = string
   description = "ec2 instance user."
   default     = "ec2-user"
+  nullable    = false
 }
 
 variable "bastion_public_ip" {
