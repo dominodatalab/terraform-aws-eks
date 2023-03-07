@@ -152,22 +152,13 @@ variable "eks_custom_role_maps" {
   default     = []
 }
 
-variable "eks_public_access" {
-  type        = bool
-  description = "EKS API endpoint public access"
-  default     = false
-  nullable    = false
-}
-
 variable "eks_public_access_cidrs" {
   type        = list(string)
   description = "EKS API endpoint public access CIDRs"
-  # Default value does not allow any public access
-  default  = ["127.0.0.1/32"]
-  nullable = false
+  default     = null
 
   validation {
-    condition     = length(var.eks_public_access_cidrs) > 0 && !contains(var.eks_public_access_cidrs, "0.0.0.0/0")
-    error_message = "EKS cluster access should not be accessible by the general public"
+    condition     = var.eks_public_access_cidrs == null ? true : length(var.eks_public_access_cidrs) > 0
+    error_message = "EKS cluster access should not be accessible by the general public if enabled"
   }
 }
