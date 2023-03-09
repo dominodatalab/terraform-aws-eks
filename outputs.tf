@@ -1,6 +1,6 @@
 output "ssh_bastion_command" {
   description = "Command to ssh into the bastion host"
-  value       = try("ssh -i ${local.ssh_pvt_key_path} -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no ${var.bastion.user}@${module.bastion[0].public_ip}", "")
+  value       = try("ssh -i ${local.ssh_pvt_key_path} -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no ${var.bastion.username}@${module.bastion[0].public_ip}", "")
 }
 
 output "bastion_ip" {
