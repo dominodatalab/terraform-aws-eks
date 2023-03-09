@@ -7,26 +7,22 @@ locals {
   aws_auth_template         = "aws-auth.yaml.tftpl"
   eniconfig_filename        = length(var.pod_subnets) != 0 ? "eniconfig.yaml" : ""
   eniconfig_template        = "eniconfig.yaml.tftpl"
-  calico = {
-    operator_url = "https://raw.githubusercontent.com/projectcalico/calico/${var.calico_version}/manifests/tigera-operator.yaml"
-  }
-
-  resources_directory = path.cwd
-  templates_dir       = "${path.module}/templates"
+  resources_directory       = path.cwd
+  templates_dir             = "${path.module}/templates"
 
   templates = {
     k8s_functions_sh = {
       filename = local.k8s_functions_sh_filename
       content = templatefile("${local.templates_dir}/${local.k8s_functions_sh_template}", {
-        kubeconfig_path     = var.kubeconfig_path
-        k8s_tunnel_port     = var.k8s_tunnel_port
-        aws_auth_yaml       = basename(local.aws_auth_filename)
-        eniconfig_yaml      = local.eniconfig_filename != "" ? basename(local.eniconfig_filename) : ""
-        calico_operator_url = local.calico.operator_url
-        bastion_user        = var.bastion_user
-        bastion_public_ip   = var.bastion_public_ip
-        ssh_pvt_key_path    = var.ssh_pvt_key_path
-        eks_cluster_arn     = var.eks_cluster_arn
+        kubeconfig_path   = var.kubeconfig_path
+        k8s_tunnel_port   = var.k8s_tunnel_port
+        aws_auth_yaml     = basename(local.aws_auth_filename)
+        eniconfig_yaml    = local.eniconfig_filename != "" ? basename(local.eniconfig_filename) : ""
+        bastion_user      = var.bastion_user
+        bastion_public_ip = var.bastion_public_ip
+        ssh_pvt_key_path  = var.ssh_pvt_key_path
+        eks_cluster_arn   = var.eks_cluster_arn
+        calico_version    = var.calico_version
       })
     }
 

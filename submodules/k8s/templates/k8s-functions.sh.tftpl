@@ -22,6 +22,9 @@ check_kubeconfig() {
       echo "$KUBECONFIG exists, creating $KUBECONFIG_PROXY for proxy use."
       cp $KUBECONFIG $KUBECONFIG_PROXY
       kubectl --kubeconfig $KUBECONFIG_PROXY config set "clusters.${eks_cluster_arn}.proxy-url" "socks5://127.0.0.1:${k8s_tunnel_port}"
+      export kubeconfig=$KUBECONFIG_PROXY
+    else
+      export kubeconfig=$KUBECONFIG
     fi
   else
     echo "$KUBECONFIG does not exist." && exit 1
@@ -56,24 +59,19 @@ set_eniconfig() {
 }
 
 install_calico() {
-  local CALICO_OPERATOR_YAML_URL=${calico_operator_url}
+  check_kubeconfig
   printf "$GREEN Installing Calico Operator $EC \n"
-  ## Workaround for https://github.com/projectcalico/calico/issues/6491#issuecomment-1253970628
-  (kubectl_cmd create -f $CALICO_OPERATOR_YAML_URL) || true
-  kubectl_cmd replace -f $CALICO_OPERATOR_YAML_URL
-  echo
-
-  printf "$GREEN Installing Calico Custom resources $EC \n"
-  kubectl_cmd apply -f - <<EOF
-kind: Installation
-apiVersion: operator.tigera.io/v1
-metadata:
-  name: default
-spec:
-  kubernetesProvider: EKS
-  cni:
-    type: AmazonVPC
-EOF
+  helm upgrade "calico-tigera-operator" \
+    tigera-operator \
+    --repo "https://projectcalico.docs.tigera.io/charts" \
+    --kubeconfig "$kubeconfig" \
+    --namespace "tigera-operator" \
+    --version "${calico_version}" \
+    --set installation.kubernetesProvider=EKS \
+    --set installation.cni.type=AmazonVPC \
+    --timeout 10m \
+    --create-namespace \
+    --install
   echo
 }
 
@@ -99,10 +97,7 @@ kubectl_apply() {
 }
 
 kubectl_cmd() {
-  kubeconfig=$KUBECONFIG
-  if [[ -n "${bastion_public_ip}" ]]; then
-    kubeconfig=$KUBECONFIG_PROXY
-  fi
+  check_kubeconfig
 
   echo "Running kubectl $@..."
   kubectl --kubeconfig "$kubeconfig" $@

@@ -75,7 +75,7 @@
       "deploy_id": {
         "type": "string",
         "description": "Domino Deployment ID.",
-        "default": "dominotf"
+        "default": "dominotfeks"
       }
     },
     {
