@@ -8,10 +8,12 @@ KUBECONFIG="${kubeconfig_path}"
 KUBECONFIG_PROXY="$KUBECONFIG-proxy"
 
 open_ssh_tunnel_to_k8s_api() {
-  if [[ -n "${bastion_public_ip}" ]]; then
+  if [[ -n "${bastion_public_ip}" && -n "${bastion_user}" ]]; then
     TUNNEL_SOCKET_FILE=$${TUNNEL_SOCKET_FILE:-/tmp/k8s-tunnel-socket}
     printf "$GREEN Opening k8s tunnel ... $EC \n"
     ssh -q -N -f -M -o "StrictHostKeyChecking no" -o "ExitOnForwardFailure=yes" -i "${ssh_pvt_key_path}" -D ${k8s_tunnel_port} -S "$TUNNEL_SOCKET_FILE" ${bastion_user}@${bastion_public_ip}
+  else
+    printf "$GREEN No bastion, no tunnel needed... $EC \n"
   fi
 }
 

@@ -12,15 +12,13 @@ variable "ssh_pvt_key_path" {
 variable "bastion_user" {
   type        = string
   description = "ec2 instance user."
-  default     = "ec2-user"
-  nullable    = false
+  default     = null
 }
 
 variable "bastion_public_ip" {
   type        = string
   description = "Bastion host public ip."
-  default     = ""
-  nullable    = false
+  default     = null
 }
 
 variable "eks_cluster_arn" {
