@@ -1,6 +1,9 @@
 version: 2.1
 
 parameters:
+  helm_version:
+    default: "v3.10.0"
+    type: string
   terraform_version:
     default: "1.3.7"
     type: string
@@ -73,7 +76,28 @@ commands:
             terraform workspace select default
             terraform workspace delete ${WORKSPACE}
           when: always
-
+  install_helm:
+    parameters:
+      helm_version:
+        type: string
+        default: << pipeline.parameters.helm_version >>
+    description: "Install Helm"
+    steps:
+      - run:
+          name: Install Helm
+          environment:
+            HELM_VERSION: << parameters.helm_version >>
+          command: |
+            if [ -z "$HELM_VERSION" ]; then
+              echo "HELM_VERSION environment variable not set, exiting."
+              exit 1
+            fi
+            echo "Installing Helm version: ${HELM_VERSION}"
+            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+            chmod +x get_helm.sh
+            ./get_helm.sh --version "${HELM_VERSION}"
+            rm ./get_helm.sh
+            helm version --short
 jobs:
   test-deploy:
     docker:
@@ -84,11 +108,14 @@ jobs:
         default: circleci-<< pipeline.number >>
       terraform_version:
         type: string
+      helm_version:
+        type: string
     environment:
       WORKSPACE: << parameters.workspace >>
     steps:
       - checkout
       - install_tf
+      - install_helm
       - set_env_vars
       - gen_pvt_key
       - tf_init_apply
@@ -103,11 +130,14 @@ jobs:
         default: circleci-<< pipeline.number >>
       terraform_version:
         type: string
+      helm_version:
+        type: string
     environment:
       WORKSPACE: << parameters.workspace >>
     steps:
       - checkout
       - install_tf
+      - install_helm
       - aws-cli/setup:
          role-arn: "${AWS_IAM_ROLE}"
       - set_env_vars
@@ -147,6 +177,7 @@ workflows:
       - test-deploy:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
+          helm_version: << pipeline.parameters.helm_version >>
   test-upgrade-workflow:
     when:
       equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >> ]
@@ -154,3 +185,4 @@ workflows:
       - test-upgrade:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
+          helm_version: << pipeline.parameters.helm_version >>
