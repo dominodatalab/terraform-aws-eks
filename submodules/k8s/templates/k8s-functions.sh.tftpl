@@ -58,10 +58,56 @@ set_eniconfig() {
   kubectl_cmd -n kube-system set env daemonset aws-node AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG=true ENI_CONFIG_LABEL_DEF=topology.kubernetes.io/zone
 }
 
+remove_calico_cr() {
+  WAIT_TIME=300
+  SLEEP_TIME=5
+  COUNTER=0
+
+  printf "$GREEN Removing Calico CRDs...$EC \n"
+  kubectl_cmd delete installation default --ignore-not-found=true
+
+  while kubectl --kubeconfig "$kubeconfig" get namespaces -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep -q '^calico-system$'; do
+    if [ $COUNTER -ge $WAIT_TIME ]; then
+      printf "$RED Timed out waiting for calico-system namespace to be fully deleted.$EC \n"
+      exit 1
+    fi
+
+    printf "$GREEN Waiting for calico-system namespace to be fully deleted...$EC \n"
+    sleep $SLEEP_TIME
+    COUNTER=$((COUNTER + SLEEP_TIME))
+  done
+  echo
+}
+
+remove_tigera_operator() {
+  printf "$GREEN Removing existing Calico operator...$EC \n"
+  kubectl_cmd delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml \
+    --ignore-not-found=true \
+    --force \
+    --grace-period=0
+  echo
+}
+
+check_remove_calico() {
+  local OPERATOR_DEPLOYMENT_NAME="tigera-operator"
+  local OPERATOR_NAMESPACE="tigera-operator"
+
+  calico_deploy="$(kubectl --kubeconfig "$kubeconfig" get deployment $OPERATOR_DEPLOYMENT_NAME -n $OPERATOR_NAMESPACE --no-headers=true --ignore-not-found=true)"
+
+  if [ -n "$calico_deploy" ]; then
+    managed_by=$(kubectl --kubeconfig "$kubeconfig" get deployment $OPERATOR_DEPLOYMENT_NAME -n $OPERATOR_NAMESPACE -o jsonpath="{.metadata.labels['app\.kubernetes\.io/managed-by']}")
+    if [ -z "$managed_by" ] || [ "$managed_by" != "Helm" ]; then
+      remove_calico_cr
+      remove_tigera_operator
+    fi
+  fi
+}
+
 install_calico() {
-  check_kubeconfig
+  check_remove_calico
+
   printf "$GREEN Installing Calico Operator $EC \n"
-  helm upgrade "calico-tigera-operator" \
+  helm_cmd upgrade "calico-tigera-operator" \
     tigera-operator \
     --repo "https://projectcalico.docs.tigera.io/charts" \
     --kubeconfig "$kubeconfig" \
@@ -72,6 +118,7 @@ install_calico() {
     --timeout 10m \
     --create-namespace \
     --install
+
   echo
 }
 
@@ -88,7 +135,7 @@ validate_url() {
 kubectl_apply() {
   local k8s_manifest="$1"
   if test -f "$k8s_manifest" || validate_url "$k8s_manifest"; then
-    echo "Applying $k8s_manifest..."
+    printf "$GREEN Applying $k8s_manifest...$EC \n"
     kubectl_cmd apply -f "$k8s_manifest"
   else
     printf "$RED $k8s_manifest does not exist. $EC \n"
@@ -96,10 +143,17 @@ kubectl_apply() {
   fi
 }
 
-kubectl_cmd() {
-  check_kubeconfig
+helm_cmd() {
+  printf "$GREEN Running helm $@...$EC \n"
+  helm --kubeconfig "$kubeconfig" $@
+  if [ $? -ne 0 ]; then
+    printf "$RED Error running helm $@ $EC \n"
+    exit 1
+  fi
+}
 
-  echo "Running kubectl $@..."
+kubectl_cmd() {
+  printf "$GREEN  kubectl $@...$EC \n"
   kubectl --kubeconfig "$kubeconfig" $@
   if [ $? -ne 0 ]; then
     printf "$RED Error running kubectl $@ $EC \n"
