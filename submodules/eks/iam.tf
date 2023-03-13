@@ -187,11 +187,53 @@ data "aws_iam_policy_document" "snapshot" {
   }
 }
 
+data "aws_iam_policy_document" "ssm" {
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams"
+    ]
+  }
+
+  statement {
+    effect    = "Allow"
+    resources = ["arn:aws:s3:::${aws_iam_account_alias.current.account_alias}-session-manager-logs/*"]
+
+    actions = [
+      "s3:PutObject",
+    ]
+  }
+
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+
+    actions = [
+      "s3:GetEncryptionConfiguration",
+    ]
+  }
+
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+
+    actions = [
+      "kms:GenerateDataKey",
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "custom_eks_node_policy" {
   source_policy_documents = [
     data.aws_iam_policy_document.autoscaler.json,
     data.aws_iam_policy_document.ebs_csi.json,
-    data.aws_iam_policy_document.snapshot.json
+    data.aws_iam_policy_document.snapshot.json,
+    data.aws_iam_policy_document.ssm.json
   ]
 }
 
@@ -224,3 +266,5 @@ resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
   policy_arn = element(local.custom_node_policies, count.index)
   role       = aws_iam_role.eks_nodes.name
 }
+
+data "aws_iam_account_alias" "current" {}
