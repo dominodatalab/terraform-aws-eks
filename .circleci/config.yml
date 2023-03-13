@@ -25,7 +25,7 @@ commands:
           name: Configure test cluster env
           command: |
             echo export TF_VAR_deploy_id=\"${WORKSPACE}\" >> $BASH_ENV
-            echo 'export TF_VAR_tags=\{\"CIRCLE_BUILD_URL\"=\"${CIRCLE_BUILD_URL}\",\"CIRCLE_PR_NUMBER\"=\"${CIRCLE_PR_NUMBER}\",\"CIRCLE_PULL_REQUEST\"=\"${CIRCLE_PULL_REQUEST}\",\"CIRCLE_REPOSITORY_URL\"=\"${CIRCLE_REPOSITORY_URL}\"\}' >> $BASH_ENV
+            echo 'export TF_VAR_tags=\{\"deploy_id\"=\"${TF_VAR_deploy_id}\",\"CIRCLE_BUILD_URL\"=\"${CIRCLE_BUILD_URL}\",\"CIRCLE_PR_NUMBER\"=\"${CIRCLE_PR_NUMBER}\",\"CIRCLE_PULL_REQUEST\"=\"${CIRCLE_PULL_REQUEST}\",\"CIRCLE_REPOSITORY_URL\"=\"${CIRCLE_REPOSITORY_URL}\"\}' >> $BASH_ENV
   install_tf:
     parameters:
       terraform_version:
