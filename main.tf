@@ -9,7 +9,7 @@ data "aws_subnet" "private" {
 }
 
 data "aws_subnet" "pod" {
-  count = var.vpc_id != null ? length(var.pod_subnets) : 0
+  count = var.vpc_id != null && var.use_pod_cidr ? length(var.pod_subnets) : 0
   id    = var.pod_subnets[count.index]
 }
 
