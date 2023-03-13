@@ -210,7 +210,7 @@ resource "null_resource" "install_binaries" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo cloud-init status --wait",
+      "sudo cloud-init status --wait || sleep 60",
     ]
   }
 
@@ -230,7 +230,7 @@ resource "null_resource" "install_binaries" {
   }
 
   triggers = {
-    sh_filepath = "/home/ec2-user/install-binaries.sh"
+    sh_filepath = "/home/${var.bastion_user}/install-binaries.sh"
     sh_content_hash = md5(templatefile("${path.module}/templates/install-binaries.sh.tftpl", {
       k8s_version  = var.k8s_version
       bastion_user = var.bastion_user
