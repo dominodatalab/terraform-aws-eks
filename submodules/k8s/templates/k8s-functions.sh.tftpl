@@ -59,9 +59,9 @@ set_eniconfig() {
 }
 
 remove_calico_cr() {
-  WAIT_TIME=300
-  SLEEP_TIME=5
-  COUNTER=0
+  local WAIT_TIME=300
+  local SLEEP_TIME=5
+  local COUNTER=0
 
   printf "$GREEN Removing Calico CRDs...$EC \n"
   kubectl_cmd delete installation default --ignore-not-found=true
@@ -76,21 +76,24 @@ remove_calico_cr() {
     sleep $SLEEP_TIME
     COUNTER=$((COUNTER + SLEEP_TIME))
   done
-  echo
+  printf "$GREEN calico-system namespace was deleted successfully...$EC \n"
 }
 
 remove_tigera_operator() {
-  printf "$GREEN Removing existing Calico operator...$EC \n"
+  printf "$GREEN Removing existing Tigera operator...$EC \n"
   kubectl_cmd delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml \
     --ignore-not-found=true \
     --force \
     --grace-period=0
   echo
+  printf "$GREEN Tigera operator was removed successfully...$EC \n"
 }
 
 check_remove_calico() {
   local OPERATOR_DEPLOYMENT_NAME="tigera-operator"
   local OPERATOR_NAMESPACE="tigera-operator"
+  local calico_deploy=""
+  local managed_by=""
 
   calico_deploy="$(kubectl --kubeconfig "$kubeconfig" get deployment $OPERATOR_DEPLOYMENT_NAME -n $OPERATOR_NAMESPACE --no-headers=true --ignore-not-found=true)"
 
