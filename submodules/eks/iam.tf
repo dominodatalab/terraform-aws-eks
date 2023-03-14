@@ -202,7 +202,7 @@ data "aws_iam_policy_document" "ssm" {
 
   statement {
     effect    = "Allow"
-    resources = ["arn:aws:s3:::${aws_iam_account_alias.current.account_alias}-session-manager-logs/*"]
+    resources = ["arn:aws:s3:::${data.aws_iam_account_alias.current.account_alias}-session-manager-logs/*"]
 
     actions = [
       "s3:PutObject",
