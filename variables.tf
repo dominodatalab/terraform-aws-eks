@@ -75,7 +75,7 @@ variable "default_node_groups" {
           spot                  = optional(bool, false)
           min_per_az            = optional(number, 0)
           max_per_az            = optional(number, 10)
-          desired_per_az        = optional(number, 1)
+          desired_per_az        = optional(number, 0)
           availability_zone_ids = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default"
@@ -85,11 +85,11 @@ variable "default_node_groups" {
           gpu    = optional(bool, null)
           volume = optional(object(
             {
-              size = optional(number, 100)
+              size = optional(number, 1000)
               type = optional(string, "gp3")
             }),
             {
-              size = 100
+              size = 1000
               type = "gp3"
             }
           )
@@ -98,7 +98,7 @@ variable "default_node_groups" {
         {
           ami                   = optional(string, null)
           bootstrap_extra_args  = optional(string, "")
-          instance_types        = optional(list(string), ["m5.4xlarge"])
+          instance_types        = optional(list(string), ["m5.2xlarge"])
           spot                  = optional(bool, false)
           min_per_az            = optional(number, 1)
           max_per_az            = optional(number, 10)
@@ -142,11 +142,11 @@ variable "default_node_groups" {
           gpu  = optional(bool, null)
           volume = optional(object(
             {
-              size = optional(number, 100)
+              size = optional(number, 1000)
               type = optional(string, "gp3")
             }),
             {
-              size = 100
+              size = 1000
               type = "gp3"
             }
           )
