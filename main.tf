@@ -105,6 +105,7 @@ module "bastion" {
   source            = "./submodules/bastion"
   deploy_id         = var.deploy_id
   region            = var.region
+  bastion_user      = var.bastion.username
   vpc_id            = local.vpc_id
   ssh_key_pair_name = aws_key_pair.domino.key_name
   ssh_pvt_key_path  = local.ssh_pvt_key_path
@@ -157,7 +158,7 @@ module "eks" {
   create_bastion_sg            = var.bastion != null
   bastion_security_group_id    = try(module.bastion[0].security_group_id, null)
   bastion_public_ip            = try(module.bastion[0].public_ip, null)
-  bastion_user                 = try(var.bastion.username, null)
+  bastion_user                 = try(module.bastion[0].user, null)
   kubeconfig_path              = local.kubeconfig_path
   node_groups                  = local.node_groups
   node_iam_policies            = module.storage.iam_policies

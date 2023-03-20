@@ -67,4 +67,6 @@ No modules.
 |------|-------------|
 | <a name="output_public_ip"></a> [public\_ip](#output\_public\_ip) | Bastion host public ip. |
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | Bastion host security group id. |
+| <a name="output_ssh_bastion_command"></a> [ssh\_bastion\_command](#output\_ssh\_bastion\_command) | Command to ssh into the bastion host |
+| <a name="output_user"></a> [user](#output\_user) | Bastion host username |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
