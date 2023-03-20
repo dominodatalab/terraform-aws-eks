@@ -45,24 +45,6 @@ variable "k8s_version" {
   default     = "1.25"
 }
 
-variable "public_cidr_network_bits" {
-  type        = number
-  description = "Number of network bits to allocate to the public subnet. i.e /27 -> 32 IPs."
-  default     = 27
-}
-
-variable "private_cidr_network_bits" {
-  type        = number
-  description = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
-  default     = 19
-}
-
-variable "pod_cidr_network_bits" {
-  type        = number
-  description = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
-  default     = 19
-}
-
 variable "default_node_groups" {
   description = "EKS managed node groups definition."
   type = object(
@@ -177,66 +159,84 @@ variable "additional_node_groups" {
   default = {}
 }
 
-variable "cidr" {
-  type        = string
-  default     = "10.0.0.0/16"
-  description = "The IPv4 CIDR block for the VPC."
+variable "network" {
+  description = <<EOF
+    network_bits = {
+      public  = "Number of network bits to allocate to the public subnet. i.e /27 -> 32 IPs."
+      private = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
+      pod     = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
+    }
+    cidrs = {
+      vpc     = "The IPv4 CIDR block for the VPC."
+      public  = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
+      private = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
+      pod     = "The IPv4 CIDR block for the Pod subnets."
+    }
+    use_pod_cidr = "Use additional pod CIDR range (ie 100.64.0.0/16) for pod/service networking"
+  EOF
+  type = object({
+    network_bits = optional(object({
+      public  = optional(number, 27)
+      private = optional(number, 19)
+      pod     = optional(number, 19)
+      }
+    ), {})
+    cidrs = optional(object({
+      vpc = optional(string, "10.0.0.0/16")
+      pod = optional(string, "100.64.0.0/16")
+    }), {})
+    use_pod_cidr = optional(bool, true)
+  })
+
   validation {
-    condition = (
-      try(cidrhost(var.cidr, 0), null) == regex("^(.*)/", var.cidr)[0] &&
-      try(cidrnetmask(var.cidr), null) == "255.255.0.0"
-    )
-    error_message = "Argument base_cidr_block must be a valid CIDR block."
+    condition = alltrue([for name, cidr in var.network.cidrs : try(cidrhost(cidr, 0), false) == regex("^(.*)/", cidr)[0] &&
+    try(cidrnetmask(cidr), false) == "255.255.0.0"])
+    error_message = "Each of network.cidrs must be a valid CIDR block."
   }
+  default = {}
 }
 
-variable "pod_cidr" {
-  type        = string
-  default     = "100.64.0.0/16"
-  description = "The IPv4 CIDR block for the VPC."
+variable "my_vpc" {
+  description = <<EOF
+    vpc_id          = "Optional VPC ID, it will bypass creation of such, public_subnets and private_subnets are also required."
+    private_subnets = "Optional list of private subnet ids"
+    public_subnets  = "Optional list of public subnet ids"
+    pod_subnets     = "Optional list of pod subnet ids"
+  EOF
+  type = object({
+    vpc_id          = optional(string, null)
+    private_subnets = optional(list(string), [])
+    public_subnets  = optional(list(string), [])
+    pod_subnets     = optional(list(string), [])
+  })
+
   validation {
-    condition = (
-      try(cidrhost(var.pod_cidr, 0), null) == regex("^(.*)/", var.pod_cidr)[0] &&
-      try(cidrnetmask(var.pod_cidr), null) == "255.255.0.0"
-    )
-    error_message = "Argument base_cidr_block must be a valid CIDR block."
+    condition     = var.my_vpc.vpc_id != null ? var.my_vpc.private_subnets != null && length(var.my_vpc.private_subnets) >= 2 : true
+    error_message = "Must provide 2 or more private subnets, when providing a VPC."
   }
+
+  validation {
+    condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.private_subnets) == 0 : true
+    error_message = "Must provide a vpc_id when providing private_subnets."
+  }
+
+  validation {
+    condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.public_subnets) == 0 : true
+    error_message = "Must provide a vpc_id when providing public_subnets."
+  }
+
+  validation {
+    condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.pod_subnets) == 0 : true
+    error_message = "Must provide a vpc_id when providing pod_subnets."
+  }
+  default = {}
 }
 
-variable "use_pod_cidr" {
-  type        = bool
-  description = "Use additional pod CIDR range (ie 100.64.0.0/16) for pod/service networking"
-  default     = true
-}
 
 variable "eks_master_role_names" {
   type        = list(string)
   description = "IAM role names to be added as masters in eks."
   default     = []
-}
-
-variable "vpc_id" {
-  type        = string
-  description = "Optional VPC ID, it will bypass creation of such, public_subnets and private_subnets are also required."
-  default     = null
-}
-
-variable "public_subnets" {
-  type        = list(string)
-  description = "Optional list of public subnet ids"
-  default     = null
-}
-
-variable "private_subnets" {
-  type        = list(string)
-  description = "Optional list of private subnet ids"
-  default     = null
-}
-
-variable "pod_subnets" {
-  type        = list(string)
-  description = "Optional list of pod subnet ids"
-  default     = null
 }
 
 variable "bastion" {
@@ -251,12 +251,6 @@ variable "bastion" {
   default     = null
 }
 
-variable "efs_access_point_path" {
-  type        = string
-  description = "Filesystem path for efs."
-  default     = "/domino"
-}
-
 variable "ssh_pvt_key_path" {
   type        = string
   description = "SSH private key filepath."
@@ -264,18 +258,6 @@ variable "ssh_pvt_key_path" {
     condition     = fileexists(var.ssh_pvt_key_path)
     error_message = "Private key does not exist. Please provide the right path or generate a key with the following command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem"
   }
-}
-
-variable "s3_force_destroy_on_deletion" {
-  description = "Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets"
-  type        = bool
-  default     = false
-}
-
-variable "ecr_force_destroy_on_deletion" {
-  description = "Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories"
-  type        = bool
-  default     = false
 }
 
 variable "kms_key_id" {
@@ -300,34 +282,51 @@ variable "kubeconfig_path" {
   default     = ""
 }
 
-variable "create_efs_backup_vault" {
-  description = "Create backup vault for EFS toggle."
-  type        = bool
-  default     = true
-}
-
-variable "efs_backup_vault_force_destroy" {
-  description = "Toggle to allow automatic destruction of all backups when destroying."
-  type        = bool
-  default     = false
-}
-
-variable "efs_backup_schedule" {
-  type        = string
-  description = "Cron-style schedule for EFS backup vault (default: once a day at 12pm)"
-  default     = "0 12 * * ? *"
-}
-
-variable "efs_backup_cold_storage_after" {
-  type        = number
-  description = "Move backup data to cold storage after this many days"
-  default     = 35
-}
-
-variable "efs_backup_delete_after" {
-  type        = number
-  description = "Delete backup data after this many days"
-  default     = 125
+variable "storage" {
+  description = <<EOF
+    storage = {
+      efs = {
+        access_point_path = "Filesystem path for efs."
+        backup_vault = {
+          create        = "Create backup vault for EFS toggle."
+          force_destroy = "Toggle to allow automatic destruction of all backups when destroying."
+          backup = {
+            schedule           = optional(string)
+            cold_storage_after = "Move backup data to cold storage after this many days."
+            delete_after       = "Delete backup data after this many days."
+          }
+        }
+      }
+      s3 = {
+        force_destroy_on_deletion = "Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets"
+      }
+      ecr = {
+        force_destroy_on_deletion = "Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories"
+      }
+    }
+  }
+  EOF
+  type = object({
+    efs = optional(object({
+      access_point_path = optional(string)
+      backup_vault = optional(object({
+        create        = optional(bool)
+        force_destroy = optional(bool)
+        backup = optional(object({
+          schedule           = optional(string)
+          cold_storage_after = optional(number)
+          delete_after       = optional(number)
+        }))
+      }))
+    }))
+    s3 = optional(object({
+      force_destroy_on_deletion = optional(bool)
+    }))
+    ecr = optional(object({
+      force_destroy_on_deletion = optional(bool)
+    }))
+  })
+  default = {}
 }
 
 variable "eks_custom_role_maps" {
@@ -344,3 +343,132 @@ variable "eks_public_access" {
   description = "EKS API endpoint public access configuration"
   default     = null
 }
+
+### Moved
+
+# variable "s3_force_destroy_on_deletion" {
+#   description = "Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets"
+#   type        = bool
+#   default     = false
+# }
+
+# variable "ecr_force_destroy_on_deletion" {
+#   description = "Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories"
+#   type        = bool
+#   default     = false
+# }
+
+# variable "efs_access_point_path" {
+#   type        = string
+#   description = "Filesystem path for efs."
+#   default     = "/domino"
+# }
+
+# variable "create_efs_backup_vault" {
+#   description = "Create backup vault for EFS toggle."
+#   type        = bool
+#   default     = true
+# }
+
+# variable "efs_backup_vault_force_destroy" {
+#   description = "Toggle to allow automatic destruction of all backups when destroying."
+#   type        = bool
+#   default     = false
+# }
+
+# variable "efs_backup_schedule" {
+#   type        = string
+#   description = "Cron-style schedule for EFS backup vault (default: once a day at 12pm)"
+#   default     = "0 12 * * ? *"
+# }
+
+# variable "efs_backup_cold_storage_after" {
+#   type        = number
+#   description = "Move backup data to cold storage after this many days"
+#   default     = 35
+# }
+
+# variable "efs_backup_delete_after" {
+#   type        = number
+#   description = "Delete backup data after this many days"
+#   default     = 125
+# }
+
+## 2
+
+# variable "public_cidr_network_bits" {
+#   type        = number
+#   description = "Number of network bits to allocate to the public subnet. i.e /27 -> 32 IPs."
+#   default     = 27
+# }
+
+# variable "private_cidr_network_bits" {
+#   type        = number
+#   description = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
+#   default     = 19
+# }
+
+# variable "pod_cidr_network_bits" {
+#   type        = number
+#   description = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
+#   default     = 19
+# }
+# variable "cidr" {
+#   type        = string
+#   default     = "10.0.0.0/16"
+#   description = "The IPv4 CIDR block for the VPC."
+#   validation {
+#     condition = (
+#       try(cidrhost(var.cidr, 0), null) == regex("^(.*)/", var.cidr)[0] &&
+#       try(cidrnetmask(var.cidr), null) == "255.255.0.0"
+#     )
+#     error_message = "Argument base_cidr_block must be a valid CIDR block."
+#   }
+# }
+
+# variable "pod_cidr" {
+#   type        = string
+#   default     = "100.64.0.0/16"
+#   description = "The IPv4 CIDR block for the VPC."
+#   validation {
+#     condition = (
+#       try(cidrhost(var.pod_cidr, 0), null) == regex("^(.*)/", var.pod_cidr)[0] &&
+#       try(cidrnetmask(var.pod_cidr), null) == "255.255.0.0"
+#     )
+#     error_message = "Argument base_cidr_block must be a valid CIDR block."
+#   }
+# }
+
+# variable "use_pod_cidr" {
+#   type        = bool
+#   description = "Use additional pod CIDR range (ie 100.64.0.0/16) for pod/service networking"
+#   default     = true
+# }
+
+
+
+###
+
+# variable "vpc_id" {
+#   type        = string
+#   description = "Optional VPC ID, it will bypass creation of such, public_subnets and private_subnets are also required."
+#   default     = null
+# }
+
+# variable "public_subnets" {
+#   type        = list(string)
+#   description = "Optional list of public subnet ids"
+#   default     = null
+# }
+
+# variable "private_subnets" {
+#   type        = list(string)
+#   description = "Optional list of private subnet ids"
+#   default     = null
+# }
+
+# variable "pod_subnets" {
+#   type        = list(string)
+#   description = "Optional list of pod subnet ids"
+#   default     = null
+# }

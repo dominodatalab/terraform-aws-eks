@@ -1,5 +1,5 @@
 locals {
-  encryption_type = var.ecr_kms_key != null ? "KMS" : "AES256"
+  encryption_type = var.kms_key_arn != null ? "KMS" : "AES256"
   ecr_repos       = toset(["model", "environment"])
 }
 
@@ -10,8 +10,8 @@ resource "aws_ecr_repository" "this" {
 
   encryption_configuration {
     encryption_type = local.encryption_type
-    kms_key         = var.ecr_kms_key
+    kms_key         = var.kms_key_arn
   }
 
-  force_delete = var.ecr_force_destroy_on_deletion
+  force_delete = var.storage.ecr.force_destroy_on_deletion
 }

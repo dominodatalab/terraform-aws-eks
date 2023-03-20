@@ -1,30 +1,30 @@
 resource "aws_backup_vault" "efs" {
-  count = var.create_efs_backup_vault ? 1 : 0
+  count = var.storage.efs.backup_vault.create ? 1 : 0
   name  = "${var.deploy_id}-efs"
 
-  force_destroy = var.efs_backup_vault_force_destroy
-  kms_key_arn   = var.efs_backup_vault_kms_key
+  force_destroy = var.storage.efs.backup_vault.force_destroy
+  kms_key_arn   = var.kms_key_arn
 }
 
 resource "aws_backup_plan" "efs" {
-  count = var.create_efs_backup_vault ? 1 : 0
+  count = var.storage.efs.backup_vault.create ? 1 : 0
   name  = "${var.deploy_id}-efs"
   rule {
     rule_name           = "efs-rule"
     recovery_point_tags = {}
-    schedule            = "cron(${var.efs_backup_schedule})"
+    schedule            = "cron(${var.storage.efs.backup_vault.backup.schedule})"
     start_window        = 60
     target_vault_name   = aws_backup_vault.efs[0].name
 
     lifecycle {
-      cold_storage_after = var.efs_backup_cold_storage_after
-      delete_after       = var.efs_backup_delete_after
+      cold_storage_after = var.storage.efs.backup_vault.backup.cold_storage_after
+      delete_after       = var.storage.efs.backup_vault.backup.delete_after
     }
   }
 }
 
 resource "aws_iam_role" "efs_backup_role" {
-  count = var.create_efs_backup_vault ? 1 : 0
+  count = var.storage.efs.backup_vault.create ? 1 : 0
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -41,7 +41,7 @@ resource "aws_iam_role" "efs_backup_role" {
 }
 
 resource "aws_backup_selection" "efs" {
-  count = var.create_efs_backup_vault ? 1 : 0
+  count = var.storage.efs.backup_vault.create ? 1 : 0
   name  = "${var.deploy_id}-efs"
 
   plan_id      = aws_backup_plan.efs[0].id

@@ -1,10 +1,10 @@
 locals {
-  s3_server_side_encryption = var.s3_kms_key != null ? "aws:kms" : "AES256"
+  s3_server_side_encryption = var.kms_key_arn != null ? "aws:kms" : "AES256"
 }
 
 resource "aws_s3_bucket" "backups" {
   bucket              = "${var.deploy_id}-backups"
-  force_destroy       = var.s3_force_destroy_on_deletion
+  force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
 }
@@ -71,7 +71,7 @@ data "aws_iam_policy_document" "backups" {
 
 resource "aws_s3_bucket" "blobs" {
   bucket              = "${var.deploy_id}-blobs"
-  force_destroy       = var.s3_force_destroy_on_deletion
+  force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
 }
@@ -140,7 +140,7 @@ data "aws_iam_policy_document" "blobs" {
 
 resource "aws_s3_bucket" "logs" {
   bucket              = "${var.deploy_id}-logs"
-  force_destroy       = var.s3_force_destroy_on_deletion
+  force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
 }
@@ -208,7 +208,7 @@ data "aws_iam_policy_document" "logs" {
 
 resource "aws_s3_bucket" "monitoring" {
   bucket              = "${var.deploy_id}-monitoring"
-  force_destroy       = var.s3_force_destroy_on_deletion
+  force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
 }
@@ -335,7 +335,7 @@ resource "aws_s3_bucket_acl" "monitoring" {
 
 resource "aws_s3_bucket" "registry" {
   bucket              = "${var.deploy_id}-registry"
-  force_destroy       = var.s3_force_destroy_on_deletion
+  force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
 }
@@ -412,7 +412,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryptio
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm     = local.s3_server_side_encryption
-      kms_master_key_id = var.s3_kms_key
+      kms_master_key_id = var.kms_key_arn
     }
     bucket_key_enabled = false
   }
