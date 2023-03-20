@@ -249,4 +249,3 @@ resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
   role       = aws_iam_role.eks_nodes.name
 }
 
-data "aws_iam_account_alias" "current" {}
