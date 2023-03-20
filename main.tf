@@ -1,21 +1,21 @@
 data "aws_subnet" "public" {
-  count = var.vpc_id != null ? length(var.public_subnets) : 0
-  id    = var.public_subnets[count.index]
+  count = var.my_vpc.vpc_id != null != null ? length(var.my_vpc.public_subnets) : 0
+  id    = var.my_vpc.public_subnets[count.index]
 }
 
 data "aws_subnet" "private" {
-  count = var.vpc_id != null ? length(var.private_subnets) : 0
-  id    = var.private_subnets[count.index]
+  count = var.my_vpc.vpc_id != null ? length(var.my_vpc.private_subnets) : 0
+  id    = var.my_vpc.private_subnets[count.index]
 }
 
 data "aws_subnet" "pod" {
-  count = var.vpc_id != null && var.use_pod_cidr ? length(var.pod_subnets) : 0
-  id    = var.pod_subnets[count.index]
+  count = var.my_vpc.vpc_id != null && var.network.use_pod_cidr ? length(var.my_vpc.pod_subnets) : 0
+  id    = var.my_vpc.pod_subnets[count.index]
 }
 
 locals {
   # Get the zones that are available and offered in the region for the instance types.
-  az_ids     = var.vpc_id != null ? distinct(data.aws_subnet.private[*].availability_zone) : distinct(flatten([for name, ng in local.node_groups : ng.availability_zone_ids]))
+  az_ids     = var.my_vpc.vpc_id != null ? distinct(data.aws_subnet.private[*].availability_zone) : distinct(flatten([for name, ng in local.node_groups : ng.availability_zone_ids]))
   num_of_azs = length(local.az_ids)
 
   kms_key_arn = var.use_kms ? try(data.aws_kms_key.key[0].arn, resource.aws_kms_key.domino[0].arn) : null
@@ -38,53 +38,56 @@ resource "aws_key_pair" "domino" {
 }
 
 module "storage" {
-  source                         = "./submodules/storage"
-  deploy_id                      = var.deploy_id
-  efs_access_point_path          = var.efs_access_point_path
-  s3_force_destroy_on_deletion   = var.s3_force_destroy_on_deletion
-  s3_kms_key                     = local.kms_key_arn
-  ecr_force_destroy_on_deletion  = var.ecr_force_destroy_on_deletion
-  ecr_kms_key                    = local.kms_key_arn
-  efs_kms_key                    = local.kms_key_arn
-  efs_backup_vault_kms_key       = local.kms_key_arn
-  vpc_id                         = local.vpc_id
-  subnet_ids                     = [for s in local.private_subnets : s.subnet_id]
-  create_efs_backup_vault        = var.create_efs_backup_vault
-  efs_backup_vault_force_destroy = var.efs_backup_vault_force_destroy
-  efs_backup_schedule            = var.efs_backup_schedule
-  efs_backup_cold_storage_after  = var.efs_backup_cold_storage_after
-  efs_backup_delete_after        = var.efs_backup_delete_after
+  source      = "./submodules/storage"
+  deploy_id   = var.deploy_id
+  vpc_id      = local.vpc_id
+  subnet_ids  = [for s in local.private_subnets : s.subnet_id]
+  storage     = var.storage
+  kms_key_arn = local.kms_key_arn
+  # s3_force_destroy_on_deletion  = var.s3_force_destroy_on_deletion
+  # ecr_force_destroy_on_deletion = var.ecr_force_destroy_on_deletion
+  # efs_access_point_path          = var.efs_access_point_path
+  # kms_key_arn                   = local.kms_key_arn
+  # s3_kms_key                    = local.kms_key_arn
+  # ecr_kms_key                   = local.kms_key_arn
+  # efs_kms_key                   = local.kms_key_arn
+  # efs_backup_vault_kms_key      = local.kms_key_arn ## why separate var there is no wiring for it
+  # create_efs_backup_vault       = var.create_efs_backup_vault
+  # efs_backup_vault_force_destroy = var.efs_backup_vault_force_destroy
+  # efs_backup_schedule            = var.efs_backup_schedule
+  # efs_backup_cold_storage_after  = var.efs_backup_cold_storage_after
+  # efs_backup_delete_after        = var.efs_backup_delete_after
 }
 
 locals {
   ## Calculating public and private subnets based on the base base cidr and desired network bits
-  base_cidr_network_bits = tonumber(regex("[^/]*$", var.cidr))
+  base_cidr_network_bits = tonumber(regex("[^/]*$", var.network.cidrs.vpc))
   ## We have one Cidr to carve the nw bits for both pvt and public subnets
   ## `...local.availability_zones_number * 2)` --> we have 2 types private and public subnets
-  new_bits_list      = concat([for n in range(0, local.num_of_azs) : var.public_cidr_network_bits - local.base_cidr_network_bits], [for n in range(0, local.num_of_azs) : var.private_cidr_network_bits - local.base_cidr_network_bits])
-  subnet_cidr_blocks = cidrsubnets(var.cidr, local.new_bits_list...)
+  new_bits_list      = concat([for n in range(0, local.num_of_azs) : var.network.network_bits.public - local.base_cidr_network_bits], [for n in range(0, local.num_of_azs) : var.network.network_bits.private - local.base_cidr_network_bits])
+  subnet_cidr_blocks = cidrsubnets(var.network.cidrs.vpc, local.new_bits_list...)
 
   ## Match the public subnet var to the list of cidr blocks
   public_cidr_blocks = slice(local.subnet_cidr_blocks, 0, local.num_of_azs)
   ## Match the private subnet var to the list of cidr blocks
   private_cidr_blocks = slice(local.subnet_cidr_blocks, local.num_of_azs, length(local.subnet_cidr_blocks))
   ## Determine cidr blocks for pod network
-  base_pod_cidr_network_bits = tonumber(regex("[^/]*$", var.pod_cidr))
-  pod_cidr_blocks = !var.use_pod_cidr ? [] : cidrsubnets(
-    var.pod_cidr,
-    [for n in range(0, local.num_of_azs) : var.pod_cidr_network_bits - local.base_pod_cidr_network_bits]...
+  base_pod_cidr_network_bits = tonumber(regex("[^/]*$", var.network.cidrs.pod))
+  pod_cidr_blocks = !var.network.use_pod_cidr ? [] : cidrsubnets(
+    var.network.cidrs.pod,
+    [for n in range(0, local.num_of_azs) : var.network.network_bits.pod - local.base_pod_cidr_network_bits]...
   )
 }
 
 module "network" {
-  count = var.vpc_id == null ? 1 : 0
+  count = var.my_vpc.vpc_id == null ? 1 : 0
 
   source                = "./submodules/network"
   deploy_id             = var.deploy_id
   region                = var.region
-  cidr                  = var.cidr
-  pod_cidr              = var.pod_cidr
-  use_pod_cidr          = var.use_pod_cidr
+  cidr                  = var.network.cidrs.vpc
+  pod_cidr              = var.network.cidrs.pod
+  use_pod_cidr          = var.network.use_pod_cidr
   availability_zone_ids = local.az_ids
   public_cidrs          = local.public_cidr_blocks
   private_cidrs         = local.private_cidr_blocks
@@ -93,10 +96,10 @@ module "network" {
 }
 
 locals {
-  vpc_id          = var.vpc_id != null ? var.vpc_id : module.network[0].vpc_id
-  public_subnets  = var.vpc_id != null ? [for s in data.aws_subnet.public : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].public_subnets
-  private_subnets = var.vpc_id != null ? [for s in data.aws_subnet.private : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].private_subnets
-  pod_subnets     = var.vpc_id != null ? [for s in data.aws_subnet.pod : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].pod_subnets
+  vpc_id          = var.my_vpc.vpc_id != null ? var.my_vpc.vpc_id : module.network[0].vpc_id
+  public_subnets  = var.my_vpc.vpc_id != null ? [for s in data.aws_subnet.public : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].public_subnets
+  private_subnets = var.my_vpc.vpc_id != null ? [for s in data.aws_subnet.private : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].private_subnets
+  pod_subnets     = var.my_vpc.vpc_id != null ? [for s in data.aws_subnet.pod : { subnet_id = s.id, az = s.availability_zone, az_id = s.availability_zone_id }] : module.network[0].pod_subnets
 }
 
 module "bastion" {

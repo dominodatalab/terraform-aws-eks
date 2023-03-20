@@ -3,7 +3,7 @@ resource "aws_efs_file_system" "eks" {
   performance_mode                = "generalPurpose"
   provisioned_throughput_in_mibps = "0"
   throughput_mode                 = "bursting"
-  kms_key_id                      = var.efs_kms_key
+  kms_key_id                      = var.kms_key_arn
 
   tags = {
     "Name" = var.deploy_id
@@ -45,6 +45,6 @@ resource "aws_efs_access_point" "eks" {
       permissions = "777"
     }
 
-    path = var.efs_access_point_path
+    path = var.storage.efs.access_point_path
   }
 }
