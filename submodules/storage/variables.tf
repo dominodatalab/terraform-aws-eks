@@ -8,17 +8,6 @@ variable "deploy_id" {
   }
 }
 
-variable "subnet_ids" {
-  type        = list(string)
-  description = "List of Subnets IDs to create EFS mount targets"
-}
-
-variable "vpc_id" {
-  description = "VPC ID"
-  type        = string
-
-}
-
 variable "kms_key_arn" {
   description = "if set, use specified key for S3 buckets"
   type        = string
@@ -70,6 +59,58 @@ variable "storage" {
     }), {})
   })
   default = {}
+}
+
+variable "network_info" {
+  description = <<EOF
+    id = VPC ID.
+    subnets = {
+      public = List of public Subnets.
+      [{
+        name = Subnet name.
+        subnet_id = Subnet ud
+        az = Subnet availability_zone
+        az_id = Subnet availability_zone_id
+      }]
+      private = List of private Subnets.
+      [{
+        name = Subnet name.
+        subnet_id = Subnet ud
+        az = Subnet availability_zone
+        az_id = Subnet availability_zone_id
+      }]
+      pod = List of pod Subnets.
+      [{
+        name = Subnet name.
+        subnet_id = Subnet ud
+        az = Subnet availability_zone
+        az_id = Subnet availability_zone_id
+      }]
+    }
+  EOF
+  type = object({
+    vpc_id = string
+    subnets = object({
+      public = optional(list(object({
+        name      = string
+        subnet_id = string
+        az        = string
+        az_id     = string
+      })), [])
+      private = list(object({
+        name      = string
+        subnet_id = string
+        az        = string
+        az_id     = string
+      }))
+      pod = optional(list(object({
+        name      = string
+        subnet_id = string
+        az        = string
+        az_id     = string
+      })), [])
+    })
+  })
 }
 
 # variable "s3_kms_key" {
@@ -142,4 +183,17 @@ variable "storage" {
 #   type        = number
 #   description = "Delete backup data after this many days"
 #   default     = 125
+# }
+
+
+
+# variable "subnet_ids" {
+#   type        = list(string)
+#   description = "List of Subnets IDs to create EFS mount targets"
+# }
+
+# variable "vpc_id" {
+#   description = "VPC ID"
+#   type        = string
+
 # }

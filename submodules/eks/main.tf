@@ -2,6 +2,7 @@ data "aws_partition" "current" {}
 data "aws_caller_identity" "aws_account" {}
 
 locals {
+  kubeconfig_path   = try(abspath(pathexpand(var.eks.kubeconfig.path)), "${path.cwd}/kubeconfig")
   eks_cluster_name  = var.deploy_id
   aws_account_id    = data.aws_caller_identity.aws_account.account_id
   dns_suffix        = data.aws_partition.current.dns_suffix

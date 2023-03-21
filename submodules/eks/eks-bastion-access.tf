@@ -6,7 +6,7 @@ locals {
       from_port                = "443"
       to_port                  = "443"
       type                     = "egress"
-      security_group_id        = var.bastion_security_group_id
+      security_group_id        = try(var.bastion_info.security_group_id, null)
       source_security_group_id = aws_security_group.eks_cluster.id
     }
     bastion_to_eks_nodes_ssh = {
@@ -15,7 +15,7 @@ locals {
       from_port                = "22"
       to_port                  = "22"
       type                     = "egress"
-      security_group_id        = var.bastion_security_group_id
+      security_group_id        = try(var.bastion_info.security_group_id, null)
       source_security_group_id = aws_security_group.eks_nodes.id
     }
     eks_api_from_bastion = {
@@ -25,7 +25,7 @@ locals {
       to_port                  = "443"
       type                     = "ingress"
       security_group_id        = aws_security_group.eks_cluster.id
-      source_security_group_id = var.bastion_security_group_id
+      source_security_group_id = try(var.bastion_info.security_group_id, null)
     }
     eks_nodes_ssh_from_bastion = {
       description              = "From Bastion over ssh"
@@ -34,13 +34,13 @@ locals {
       to_port                  = "22"
       type                     = "ingress"
       security_group_id        = aws_security_group.eks_nodes.id
-      source_security_group_id = var.bastion_security_group_id
+      source_security_group_id = try(var.bastion_info.security_group_id, null)
     }
   }
 }
 
 resource "aws_security_group_rule" "bastion_eks" {
-  for_each = { for k, v in local.bastion_eks_security_group_rules : k => v if var.create_bastion_sg }
+  for_each = { for k, v in local.bastion_eks_security_group_rules : k => v if var.bastion_info != null }
 
   security_group_id        = each.value.security_group_id
   protocol                 = each.value.protocol

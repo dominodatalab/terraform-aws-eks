@@ -6,7 +6,7 @@ locals {
 }
 
 data "aws_iam_policy_document" "kms_key_global" {
-  count = var.use_kms && var.kms_key_id == null ? 1 : 0
+  count = var.kms.enabled && var.kms.key_id == null ? 1 : 0
   statement {
     actions = [
       "kms:Create*",
@@ -57,7 +57,7 @@ data "aws_iam_policy_document" "kms_key_global" {
 }
 
 resource "aws_kms_key" "domino" {
-  count                    = var.use_kms && var.kms_key_id == null ? 1 : 0
+  count                    = var.kms.enabled && var.kms.key_id == null ? 1 : 0
   description              = "KMS key to secure data for Domino"
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
   enable_key_rotation      = true
@@ -71,12 +71,12 @@ resource "aws_kms_key" "domino" {
 }
 
 resource "aws_kms_alias" "domino" {
-  count         = var.use_kms && var.kms_key_id == null ? 1 : 0
+  count         = var.kms.enabled && var.kms.key_id == null ? 1 : 0
   name          = "alias/${var.deploy_id}"
   target_key_id = aws_kms_key.domino[0].key_id
 }
 
 data "aws_kms_key" "key" {
-  count  = var.use_kms && var.kms_key_id != null ? 1 : 0
-  key_id = var.kms_key_id
+  count  = var.kms.enabled && var.kms.key_id != null ? 1 : 0
+  key_id = var.kms.key_id
 }

@@ -1,3 +1,8 @@
+variable "region" {
+  type        = string
+  description = "AWS region for the deployment"
+}
+
 variable "deploy_id" {
   type        = string
   description = "Domino Deployment ID."
@@ -16,21 +21,10 @@ variable "deploy_id" {
   }
 }
 
-variable "region" {
-  type        = string
-  description = "AWS region for the deployment"
-}
-
-variable "update_kubeconfig_extra_args" {
-  type        = string
-  description = "Optional extra args when generating kubeconfig"
-  default     = ""
-}
-
 variable "route53_hosted_zone_name" {
   type        = string
   description = "Optional hosted zone for External DNSone."
-  default     = ""
+  default     = null
 }
 
 variable "tags" {
@@ -39,10 +33,57 @@ variable "tags" {
   default     = {}
 }
 
-variable "k8s_version" {
+variable "ssh_pvt_key_path" {
   type        = string
-  description = "EKS cluster k8s version."
-  default     = "1.25"
+  description = "SSH private key filepath."
+  validation {
+    condition     = fileexists(var.ssh_pvt_key_path)
+    error_message = "Private key does not exist. Please provide the right path or generate a key with the following command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem"
+  }
+}
+
+variable "eks" {
+  description = <<EOF
+    k8s_version = "EKS cluster k8s version."
+    kubeconfig = {
+      extra_args = "Optional extra args when generating kubeconfig."
+      path       = "Fully qualified path name to write the kubeconfig file."
+    }
+    public_access = {
+      enabled = "Enable EKS API public endpoint."
+      cidrs   = "List of CIDR ranges permitted for accessing the EKS public endpoint."
+    }
+    "Custom role maps for aws auth configmap"
+    custom_role_maps = {
+      rolearn = string
+      username = string
+      groups = list(string)
+    }
+    master_role_names = "IAM role names to be added as masters in eks."
+    cluster_addons = "EKS cluster addons. vpc-cni is installed separately."
+  EOF
+
+  type = object({
+    k8s_version = optional(string)
+    kubeconfig = optional(object({
+      extra_args = optional(string)
+      path       = optional(string)
+    }))
+    public_access = optional(object({
+      enabled = optional(bool)
+      cidrs   = optional(list(string))
+    }))
+    custom_role_maps = optional(list(object({
+      rolearn  = string
+      username = string
+      groups   = list(string)
+    })))
+    master_role_names = optional(list(string))
+    cluster_addons    = optional(list(string))
+  })
+
+
+  default = {}
 }
 
 variable "default_node_groups" {
@@ -161,126 +202,71 @@ variable "additional_node_groups" {
 
 variable "network" {
   description = <<EOF
+    vpc = {
+      id = Existing vpc id, it will bypass creation by this module.
+      subnets = {
+        private = Existing private subnets.
+        public  = Existing public subnets.
+        pod     = Existing pod subnets.
+      }), {})
+    }), {})
     network_bits = {
-      public  = "Number of network bits to allocate to the public subnet. i.e /27 -> 32 IPs."
-      private = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
-      pod     = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
+      public  = Number of network bits to allocate to the public subnet. i.e /27 -> 32 IPs.
+      private = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.
+      pod     = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.
     }
     cidrs = {
-      vpc     = "The IPv4 CIDR block for the VPC."
-      public  = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
-      private = "Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs."
-      pod     = "The IPv4 CIDR block for the Pod subnets."
+      vpc     = The IPv4 CIDR block for the VPC.
+      public  = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.
+      private = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.
+      pod     = The IPv4 CIDR block for the Pod subnets.
     }
-    use_pod_cidr = "Use additional pod CIDR range (ie 100.64.0.0/16) for pod/service networking"
+    use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod/service networking.
   EOF
+
   type = object({
+    vpc = optional(object({
+      id = optional(string)
+      subnets = optional(object({
+        private = optional(list(string))
+        public  = optional(list(string))
+        pod     = optional(list(string))
+      }), {})
+    }), {})
     network_bits = optional(object({
-      public  = optional(number, 27)
-      private = optional(number, 19)
-      pod     = optional(number, 19)
+      public  = optional(number)
+      private = optional(number)
+      pod     = optional(number)
       }
     ), {})
     cidrs = optional(object({
-      vpc = optional(string, "10.0.0.0/16")
-      pod = optional(string, "100.64.0.0/16")
+      vpc = optional(string)
+      pod = optional(string)
     }), {})
-    use_pod_cidr = optional(bool, true)
+    use_pod_cidr = optional(bool)
   })
 
-  validation {
-    condition = alltrue([for name, cidr in var.network.cidrs : try(cidrhost(cidr, 0), false) == regex("^(.*)/", cidr)[0] &&
-    try(cidrnetmask(cidr), false) == "255.255.0.0"])
-    error_message = "Each of network.cidrs must be a valid CIDR block."
-  }
   default = {}
-}
-
-variable "my_vpc" {
-  description = <<EOF
-    vpc_id          = "Optional VPC ID, it will bypass creation of such, public_subnets and private_subnets are also required."
-    private_subnets = "Optional list of private subnet ids"
-    public_subnets  = "Optional list of public subnet ids"
-    pod_subnets     = "Optional list of pod subnet ids"
-  EOF
-  type = object({
-    vpc_id          = optional(string, null)
-    private_subnets = optional(list(string), [])
-    public_subnets  = optional(list(string), [])
-    pod_subnets     = optional(list(string), [])
-  })
-
-  validation {
-    condition     = var.my_vpc.vpc_id != null ? var.my_vpc.private_subnets != null && length(var.my_vpc.private_subnets) >= 2 : true
-    error_message = "Must provide 2 or more private subnets, when providing a VPC."
-  }
-
-  validation {
-    condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.private_subnets) == 0 : true
-    error_message = "Must provide a vpc_id when providing private_subnets."
-  }
-
-  validation {
-    condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.public_subnets) == 0 : true
-    error_message = "Must provide a vpc_id when providing public_subnets."
-  }
-
-  validation {
-    condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.pod_subnets) == 0 : true
-    error_message = "Must provide a vpc_id when providing pod_subnets."
-  }
-  default = {}
-}
-
-
-variable "eks_master_role_names" {
-  type        = list(string)
-  description = "IAM role names to be added as masters in eks."
-  default     = []
 }
 
 variable "bastion" {
+  description = <<EOF
+    ami                      = Ami id. Defaults to latest 'amazon_linux_2' ami.
+    instance_type            = "Instance type."
+    authorized_ssh_ip_ranges = List of CIDR ranges permitted for the bastion ssh access.
+    username                 = Bastion user.
+    install_binaries         = Toggle to install required Domino binaries in the bastion.
+  EOF
   type = object({
-    ami                      = optional(string, null) # default will use the latest 'amazon_linux_2' ami
-    instance_type            = optional(string, "t2.micro")
-    authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
-    username                 = optional(string, null)
-    install_binaries         = optional(bool, false)
+    ami_id                   = optional(string) # default will use the latest 'amazon_linux_2' ami
+    instance_type            = optional(string)
+    authorized_ssh_ip_ranges = optional(list(string))
+    username                 = optional(string)
+    install_binaries         = optional(bool)
   })
-  description = "if specifed, a bastion is created with the specified details"
-  default     = null
+  default = {}
 }
 
-variable "ssh_pvt_key_path" {
-  type        = string
-  description = "SSH private key filepath."
-  validation {
-    condition     = fileexists(var.ssh_pvt_key_path)
-    error_message = "Private key does not exist. Please provide the right path or generate a key with the following command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem"
-  }
-}
-
-variable "kms_key_id" {
-  description = "if use_kms is set, use the specified KMS key"
-  type        = string
-  default     = null
-  validation {
-    condition     = var.kms_key_id == null ? true : length(var.kms_key_id) > 0
-    error_message = "KMS key ID must be null or set to a non-empty string"
-  }
-}
-
-variable "use_kms" {
-  description = "if set, use either the specified KMS key or a Domino-generated one"
-  type        = bool
-  default     = false
-}
-
-variable "kubeconfig_path" {
-  description = "fully qualified path name to write the kubeconfig file"
-  type        = string
-  default     = ""
-}
 
 variable "storage" {
   description = <<EOF
@@ -329,26 +315,35 @@ variable "storage" {
   default = {}
 }
 
-variable "eks_custom_role_maps" {
-  type        = list(object({ rolearn = string, username = string, groups = list(string) }))
-  description = "Custom role maps for aws auth configmap"
-  default     = []
-}
-
 variable "ssm_log_group_name" {
   type        = string
   description = "CW log group to send the SSM session logs to"
   default     = "session-manager"
 }
-
-variable "eks_public_access" {
+variable "kms" {
+  description = <<EOF
+    enabled = "Toggle,if set use either the specified KMS key_id or a Domino-generated one"
+    key_id  = optional(string, null)
+  EOF
   type = object({
     enabled = optional(bool, false)
-    cidrs   = optional(list(string), [])
+    key_id  = optional(string, null)
   })
-  description = "EKS API endpoint public access configuration"
-  default     = null
+
+  validation {
+    condition     = var.kms.key_id == null ? true : length(var.kms.key_id) > 0
+    error_message = "KMS key ID must be null or set to a non-empty string"
+  }
+
+  validation {
+    condition     = var.kms.key_id != null ? var.kms.enabled : true
+    error_message = "var.kms.enabled must be true if var.kms.key_id is provided."
+  }
+
+  default = {}
 }
+
+#####
 
 ### Moved
 
@@ -477,4 +472,105 @@ variable "eks_public_access" {
 #   type        = list(string)
 #   description = "Optional list of pod subnet ids"
 #   default     = null
+# }
+
+###
+
+# variable "k8s_version" {
+#   type        = string
+#   description = "EKS cluster k8s version."
+#   default     = "1.25"
+# }
+
+# variable "update_kubeconfig_extra_args" {
+#   type        = string
+#   description = "Optional extra args when generating kubeconfig"
+#   default     = ""
+# }
+
+# variable "eks_master_role_names" {
+#   type        = list(string)
+#   description = "IAM role names to be added as masters in eks."
+#   default     = []
+# }
+
+# variable "kubeconfig_path" {
+#   description = "fully qualified path name to write the kubeconfig file"
+#   type        = string
+#   default     = ""
+# }
+
+
+# variable "eks_custom_role_maps" {
+#   type        = list(object({ rolearn = string, username = string, groups = list(string) }))
+#   description = "Custom role maps for aws auth configmap"
+#   default     = []
+# }
+
+# variable "eks_public_access" {
+#   type = object({
+#     enabled = optional(bool, false)
+#     cidrs   = optional(list(string), [])
+#   })
+#   description = "EKS API endpoint public access configuration"
+#   default     = null
+# }
+
+
+###
+
+# variable "use_kms" {
+#   description = "if set, use either the specified KMS key or a Domino-generated one"
+#   type        = bool
+#   default     = false
+# }
+
+
+# variable "kms_key_id" {
+#   description = "if use_kms is set, use the specified KMS key"
+#   type        = string
+#   default     = null
+#   validation {
+#     condition     = var.kms_key_id == null ? true : length(var.kms_key_id) > 0
+#     error_message = "KMS key ID must be null or set to a non-empty string"
+#   }
+# }
+
+
+###
+
+# variable "my_vpc" {
+#   description = <<EOF
+#     vpc_id          = VPC ID, it will bypass creation of such, public_subnets and private_subnets are also required.
+#     private_subnets = List of private subnet ids.
+#     public_subnets  = List of public subnet ids.
+#     pod_subnets     = List of pod subnet ids.
+#   EOF
+#   type = object({
+#     vpc_id          = optional(string, null)
+#     private_subnets = optional(list(string), [])
+#     public_subnets  = optional(list(string), [])
+#     pod_subnets     = optional(list(string), [])
+#   })
+
+#   validation {
+#     condition     = var.my_vpc.vpc_id != null ? var.my_vpc.private_subnets != null && length(var.my_vpc.private_subnets) >= 2 : true
+#     error_message = "Must provide 2 or more private subnets, when providing a VPC."
+#   }
+
+#   validation {
+#     condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.private_subnets) == 0 : true
+#     error_message = "Must provide a vpc_id when providing private_subnets."
+#   }
+
+#   validation {
+#     condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.public_subnets) == 0 : true
+#     error_message = "Must provide a vpc_id when providing public_subnets."
+#   }
+
+#   validation {
+#     condition     = var.my_vpc.vpc_id == null ? length(var.my_vpc.pod_subnets) == 0 : true
+#     error_message = "Must provide a vpc_id when providing pod_subnets."
+#   }
+#   default = {}
 # }
