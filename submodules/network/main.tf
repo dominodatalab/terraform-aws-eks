@@ -1,93 +1,46 @@
-resource "aws_vpc" "this" {
-  assign_generated_ipv6_cidr_block = false
-  cidr_block                       = var.cidr
-  enable_dns_hostnames             = true
-  enable_dns_support               = true
-  tags = {
-    "Name" = var.deploy_id
-  }
+locals {
+  create_vpc = var.network.vpc.id == null
+}
+
+data "aws_subnet" "public" {
+  count = !local.create_vpc ? length(var.network.vpc.subnets.public) : 0
+  id    = var.network.vpc.subnets.public[count.index]
+}
+
+data "aws_subnet" "private" {
+  count = !local.create_vpc ? length(var.network.vpc.subnets.private) : 0
+  id    = var.network.vpc.subnets.private[count.index]
+}
+
+data "aws_subnet" "pod" {
+  count = !local.create_vpc && var.network.use_pod_cidr ? length(var.network.vpc.subnets.pod) : 0
+  id    = var.network.vpc.subnets.pod[count.index]
 }
 
 locals {
-  vpc_id = aws_vpc.this.id
-}
+  # Get the zones that are available and offered in the region for the instance types.
+  az_ids     = !local.create_vpc ? distinct(data.aws_subnet.private[*].availability_zone_id) : distinct(flatten([for name, ng in var.node_groups : ng.availability_zone_ids]))
+  num_of_azs = length(local.az_ids)
 
-resource "aws_vpc_ipv4_cidr_block_association" "pod_cidr" {
-  count      = var.use_pod_cidr ? 1 : 0
-  vpc_id     = aws_vpc.this.id
-  cidr_block = var.pod_cidr
-}
 
-resource "aws_default_security_group" "default" {
-  vpc_id = local.vpc_id
-}
+  ## Calculating public and private subnets based on the base base cidr and desired network bits
+  base_cidr_network_bits = tonumber(regex("[^/]*$", var.network.cidrs.vpc))
+  ## We have one Cidr to carve the nw bits for both pvt and public subnets
+  ## `...local.availability_zones_number * 2)` --> we have 2 types private and public subnets
+  new_bits_list      = concat([for n in range(0, local.num_of_azs) : var.network.network_bits.public - local.base_cidr_network_bits], [for n in range(0, local.num_of_azs) : var.network.network_bits.private - local.base_cidr_network_bits])
+  subnet_cidr_blocks = cidrsubnets(var.network.cidrs.vpc, local.new_bits_list...)
 
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id            = local.vpc_id
-  service_name      = "com.amazonaws.${var.region}.s3"
-  vpc_endpoint_type = "Gateway"
-
-  route_table_ids = concat(
-    [for s in aws_route_table.public : s.id],
-    [for s in aws_route_table.private : s.id],
-    [for s in aws_route_table.pod : s.id]
+  ## Match the public subnet var to the list of cidr blocks
+  public_cidr_blocks = try(data.aws_subnet.public[0].cidr_block, slice(local.subnet_cidr_blocks, 0, local.num_of_azs))
+  ## Match the private subnet var to the list of cidr blocks
+  private_cidr_blocks = try(data.aws_subnet.private[0].cidr_block, slice(local.subnet_cidr_blocks, local.num_of_azs, length(local.subnet_cidr_blocks)))
+  ## Determine cidr blocks for pod network
+  base_pod_cidr_network_bits = try(tonumber(regex("[^/]*$", var.network.cidrs.pod)), "")
+  pod_cidr_blocks = try(data.aws_subnet.pod[0].cidr_block,
+    !var.network.use_pod_cidr ? [] :
+    cidrsubnets(var.network.cidrs.pod,
+      [for n in range(0, local.num_of_azs) :
+    var.network.network_bits.pod - local.base_pod_cidr_network_bits]...)
   )
 
-  tags = {
-    "Name" = "${var.deploy_id}-s3"
-  }
-}
-
-data "aws_network_acls" "default" {
-  vpc_id = local.vpc_id
-
-  filter {
-    name   = "default"
-    values = ["true"]
-  }
-}
-
-resource "aws_default_network_acl" "default" {
-  default_network_acl_id = one(data.aws_network_acls.default.ids)
-
-  egress {
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = "0"
-    icmp_code  = "0"
-    icmp_type  = "0"
-    protocol   = "-1"
-    rule_no    = "100"
-    to_port    = "0"
-  }
-
-  ingress {
-    action     = "allow"
-    cidr_block = "0.0.0.0/0"
-    from_port  = "0"
-    icmp_code  = "0"
-    icmp_type  = "0"
-    protocol   = "-1"
-    rule_no    = "100"
-    to_port    = "0"
-  }
-
-  subnet_ids = concat(
-    [for s in aws_subnet.public : s.id],
-    [for s in aws_subnet.private : s.id],
-    [for s in aws_subnet.pod : s.id]
-  )
-
-  lifecycle {
-    ignore_changes = [subnet_ids]
-  }
-}
-
-resource "aws_flow_log" "this" {
-  count                    = var.flow_log_bucket_arn != null ? 1 : 0
-  log_destination          = var.flow_log_bucket_arn["arn"]
-  vpc_id                   = local.vpc_id
-  max_aggregation_interval = 600
-  log_destination_type     = "s3"
-  traffic_type             = "REJECT"
 }

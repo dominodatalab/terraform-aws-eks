@@ -20,13 +20,16 @@
     {
       "domino_eks": {
         "source": "./..",
+
         "deploy_id": "${var.deploy_id}",
         "region": "${var.region}",
-        "k8s_version": "${var.k8s_version}",
         "route53_hosted_zone_name": "deploys-delta.domino.tech",
-        "eks_master_role_names": ["okta-poweruser", "okta-fulladmin"],
         "bastion": {
           "install_binaries": true
+        },
+        "eks": {
+          "k8s_version": "${var.k8s_version}",
+          "master_role_names": ["okta-poweruser", "okta-fulladmin"]
         },
         "ssh_pvt_key_path": "domino.pem",
         "tags": "${var.tags}",

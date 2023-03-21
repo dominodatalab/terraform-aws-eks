@@ -35,7 +35,7 @@ resource "aws_iam_role" "eks_nodes" {
 resource "aws_security_group" "eks_nodes" {
   name        = "${local.eks_cluster_name}-nodes"
   description = "EKS cluster Nodes security group"
-  vpc_id      = var.vpc_id
+  vpc_id      = var.network_info.vpc_id
 
   lifecycle {
     create_before_destroy = true
@@ -81,7 +81,7 @@ resource "aws_security_group_rule" "efs" {
 locals {
   node_groups_per_zone = flatten([
     for ng_name, ng in var.node_groups : [
-      for sb_name, sb in var.private_subnets : {
+      for sb_name, sb in var.network_info.subnets.private : {
         ng_name    = ng_name
         sb_name    = sb_name
         subnet     = sb
@@ -105,7 +105,7 @@ resource "aws_launch_template" "node_groups" {
   for_each                = var.node_groups
   name                    = "${local.eks_cluster_name}-${each.key}"
   disable_api_termination = false
-  key_name                = var.ssh_key_pair_name
+  key_name                = var.ssh_key.key_pair_name
   user_data = each.value.ami == null ? null : base64encode(templatefile(
     "${path.module}/templates/linux_user_data.tpl",
     {

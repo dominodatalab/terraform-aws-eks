@@ -3,6 +3,8 @@ data "aws_elb_service_account" "this" {}
 data "aws_partition" "current" {}
 
 locals {
+  private_subnet_ids = var.network_info.subnets.private[*].subnet_id
+
   s3_buckets = {
     backups = {
       bucket_name = aws_s3_bucket.backups.bucket

@@ -35,12 +35,12 @@ output "domino_key_pair" {
 
 output "kubeconfig" {
   description = "location of kubeconfig"
-  value       = local.kubeconfig_path
+  value       = module.eks.kubeconfig_path
 }
 
 output "kms_key_id" {
   description = "KMS key ID, if enabled"
-  value       = var.use_kms ? try(data.aws_kms_key.key[0].id, resource.aws_kms_key.domino[0].id) : null
+  value       = var.kms.enabled ? try(data.aws_kms_key.key[0].id, resource.aws_kms_key.domino[0].id) : null
 }
 
 output "kms_key_arn" {
@@ -51,4 +51,9 @@ output "kms_key_arn" {
 output "container_registry" {
   description = "ECR base registry URL"
   value       = module.storage.container_registry
+}
+
+output "network_info" {
+  description = "Network details."
+  value       = module.network.info
 }

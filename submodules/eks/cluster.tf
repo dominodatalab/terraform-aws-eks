@@ -42,7 +42,7 @@ resource "aws_kms_key" "eks_cluster" {
 resource "aws_security_group" "eks_cluster" {
   name        = "${local.eks_cluster_name}-cluster"
   description = "EKS cluster security group"
-  vpc_id      = var.vpc_id
+  vpc_id      = var.network_info.vpc_id
 
   lifecycle {
     create_before_destroy = true
@@ -76,7 +76,7 @@ resource "aws_eks_cluster" "this" {
   name                      = local.eks_cluster_name
   role_arn                  = aws_iam_role.eks_cluster.arn
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-  version                   = var.k8s_version
+  version                   = var.eks.k8s_version
 
   encryption_config {
     provider {
@@ -93,10 +93,10 @@ resource "aws_eks_cluster" "this" {
 
   vpc_config {
     endpoint_private_access = true
-    endpoint_public_access  = var.eks_public_access.enabled
-    public_access_cidrs     = var.eks_public_access.cidrs
+    endpoint_public_access  = var.eks.public_access.enabled
+    public_access_cidrs     = var.eks.public_access.cidrs
     security_group_ids      = [aws_security_group.eks_cluster.id]
-    subnet_ids              = [for s in var.private_subnets : s.subnet_id]
+    subnet_ids              = [for s in var.network_info.subnets.private : s.subnet_id]
   }
 
   depends_on = [
@@ -114,7 +114,7 @@ resource "aws_eks_addon" "vpc_cni" {
 }
 
 resource "aws_eks_addon" "this" {
-  for_each          = toset(var.eks_cluster_addons)
+  for_each          = toset(var.eks.cluster_addons)
   cluster_name      = aws_eks_cluster.this.name
   resolve_conflicts = "OVERWRITE"
   addon_name        = each.key
@@ -127,7 +127,7 @@ resource "aws_eks_addon" "this" {
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
     when    = create
-    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name} ${var.update_kubeconfig_extra_args}"
+    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name} ${var.eks.kubeconfig.extra_args}"
   }
   provisioner "local-exec" {
     when    = destroy
@@ -143,7 +143,7 @@ resource "null_resource" "kubeconfig" {
   triggers = {
     domino_eks_cluster_ca = aws_eks_cluster.this.certificate_authority[0].data
     cluster_name          = aws_eks_cluster.this.name
-    kubeconfig_file       = var.kubeconfig_path
+    kubeconfig_file       = var.eks.kubeconfig.path
     region                = var.region
   }
   depends_on = [aws_eks_cluster.this]

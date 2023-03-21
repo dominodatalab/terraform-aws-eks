@@ -22,3 +22,8 @@ output "eks_master_roles" {
   description = "EKS master roles."
   value       = [aws_iam_role.eks_cluster]
 }
+
+output "kubeconfig_path" {
+  description = "location of kubeconfig"
+  value       = local.kubeconfig_path
+}

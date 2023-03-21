@@ -47,26 +47,17 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_ami_id"></a> [ami\_id](#input\_ami\_id) | AMI ID for the bastion EC2 instance, otherwise we will use the latest 'amazon\_linux\_2' ami. | `string` | `null` | no |
-| <a name="input_bastion_user"></a> [bastion\_user](#input\_bastion\_user) | ec2 instance user. | `string` | `"ec2-user"` | no |
+| <a name="input_bastion"></a> [bastion](#input\_bastion) | ami                      = Ami id. Defaults to latest 'amazon\_linux\_2' ami.<br>    instance\_type            = Instance type.<br>    authorized\_ssh\_ip\_ranges = List of CIDR ranges permitted for the bastion ssh access.<br>    username                 = Bastion user.<br>    install\_binaries         = Toggle to install required Domino binaries in the bastion. | <pre>object({<br>    ami_id                   = optional(string, null) # default will use the latest 'amazon_linux_2' ami<br>    instance_type            = optional(string, "t2.micro")<br>    authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])<br>    username                 = optional(string, "ec2-user")<br>    install_binaries         = optional(bool, false)<br>  })</pre> | `{}` | no |
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
-| <a name="input_install_binaries"></a> [install\_binaries](#input\_install\_binaries) | Install binaries on bastion host | `bool` | `false` | no |
-| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | the bastion's instance type, if null, t2.micro is used | `string` | `null` | no |
 | <a name="input_k8s_version"></a> [k8s\_version](#input\_k8s\_version) | K8s version used to download/install the kubectl binary | `string` | `"1.25"` | no |
 | <a name="input_kms_key"></a> [kms\_key](#input\_kms\_key) | if set, use specified key for EBS volumes | `string` | `null` | no |
-| <a name="input_public_subnet_id"></a> [public\_subnet\_id](#input\_public\_subnet\_id) | Public subnet to create bastion host in. | `string` | n/a | yes |
+| <a name="input_network_info"></a> [network\_info](#input\_network\_info) | id = VPC ID.<br>    subnets = {<br>      public = List of public Subnets.<br>      [{<br>        name = Subnet name.<br>        subnet\_id = Subnet ud<br>        az = Subnet availability\_zone<br>        az\_id = Subnet availability\_zone\_id<br>      }]<br>      private = List of private Subnets.<br>      [{<br>        name = Subnet name.<br>        subnet\_id = Subnet ud<br>        az = Subnet availability\_zone<br>        az\_id = Subnet availability\_zone\_id<br>      }]<br>      pod = List of pod Subnets.<br>      [{<br>        name = Subnet name.<br>        subnet\_id = Subnet ud<br>        az = Subnet availability\_zone<br>        az\_id = Subnet availability\_zone\_id<br>      }]<br>    } | <pre>object({<br>    vpc_id = string<br>    subnets = object({<br>      public = list(object({<br>        name      = string<br>        subnet_id = string<br>        az        = string<br>        az_id     = string<br>      }))<br>      private = optional(list(object({<br>        name      = string<br>        subnet_id = string<br>        az        = string<br>        az_id     = string<br>      })), [])<br>      pod = optional(list(object({<br>        name      = string<br>        subnet_id = string<br>        az        = string<br>        az_id     = string<br>      })), [])<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
-| <a name="input_security_group_rules"></a> [security\_group\_rules](#input\_security\_group\_rules) | Bastion host security group rules. | <pre>map(object({<br>    protocol                 = string<br>    from_port                = string<br>    to_port                  = string<br>    type                     = string<br>    description              = string<br>    cidr_blocks              = list(string)<br>    source_security_group_id = string<br>  }))</pre> | `{}` | no |
-| <a name="input_ssh_key_pair_name"></a> [ssh\_key\_pair\_name](#input\_ssh\_key\_pair\_name) | AWS key\_pair name. | `string` | n/a | yes |
-| <a name="input_ssh_pvt_key_path"></a> [ssh\_pvt\_key\_path](#input\_ssh\_pvt\_key\_path) | SSH private key filepath. | `string` | n/a | yes |
-| <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID. | `string` | n/a | yes |
+| <a name="input_ssh_key"></a> [ssh\_key](#input\_ssh\_key) | path          = SSH private key filepath.<br>    key\_pair\_name = AWS key\_pair name. | <pre>object({<br>    path          = string<br>    key_pair_name = string<br>  })</pre> | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_public_ip"></a> [public\_ip](#output\_public\_ip) | Bastion host public ip. |
-| <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | Bastion host security group id. |
-| <a name="output_ssh_bastion_command"></a> [ssh\_bastion\_command](#output\_ssh\_bastion\_command) | Command to ssh into the bastion host |
-| <a name="output_user"></a> [user](#output\_user) | Bastion host username |
+| <a name="output_info"></a> [info](#output\_info) | Bastion information. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

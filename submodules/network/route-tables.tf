@@ -2,9 +2,9 @@ resource "aws_route_table" "public" {
   for_each = local.public_cidrs
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.igw[0].id
   }
-  vpc_id = local.vpc_id
+  vpc_id = aws_vpc.this[0].id
   tags = {
     "Name" = each.value.name,
   }
@@ -26,7 +26,7 @@ resource "aws_route_table" "private" {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.ngw[local.private_public_map[each.key]].id
   }
-  vpc_id = local.vpc_id
+  vpc_id = aws_vpc.this[0].id
   tags = {
     "Name" = each.value.name,
   }
@@ -39,7 +39,7 @@ resource "aws_route_table_association" "private" {
 }
 
 locals {
-  pod_public_map = var.use_pod_cidr ? zipmap(keys(local.pod_cidrs), keys(local.public_cidrs)) : {}
+  pod_public_map = var.network.use_pod_cidr ? zipmap(keys(local.pod_cidrs), keys(local.public_cidrs)) : {}
 }
 
 resource "aws_route_table" "pod" {
@@ -48,7 +48,7 @@ resource "aws_route_table" "pod" {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.ngw[local.pod_public_map[each.key]].id
   }
-  vpc_id = local.vpc_id
+  vpc_id = aws_vpc.this[0].id
   tags = {
     "Name" = each.value.name,
   }

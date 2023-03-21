@@ -11,7 +11,7 @@ resource "aws_security_group" "bastion" {
   name                   = "${var.deploy_id}-bastion"
   description            = "Bastion security group"
   revoke_rules_on_delete = true
-  vpc_id                 = var.vpc_id
+  vpc_id                 = var.network_info.vpc_id
 
   lifecycle {
     create_before_destroy = true
@@ -34,8 +34,21 @@ resource "aws_security_group_rule" "bastion_outbound" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
+locals {
+  security_group_rules = {
+    bastion_inbound_ssh = {
+      protocol                 = "tcp"
+      from_port                = "22"
+      to_port                  = "22"
+      type                     = "ingress"
+      description              = "Inbound ssh"
+      cidr_blocks              = var.bastion.authorized_ssh_ip_ranges
+      source_security_group_id = null
+    }
+  }
+}
 resource "aws_security_group_rule" "bastion" {
-  for_each = var.security_group_rules
+  for_each = local.security_group_rules
 
   security_group_id        = aws_security_group.bastion.id
   protocol                 = each.value.protocol
@@ -88,7 +101,7 @@ resource "aws_iam_instance_profile" "bastion" {
 }
 
 data "aws_ami" "amazon_linux_2" {
-  count       = var.ami_id == null ? 1 : 0
+  count       = var.bastion.ami_id == null ? 1 : 0
   most_recent = true
   owners      = ["amazon"]
 
@@ -104,7 +117,7 @@ data "aws_ami" "amazon_linux_2" {
 }
 
 locals {
-  ami_id = var.ami_id != null ? var.ami_id : data.aws_ami.amazon_linux_2[0].id
+  ami_id = var.bastion.ami_id != null ? var.bastion.ami_id : data.aws_ami.amazon_linux_2[0].id
 }
 
 resource "aws_instance" "bastion" {
@@ -127,8 +140,8 @@ resource "aws_instance" "bastion" {
   get_password_data                    = false
   hibernation                          = false
   instance_initiated_shutdown_behavior = "stop"
-  instance_type                        = var.instance_type != null ? var.instance_type : "t2.micro"
-  key_name                             = var.ssh_key_pair_name
+  instance_type                        = var.bastion.instance_type != null ? var.bastion.instance_type : "t2.micro"
+  key_name                             = var.ssh_key.key_pair_name
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -151,7 +164,7 @@ resource "aws_instance" "bastion" {
   }
 
   source_dest_check = true
-  subnet_id         = var.public_subnet_id
+  subnet_id         = var.network_info.subnets.public[0].subnet_id
 
   vpc_security_group_ids = [aws_security_group.bastion.id]
   tags = {
@@ -199,12 +212,12 @@ resource "aws_iam_role_policy_attachment" "bastion_assume_role" {
 
 
 resource "null_resource" "install_binaries" {
-  count = var.install_binaries ? 1 : 0
+  count = var.bastion.install_binaries ? 1 : 0
 
   connection {
     type        = "ssh"
-    user        = var.bastion_user
-    private_key = file(var.ssh_pvt_key_path)
+    user        = var.bastion.username
+    private_key = file(var.ssh_key.path)
     host        = self.triggers.bastion_elastic_ip
   }
 
@@ -217,7 +230,7 @@ resource "null_resource" "install_binaries" {
   provisioner "file" {
     content = templatefile("${path.module}/templates/install-binaries.sh.tftpl", {
       k8s_version  = var.k8s_version
-      bastion_user = var.bastion_user
+      bastion_user = var.bastion.username
     })
     destination = self.triggers.sh_filepath
   }
@@ -230,10 +243,10 @@ resource "null_resource" "install_binaries" {
   }
 
   triggers = {
-    sh_filepath = "/home/${var.bastion_user}/install-binaries.sh"
+    sh_filepath = "/home/${var.bastion.username}/install-binaries.sh"
     sh_content_hash = md5(templatefile("${path.module}/templates/install-binaries.sh.tftpl", {
       k8s_version  = var.k8s_version
-      bastion_user = var.bastion_user
+      bastion_user = var.bastion.username
     }))
     bastion_elastic_ip = aws_eip.bastion.public_ip
   }
