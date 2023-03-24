@@ -1,7 +1,13 @@
-variable "kubeconfig_path" {
+variable "k8s_tunnel_port" {
   type        = string
-  description = "Kubeconfig filename."
-  default     = "kubeconfig"
+  description = "K8s ssh tunnel port"
+  default     = "1080"
+}
+
+variable "calico_version" {
+  type        = string
+  description = "Calico operator version."
+  default     = "v3.25.0"
 }
 
 variable "bastion_info" {
@@ -20,48 +26,6 @@ variable "bastion_info" {
   default = null
 }
 
-variable "eks_cluster_arn" {
-  type        = string
-  description = "ARN of the EKS cluster"
-}
-
-variable "eks_node_role_arns" {
-  type        = list(string)
-  description = "Roles arns for EKS nodes to be added to aws-auth for api auth."
-}
-
-variable "eks_master_role_arns" {
-  type        = list(string)
-  description = "IAM role arns to be added as masters in eks."
-  default     = []
-}
-
-variable "k8s_tunnel_port" {
-  type        = string
-  description = "K8s ssh tunnel port"
-  default     = "1080"
-}
-
-variable "calico_version" {
-  type        = string
-  description = "Calico operator version."
-  default     = "v3.25.0"
-}
-
-variable "security_group_id" {
-  type        = string
-  description = "Security group id for eks cluster."
-}
-
-
-variable "eks_custom_role_maps" {
-  type        = list(object({ rolearn = string, username = string, groups = list(string) }))
-  description = "Custom role maps for aws auth configmap"
-  default     = []
-}
-
-
-
 variable "ssh_key" {
   description = <<EOF
     path          = SSH private key filepath.
@@ -72,7 +36,6 @@ variable "ssh_key" {
     key_pair_name = string
   })
 }
-
 
 variable "network_info" {
   description = <<EOF
@@ -126,31 +89,60 @@ variable "network_info" {
   })
 }
 
+variable "eks_info" {
+  description = <<EOF
+    cluster = {
+      arn               = EKS Cluster arn.
+      security_group_id = EKS Cluster security group id.
+      endpoint          = EKS Cluster API endpoint.
+      roles             = Default IAM Roles associated with the EKS cluster. {
+        name = string
+        arn = string
+      }
+      custom_roles      = Custom IAM Roles associated with the EKS cluster. {
+        rolearn  = string
+        username = string
+        groups   = list(string)
+      }
+    }
+    nodes = {
+      security_group_id = EKS Nodes security group id.
+      roles = IAM Roles associated with the EKS Nodes.{
+        name = string
+        arn  = string
+      }
+    }
+    kubeconfig = Kubeconfig details.{
+      path       = string
+      extra_args = string
+    }
+  EOF
+  type = object({
+    cluster = object({
+      arn               = string
+      security_group_id = string
+      endpoint          = string
+      roles = list(object({
+        name = string
+        arn  = string
+      }))
+      custom_roles = list(object({
+        rolearn  = string
+        username = string
+        groups   = list(string)
+      }))
+    })
+    nodes = object({
+      security_group_id = string
+      roles = list(object({
+        name = string
+        arn  = string
+      }))
+    })
+    kubeconfig = object({
+      path       = string
+      extra_args = string
+    })
+  })
 
-## Moved
-
-
-# variable "pod_subnets" {
-#   type        = list(object({ subnet_id = string, az = string }))
-#   description = "Pod subnets and az to setup with vpc-cni"
-# }
-
-
-##
-
-# variable "bastion_user" {
-#   type        = string
-#   description = "ec2 instance user."
-#   default     = null
-# }
-
-# variable "bastion_public_ip" {
-#   type        = string
-#   description = "Bastion host public ip."
-#   default     = null
-# }
-
-# variable "ssh_pvt_key_path" {
-#   type        = string
-#   description = "SSH private key filepath."
-# }
+}

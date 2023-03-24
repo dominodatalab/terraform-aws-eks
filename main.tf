@@ -1,14 +1,19 @@
 data "aws_default_tags" "this" {}
 
 locals {
-  kms_key_arn = var.kms.enabled ? try(data.aws_kms_key.key[0].arn, resource.aws_kms_key.domino[0].arn) : null
+  kms_key = var.kms.enabled ? var.kms.key_id != null ? data.aws_kms_key.key[0].id : aws_kms_key.domino[0] : null
+  bastion = var.bastion != null ? module.bastion[0].info : null
+  kms = local.kms_key != null ? {
+    key_id  = local.kms_key.id
+    key_arn = local.kms_key.arn
+  } : null
 }
 
 module "storage" {
   source       = "./submodules/storage"
   deploy_id    = var.deploy_id
   network_info = module.network.info
-  kms_key_arn  = local.kms_key_arn
+  kms_key_arn  = try(local.kms.key_arn, null)
   storage      = var.storage
 }
 
@@ -30,7 +35,7 @@ module "network" {
   region              = var.region
   node_groups         = local.node_groups
   network             = var.network
-  flow_log_bucket_arn = { arn = module.storage.s3_buckets["monitoring"].arn }
+  flow_log_bucket_arn = { arn = module.storage.info.s3.buckets.monitoring.arn }
 }
 
 locals {
@@ -57,7 +62,7 @@ module "bastion" {
   deploy_id    = var.deploy_id
   region       = var.region
   ssh_key      = local.ssh_key
-  kms_key      = local.kms_key_arn
+  kms_key      = try(local.kms.key_arn, null)
   k8s_version  = var.eks.k8s_version
   network_info = module.network.info
   bastion      = var.bastion
@@ -75,13 +80,13 @@ module "eks" {
   region              = var.region
   ssh_key             = local.ssh_key
   node_groups         = local.node_groups
-  node_groups_kms_key = local.kms_key_arn
-  node_iam_policies   = module.storage.iam_policies
-  efs_security_group  = module.storage.efs_security_group
-  secrets_kms_key     = local.kms_key_arn
+  node_groups_kms_key = try(local.kms.key_arn, null)
+  node_iam_policies   = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn, ]
+  efs_security_group  = module.storage.info.efs.security_group_id
+  secrets_kms_key     = try(local.kms.key_arn, null)
   network_info        = module.network.info
   eks                 = var.eks
-  bastion_info        = try(module.bastion.info, null)
+  bastion_info        = var.bastion != null ? module.bastion[0].info : null
 
   depends_on = [
     module.network

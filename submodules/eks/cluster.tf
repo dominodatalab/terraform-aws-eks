@@ -71,7 +71,6 @@ resource "aws_cloudwatch_log_group" "eks_cluster" {
   name = "/aws/eks/${local.eks_cluster_name}/cluster"
 }
 
-## EKS cluster
 resource "aws_eks_cluster" "this" {
   name                      = local.eks_cluster_name
   role_arn                  = aws_iam_role.eks_cluster.arn
@@ -127,7 +126,7 @@ resource "aws_eks_addon" "this" {
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
     when    = create
-    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name} ${var.eks.kubeconfig.extra_args}"
+    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name} ${local.kubeconfig.extra_args}"
   }
   provisioner "local-exec" {
     when    = destroy
@@ -143,7 +142,7 @@ resource "null_resource" "kubeconfig" {
   triggers = {
     domino_eks_cluster_ca = aws_eks_cluster.this.certificate_authority[0].data
     cluster_name          = aws_eks_cluster.this.name
-    kubeconfig_file       = var.eks.kubeconfig.path
+    kubeconfig_file       = local.kubeconfig.path
     region                = var.region
   }
   depends_on = [aws_eks_cluster.this]

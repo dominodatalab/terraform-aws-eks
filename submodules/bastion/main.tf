@@ -60,7 +60,6 @@ resource "aws_security_group_rule" "bastion" {
   source_security_group_id = try(each.value.source_security_group_id, null)
 }
 
-## Bastion iam role
 data "aws_iam_policy_document" "bastion" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -204,12 +203,10 @@ resource "aws_iam_policy" "bastion_assume_role" {
   policy      = data.aws_iam_policy_document.bastion_assume_role.json
 }
 
-
 resource "aws_iam_role_policy_attachment" "bastion_assume_role" {
   policy_arn = aws_iam_policy.bastion_assume_role.arn
   role       = aws_iam_role.bastion.name
 }
-
 
 resource "null_resource" "install_binaries" {
   count = var.bastion.install_binaries ? 1 : 0

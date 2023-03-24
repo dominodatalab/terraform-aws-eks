@@ -1,4 +1,3 @@
-## EKS IAM
 data "aws_iam_policy_document" "eks_cluster" {
   statement {
     sid     = "EKSClusterAssumeRole"
