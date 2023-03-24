@@ -6,6 +6,11 @@ variable "deploy_id" {
 variable "region" {
   description = "AWS region for the deployment"
   type        = string
+  nullable    = false
+  validation {
+    condition     = can(regex("^([a-z]{2}-[a-z]+-[0-9])$", var.region))
+    error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2."
+  }
 }
 
 variable "network_info" {
@@ -60,10 +65,16 @@ variable "network_info" {
   })
 }
 
-variable "kms_key" {
-  type        = string
-  description = "if set, use specified key for EBS volumes"
-  default     = null
+variable "kms_info" {
+  description = <<EOF
+    key_id  = KMS key id.
+    key_arn = KMS key arn.
+  EOF
+  type = object({
+    key_id  = string
+    key_arn = string
+  })
+  default = null
 }
 
 variable "bastion" {

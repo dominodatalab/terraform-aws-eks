@@ -11,6 +11,11 @@ variable "deploy_id" {
 variable "region" {
   type        = string
   description = "AWS region for the deployment"
+  nullable    = false
+  validation {
+    condition     = can(regex("^([a-z]{2}-[a-z]+-[0-9])$", var.region))
+    error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2."
+  }
 }
 
 ## This is an object in order to be used as a conditional in count, due to https://github.com/hashicorp/terraform/issues/26755
@@ -45,7 +50,7 @@ variable "network" {
       vpc     = The IPv4 CIDR block for the VPC.
       pod     = The IPv4 CIDR block for the Pod subnets.
     }
-    use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod/service networking.
+    use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
   EOF
 
   type = object({

@@ -11,6 +11,11 @@ variable "deploy_id" {
 variable "region" {
   type        = string
   description = "AWS region for the deployment"
+  nullable    = false
+  validation {
+    condition     = can(regex("^([a-z]{2}-[a-z]+-[0-9])$", var.region))
+    error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2."
+  }
 }
 
 variable "node_groups" {
@@ -124,21 +129,20 @@ variable "bastion_info" {
   default = null
 }
 
+variable "kms_info" {
+  description = <<EOF
+    key_id  = KMS key id.
+    key_arn = KMS key arn.
+  EOF
+  type = object({
+    key_id  = string
+    key_arn = string
+  })
+  default = null
 variable "ssm_log_group_name" {
   type        = string
   description = "CW log group to send the SSM session logs to"
 }
-
-variable "secrets_kms_key" {
-  type        = string
-  description = "if set, use specified key for the EKS cluster secrets"
-  default     = null
-}
-
-variable "node_groups_kms_key" {
-  type        = string
-  description = "if set, use specified key for the EKS node groups"
-  default     = null
 }
 
 variable "eks" {

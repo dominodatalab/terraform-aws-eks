@@ -3,7 +3,7 @@ resource "aws_efs_file_system" "eks" {
   performance_mode                = "generalPurpose"
   provisioned_throughput_in_mibps = "0"
   throughput_mode                 = "bursting"
-  kms_key_id                      = var.kms_key_arn
+  kms_key_id                      = local.kms_key_arn
 
   tags = {
     "Name" = var.deploy_id

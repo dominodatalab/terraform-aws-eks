@@ -3,7 +3,7 @@ resource "aws_backup_vault" "efs" {
   name  = "${var.deploy_id}-efs"
 
   force_destroy = var.storage.efs.backup_vault.force_destroy
-  kms_key_arn   = var.kms_key_arn
+  kms_key_arn   = local.kms_key_arn
 }
 
 resource "aws_backup_plan" "efs" {

@@ -9,7 +9,7 @@ output "domino_key_pair" {
 
 output "kms" {
   description = "KMS key details, if enabled."
-  value       = local.kms
+  value       = local.kms_info
 }
 
 output "network" {
@@ -19,7 +19,7 @@ output "network" {
 
 output "bastion" {
   description = "Bastion details, if it was created."
-  value       = local.bastion
+  value       = local.bastion_info
 }
 
 output "storage" {
