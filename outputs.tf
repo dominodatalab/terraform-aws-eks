@@ -1,6 +1,6 @@
 output "hostname" {
   description = "Domino instance URL."
-  value       = "${var.deploy_id}.${var.route53_hosted_zone_name}"
+  value       = try("${var.deploy_id}.${var.route53_hosted_zone_name}", null)
 }
 output "domino_key_pair" {
   description = "Domino key pair"
