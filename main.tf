@@ -2,18 +2,18 @@ data "aws_default_tags" "this" {}
 
 locals {
   kms_key = var.kms.enabled ? var.kms.key_id != null ? data.aws_kms_key.key[0].id : aws_kms_key.domino[0] : null
-  bastion = var.bastion != null ? module.bastion[0].info : null
-  kms = local.kms_key != null ? {
+  kms_info = local.kms_key != null ? {
     key_id  = local.kms_key.id
     key_arn = local.kms_key.arn
   } : null
+  bastion_info = var.bastion != null ? module.bastion[0].info : null
 }
 
 module "storage" {
   source       = "./submodules/storage"
   deploy_id    = var.deploy_id
   network_info = module.network.info
-  kms_key_arn  = try(local.kms.key_arn, null)
+  kms_info     = local.kms_info
   storage      = var.storage
 }
 
@@ -62,7 +62,7 @@ module "bastion" {
   deploy_id    = var.deploy_id
   region       = var.region
   ssh_key      = local.ssh_key
-  kms_key      = try(local.kms.key_arn, null)
+  kms_info     = local.kms_info
   k8s_version  = var.eks.k8s_version
   network_info = module.network.info
   bastion      = var.bastion
@@ -74,18 +74,17 @@ data "aws_ec2_instance_type" "all" {
 }
 
 module "eks" {
-  source              = "./submodules/eks"
-  deploy_id           = var.deploy_id
-  region              = var.region
-  ssh_key             = local.ssh_key
-  node_groups         = local.node_groups
-  node_groups_kms_key = try(local.kms.key_arn, null)
-  node_iam_policies   = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn, ]
-  efs_security_group  = module.storage.info.efs.security_group_id
-  secrets_kms_key     = try(local.kms.key_arn, null)
-  network_info        = module.network.info
-  eks                 = var.eks
-  bastion_info        = var.bastion != null ? module.bastion[0].info : null
+  source             = "./submodules/eks"
+  deploy_id          = var.deploy_id
+  region             = var.region
+  ssh_key            = local.ssh_key
+  node_groups        = local.node_groups
+  kms_info           = local.kms_info
+  node_iam_policies  = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
+  efs_security_group = module.storage.info.efs.security_group_id
+  network_info       = module.network.info
+  eks                = var.eks
+  bastion_info       = var.bastion != null ? module.bastion[0].info : null
 
   depends_on = [
     module.network

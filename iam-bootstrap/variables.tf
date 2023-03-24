@@ -11,6 +11,11 @@ variable "deploy_id" {
 variable "region" {
   type        = string
   description = "AWS region for the deployment"
+  nullable    = false
+  validation {
+    condition     = can(regex("^([a-z]{2}-[a-z]+-[0-9])$", var.region))
+    error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2."
+  }
 }
 
 variable "iam_policy_paths" {

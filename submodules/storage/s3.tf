@@ -1,5 +1,5 @@
 locals {
-  s3_server_side_encryption = var.kms_key_arn != null ? "aws:kms" : "AES256"
+  s3_server_side_encryption = var.kms_info != null ? "aws:kms" : "AES256"
 }
 
 resource "aws_s3_bucket" "backups" {
@@ -412,7 +412,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryptio
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm     = local.s3_server_side_encryption
-      kms_master_key_id = var.kms_key_arn
+      kms_master_key_id = local.kms_key_arn
     }
     bucket_key_enabled = false
   }

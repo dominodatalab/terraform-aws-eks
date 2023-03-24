@@ -8,10 +8,16 @@ variable "deploy_id" {
   }
 }
 
-variable "kms_key_arn" {
-  description = "if set, use specified key for S3 buckets"
-  type        = string
-  default     = null
+variable "kms_info" {
+  description = <<EOF
+    key_id  = KMS key id.
+    key_arn = KMS key arn.
+  EOF
+  type = object({
+    key_id  = string
+    key_arn = string
+  })
+  default = null
 }
 
 variable "storage" {
