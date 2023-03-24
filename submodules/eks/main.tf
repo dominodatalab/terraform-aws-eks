@@ -3,6 +3,7 @@ data "aws_caller_identity" "aws_account" {}
 
 locals {
   kubeconfig_path   = try(abspath(pathexpand(var.eks.kubeconfig.path)), "${path.cwd}/kubeconfig")
+  kubeconfig        = merge(var.eks.kubeconfig, { path = local.kubeconfig_path })
   eks_cluster_name  = var.deploy_id
   aws_account_id    = data.aws_caller_identity.aws_account.account_id
   dns_suffix        = data.aws_partition.current.dns_suffix
@@ -147,5 +148,26 @@ locals {
       type        = "egress"
       self        = true
     }
+  }
+
+  eks_info = {
+    cluster = {
+      arn               = aws_eks_cluster.this.arn
+      security_group_id = aws_security_group.eks_cluster.id
+      endpoint          = aws_eks_cluster.this.endpoint
+      roles = [{
+        arn  = aws_iam_role.eks_cluster.arn
+        name = aws_iam_role.eks_cluster.name
+      }]
+      custom_roles = var.eks.custom_role_maps
+    }
+    nodes = {
+      security_group_id = aws_security_group.eks_nodes.id
+      roles = [{
+        arn  = aws_iam_role.eks_nodes.arn
+        name = aws_iam_role.eks_nodes.name
+      }]
+    }
+    kubeconfig = local.kubeconfig
   }
 }

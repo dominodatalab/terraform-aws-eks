@@ -1,25 +1,26 @@
 locals {
-  create_vpc = var.network.vpc.id == null
+  create_vpc   = var.network.vpc.id == null
+  provided_vpc = var.network.vpc.id != null
 }
 
 data "aws_subnet" "public" {
-  count = !local.create_vpc ? length(var.network.vpc.subnets.public) : 0
+  count = local.provided_vpc ? length(var.network.vpc.subnets.public) : 0
   id    = var.network.vpc.subnets.public[count.index]
 }
 
 data "aws_subnet" "private" {
-  count = !local.create_vpc ? length(var.network.vpc.subnets.private) : 0
+  count = local.provided_vpc ? length(var.network.vpc.subnets.private) : 0
   id    = var.network.vpc.subnets.private[count.index]
 }
 
 data "aws_subnet" "pod" {
-  count = !local.create_vpc && var.network.use_pod_cidr ? length(var.network.vpc.subnets.pod) : 0
+  count = local.provided_vpc && var.network.use_pod_cidr ? length(var.network.vpc.subnets.pod) : 0
   id    = var.network.vpc.subnets.pod[count.index]
 }
 
 locals {
   # Get the zones that are available and offered in the region for the instance types.
-  az_ids     = !local.create_vpc ? distinct(data.aws_subnet.private[*].availability_zone_id) : distinct(flatten([for name, ng in var.node_groups : ng.availability_zone_ids]))
+  az_ids     = local.provided_vpc ? distinct(data.aws_subnet.private[*].availability_zone_id) : distinct(flatten([for name, ng in var.node_groups : ng.availability_zone_ids]))
   num_of_azs = length(local.az_ids)
 
 
@@ -43,4 +44,25 @@ locals {
     var.network.network_bits.pod - local.base_pod_cidr_network_bits]...)
   )
 
+  public_subnets = local.create_vpc ? [
+    for cidr, c in local.public_cidrs :
+    { name = c.name, subnet_id = aws_subnet.public[cidr].id, az = c.az, az_id = c.az_id }
+    ] : [
+    for subnet in data.aws_subnet.public :
+    { name = subnet.tags.Name, subnet_id = subnet.id, az = subnet.availability_zone, az_id = subnet.availability_zone_id }
+  ]
+  private_subnets = local.create_vpc ? [
+    for cidr, c in local.private_cidrs :
+    { name = c.name, subnet_id = aws_subnet.private[cidr].id, az = c.az, az_id = c.az_id }
+    ] : [
+    for subnet in data.aws_subnet.private :
+    { name = subnet.tags.Name, subnet_id = subnet.id, az = subnet.availability_zone, az_id = subnet.availability_zone_id }
+  ]
+  pod_subnets = local.create_vpc ? [
+    for cidr, c in local.pod_cidrs :
+    { name = c.name, subnet_id = aws_subnet.pod[cidr].id, az = c.az, az_id = c.az_id }
+    ] : [
+    for subnet in data.aws_subnet.pod :
+    { name = subnet.tags.Name, subnet_id = subnet.id, az = subnet.availability_zone, az_id = subnet.availability_zone_id }
+  ]
 }

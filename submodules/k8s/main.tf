@@ -14,12 +14,12 @@ locals {
     k8s_functions_sh = {
       filename = local.k8s_functions_sh_filename
       content = templatefile("${local.templates_dir}/${local.k8s_functions_sh_template}", {
-        kubeconfig_path   = var.kubeconfig_path
+        kubeconfig_path   = var.eks_info.kubeconfig.path
         k8s_tunnel_port   = var.k8s_tunnel_port
         aws_auth_yaml     = basename(local.aws_auth_filename)
         eniconfig_yaml    = local.eniconfig_filename != "" ? basename(local.eniconfig_filename) : ""
         ssh_pvt_key_path  = var.ssh_key.path
-        eks_cluster_arn   = var.eks_cluster_arn
+        eks_cluster_arn   = var.eks_info.cluster.arn
         calico_version    = var.calico_version
         bastion_user      = var.bastion_info.user != null ? var.bastion_info.user : ""
         bastion_public_ip = var.bastion_info.public_ip != null ? var.bastion_info.public_ip : ""
@@ -37,9 +37,9 @@ locals {
       filename = local.aws_auth_filename
       content = templatefile("${local.templates_dir}/${local.aws_auth_template}",
         {
-          eks_node_role_arns   = toset(var.eks_node_role_arns)
-          eks_master_role_arns = toset(var.eks_master_role_arns)
-          eks_custom_role_maps = var.eks_custom_role_maps
+          eks_node_role_arns   = toset(var.eks_info.nodes.roles[*].arn)
+          eks_master_role_arns = toset(var.eks_info.cluster.roles[*].arn)
+          eks_custom_role_maps = var.eks_info.cluster.custom_roles
       })
 
     }
@@ -48,7 +48,7 @@ locals {
       filename = local.eniconfig_filename
       content = templatefile("${local.templates_dir}/${local.eniconfig_template}",
         {
-          security_group_id = var.security_group_id
+          security_group_id = var.eks_info.nodes.security_group_id
           subnets           = var.network_info.subnets.pod
       })
     }
