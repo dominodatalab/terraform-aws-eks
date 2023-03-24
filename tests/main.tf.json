@@ -31,6 +31,9 @@
           "k8s_version": "${var.k8s_version}",
           "master_role_names": ["okta-poweruser", "okta-fulladmin"]
         },
+        "kms": {
+          "enabled": true
+        },
         "ssh_pvt_key_path": "domino.pem",
         "tags": "${var.tags}",
         "default_node_groups": {
