@@ -61,7 +61,7 @@ data "aws_ami" "eks_gpu_node" {
 module "domino_eks" {
   source           = "./../.."
   region           = "us-west-2"
-  ssh_pvt_key_path = "domino.pem"
+  ssh_pvt_key_path = "./../examples.pem"
   deploy_id        = "dominoeks"
   default_node_groups = {
     compute = {
