@@ -15,30 +15,6 @@ locals {
       type                     = "ingress"
       source_security_group_id = aws_security_group.eks_nodes.id
     }
-    egress_nodes_9443 = {
-      description              = "EKS control plane to nodes"
-      protocol                 = "tcp"
-      from_port                = 9443
-      to_port                  = 9443
-      type                     = "egress"
-      source_security_group_id = aws_security_group.eks_nodes.id
-    }
-    egress_nodes_443 = {
-      description              = "${local.eks_cluster_name} EKS cluster API to private subnets"
-      protocol                 = "tcp"
-      from_port                = 443
-      to_port                  = 443
-      type                     = "egress"
-      source_security_group_id = aws_security_group.eks_nodes.id
-    }
-    egress_nodes_kubelet = {
-      description              = "${local.eks_cluster_name} EKS cluster API to private subnets"
-      protocol                 = "tcp"
-      from_port                = 10250
-      to_port                  = 10250
-      type                     = "egress"
-      source_security_group_id = aws_security_group.eks_nodes.id
-    }
   }
 
   node_security_group_rules = {
@@ -58,8 +34,32 @@ locals {
       type                          = "ingress"
       source_cluster_security_group = true
     }
+    ingress_cluster_4443 = {
+      description                   = "Cluster API to metrics-server APIService"
+      protocol                      = "tcp"
+      from_port                     = 4443
+      to_port                       = 4443
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+    ingress_cluster_5443 = {
+      description                   = "Cluster API to calico APIService"
+      protocol                      = "tcp"
+      from_port                     = 5443
+      to_port                       = 5443
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
+    ingress_cluster_6443 = {
+      description                   = "Cluster API to prometheus-adapter APIService"
+      protocol                      = "tcp"
+      from_port                     = 6443
+      to_port                       = 6443
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
     ingress_cluster_9443 = {
-      description                   = "Cluster API to node groups 9443, hephaestus"
+      description                   = "Cluster API to Hephaestus webhook"
       protocol                      = "tcp"
       from_port                     = 9443
       to_port                       = 9443
@@ -133,7 +133,7 @@ locals {
     inter_node_traffic_in = {
       description = "Node to node pod/svc trafic in"
       protocol    = "tcp"
-      from_port   = 1025
+      from_port   = 1024
       to_port     = 65535
       type        = "ingress"
       self        = true
@@ -141,7 +141,7 @@ locals {
     inter_node_traffic_out = {
       description = "Node to node pod/svc trafic out"
       protocol    = "tcp"
-      from_port   = 1025
+      from_port   = 1024
       to_port     = 65535
       type        = "egress"
       self        = true
