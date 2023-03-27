@@ -194,7 +194,7 @@ data "aws_iam_policy_document" "snapshot" {
 data "aws_iam_policy_document" "ssm" {
   statement {
     effect    = "Allow"
-    resources = ["*"]
+    resources = ["arn:aws:logs:*:*:log-group:${var.ssm_log_group_name}/*"]
 
     actions = [
       "logs:CreateLogStream",
