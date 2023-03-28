@@ -170,6 +170,7 @@ module "eks" {
   node_groups_kms_key          = local.kms_key_arn
   eks_custom_role_maps         = var.eks_custom_role_maps
   eks_public_access            = var.eks_public_access
+  ssm_log_group_name           = var.ssm_log_group_name
 
   depends_on = [
     module.network

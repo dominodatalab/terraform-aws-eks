@@ -137,7 +137,6 @@ variable "bastion_public_ip" {
 variable "ssm_log_group_name" {
   type        = string
   description = "CW log group to send the SSM session logs to"
-  default     = "session-manager"
 }
 
 variable "secrets_kms_key" {

@@ -336,6 +336,12 @@ variable "eks_custom_role_maps" {
   default     = []
 }
 
+variable "ssm_log_group_name" {
+  type        = string
+  description = "CW log group to send the SSM session logs to"
+  default     = "session-manager"
+}
+
 variable "eks_public_access" {
   type = object({
     enabled = optional(bool, false)
