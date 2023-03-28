@@ -145,6 +145,7 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="input_route53_hosted_zone_name"></a> [route53\_hosted\_zone\_name](#input\_route53\_hosted\_zone\_name) | Optional hosted zone for External DNSone. | `string` | `""` | no |
 | <a name="input_s3_force_destroy_on_deletion"></a> [s3\_force\_destroy\_on\_deletion](#input\_s3\_force\_destroy\_on\_deletion) | Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets | `bool` | `false` | no |
 | <a name="input_ssh_pvt_key_path"></a> [ssh\_pvt\_key\_path](#input\_ssh\_pvt\_key\_path) | SSH private key filepath. | `string` | n/a | yes |
+| <a name="input_ssm_log_group_name"></a> [ssm\_log\_group\_name](#input\_ssm\_log\_group\_name) | CW log group to send the SSM session logs to | `string` | `"session-manager"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Deployment tags. | `map(string)` | `{}` | no |
 | <a name="input_update_kubeconfig_extra_args"></a> [update\_kubeconfig\_extra\_args](#input\_update\_kubeconfig\_extra\_args) | Optional extra args when generating kubeconfig | `string` | `""` | no |
 | <a name="input_use_kms"></a> [use\_kms](#input\_use\_kms) | if set, use either the specified KMS key or a Domino-generated one | `bool` | `false` | no |
