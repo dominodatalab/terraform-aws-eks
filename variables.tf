@@ -336,6 +336,7 @@ variable "ssm_log_group_name" {
   description = "CW log group to send the SSM session logs to"
   default     = "session-manager"
 }
+
 variable "kms" {
   description = <<EOF
     enabled = "Toggle,if set use either the specified KMS key_id or a Domino-generated one"

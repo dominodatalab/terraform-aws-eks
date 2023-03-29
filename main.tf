@@ -74,19 +74,18 @@ data "aws_ec2_instance_type" "all" {
 }
 
 module "eks" {
-  ssm_log_group_name           = var.ssm_log_group_name
-  source              = "./submodules/eks"
-  deploy_id           = var.deploy_id
-  region              = var.region
-  ssh_key             = local.ssh_key
-  node_groups         = local.node_groups
-  node_groups_kms_key = try(local.kms.key_arn, null)
-  node_iam_policies   = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn, ]
-  efs_security_group  = module.storage.info.efs.security_group_id
-  secrets_kms_key     = try(local.kms.key_arn, null)
-  network_info        = module.network.info
-  eks                 = var.eks
-  bastion_info        = var.bastion != null ? module.bastion[0].info : null
+  ssm_log_group_name = var.ssm_log_group_name
+  source             = "./submodules/eks"
+  deploy_id          = var.deploy_id
+  region             = var.region
+  ssh_key            = local.ssh_key
+  node_groups        = local.node_groups
+  node_iam_policies  = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
+  efs_security_group = module.storage.info.efs.security_group_id
+  eks                = var.eks
+  network_info       = module.network.info
+  kms_info           = local.kms_info
+  bastion_info       = local.bastion_info
 
   depends_on = [
     module.network

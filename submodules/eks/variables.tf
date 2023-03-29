@@ -139,10 +139,11 @@ variable "kms_info" {
     key_arn = string
   })
   default = null
+}
+
 variable "ssm_log_group_name" {
   type        = string
   description = "CW log group to send the SSM session logs to"
-}
 }
 
 variable "eks" {
