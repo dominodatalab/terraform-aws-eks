@@ -1,3 +1,9 @@
+data "aws_caller_identity" "aws_account" {}
+
+locals {
+  aws_account_id = data.aws_caller_identity.aws_account.account_id
+}
+
 ## EKS IAM
 data "aws_iam_policy_document" "eks_cluster" {
   statement {
@@ -194,13 +200,19 @@ data "aws_iam_policy_document" "snapshot" {
 data "aws_iam_policy_document" "ssm" {
   statement {
     effect    = "Allow"
-    resources = ["arn:aws:logs:*:*:log-group:${var.ssm_log_group_name}/*"]
-
+    resources = ["arn:aws:logs:*:${local.aws_account_id}:log-group:${var.ssm_log_group_name}:*"]
     actions = [
       "logs:CreateLogStream",
       "logs:PutLogEvents",
-      "logs:DescribeLogGroups",
       "logs:DescribeLogStreams"
+    ]
+  }
+
+  statement {
+    effect    = "Allow"
+    resources = "*"
+    actions = [
+      "logs:DescribeLogGroups"
     ]
   }
 
