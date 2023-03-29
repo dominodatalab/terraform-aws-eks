@@ -21,8 +21,8 @@ locals {
         ssh_pvt_key_path  = var.ssh_key.path
         eks_cluster_arn   = var.eks_info.cluster.arn
         calico_version    = var.calico_version
-        bastion_user      = var.bastion_info.user != null ? var.bastion_info.user : ""
-        bastion_public_ip = var.bastion_info.public_ip != null ? var.bastion_info.public_ip : ""
+        bastion_user      = var.bastion_info != null ? var.bastion_info.user : ""
+        bastion_public_ip = var.bastion_info != null ? var.bastion_info.public_ip : ""
       })
     }
 
