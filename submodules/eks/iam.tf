@@ -204,7 +204,7 @@ data "aws_iam_policy_document" "ssm" {
 
   statement {
     effect    = "Allow"
-    resources = "*"
+    resources = ["*"]
     actions = [
       "logs:DescribeLogGroups"
     ]
