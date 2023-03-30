@@ -74,7 +74,6 @@ data "aws_ec2_instance_type" "all" {
 }
 
 module "eks" {
-  ssm_log_group_name = var.ssm_log_group_name
   source             = "./submodules/eks"
   deploy_id          = var.deploy_id
   region             = var.region

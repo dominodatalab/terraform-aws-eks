@@ -141,10 +141,6 @@ variable "kms_info" {
   default = null
 }
 
-variable "ssm_log_group_name" {
-  type        = string
-  description = "CW log group to send the SSM session logs to"
-}
 
 variable "eks" {
   description = <<EOF
@@ -165,6 +161,7 @@ variable "eks" {
     }]
     master_role_names = IAM role names to be added as masters in EKS.
     cluster_addons = EKS cluster addons. vpc-cni is installed separately.
+    ssm_log_group_name = "CloudWatch log group to send the SSM session logs to."
   EOF
 
   type = object({
@@ -182,8 +179,9 @@ variable "eks" {
       username = string
       groups   = list(string)
     })))
-    master_role_names = optional(list(string))
-    cluster_addons    = optional(list(string))
+    master_role_names  = optional(list(string))
+    cluster_addons     = optional(list(string))
+    ssm_log_group_name = optional(string)
   })
 
   validation {

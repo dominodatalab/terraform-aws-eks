@@ -193,7 +193,7 @@ data "aws_iam_policy_document" "snapshot" {
 data "aws_iam_policy_document" "ssm" {
   statement {
     effect    = "Allow"
-    resources = ["arn:aws:logs:*:${local.aws_account_id}:log-group:${var.ssm_log_group_name}:*"]
+    resources = ["arn:aws:logs:*:${local.aws_account_id}:log-group:${var.eks.ssm_log_group_name}:*"]
     actions = [
       "logs:CreateLogStream",
       "logs:PutLogEvents",
@@ -257,4 +257,3 @@ resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
   policy_arn = element(local.custom_node_policies, count.index)
   role       = aws_iam_role.eks_nodes.name
 }
-
