@@ -87,6 +87,7 @@ variable "bastion" {
   EOF
 
   type = object({
+    enabled                  = bool
     ami_id                   = optional(string) # default will use the latest 'amazon_linux_2' ami
     instance_type            = optional(string)
     authorized_ssh_ip_ranges = optional(list(string))

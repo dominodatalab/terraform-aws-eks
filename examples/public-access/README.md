@@ -46,9 +46,13 @@ No resources.
 
 ## Inputs
 
-No inputs.
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_region"></a> [region](#input\_region) | AWS region for deployment. | `string` | `"us-west-2"` | no |
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_domino_eks"></a> [domino\_eks](#output\_domino\_eks) | Module domino\_eks output |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

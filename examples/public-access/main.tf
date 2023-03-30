@@ -1,8 +1,9 @@
+
 module "domino_eks" {
   source           = "./../.."
-  region           = "us-west-2"
+  region           = var.region
   ssh_pvt_key_path = "./../examples.pem"
-  deploy_id        = "dominoeks"
+  deploy_id        = "dominoeks006"
   default_node_groups = {
     compute = {
       availability_zone_ids = ["usw2-az1", "usw2-az2"]
@@ -14,10 +15,13 @@ module "domino_eks" {
       availability_zone_ids = ["usw2-az1", "usw2-az2"]
     }
   }
+  bastion = {
+    enabled = false
+  }
   eks = {
     public_access = {
       enabled = true
-      cidrs   = ["10.0.0.0/8"] # Replace this with the desired CIDR range
+      cidrs   = ["108.214.49.0/24"] # Replace this with the desired CIDR range
 
     }
   }

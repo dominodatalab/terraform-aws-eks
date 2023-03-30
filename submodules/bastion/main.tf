@@ -156,7 +156,7 @@ resource "aws_instance" "bastion" {
     throughput            = "125"
     volume_size           = "40"
     volume_type           = "gp3"
-    kms_key_id            = try(var.kms_info.key_id, null)
+    kms_key_id            = try(var.kms_info.key_arn, null)
     tags = merge(data.aws_default_tags.this.tags, {
       "Name" = "${var.deploy_id}-bastion"
     })
@@ -235,9 +235,12 @@ resource "null_resource" "install_binaries" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x ${self.triggers.sh_filepath}",
-      "sudo ${self.triggers.sh_filepath} && rm -f ${self.triggers.sh_filepath}",
+      "LOG_FILE=$HOME/binaries-install-$(date +%Y_%m_%d-%H_%M).log",
+      "sudo ${self.triggers.sh_filepath} > $LOG_FILE 2>&1",
+      "rm -f ${self.triggers.sh_filepath}",
     ]
   }
+
 
   triggers = {
     sh_filepath = "/home/${var.bastion.username}/install-binaries.sh"

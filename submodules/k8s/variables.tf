@@ -1,9 +1,3 @@
-variable "k8s_tunnel_port" {
-  type        = string
-  description = "K8s ssh tunnel port"
-  default     = "1080"
-}
-
 variable "calico_version" {
   type        = string
   description = "Calico operator version."

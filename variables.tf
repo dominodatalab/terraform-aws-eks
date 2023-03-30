@@ -43,7 +43,7 @@ variable "ssh_pvt_key_path" {
   description = "SSH private key filepath."
   validation {
     condition     = fileexists(var.ssh_pvt_key_path)
-    error_message = "Private key does not exist. Please provide the right path or generate a key with the following command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem"
+    error_message = "Private key does not exist. Please provide the right path or generate a key with the following command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem && chmod 400 domino.pem"
   }
 }
 
@@ -277,6 +277,7 @@ variable "bastion" {
   EOF
 
   type = object({
+    enabled                  = optional(bool, true)
     ami_id                   = optional(string, null) # default will use the latest 'amazon_linux_2' ami
     instance_type            = optional(string, "t2.micro")
     authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
@@ -341,7 +342,7 @@ variable "kms" {
   EOF
 
   type = object({
-    enabled = optional(bool, false)
+    enabled = optional(bool, true)
     key_id  = optional(string, null)
   })
 

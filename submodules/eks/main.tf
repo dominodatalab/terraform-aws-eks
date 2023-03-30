@@ -153,6 +153,7 @@ locals {
 
   eks_info = {
     cluster = {
+      public_access     = var.eks.public_access
       arn               = aws_eks_cluster.this.arn
       security_group_id = aws_security_group.eks_cluster.id
       endpoint          = aws_eks_cluster.this.endpoint

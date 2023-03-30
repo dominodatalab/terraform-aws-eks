@@ -1,8 +1,9 @@
+
 module "domino_eks" {
   source           = "./../.."
-  region           = "us-west-2"
+  region           = var.region
   ssh_pvt_key_path = "./../examples.pem"
-  deploy_id        = "dominoeks"
+  deploy_id        = "dominoeks001"
   default_node_groups = {
     compute = {
       availability_zone_ids = ["usw2-az1", "usw2-az2"]
@@ -14,7 +15,10 @@ module "domino_eks" {
       availability_zone_ids = ["usw2-az1", "usw2-az2"]
     }
   }
-  bastion = {}
+
+  bastion = {
+    enabled = true
+  }
   network = {
     ## The following are not real values
     vpc = {

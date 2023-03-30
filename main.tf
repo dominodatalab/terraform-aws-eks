@@ -1,12 +1,12 @@
 data "aws_default_tags" "this" {}
 
 locals {
-  kms_key = var.kms.enabled ? var.kms.key_id != null ? data.aws_kms_key.key[0].id : aws_kms_key.domino[0] : null
+  kms_key = var.kms.enabled ? (var.kms.key_id != null ? data.aws_kms_key.key[0].id : aws_kms_key.domino[0]) : null
   kms_info = local.kms_key != null ? {
     key_id  = local.kms_key.id
     key_arn = local.kms_key.arn
   } : null
-  bastion_info = var.bastion != null ? module.bastion[0].info : null
+  bastion_info = var.bastion.enabled ? module.bastion[0].info : null
 }
 
 module "storage" {
@@ -56,7 +56,7 @@ resource "aws_key_pair" "domino" {
 }
 
 module "bastion" {
-  count = var.bastion != null ? 1 : 0
+  count = var.bastion.enabled ? 1 : 0
 
   source       = "./submodules/bastion"
   deploy_id    = var.deploy_id

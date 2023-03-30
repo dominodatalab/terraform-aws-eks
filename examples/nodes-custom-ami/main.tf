@@ -57,12 +57,11 @@ data "aws_ami" "eks_gpu_node" {
   }
 }
 
-
 module "domino_eks" {
   source           = "./../.."
-  region           = "us-west-2"
+  region           = var.region
   ssh_pvt_key_path = "./../examples.pem"
-  deploy_id        = "dominoeks"
+  deploy_id        = "dominoeks005"
   default_node_groups = {
     compute = {
       ami                   = data.aws_ami.eks_node.image_id
@@ -77,5 +76,9 @@ module "domino_eks" {
       availability_zone_ids = ["usw2-az1", "usw2-az2"]
     }
   }
-  bastion = {}
+
+  bastion = {
+    enabled          = true
+    install_binaries = true
+  }
 }

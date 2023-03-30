@@ -1,5 +1,5 @@
 locals {
-  bastion_eks_security_group_rules = {
+  bastion_eks_security_group_rules = var.bastion_info != null ? {
     bastion_to_eks_api = {
       description              = "To ${local.eks_cluster_name}:443"
       protocol                 = "tcp"
@@ -36,11 +36,11 @@ locals {
       security_group_id        = aws_security_group.eks_nodes.id
       source_security_group_id = try(var.bastion_info.security_group_id, null)
     }
-  }
+  } : {}
 }
 
 resource "aws_security_group_rule" "bastion_eks" {
-  for_each = { for k, v in local.bastion_eks_security_group_rules : k => v if var.bastion_info != null }
+  for_each = local.bastion_eks_security_group_rules
 
   security_group_id        = each.value.security_group_id
   protocol                 = each.value.protocol

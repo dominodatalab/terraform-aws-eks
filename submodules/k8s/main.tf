@@ -1,3 +1,8 @@
+resource "random_integer" "port" {
+  min = 49152
+  max = 65535
+}
+
 locals {
   k8s_functions_sh_filename = "k8s-functions.sh"
   k8s_functions_sh_template = "k8s-functions.sh.tftpl"
@@ -15,7 +20,7 @@ locals {
       filename = local.k8s_functions_sh_filename
       content = templatefile("${local.templates_dir}/${local.k8s_functions_sh_template}", {
         kubeconfig_path   = var.eks_info.kubeconfig.path
-        k8s_tunnel_port   = var.k8s_tunnel_port
+        k8s_tunnel_port   = random_integer.port.result
         aws_auth_yaml     = basename(local.aws_auth_filename)
         eniconfig_yaml    = local.eniconfig_filename != "" ? basename(local.eniconfig_filename) : ""
         ssh_pvt_key_path  = var.ssh_key.path

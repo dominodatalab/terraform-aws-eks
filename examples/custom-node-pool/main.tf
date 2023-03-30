@@ -1,8 +1,8 @@
 module "domino_eks" {
   source           = "./../.."
-  region           = "us-west-2"
+  region           = var.region
   ssh_pvt_key_path = "./../examples.pem"
-  deploy_id        = "dominoeks"
+  deploy_id        = "dominoeks002"
   bastion          = {}
   default_node_groups = {
     compute = {
