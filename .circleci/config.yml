@@ -47,6 +47,7 @@ commands:
     steps:
       - aws-cli/setup:
          role-arn: "${AWS_IAM_ROLE}"
+         session-duration: "43200"
       - run:
           name: Terraform init/validate/apply
           working_directory: tests
@@ -58,8 +59,6 @@ commands:
             terraform apply -auto-approve
   tf_destroy:
     steps:
-      - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
       - run:
           name: Terraform destroy
           working_directory: tests
@@ -140,8 +139,6 @@ jobs:
       - checkout
       - install_tf
       - install_helm
-      - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
       - envsubst/install
       - set_tf_vars
       - gen_pvt_key
@@ -156,8 +153,6 @@ jobs:
             echo "Setting module source to: ${MOD_SOURCE}"
             cat \<<< $(jq --arg mod_source "${MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
       - tf_init_apply
-      - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
       - run:
           name: "Upgrade module by applying this commit"
           working_directory: tests
