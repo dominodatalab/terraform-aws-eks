@@ -1,0 +1,8 @@
+deploy_id = "${WORKSPACE}"
+tags = {
+  deploy_id             = "${WORKSPACE}"
+  CIRCLE_BUILD_URL      = "${CIRCLE_BUILD_URL}"
+  CIRCLE_PR_NUMBER      = "${CIRCLE_PR_NUMBER}"
+  CIRCLE_PULL_REQUEST   = "${CIRCLE_PULL_REQUEST}"
+  CIRCLE_REPOSITORY_URL = "${CIRCLE_REPOSITORY_URL}"
+}

@@ -40,3 +40,4 @@ terraform_tflint.txt
 terraform_tfsec.txt
 eniconfig.yaml
 kubeconfig-proxy
+terraform.tfvars

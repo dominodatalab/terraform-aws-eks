@@ -22,13 +22,14 @@ orbs:
   aws-cli: circleci/aws-cli@3.1
 
 commands:
-  set_env_vars:
+  set_tf_vars:
     steps:
       - run:
-          name: Configure test cluster env
+          name: Configure terraform vars
+          working_directory: tests
           command: |
-            echo export TF_VAR_deploy_id=\"${WORKSPACE}\" >> $BASH_ENV
-            echo 'export TF_VAR_tags=\{\"deploy_id\"=\"${TF_VAR_deploy_id}\",\"CIRCLE_BUILD_URL\"=\"${CIRCLE_BUILD_URL}\",\"CIRCLE_PR_NUMBER\"=\"${CIRCLE_PR_NUMBER}\",\"CIRCLE_PULL_REQUEST\"=\"${CIRCLE_PULL_REQUEST}\",\"CIRCLE_REPOSITORY_URL\"=\"${CIRCLE_REPOSITORY_URL}\"\}' >> $BASH_ENV
+            envsubst < ci.tfvars.template > terraform.tfvars
+            cat terraform.tfvars
   install_tf:
     parameters:
       terraform_version:
@@ -116,7 +117,7 @@ jobs:
       - checkout
       - install_tf
       - install_helm
-      - set_env_vars
+      - set_tf_vars
       - gen_pvt_key
       - tf_init_apply
       - tf_destroy
@@ -140,7 +141,7 @@ jobs:
       - install_helm
       - aws-cli/setup:
          role-arn: "${AWS_IAM_ROLE}"
-      - set_env_vars
+      - set_tf_vars
       - gen_pvt_key
       - run:
           name: "Set module source to latest published release"
