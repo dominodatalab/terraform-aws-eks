@@ -29,8 +29,7 @@ commands:
           name: Configure terraform vars
           working_directory: tests
           command: |
-            envsubst < ci.tfvars.template > terraform.tfvars
-            cat terraform.tfvars
+            envsubst < ci.tfvars.tftpl | tee terraform.tfvars
   install_tf:
     parameters:
       terraform_version:
