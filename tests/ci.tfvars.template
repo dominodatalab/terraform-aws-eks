@@ -2,7 +2,8 @@ deploy_id = "${WORKSPACE}"
 tags = {
   deploy_id             = "${WORKSPACE}"
   CIRCLE_BUILD_URL      = "${CIRCLE_BUILD_URL}"
-  CIRCLE_PR_NUMBER      = "${CIRCLE_PR_NUMBER}"
-  CIRCLE_PULL_REQUEST   = "${CIRCLE_PULL_REQUEST}"
+  CIRCLE_BRANCH         = "${CIRCLE_BRANCH}"
+  CIRCLE_JOB            = "${CIRCLE_JOB}"
   CIRCLE_REPOSITORY_URL = "${CIRCLE_REPOSITORY_URL}"
+  CIRCLE_BUILD_NUM      = "${CIRCLE_BUILD_NUM}"
 }
