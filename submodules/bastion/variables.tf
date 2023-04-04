@@ -79,6 +79,7 @@ variable "kms_info" {
 
 variable "bastion" {
   description = <<EOF
+    enabled                  = Create bastion host.
     ami                      = Ami id. Defaults to latest 'amazon_linux_2' ami.
     instance_type            = Instance type.
     authorized_ssh_ip_ranges = List of CIDR ranges permitted for the bastion ssh access.
