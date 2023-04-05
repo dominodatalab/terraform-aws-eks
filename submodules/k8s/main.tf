@@ -35,6 +35,8 @@ locals {
       filename = local.k8s_pre_setup_sh_filename
       content = templatefile("${local.templates_dir}/${local.k8s_pre_setup_sh_template}", {
         k8s_functions_sh_filename = local.k8s_functions_sh_filename
+        cluster_setup             = var.cluster_setup
+        install_calico            = var.install_calico
       })
     }
 

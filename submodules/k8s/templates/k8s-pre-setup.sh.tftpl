@@ -7,6 +7,12 @@ source ${k8s_functions_sh_filename}
 trap close_ssh_tunnel_to_k8s_api EXIT
 open_ssh_tunnel_to_k8s_api
 check_kubeconfig
+
+if $cluster_setup; then
 set_k8s_auth
 set_eniconfig
+fi
+
+if $install_calico; then
 install_calico
+fi

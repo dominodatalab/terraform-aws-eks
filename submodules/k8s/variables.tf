@@ -1,3 +1,15 @@
+variable "cluster_setup" {
+  type        = bool
+  description = "Perform cluster setup functions"
+  default     = false
+}
+
+variable "install_calico" {
+  type        = bool
+  description = "Perform calico install functions"
+  default     = false
+}
+
 variable "calico_version" {
   type        = string
   description = "Calico operator version."
