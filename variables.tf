@@ -74,7 +74,7 @@ variable "eks" {
     k8s_version = optional(string, "1.25")
     kubeconfig = optional(object({
       extra_args = optional(string, "")
-      path       = optional(string)
+      path       = optional(string, "kubeconfig")
     }), {})
     public_access = optional(object({
       enabled = optional(bool, false)
