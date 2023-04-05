@@ -21,5 +21,5 @@ module "calico_setup" {
   eks_info       = local.eks_info
   install_calico = true
 
-  depends_on = [aws_eks_node_group.node_groups]
+  depends_on = [aws_eks_node_group.node_groups, module.k8s_setup]
 }
