@@ -39,7 +39,6 @@ variable "node_groups" {
       type = string
     })
   }))
-  default = {}
 }
 
 variable "network_info" {
@@ -126,7 +125,6 @@ variable "bastion_info" {
     security_group_id   = string
     ssh_bastion_command = string
   })
-  default = null
 }
 
 variable "kms_info" {
@@ -138,7 +136,6 @@ variable "kms_info" {
     key_id  = string
     key_arn = string
   })
-  default = null
 }
 
 
@@ -197,8 +194,6 @@ variable "eks" {
     ])
     error_message = "All elements in eks.public_access.cidrs list must be valid CIDR blocks"
   }
-
-  default = {}
 }
 
 variable "ssh_key" {

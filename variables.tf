@@ -28,7 +28,7 @@ variable "deploy_id" {
 
 variable "route53_hosted_zone_name" {
   type        = string
-  description = "Optional hosted zone for External DNSone."
+  description = "Optional hosted zone for External DNS zone."
   default     = null
 }
 
@@ -86,7 +86,7 @@ variable "eks" {
       groups   = list(string)
     })), [])
     master_role_names  = optional(list(string), [])
-    cluster_addons     = optional(list(string), [])
+    cluster_addons     = optional(list(string), ["kube-proxy", "coredns"])
     ssm_log_group_name = optional(string, "session-manager")
   })
 
@@ -286,7 +286,7 @@ variable "bastion" {
     install_binaries         = optional(bool, false)
   })
 
-  default = null
+  default = {}
 }
 
 variable "storage" {

@@ -17,7 +17,6 @@ variable "bastion_info" {
     security_group_id   = string
     ssh_bastion_command = string
   })
-  default = null
 }
 
 variable "ssh_key" {

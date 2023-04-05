@@ -74,7 +74,6 @@ variable "kms_info" {
     key_id  = string
     key_arn = string
   })
-  default = null
 }
 
 variable "bastion" {
