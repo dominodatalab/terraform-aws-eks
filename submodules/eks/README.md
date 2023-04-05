@@ -20,6 +20,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_calico_setup"></a> [calico\_setup](#module\_calico\_setup) | ../k8s | n/a |
 | <a name="module_k8s_setup"></a> [k8s\_setup](#module\_k8s\_setup) | ../k8s | n/a |
 
 ## Resources
