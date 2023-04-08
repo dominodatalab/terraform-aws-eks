@@ -97,3 +97,11 @@ jobs:
         uses: pre-commit/action@v3.0.0
         with:
           extra_args: terraform_checkov --all-files
+  test-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test-Examples-Plan
+        id: examples-plan-test-workflow
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.6
+        env:
+          CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}
