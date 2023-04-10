@@ -102,6 +102,6 @@ jobs:
     steps:
       - name: Test-Examples-Plan
         id: examples-plan-test-workflow
-        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.6
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.7
         env:
           CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}

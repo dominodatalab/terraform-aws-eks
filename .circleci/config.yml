@@ -2,10 +2,10 @@ version: 2.1
 
 parameters:
   helm_version:
-    default: "v3.10.0"
+    default: "v3.11.2"
     type: string
   terraform_version:
-    default: "1.4.2"
+    default: "1.4.4"
     type: string
   GHA_Actor:
     type: string
@@ -111,7 +111,7 @@ commands:
 jobs:
   tf-plan-test:
     docker:
-      - image: cimg/aws:2022.11.1
+      - image: cimg/aws:2023.04.1
     parameters:
       terraform_version:
         type: string
@@ -121,7 +121,7 @@ jobs:
       - tf_plan_test
   test-deploy:
     docker:
-      - image: cimg/aws:2022.11.1
+      - image: cimg/aws:2023.04.1
     parameters:
       workspace:
         type: string
@@ -144,7 +144,7 @@ jobs:
       - tf_ws_delete
   test-upgrade:
     docker:
-      - image: cimg/aws:2022.11.1
+      - image: cimg/aws:2023.04.1
     parameters:
       workspace:
         type: string
