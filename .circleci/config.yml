@@ -1,12 +1,15 @@
 version: 2.1
 
 parameters:
+  workspace:
+    type: string
+    default: circleci-<< pipeline.number >>
   helm_version:
+    type: string
     default: "v3.11.2"
-    type: string
   terraform_version:
-    default: "1.4.4"
     type: string
+    default: "1.4.4"
   GHA_Actor:
     type: string
     default: ""
@@ -24,6 +27,7 @@ orbs:
 
 commands:
   set_tf_vars:
+    description: "Sets Terraform variables"
     steps:
       - run:
           name: Configure terraform vars
@@ -31,57 +35,18 @@ commands:
           command: |
             envsubst < ci.tfvars.tftpl | tee terraform.tfvars
   install_tf:
+    description: "Install Terraform"
     parameters:
       terraform_version:
         type: string
-        default: << pipeline.parameters.terraform_version >>
     steps:
       - terraform/install:
           terraform_version: << parameters.terraform_version >>
-  gen_pvt_key:
-    steps:
-      - run:
-          name: Generate pvt key
-          command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
-  tf_init_apply:
-    steps:
-      - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
-         session-duration: "43200"
-      - run:
-          name: Terraform init/validate/apply
-          working_directory: tests
-          command: |
-            echo "Current dir: $(pwd)"
-            terraform init
-            terraform validate
-            terraform workspace new ${WORKSPACE}
-            terraform apply -auto-approve
-  tf_destroy:
-    steps:
-      - run:
-          name: Terraform destroy
-          working_directory: tests
-          command: |
-            echo "Current dir: $(pwd)"
-            terraform destroy --auto-approve || terraform destroy --auto-approve --refresh=false
-          when: always
-  tf_ws_delete:
-    steps:
-      - run:
-          name: Terraform workspace delete
-          working_directory: tests
-          command: |
-            echo "Current dir: $(pwd)"
-            terraform workspace select default
-            terraform workspace delete ${WORKSPACE}
-          when: always
   install_helm:
+    description: "Install Helm"
     parameters:
       helm_version:
         type: string
-        default: << pipeline.parameters.helm_version >>
-    description: "Install Helm"
     steps:
       - run:
           name: Install Helm
@@ -98,6 +63,48 @@ commands:
             ./get_helm.sh --version "${HELM_VERSION}"
             rm ./get_helm.sh
             helm version --short
+  gen_pvt_key:
+    description: "Generates ssh key"
+    steps:
+      - run:
+          name: Generate pvt key
+          command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
+  tf_init_apply:
+    description: "Terraform init"
+    steps:
+      - aws-cli/setup:
+         role-arn: "${AWS_IAM_ROLE}"
+         session-duration: "43200"
+      - run:
+          name: Terraform init/validate/apply
+          working_directory: tests
+          command: |
+            echo "Current dir: $(pwd)"
+            terraform init
+            terraform validate
+            terraform workspace new ${WORKSPACE}
+            terraform apply -auto-approve
+  tf_destroy:
+    description: "Terraform destroy"
+    steps:
+      - run:
+          name: Terraform destroy
+          working_directory: tests
+          command: |
+            echo "Current dir: $(pwd)"
+            terraform destroy --auto-approve || terraform destroy --auto-approve --refresh=false
+          when: always
+  tf_ws_delete:
+    description: "Terraform workspace delete"
+    steps:
+      - run:
+          name: Terraform workspace delete
+          working_directory: tests
+          command: |
+            echo "Current dir: $(pwd)"
+            terraform workspace select default
+            terraform workspace delete ${WORKSPACE}
+          when: always
   tf_plan_test:
     steps:
       - aws-cli/setup:
@@ -117,7 +124,8 @@ jobs:
         type: string
     steps:
       - checkout
-      - install_tf
+      - install_tf:
+          terraform_version: << parameters.terraform_version >>
       - tf_plan_test
   test-deploy:
     docker:
@@ -125,7 +133,6 @@ jobs:
     parameters:
       workspace:
         type: string
-        default: circleci-<< pipeline.number >>
       terraform_version:
         type: string
       helm_version:
@@ -134,8 +141,10 @@ jobs:
       WORKSPACE: << parameters.workspace >>
     steps:
       - checkout
-      - install_tf
-      - install_helm
+      - install_tf:
+          terraform_version: << parameters.terraform_version >>
+      - install_helm:
+          helm_version: << parameters.helm_version >>
       - envsubst/install
       - set_tf_vars
       - gen_pvt_key
@@ -148,7 +157,6 @@ jobs:
     parameters:
       workspace:
         type: string
-        default: circleci-<< pipeline.number >>
       terraform_version:
         type: string
       helm_version:
@@ -157,8 +165,10 @@ jobs:
       WORKSPACE: << parameters.workspace >>
     steps:
       - checkout
-      - install_tf
-      - install_helm
+      - install_tf:
+          terraform_version: << parameters.terraform_version >>
+      - install_helm:
+          helm_version: << parameters.helm_version >>
       - envsubst/install
       - set_tf_vars
       - gen_pvt_key
@@ -196,6 +206,7 @@ workflows:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
+          workspace: << pipeline.parameters.workspace >>
   test-upgrade-workflow:
     when:
       equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >> ]
@@ -204,6 +215,7 @@ workflows:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
+          workspace: << pipeline.parameters.workspace >>
   examples-plan-test-workflow:
     when:
       equal: ["examples-plan-test-workflow", << pipeline.parameters.GHA_Action >> ]
