@@ -298,7 +298,16 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "monitoring" {
   }
 }
 
+resource "aws_s3_bucket_ownership_controls" "monitoring" {
+  bucket = aws_s3_bucket.monitoring.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
 resource "aws_s3_bucket_acl" "monitoring" {
+  depends_on = [aws_s3_bucket_ownership_controls.monitoring]
+
   bucket = aws_s3_bucket.monitoring.id
 
   access_control_policy {
