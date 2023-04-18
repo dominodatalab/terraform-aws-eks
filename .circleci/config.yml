@@ -176,8 +176,7 @@ jobs:
           name: "Set module source to latest published release"
           working_directory: tests
           command: |
-            latest_release_commit="$(git rev-list --tags --max-count=1)"
-            latest_release_tag="$(git describe --tags ${latest_release_commit})"
+            latest_release_tag="$(git tag --sort=-v:refname | head -1)"
             export MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git?ref=${latest_release_tag}"
             echo "Latest published release tag is: ${latest_release_tag}"
             echo "Setting module source to: ${MOD_SOURCE}"
