@@ -1,6 +1,11 @@
 data "aws_partition" "current" {}
 data "aws_caller_identity" "aws_account" {}
 
+data "aws_iam_role" "master_roles" {
+  for_each = toset(var.eks.master_role_names)
+  name     = each.key
+}
+
 locals {
   kubeconfig_path   = try(abspath(pathexpand(var.eks.kubeconfig.path)), "${path.cwd}/kubeconfig")
   kubeconfig        = merge(var.eks.kubeconfig, { path = local.kubeconfig_path })
@@ -157,10 +162,21 @@ locals {
       arn               = aws_eks_cluster.this.arn
       security_group_id = aws_security_group.eks_cluster.id
       endpoint          = aws_eks_cluster.this.endpoint
-      roles = [{
-        arn  = aws_iam_role.eks_cluster.arn
-        name = aws_iam_role.eks_cluster.name
-      }]
+      roles = concat(
+        [
+          for role in data.aws_iam_role.master_roles :
+          {
+            arn  = role.arn,
+            name = role.id
+          }
+        ],
+        [
+          {
+            arn  = aws_iam_role.eks_cluster.arn
+            name = aws_iam_role.eks_cluster.name
+          }
+        ]
+      )
       custom_roles = var.eks.custom_role_maps
     }
     nodes = {
