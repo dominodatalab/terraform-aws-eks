@@ -69,5 +69,5 @@ resource "local_file" "templates" {
 }
 
 locals {
-  change_hash = "${md5(local_file.templates["k8s_presetup"].content)}-${md5(local_file.templates["k8s_functions_sh"].content)}-${md5(local_file.templates["aws_auth"].content)}-${try(md5(local_file.templates["eni_config"].content), "none")}"
+  change_hash = "${join("-", [for file in ["k8s_presetup", "k8s_functions_sh", "aws_auth"] : md5(local_file.templates[file].content)])}-${try(md5(local_file.templates["eni_config"].content), "none")}"
 }
