@@ -179,7 +179,7 @@ data "aws_ssm_parameter" "eks_gpu_ami_release_version" {
 }
 
 resource "aws_eks_node_group" "node_groups" {
-  depends_on           = [null_resource.run_k8s_pre_setup]
+  depends_on           = [terraform_data.run_k8s_pre_setup]
   for_each             = local.node_groups_by_name
   cluster_name         = aws_eks_cluster.this.name
   version              = each.value.node_group.ami != null ? null : aws_eks_cluster.this.version
