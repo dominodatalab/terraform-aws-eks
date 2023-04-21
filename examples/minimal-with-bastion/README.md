@@ -43,6 +43,7 @@ No resources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Unique name for deployment | `string` | `"dominoeks004"` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for deployment. | `string` | `"us-west-2"` | no |
 
 ## Outputs
