@@ -68,7 +68,8 @@ resource "aws_security_group_rule" "eks_cluster" {
 }
 
 resource "aws_cloudwatch_log_group" "eks_cluster" {
-  name = "/aws/eks/${local.eks_cluster_name}/cluster"
+  name              = "/aws/eks/${local.eks_cluster_name}/cluster"
+  retention_in_days = 365
 }
 
 resource "aws_eks_cluster" "this" {
