@@ -425,6 +425,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryptio
     }
     bucket_key_enabled = false
   }
+
+  lifecycle {
+    ignore_changes = [
+      rule,
+    ]
+  }
 }
 
 resource "aws_s3_bucket_request_payment_configuration" "buckets_payer" {

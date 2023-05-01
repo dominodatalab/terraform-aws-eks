@@ -160,6 +160,7 @@ resource "aws_instance" "bastion" {
     tags = merge(data.aws_default_tags.this.tags, {
       "Name" = "${var.deploy_id}-bastion"
     })
+
   }
 
   source_dest_check = true
@@ -172,6 +173,7 @@ resource "aws_instance" "bastion" {
   lifecycle {
     ignore_changes = [
       root_block_device[0].tags,
+      root_block_device[0].kms_key_id,
     ]
   }
 }

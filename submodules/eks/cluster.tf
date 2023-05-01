@@ -64,6 +64,12 @@ resource "aws_eks_cluster" "this" {
     aws_security_group_rule.node,
     aws_cloudwatch_log_group.eks_cluster
   ]
+
+  lifecycle {
+    ignore_changes = [
+      encryption_config,
+    ]
+  }
 }
 
 resource "aws_eks_addon" "vpc_cni" {

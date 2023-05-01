@@ -14,4 +14,11 @@ resource "aws_ecr_repository" "this" {
   }
 
   force_delete = var.storage.ecr.force_destroy_on_deletion
+
+  lifecycle {
+    ignore_changes = [
+      encryption_configuration,
+    ]
+  }
+
 }

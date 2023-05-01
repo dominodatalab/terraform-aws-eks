@@ -8,6 +8,13 @@ resource "aws_efs_file_system" "eks" {
   tags = {
     "Name" = var.deploy_id
   }
+
+  lifecycle {
+    ignore_changes = [
+      kms_key_id,
+    ]
+  }
+
 }
 
 resource "aws_security_group" "efs" {

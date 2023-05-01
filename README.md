@@ -2,6 +2,8 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/dominodatalab/terraform-aws-eks/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/dominodatalab/terraform-aws-eks/tree/main)
 
+:warning: **Starting on `v2.0.0` of this module kms is enabled by default. If you used an earlier version and did not set the `kms.enabled` variable, you will need to set `kms.enabled = false` to maintain the current state. Otherwise you will rely on the default `kms.enabled = true` which  may destroy existing infrastructure and result in data loss.**
+
 ## Create SSH Key pair
 ### Prerequisites
 * Host with `ssh-keygen` installed

@@ -133,6 +133,7 @@ resource "aws_launch_template" "node_groups" {
       volume_type           = each.value.volume.type
       kms_key_id            = var.kms_info.enabled ? local.kms_key_arn : null
     }
+
   }
 
   metadata_options {
@@ -167,6 +168,9 @@ resource "aws_launch_template" "node_groups" {
         available = ${jsonencode(data.aws_ec2_instance_type_offerings.nodes[each.key].locations)}
       EOM
     }
+    ignore_changes = [
+      block_device_mappings[0].ebs[0].kms_key_id,
+    ]
   }
 }
 

@@ -4,6 +4,12 @@ resource "aws_backup_vault" "efs" {
 
   force_destroy = var.storage.efs.backup_vault.force_destroy
   kms_key_arn   = local.kms_key_arn
+
+  lifecycle {
+    ignore_changes = [
+      kms_key_arn,
+    ]
+  }
 }
 
 resource "aws_backup_plan" "efs" {
