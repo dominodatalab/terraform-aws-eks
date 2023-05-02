@@ -5,6 +5,9 @@ resource "aws_efs_file_system" "eks" {
   throughput_mode                 = "bursting"
   kms_key_id                      = local.kms_key_arn
 
+  lifecycle {
+    ignore_changes = [kms_key_id]
+  }
   tags = {
     "Name" = var.deploy_id
   }
