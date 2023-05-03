@@ -139,7 +139,7 @@ resource "aws_instance" "bastion" {
   get_password_data                    = false
   hibernation                          = false
   instance_initiated_shutdown_behavior = "stop"
-  instance_type                        = var.bastion.instance_type != null ? var.bastion.instance_type : "t2.micro"
+  instance_type                        = var.bastion.instance_type != null ? var.bastion.instance_type : "t3.micro"
   key_name                             = var.ssh_key.key_pair_name
 
   metadata_options {
