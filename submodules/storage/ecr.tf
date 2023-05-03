@@ -1,5 +1,5 @@
 locals {
-  encryption_type = var.kms_info != null ? "KMS" : "AES256"
+  encryption_type = var.kms_info.enabled ? "KMS" : "AES256"
   ecr_repos       = toset(["model", "environment"])
 }
 

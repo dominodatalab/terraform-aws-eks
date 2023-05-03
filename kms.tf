@@ -6,7 +6,7 @@ locals {
 }
 
 data "aws_iam_policy_document" "kms_key_global" {
-  count = var.kms.enabled && var.kms.key_id == null ? 1 : 0
+  count = local.create_kms_key
   statement {
     actions = [
       "kms:Create*",
@@ -57,8 +57,8 @@ data "aws_iam_policy_document" "kms_key_global" {
 }
 
 locals {
-  create_kms_key = var.kms.enabled && var.kms.key_id == null ? 1 : 0
-  provided_key   = var.kms.enabled && var.kms.key_id != null ? 1 : 0
+  create_kms_key = var.kms.key_id == null ? 1 : 0
+  provided_key   = var.kms.key_id != null ? 1 : 0
 }
 
 resource "aws_kms_key" "domino" {

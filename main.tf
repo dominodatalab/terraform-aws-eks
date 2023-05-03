@@ -1,11 +1,12 @@
 data "aws_default_tags" "this" {}
 
 locals {
-  kms_key = var.kms.enabled ? (var.kms.key_id != null ? data.aws_kms_key.key[0].id : aws_kms_key.domino[0]) : null
-  kms_info = local.kms_key != null ? {
+  kms_key = var.kms.key_id != null ? data.aws_kms_key.key[0] : aws_kms_key.domino[0]
+  kms_info = {
     key_id  = local.kms_key.id
     key_arn = local.kms_key.arn
-  } : null
+    enabled = var.kms.enabled
+  }
   bastion_info = var.bastion.enabled ? module.bastion[0].info : null
 }
 

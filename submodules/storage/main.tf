@@ -4,7 +4,7 @@ data "aws_partition" "current" {}
 
 locals {
   private_subnet_ids = var.network_info.subnets.private[*].subnet_id
-  kms_key_arn        = try(var.kms_info.key_arn, null)
+  kms_key_arn        = var.kms_info.enabled ? var.kms_info.key_arn : null
 
   s3_buckets = {
     backups = {

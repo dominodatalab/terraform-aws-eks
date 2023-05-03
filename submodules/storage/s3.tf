@@ -1,5 +1,5 @@
 locals {
-  s3_server_side_encryption = var.kms_info != null ? "aws:kms" : "AES256"
+  s3_server_side_encryption = var.kms_info.enabled ? "aws:kms" : "AES256"
 }
 
 resource "aws_s3_bucket" "backups" {

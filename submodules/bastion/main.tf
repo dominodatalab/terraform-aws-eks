@@ -156,7 +156,7 @@ resource "aws_instance" "bastion" {
     throughput            = "125"
     volume_size           = "40"
     volume_type           = "gp3"
-    kms_key_id            = try(var.kms_info.key_arn, null)
+    kms_key_id            = var.kms_info.enabled ? var.kms_info.key_arn : null
     tags = merge(data.aws_default_tags.this.tags, {
       "Name" = "${var.deploy_id}-bastion"
     })
