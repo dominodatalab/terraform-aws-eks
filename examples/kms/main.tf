@@ -1,3 +1,12 @@
+data "terraform_remote_state" "kms_key" {
+  backend = "local"
+
+  config = {
+    path = "${path.module}/../create-kms-key/terraform.tfstate"
+  }
+}
+
+
 module "domino_eks" {
   source           = "./../.."
   region           = var.region
@@ -20,5 +29,6 @@ module "domino_eks" {
   }
   kms = {
     enabled = true
+    key_id  = data.terraform_remote_state.kms_key.outputs.kms_key_id
   }
 }

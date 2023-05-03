@@ -8,6 +8,7 @@ locals {
     enabled = var.kms.enabled
   }
   bastion_info = var.bastion.enabled ? module.bastion[0].info : null
+
 }
 
 module "storage" {
