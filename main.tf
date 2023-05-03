@@ -1,7 +1,7 @@
 data "aws_default_tags" "this" {}
 
 locals {
-  kms_key = length(var.kms.key_id) == 1 ? data.aws_kms_key.key[0] : aws_kms_key.domino[0]
+  kms_key = var.kms.key_id != null ? data.aws_kms_key.key[0] : aws_kms_key.domino[0]
   kms_info = {
     key_id  = local.kms_key.id
     key_arn = local.kms_key.arn

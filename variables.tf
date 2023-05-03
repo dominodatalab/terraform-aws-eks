@@ -339,21 +339,21 @@ variable "storage" {
 variable "kms" {
   description = <<EOF
     enabled = "Toggle,if set use either the specified KMS key_id or a Domino-generated one"
-    key_id  = optional(list(string), [])
+    key_id  = optional(string, null)
   EOF
 
   type = object({
     enabled = optional(bool, true)
-    key_id  = optional(list(string), [])
+    key_id  = optional(string, null)
   })
 
   validation {
-    condition     = var.kms.enabled ? length(var.kms.key_id) == 0 || length(var.kms.key_id) == 1 : true
-    error_message = "KMS key ID must be an empty list or set to a list of a single string, when var.kms.enabled is."
+    condition     = var.kms.enabled && var.kms.key_id != null ? length(var.kms.key_id) > 0 : true
+    error_message = "KMS key ID must be null or set to a non-empty string, when var.kms.enabled is."
   }
 
   validation {
-    condition     = length(var.kms.key_id) == 1 ? var.kms.enabled : true
+    condition     = var.kms.key_id != null ? var.kms.enabled : true
     error_message = "var.kms.enabled must be true if var.kms.key_id is provided."
   }
 

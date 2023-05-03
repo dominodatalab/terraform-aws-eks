@@ -57,8 +57,8 @@ data "aws_iam_policy_document" "kms_key_global" {
 }
 
 locals {
-  create_kms_key = length(var.kms.key_id) == 0 ? 1 : 0
-  provided_key   = length(var.kms.key_id) == 1 ? 1 : 0
+  create_kms_key = var.kms.key_id == null ? 1 : 0
+  provided_key   = var.kms.key_id != null ? 1 : 0
 }
 
 resource "aws_kms_key" "domino" {
@@ -83,5 +83,5 @@ resource "aws_kms_alias" "domino" {
 
 data "aws_kms_key" "key" {
   count  = local.provided_key
-  key_id = var.kms.key_id[0]
+  key_id = var.kms.key_id
 }
