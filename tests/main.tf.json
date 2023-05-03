@@ -33,7 +33,8 @@
           "master_role_names": ["okta-poweruser", "okta-fulladmin"]
         },
         "kms": {
-          "enabled": true
+          "enabled": true,
+          "key_id": ["${aws_kms_key.custom.key_id}"]
         },
         "ssh_pvt_key_path": "domino.pem",
         "tags": "${var.tags}",
