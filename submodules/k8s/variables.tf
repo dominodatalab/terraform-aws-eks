@@ -97,6 +97,10 @@ variable "eks_info" {
         username = string
         groups   = list(string)
       }
+      oidc = {
+        arn = OIDC provider ARN.
+        url = OIDC provider url.
+      }
     }
     nodes = {
       security_group_id = EKS Nodes security group id.
@@ -124,6 +128,10 @@ variable "eks_info" {
         username = string
         groups   = list(string)
       }))
+      oidc = object({
+        arn = string
+        url = string
+      })
     })
     nodes = object({
       security_group_id = string
@@ -137,5 +145,4 @@ variable "eks_info" {
       extra_args = string
     })
   })
-
 }
