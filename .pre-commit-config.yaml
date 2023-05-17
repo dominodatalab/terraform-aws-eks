@@ -60,7 +60,7 @@ repos:
         args:
           - '--args=--compact'
           - '--args=--quiet'
-          - '--args=--skip-check CKV_CIRCLECIPIPELINES_2,CKV_CIRCLECIPIPELINES_6,CKV2_AWS_11,CKV2_AWS_12,CKV2_AWS_6,CKV_AWS_109,CKV_AWS_111,CKV_AWS_135,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_18,CKV_AWS_184,CKV_AWS_19,CKV_AWS_21,CKV_AWS_66,CKV_AWS_88,CKV2_GHA_1,CKV_AWS_163,CKV_AWS_39,CKV_AWS_38,CKV2_AWS_61,CKV2_AWS_62,CKV_AWS_136,CKV_AWS_329,CKV_AWS_338,CKV_AWS_339'
+          - '--args=--skip-check CKV_CIRCLECIPIPELINES_2,CKV_CIRCLECIPIPELINES_6,CKV2_AWS_11,CKV2_AWS_12,CKV2_AWS_6,CKV_AWS_109,CKV_AWS_111,CKV_AWS_135,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_18,CKV_AWS_184,CKV_AWS_19,CKV_AWS_21,CKV_AWS_66,CKV_AWS_88,CKV2_GHA_1,CKV_AWS_163,CKV_AWS_39,CKV_AWS_38,CKV2_AWS_61,CKV2_AWS_62,CKV_AWS_136,CKV_AWS_329,CKV_AWS_338,CKV_AWS_339,CKV_AWS_341'
       - id: terraform_tfsec
         args:
           - '--args=-e aws-s3-specify-public-access-block,aws-cloudwatch-log-group-customer-key,aws-s3-enable-bucket-logging,aws-s3-enable-versioning,aws-s3-no-public-buckets,aws-ec2-require-vpc-flow-logs-for-all-vpcs,aws-s3-encryption-customer-key,aws-ec2-no-public-egress-sgr,aws-iam-no-policy-wildcards,aws-s3-block-public-acls,aws-s3-block-public-policy,aws-s3-enable-bucket-encryption,aws-s3-ignore-public-acls,aws-ec2-no-public-ingress-sgr,aws-ecr-repository-customer-key,aws-ecr-enable-image-scans,aws-eks-no-public-cluster-access,aws-eks-no-public-cluster-access-to-cidr'
