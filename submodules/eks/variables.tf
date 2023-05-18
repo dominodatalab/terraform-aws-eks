@@ -183,13 +183,13 @@ variable "eks" {
     ssm_log_group_name = optional(string)
     identity_providers = optional(list(object({
       client_id                     = string
-      groups_claim                  = string
-      groups_prefix                 = string
+      groups_claim                  = optional(string, null)
+      groups_prefix                 = optional(string, null)
       identity_provider_config_name = string
-      issuer_url                    = string
-      required_claims               = string
-      username_claim                = string
-      username_prefix               = string
+      issuer_url                    = optional(string, null)
+      required_claims               = optional(string, null)
+      username_claim                = optional(string, null)
+      username_prefix               = optional(string, null)
     })), [])
   })
 

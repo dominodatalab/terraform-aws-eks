@@ -67,6 +67,7 @@ variable "eks" {
     master_role_names = "IAM role names to be added as masters in eks."
     cluster_addons = "EKS cluster addons. vpc-cni is installed separately."
     ssm_log_group_name = "CloudWatch log group to send the SSM session logs to."
+    identity_providers = "Configuration for IDP(Identity Provider)."
   }
   EOF
 
@@ -88,6 +89,16 @@ variable "eks" {
     master_role_names  = optional(list(string), [])
     cluster_addons     = optional(list(string), ["kube-proxy", "coredns"])
     ssm_log_group_name = optional(string, "session-manager")
+    identity_providers = optional(list(object({
+      client_id                     = string
+      groups_claim                  = optional(string, null)
+      groups_prefix                 = optional(string, null)
+      identity_provider_config_name = string
+      issuer_url                    = optional(string, null)
+      required_claims               = optional(string, null)
+      username_claim                = optional(string, null)
+      username_prefix               = optional(string, null)
+    })), [])
   })
 
   default = {}
