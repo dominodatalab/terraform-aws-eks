@@ -92,7 +92,7 @@
             ]
         },
         {
-            "Sid": "ECRUngated",
+            "Sid": "ECRGated",
             "Effect": "Allow",
             "Action": [
                 "ecr:CreateRepository",
@@ -101,7 +101,7 @@
                 "ecr:TagResource"
             ],
             "Resource": [
-                "*"
+                "arn:${partition}:ecr:*:*:repository/${deploy_id}/*"
             ]
         },
         {
