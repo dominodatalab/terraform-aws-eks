@@ -80,7 +80,7 @@
       "deploy_id": {
         "type": "string",
         "description": "Domino Deployment ID.",
-        "default": "dominotfeks"
+        "default": "dominotfeks2"
       }
     },
     {
@@ -103,7 +103,7 @@
       "k8s_version": {
         "type": "string",
         "description": "EKS cluster k8s version.",
-        "default": "1.25"
+        "default": "1.24"
       }
     }
   ],

@@ -32,6 +32,8 @@ resource "aws_cloudwatch_log_group" "eks_cluster" {
 }
 
 resource "aws_eks_cluster" "this" {
+  provider = aws.eks
+
   name                      = local.eks_cluster_name
   role_arn                  = aws_iam_role.eks_cluster.arn
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
@@ -112,7 +114,7 @@ resource "null_resource" "kubeconfig" {
         kubectl config --kubeconfig ${self.triggers.kubeconfig_file} delete-cluster ${self.triggers.cluster_name}
         kubectl config --kubeconfig ${self.triggers.kubeconfig_file} delete-context ${self.triggers.cluster_name}
       else
-        rm -f ${self.triggers.kubeconfig_file}
+        rm -f ${self.triggers.kubeconfig_file} "${self.triggers.kubeconfig_file}-proxy" || true
       fi
     EOT
   }

@@ -1,4 +1,6 @@
 data "aws_default_tags" "this" {}
+data "aws_partition" "current" {}
+data "aws_caller_identity" "aws_account" {}
 
 locals {
   kms_key = var.kms.key_id != null ? data.aws_kms_key.key[0] : aws_kms_key.domino[0]
@@ -96,4 +98,8 @@ module "eks" {
   depends_on = [
     module.network
   ]
+
+  providers = {
+    aws.eks = aws.eks
+  }
 }
