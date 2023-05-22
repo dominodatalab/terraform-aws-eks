@@ -36,6 +36,8 @@ provider "aws" {
   }
 
   assume_role {
+    # https://github.com/hashicorp/terraform/issues/30690
+    # https://github.com/hashicorp/terraform/issues/2430
     role_arn = "${aws_iam_role.create_eks_role.arn}${time_sleep.create_eks_role_10_seconds.id == "nil" ? "" : ""}"
   }
 }
