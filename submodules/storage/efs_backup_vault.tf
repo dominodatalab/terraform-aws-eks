@@ -30,6 +30,7 @@ resource "aws_backup_plan" "efs" {
 }
 
 resource "aws_iam_role" "efs_backup_role" {
+  name  = "${var.deploy_id}-efs-backup"
   count = var.storage.efs.backup_vault.create ? 1 : 0
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
