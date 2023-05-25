@@ -179,7 +179,7 @@ locals {
       arn               = aws_eks_cluster.this.arn
       security_group_id = aws_security_group.eks_cluster.id
       endpoint          = aws_eks_cluster.this.endpoint
-      roles = compact(concat(
+      roles = concat(
         [
           for role in data.aws_iam_role.master_roles :
           {
@@ -191,18 +191,13 @@ locals {
           {
             arn  = aws_iam_role.eks_cluster.arn
             name = aws_iam_role.eks_cluster.name
-          }
-        ],
-        aws_iam_role.eks_cluster.arn != data.aws_iam_session_context.create_eks_role.issuer_arn ?
-        [
-
+          },
           {
             arn  = data.aws_iam_session_context.create_eks_role.issuer_arn
             name = data.aws_iam_session_context.create_eks_role.issuer_name
           }
-
-        ] : []
-      ))
+        ]
+      )
       custom_roles = var.eks.custom_role_maps
       oidc = {
         arn = aws_iam_openid_connect_provider.oidc_provider.arn
