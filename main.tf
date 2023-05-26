@@ -96,7 +96,8 @@ module "eks" {
   bastion_info       = local.bastion_info
 
   depends_on = [
-    module.network
+    module.network,
+    aws_iam_role_policy_attachment.create_eks_role
   ]
 
   providers = {
