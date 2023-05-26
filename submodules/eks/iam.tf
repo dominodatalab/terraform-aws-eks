@@ -8,6 +8,15 @@ data "aws_iam_policy_document" "eks_cluster" {
       identifiers = ["eks.${local.dns_suffix}"]
     }
   }
+  statement {
+    sid     = "EKSClusterAssumeRole"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${local.aws_account_id}:root"]
+    }
+  }
 }
 
 resource "aws_iam_role" "eks_cluster" {
