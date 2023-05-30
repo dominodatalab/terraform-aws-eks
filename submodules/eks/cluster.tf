@@ -86,16 +86,18 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
 
 
 resource "aws_eks_addon" "vpc_cni" {
-  cluster_name      = aws_eks_cluster.this.name
-  resolve_conflicts = "OVERWRITE"
-  addon_name        = "vpc-cni"
+  cluster_name                = aws_eks_cluster.this.name
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+  addon_name                  = "vpc-cni"
 }
 
 resource "aws_eks_addon" "this" {
-  for_each          = toset(var.eks.cluster_addons)
-  cluster_name      = aws_eks_cluster.this.name
-  resolve_conflicts = "OVERWRITE"
-  addon_name        = each.key
+  for_each                    = toset(var.eks.cluster_addons)
+  cluster_name                = aws_eks_cluster.this.name
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+  addon_name                  = each.key
 
   depends_on = [
     aws_eks_node_group.node_groups,

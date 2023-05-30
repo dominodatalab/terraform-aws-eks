@@ -181,7 +181,7 @@ resource "aws_instance" "bastion" {
 resource "aws_eip" "bastion" {
   instance             = aws_instance.bastion.id
   network_border_group = var.region
-  vpc                  = true
+  domain               = "vpc"
 }
 
 resource "aws_eip_association" "bastion" {
