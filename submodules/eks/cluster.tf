@@ -90,6 +90,12 @@ resource "aws_eks_addon" "vpc_cni" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
   addon_name                  = "vpc-cni"
+  configuration_values = jsonencode({
+    env = merge(
+      {},
+      try(var.eks.vpc_cni.prefix_delegation, false) ? { ENABLE_PREFIX_DELEGATION = "true" } : {}
+    )
+  })
 }
 
 resource "aws_eks_addon" "this" {
