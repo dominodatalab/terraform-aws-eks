@@ -1,6 +1,6 @@
 data "aws_iam_policy_document" "eks_cluster" {
   statement {
-    sid     = "EKSClusterAssumeRole"
+    sid     = "EKSClusterAssumeRoleService"
     actions = ["sts:AssumeRole"]
 
     principals {
@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "eks_cluster" {
     }
   }
   statement {
-    sid     = "EKSClusterAssumeRole"
+    sid     = "EKSClusterAssumeRoleUser"
     actions = ["sts:AssumeRole"]
 
     principals {
