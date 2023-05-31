@@ -76,7 +76,8 @@
                 "iam:RemoveRoleFromInstanceProfile",
                 "iam:Tag*",
                 "iam:Untag*",
-                "iam:UpdateAssumeRolePolicy"
+                "iam:UpdateAssumeRolePolicy",
+                "sts:AssumeRole"
             ],
             "Resource": [
                 "arn:${partition}:iam::${account_id}:policy/${deploy_id}-*",
