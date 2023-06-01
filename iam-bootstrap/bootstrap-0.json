@@ -72,8 +72,6 @@
                 "iam:DetachRolePolicy",
                 "iam:GetInstanceProfile",
                 "iam:GetOpenIDConnectProvider",
-                "iam:GetPolicy",
-                "iam:GetPolicyVersion",
                 "iam:PassRole",
                 "iam:PutRolePolicy",
                 "iam:RemoveRoleFromInstanceProfile",
@@ -94,6 +92,8 @@
             "Sid": "IAMUngated",
             "Effect": "Allow",
             "Action": [
+                "iam:GetPolicy",
+                "iam:GetPolicyVersion",
                 "iam:GetRole",
                 "iam:GetRolePolicy",
                 "iam:ListAttachedRolePolicies",
