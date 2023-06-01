@@ -32,6 +32,8 @@ resource "aws_cloudwatch_log_group" "eks_cluster" {
 }
 
 resource "aws_eks_cluster" "this" {
+  provider = aws.eks
+
   name                      = local.eks_cluster_name
   role_arn                  = aws_iam_role.eks_cluster.arn
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
@@ -84,16 +86,24 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
 
 
 resource "aws_eks_addon" "vpc_cni" {
-  cluster_name      = aws_eks_cluster.this.name
-  resolve_conflicts = "OVERWRITE"
-  addon_name        = "vpc-cni"
+  cluster_name                = aws_eks_cluster.this.name
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+  addon_name                  = "vpc-cni"
+  configuration_values = jsonencode({
+    env = merge(
+      {},
+      try(var.eks.vpc_cni.prefix_delegation, false) ? { ENABLE_PREFIX_DELEGATION = "true" } : {}
+    )
+  })
 }
 
 resource "aws_eks_addon" "this" {
-  for_each          = toset(var.eks.cluster_addons)
-  cluster_name      = aws_eks_cluster.this.name
-  resolve_conflicts = "OVERWRITE"
-  addon_name        = each.key
+  for_each                    = toset(var.eks.cluster_addons)
+  cluster_name                = aws_eks_cluster.this.name
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+  addon_name                  = each.key
 
   depends_on = [
     aws_eks_node_group.node_groups,
@@ -112,7 +122,7 @@ resource "null_resource" "kubeconfig" {
         kubectl config --kubeconfig ${self.triggers.kubeconfig_file} delete-cluster ${self.triggers.cluster_name}
         kubectl config --kubeconfig ${self.triggers.kubeconfig_file} delete-context ${self.triggers.cluster_name}
       else
-        rm -f ${self.triggers.kubeconfig_file}
+        rm -f ${self.triggers.kubeconfig_file} "${self.triggers.kubeconfig_file}-proxy" || true
       fi
     EOT
   }

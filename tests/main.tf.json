@@ -80,7 +80,7 @@
       "deploy_id": {
         "type": "string",
         "description": "Domino Deployment ID.",
-        "default": "dominotfeks"
+        "default": "dominotfeks2"
       }
     },
     {

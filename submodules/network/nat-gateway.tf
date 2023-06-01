@@ -2,7 +2,7 @@ resource "aws_eip" "public" {
   for_each             = local.public_cidrs
   network_border_group = var.region
   public_ipv4_pool     = "amazon"
-  vpc                  = true
+  domain               = "vpc"
   tags = {
     "Name" = each.value.name
   }

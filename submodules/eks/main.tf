@@ -6,9 +6,24 @@ data "aws_iam_role" "master_roles" {
   name     = each.key
 }
 
+data "aws_caller_identity" "aws_eks_provider" {
+  provider = aws.eks
+}
+
+data "aws_iam_session_context" "create_eks_role" {
+  provider = aws.eks
+  arn      = data.aws_caller_identity.aws_eks_provider.arn
+}
+
 locals {
-  kubeconfig_path   = try(abspath(pathexpand(var.eks.kubeconfig.path)), "${path.cwd}/kubeconfig")
-  kubeconfig        = merge(var.eks.kubeconfig, { path = local.kubeconfig_path })
+  kubeconfig_path             = try(abspath(pathexpand(var.eks.kubeconfig.path)), "${path.cwd}/kubeconfig")
+  kubeconfig_args_list        = split(" ", chomp(trimspace(var.eks.kubeconfig.extra_args)))
+  kubeconfig_args_list_parsed = contains(local.kubeconfig_args_list, "--role-arn") ? local.kubeconfig_args_list : concat(local.kubeconfig_args_list, ["--role-arn", data.aws_iam_session_context.create_eks_role.issuer_arn])
+  kubeconfig_args             = join(" ", local.kubeconfig_args_list_parsed)
+  kubeconfig = merge(var.eks.kubeconfig, {
+    path       = local.kubeconfig_path
+    extra_args = local.kubeconfig_args
+  })
   eks_cluster_name  = var.deploy_id
   aws_account_id    = data.aws_caller_identity.aws_account.account_id
   dns_suffix        = data.aws_partition.current.dns_suffix
@@ -156,8 +171,10 @@ locals {
     }
   }
 
+
   eks_info = {
     cluster = {
+      version           = aws_eks_cluster.this.version
       public_access     = var.eks.public_access
       arn               = aws_eks_cluster.this.arn
       security_group_id = aws_security_group.eks_cluster.id
@@ -174,6 +191,10 @@ locals {
           {
             arn  = aws_iam_role.eks_cluster.arn
             name = aws_iam_role.eks_cluster.name
+          },
+          {
+            arn  = data.aws_iam_session_context.create_eks_role.issuer_arn
+            name = data.aws_iam_session_context.create_eks_role.issuer_name
           }
         ]
       )
