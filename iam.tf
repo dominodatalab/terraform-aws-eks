@@ -107,7 +107,7 @@ resource "aws_iam_role_policy_attachment" "create_eks_role" {
   policy_arn = aws_iam_policy.create_eks_role.arn
 }
 
-resource "time_sleep" "create_eks_role_10_seconds" {
-  create_duration = "10s"
+resource "time_sleep" "create_eks_role_30_seconds" {
+  create_duration = "30s"
   depends_on      = [aws_iam_role_policy_attachment.create_eks_role]
 }
