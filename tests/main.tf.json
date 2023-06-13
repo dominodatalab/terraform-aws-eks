@@ -3,7 +3,6 @@
     {
       "aws_ami": {
         "eks_node": {
-          "provider": "aws.local",
           "most_recent": true,
           "owners": ["amazon"],
           "filter": [
@@ -20,7 +19,6 @@
     {
       "domino_eks": {
         "source": "./..",
-
         "deploy_id": "${var.deploy_id}",
         "region": "${var.region}",
         "route53_hosted_zone_name": "deploys-delta.domino.tech",
@@ -79,8 +77,7 @@
     {
       "deploy_id": {
         "type": "string",
-        "description": "Domino Deployment ID.",
-        "default": "dominotfeks2"
+        "description": "Domino Deployment ID."
       }
     },
     {
@@ -114,7 +111,7 @@
         {
           "aws": {
             "source": "hashicorp/aws",
-            "version": ">= 4.0"
+            "version": "~> 5.0"
           },
           "random": {
             "source": "hashicorp/random",

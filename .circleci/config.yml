@@ -1,15 +1,15 @@
 version: 2.1
 
 parameters:
-  workspace:
-    type: string
-    default: circleci-<< pipeline.number >>
   helm_version:
     type: string
     default: "v3.11.2"
   terraform_version:
     type: string
     default: "1.4.4"
+  hcledit_version:
+    type: string
+    default: "0.2.9"
   GHA_Actor:
     type: string
     default: ""
@@ -29,11 +29,11 @@ commands:
   set_tf_vars:
     description: "Sets Terraform variables"
     steps:
+      - envsubst/install
       - run:
           name: Configure terraform vars
           working_directory: tests
-          command: |
-            envsubst < ci.tfvars.tftpl | tee terraform.tfvars
+          command: bash ci-deploy.sh set_tf_vars
   install_tf:
     description: "Install Terraform"
     parameters:
@@ -42,6 +42,18 @@ commands:
     steps:
       - terraform/install:
           terraform_version: << parameters.terraform_version >>
+  install_hcledit:
+    description: "Install HCL edit"
+    parameters:
+      hcledit_version:
+        type: string
+    steps:
+      - run:
+          name: Install HCL edit
+          working_directory: tests
+          environment:
+            HCLEDIT_VERSION: << parameters.hcledit_version >>
+          command: bash ci-deploy.sh install_hcledit
   install_helm:
     description: "Install Helm"
     parameters:
@@ -50,71 +62,65 @@ commands:
     steps:
       - run:
           name: Install Helm
+          working_directory: tests
           environment:
             HELM_VERSION: << parameters.helm_version >>
-          command: |
-            if [ -z "$HELM_VERSION" ]; then
-              echo "HELM_VERSION environment variable not set, exiting."
-              exit 1
-            fi
-            echo "Installing Helm version: ${HELM_VERSION}"
-            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-            chmod +x get_helm.sh
-            ./get_helm.sh --version "${HELM_VERSION}"
-            rm ./get_helm.sh
-            helm version --short
+          command: bash ci-deploy.sh install_helm
   gen_pvt_key:
     description: "Generates ssh key"
     steps:
       - run:
           name: Generate pvt key
-          command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
+          working_directory: tests
+          command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem
   tf_init_apply:
     description: "Terraform init"
     steps:
-      - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
-         session-duration: "43200"
       - run:
           name: Terraform init/validate/apply
           working_directory: tests
           command: |
+            ## Most of this verbiage will go away after release.
+            set -e
             echo "Current dir: $(pwd)"
-            terraform init
-            terraform validate
-            terraform workspace new ${WORKSPACE}
-            terraform apply -auto-approve
+            if [ -f "migrated.txt" ]; then
+              echo "This legacy deployment has been migrated"
+              bash ci-deploy.sh deploy
+            elif [ -n "$MAJOR_MOD_VERSION" ] && (( $MAJOR_MOD_VERSION < 3 )) ; then
+              echo "Running legacy monolithic deploy"
+              envsubst < ci.tfvars.tftpl | tee terraform.tfvars
+              terraform init
+              terraform validate
+              terraform apply --auto-approve --input=false
+              bash -xp migrate-states.sh
+            else
+              echo "Running ci-deploy.sh deploy"
+              bash ci-deploy.sh deploy
+            fi
+  tf_deploy:
+    description: "Terraform deploy"
+    steps:
+      - aws-cli/setup:
+          role-arn: "${AWS_IAM_ROLE}"
+          session-duration: "43200"
+      - tf_init_apply
   tf_destroy:
     description: "Terraform destroy"
     steps:
       - run:
           name: Terraform destroy
           working_directory: tests
-          command: |
-            echo "Current dir: $(pwd)"
-            terraform destroy --auto-approve || terraform destroy --auto-approve --refresh=false
-          when: always
-  tf_ws_delete:
-    description: "Terraform workspace delete"
-    steps:
-      - run:
-          name: Terraform workspace delete
-          working_directory: tests
-          command: |
-            echo "Current dir: $(pwd)"
-            terraform workspace select default
-            terraform workspace delete ${WORKSPACE}
+          command: bash ci-deploy.sh destroy
           when: always
   tf_plan_test:
     steps:
       - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
-         session-duration: "900"
+          role-arn: "${AWS_IAM_ROLE}"
+          session-duration: "900"
       - run:
           name: Terraform plan test
           working_directory: examples
-          command: |
-            bash tf-plan-test.sh
+          command: bash tf-plan-test.sh
 jobs:
   tf-plan-test:
     docker:
@@ -131,93 +137,74 @@ jobs:
     docker:
       - image: cimg/aws:2023.04.1
     parameters:
-      workspace:
-        type: string
       terraform_version:
         type: string
       helm_version:
         type: string
-    environment:
-      WORKSPACE: << parameters.workspace >>
     steps:
       - checkout
       - install_tf:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - envsubst/install
-      - set_tf_vars
       - gen_pvt_key
-      - tf_init_apply
+      - set_tf_vars
+      - tf_deploy
       - tf_destroy
-      - tf_ws_delete
   test-upgrade:
     docker:
       - image: cimg/aws:2023.04.1
     parameters:
-      workspace:
-        type: string
       terraform_version:
         type: string
       helm_version:
         type: string
-    environment:
-      WORKSPACE: << parameters.workspace >>
+      hcledit_version:
+        type: string
     steps:
       - checkout
       - install_tf:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - envsubst/install
-      - set_tf_vars
+      - install_hcledit:
+          hcledit_version: << parameters.hcledit_version >>
       - gen_pvt_key
+      - set_tf_vars
       - run:
           name: "Set module source to latest published release"
           working_directory: tests
-          command: |
-            latest_release_tag="$(git tag --sort=-v:refname | head -1)"
-            export MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git?ref=${latest_release_tag}"
-            echo "Latest published release tag is: ${latest_release_tag}"
-            echo "Setting module source to: ${MOD_SOURCE}"
-            cat \<<< $(jq --arg mod_source "${MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
-      - tf_init_apply
+          command: bash ci-deploy.sh set_mod_src_local
+      - tf_deploy
       - run:
           name: "Upgrade module by applying this commit"
           working_directory: tests
-          command: |
-            echo "Testing terraform module upgrade"
-            export MOD_SOURCE="./.."
-            echo "Setting module source to local ref: ${MOD_SOURCE}"
-            cat \<<< $(jq --arg mod_source "${MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
-            terraform init --reconfigure --upgrade
-            terraform validate
-            terraform apply --auto-approve
+          command: bash ci-deploy.sh set_mod_src_latest_rel
+      - tf_init_apply
       - tf_destroy
-      - tf_ws_delete
 
 workflows:
   test-deploy-workflow:
     when:
-      equal: ["test-deploy-workflow", << pipeline.parameters.GHA_Action >> ]
+      equal: ["test-deploy-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - test-deploy:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
-          workspace: << pipeline.parameters.workspace >>
   test-upgrade-workflow:
     when:
-      equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >> ]
+      equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - test-upgrade:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
-          workspace: << pipeline.parameters.workspace >>
+          hcledit_version: << pipeline.parameters.hcledit_version >>
   examples-plan-test-workflow:
     when:
-      equal: ["examples-plan-test-workflow", << pipeline.parameters.GHA_Action >> ]
+      equal:
+        ["examples-plan-test-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - tf-plan-test:
           context: aws-oidc
