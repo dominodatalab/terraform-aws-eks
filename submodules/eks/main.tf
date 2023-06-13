@@ -16,7 +16,7 @@ data "aws_iam_session_context" "create_eks_role" {
 }
 
 locals {
-  kubeconfig_path             = try(abspath(pathexpand(var.eks.kubeconfig.path)), "${path.cwd}/kubeconfig")
+  kubeconfig_path             = var.eks.kubeconfig.path != null ? abspath(pathexpand(var.eks.kubeconfig.path)) : "${path.cwd}/kubeconfig"
   kubeconfig_args_list        = split(" ", chomp(trimspace(var.eks.kubeconfig.extra_args)))
   kubeconfig_args_list_parsed = contains(local.kubeconfig_args_list, "--role-arn") ? local.kubeconfig_args_list : concat(local.kubeconfig_args_list, ["--role-arn", data.aws_iam_session_context.create_eks_role.issuer_arn])
   kubeconfig_args             = join(" ", local.kubeconfig_args_list_parsed)
@@ -172,8 +172,11 @@ locals {
   }
 
 
+
   eks_info = {
     cluster = {
+      specs             = aws_eks_cluster.this
+      addons            = var.eks.cluster_addons
       version           = aws_eks_cluster.this.version
       public_access     = var.eks.public_access
       arn               = aws_eks_cluster.this.arn

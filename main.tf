@@ -9,8 +9,6 @@ locals {
     key_arn = local.kms_key.arn
     enabled = var.kms.enabled
   }
-  bastion_info = var.bastion.enabled ? module.bastion[0].info : null
-
 }
 
 module "storage" {
@@ -21,6 +19,10 @@ module "storage" {
   storage      = var.storage
 }
 
+data "aws_ec2_instance_type" "all" {
+  for_each      = toset(flatten([for ng in merge(var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
+  instance_type = each.value
+}
 locals {
   node_groups = {
     for name, ng in
@@ -77,32 +79,7 @@ module "bastion" {
   bastion      = var.bastion
 }
 
-data "aws_ec2_instance_type" "all" {
-  for_each      = toset(flatten([for ng in merge(var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
-  instance_type = each.value
-}
-
-module "eks" {
-  source             = "./submodules/eks"
-  deploy_id          = var.deploy_id
-  region             = var.region
-  ssh_key            = local.ssh_key
-  node_groups        = local.node_groups
-  node_iam_policies  = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
-  efs_security_group = module.storage.info.efs.security_group_id
-  eks                = var.eks
-  network_info       = module.network.info
-  kms_info           = local.kms_info
-  bastion_info       = local.bastion_info
-
-  depends_on = [
-    module.network,
-    aws_iam_role.create_eks_role,
-    aws_iam_policy.create_eks_role,
-    aws_iam_role_policy_attachment.create_eks_role
-  ]
-
-  providers = {
-    aws.eks = aws.eks
-  }
+locals {
+  bastion_info      = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
+  node_iam_policies = compact([module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn, try(aws_iam_policy.route53[0].arn, "")])
 }

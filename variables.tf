@@ -16,13 +16,13 @@ variable "deploy_id" {
 
   validation {
     condition     = length(var.deploy_id) >= 3 && length(var.deploy_id) <= 32 && can(regex("^[a-z]([-a-z0-9]*[a-z0-9])$", var.deploy_id))
-    error_message = <<EOT
+    error_message = <<EOF
       Variable deploy_id must:
       1. Length must be between 3 and 32 characters.
       2. Start with a letter.
       3. End with a letter or digit.
       4. Contain lowercase Alphanumeric characters and hyphens.
-    EOT
+    EOF
   }
 }
 
@@ -49,26 +49,26 @@ variable "ssh_pvt_key_path" {
 
 variable "eks" {
   description = <<EOF
-    k8s_version = "EKS cluster k8s version."
+    k8s_version = EKS cluster k8s version.
     kubeconfig = {
-      extra_args = "Optional extra args when generating kubeconfig."
-      path       = "Fully qualified path name to write the kubeconfig file."
+      extra_args = Optional extra args when generating kubeconfig.
+      path       = Fully qualified path name to write the kubeconfig file.
     }
     public_access = {
-      enabled = "Enable EKS API public endpoint."
-      cidrs   = "List of CIDR ranges permitted for accessing the EKS public endpoint."
+      enabled = Enable EKS API public endpoint.
+      cidrs   = List of CIDR ranges permitted for accessing the EKS public endpoint.
     }
-    "Custom role maps for aws auth configmap"
+    "Custom role maps for aws auth configmap
     custom_role_maps = {
-      rolearn = string
+      rolearn  = string
       username = string
-      groups = list(string)
+      groups   = list(string)
     }
-    master_role_names = "IAM role names to be added as masters in eks."
-    cluster_addons = "EKS cluster addons. vpc-cni is installed separately."
-    vpc_cni = Configuration for AWS VPC CNI
-    ssm_log_group_name = "CloudWatch log group to send the SSM session logs to."
-    identity_providers = "Configuration for IDP(Identity Provider)."
+    master_role_names  = IAM role names to be added as masters in eks.
+    cluster_addons     = EKS cluster addons. vpc-cni is installed separately.
+    vpc_cni            = Configuration for AWS VPC CNI
+    ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
+    identity_providers = Configuration for IDP(Identity Provider).
   }
   EOF
 
@@ -76,7 +76,7 @@ variable "eks" {
     k8s_version = optional(string, "1.25")
     kubeconfig = optional(object({
       extra_args = optional(string, "")
-      path       = optional(string, "kubeconfig")
+      path       = optional(string, null)
     }), {})
     public_access = optional(object({
       enabled = optional(bool, false)
@@ -333,7 +333,7 @@ variable "storage" {
       access_point_path = optional(string, "/domino")
       backup_vault = optional(object({
         create        = optional(bool, true)
-        force_destroy = optional(bool, false)
+        force_destroy = optional(bool, true)
         backup = optional(object({
           schedule           = optional(string, "0 12 * * ? *")
           cold_storage_after = optional(number, 35)
@@ -353,7 +353,7 @@ variable "storage" {
 
 variable "kms" {
   description = <<EOF
-    enabled = "Toggle,if set use either the specified KMS key_id or a Domino-generated one"
+    enabled = Toggle,if set use either the specified KMS key_id or a Domino-generated one.
     key_id  = optional(string, null)
   EOF
 

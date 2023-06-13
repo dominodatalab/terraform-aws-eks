@@ -2,7 +2,7 @@
 
 set -ex
 
-source ${k8s_functions_sh_filename}
+source k8s-functions.sh
 
 trap close_ssh_tunnel_to_k8s_api EXIT
 open_ssh_tunnel_to_k8s_api

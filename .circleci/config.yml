@@ -1,15 +1,15 @@
 version: 2.1
 
 parameters:
-  workspace:
-    type: string
-    default: circleci-<< pipeline.number >>
   helm_version:
     type: string
     default: "v3.11.2"
   terraform_version:
     type: string
     default: "1.4.4"
+  hcledit_version:
+    type: string
+    default: "0.2.9"
   GHA_Actor:
     type: string
     default: ""
@@ -29,11 +29,12 @@ commands:
   set_tf_vars:
     description: "Sets Terraform variables"
     steps:
+      - envsubst/install
       - run:
           name: Configure terraform vars
           working_directory: tests
           command: |
-            envsubst < ci.tfvars.tftpl | tee terraform.tfvars
+            envsubst < infra/ci.tfvars.tftpl | tee infra/terraform.tfvars
   install_tf:
     description: "Install Terraform"
     parameters:
@@ -42,6 +43,23 @@ commands:
     steps:
       - terraform/install:
           terraform_version: << parameters.terraform_version >>
+  install_hcledit:
+    description: "Install HCL edit"
+    parameters:
+      hcledit_version:
+        type: string
+    steps:
+      - run:
+          name: Install HCL edit
+          environment:
+            HCLEDIT_VERSION: << parameters.hcledit_version >>
+          command: |
+            hcledit_version="${HCLEDIT_VERSION}"
+            hcledit_artifact=hcledit_${hcledit_version}_linux_amd64.tar.gz
+            curl -fsSL -o "${hcledit_artifact}" "https://github.com/minamijoyo/hcledit/releases/download/v${hcledit_version}/${hcledit_artifact}"
+            tar xvzf "${hcledit_artifact}"
+            sudo mv hcledit /usr/local/bin/ && rm "${hcledit_artifact}" && hcledit version
+
   install_helm:
     description: "Install Helm"
     parameters:
@@ -68,48 +86,47 @@ commands:
     steps:
       - run:
           name: Generate pvt key
-          command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
+          working_directory: tests
+          command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem
   tf_init_apply:
     description: "Terraform init"
     steps:
       - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
-         session-duration: "43200"
+          role-arn: "${AWS_IAM_ROLE}"
+          session-duration: "43200"
+      - envsubst/install
       - run:
           name: Terraform init/validate/apply
           working_directory: tests
           command: |
+            set -e
             echo "Current dir: $(pwd)"
-            terraform init
-            terraform validate
-            terraform workspace new ${WORKSPACE}
-            terraform apply -auto-approve
+            if [ -n "$MAJOR_MOD_VERSION" ] && (( $MAJOR_MOD_VERSION < 3 )) ; then
+              echo "Running legacy monolithic deploy"
+              terraform init
+              terraform validate
+              terraform apply --auto-approve --input=false
+              bash -xp migrate-states.sh
+            elif [ -f "migrated.txt" ]; then
+              echo "This legacy deployment has been migrated"
+              bash ci-deploy.sh deploy
+            else
+              echo "Running ci-deploy.sh deploy"
+              bash ci-deploy.sh deploy
+            fi
   tf_destroy:
     description: "Terraform destroy"
     steps:
       - run:
           name: Terraform destroy
           working_directory: tests
-          command: |
-            echo "Current dir: $(pwd)"
-            terraform destroy --auto-approve || terraform destroy --auto-approve --refresh=false
-          when: always
-  tf_ws_delete:
-    description: "Terraform workspace delete"
-    steps:
-      - run:
-          name: Terraform workspace delete
-          working_directory: tests
-          command: |
-            echo "Current dir: $(pwd)"
-            terraform workspace select default
-            terraform workspace delete ${WORKSPACE}
+          command: bash ci-deploy.sh destroy
           when: always
   tf_plan_test:
     steps:
       - aws-cli/setup:
-         role-arn: "${AWS_IAM_ROLE}"
-         session-duration: "900"
+          role-arn: "${AWS_IAM_ROLE}"
+          session-duration: "900"
       - run:
           name: Terraform plan test
           working_directory: examples
@@ -131,93 +148,108 @@ jobs:
     docker:
       - image: cimg/aws:2023.04.1
     parameters:
-      workspace:
-        type: string
       terraform_version:
         type: string
       helm_version:
         type: string
-    environment:
-      WORKSPACE: << parameters.workspace >>
     steps:
       - checkout
       - install_tf:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - envsubst/install
-      - set_tf_vars
       - gen_pvt_key
+      - set_tf_vars
       - tf_init_apply
       - tf_destroy
-      - tf_ws_delete
   test-upgrade:
     docker:
       - image: cimg/aws:2023.04.1
     parameters:
-      workspace:
-        type: string
       terraform_version:
         type: string
       helm_version:
         type: string
-    environment:
-      WORKSPACE: << parameters.workspace >>
+      hcledit_version:
+        type: string
     steps:
       - checkout
       - install_tf:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - envsubst/install
-      - set_tf_vars
+      - install_hcledit:
+          hcledit_version: << parameters.hcledit_version >>
       - gen_pvt_key
+      - set_tf_vars
       - run:
           name: "Set module source to latest published release"
           working_directory: tests
           command: |
-            latest_release_tag="$(git tag --sort=-v:refname | head -1)"
-            export MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git?ref=${latest_release_tag}"
+            latest_release_tag="$(curl -s https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest | jq -r .tag_name)"
             echo "Latest published release tag is: ${latest_release_tag}"
-            echo "Setting module source to: ${MOD_SOURCE}"
-            cat \<<< $(jq --arg mod_source "${MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
+            ROOT_MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git?ref=${latest_release_tag}"
+            MAJOR_MOD_VERSION=$(echo "${latest_release_tag}" | awk -F'.' '{print $1}' | sed 's/^v//')
+            echo "export MAJOR_MOD_VERSION=$MAJOR_MOD_VERSION" >> $BASH_ENV
+            envsubst < ci.tfvars.tftpl | tee terraform.tfvars
+            if (( $MAJOR_MOD_VERSION < 3 )); then
+              echo "Setting module source to: ${ROOT_MOD_SOURCE}"
+              cat \<<< $(jq --arg mod_source "${ROOT_MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
+            else
+              mv terraform.tfvars ./infra/terraform.tfvars
+              for dir in "${MOD_DIRS[@]}"; do
+                if [ "$dir" != "infra" ]; then
+                  MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git//submodules/${dir}?ref=${latest_release_tag}"
+                else
+                  MOD_SOURCE="${ROOT_MOD_SOURCE}"
+                fi
+                echo "Setting module source to local ref: ${MOD_SOURCE} on ${dir}"
+                hcledit attribute set "module.${dir}.source" "\"${MOD_SOURCE}\"" -u -f "${dir}/main.tf"
+                cat "${dir}/main.tf"
+              done
+            fi
       - tf_init_apply
       - run:
           name: "Upgrade module by applying this commit"
           working_directory: tests
           command: |
             echo "Testing terraform module upgrade"
-            export MOD_SOURCE="./.."
-            echo "Setting module source to local ref: ${MOD_SOURCE}"
-            cat \<<< $(jq --arg mod_source "${MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
-            terraform init --reconfigure --upgrade
-            terraform validate
-            terraform apply --auto-approve
+            export ROOT_MOD_SOURCE="./../.."
+            MOD_DIRS=('infra' 'eks' 'nodes')
+            for dir in "${MOD_DIRS[@]}"; do
+              if [ "$dir" != "infra" ]; then
+                MOD_SOURCE="${ROOT_MOD_SOURCE}/submodules/${dir}"
+              else
+                MOD_SOURCE="${ROOT_MOD_SOURCE}"
+              fi
+              echo "Setting module source to local ref: ${MOD_SOURCE} on ${dir}"
+              hcledit attribute set "module.${dir}.source" "\"${MOD_SOURCE}\"" -u -f "${dir}/main.tf"
+            done
+      - tf_init_apply
       - tf_destroy
-      - tf_ws_delete
 
 workflows:
   test-deploy-workflow:
     when:
-      equal: ["test-deploy-workflow", << pipeline.parameters.GHA_Action >> ]
+      equal: ["test-deploy-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - test-deploy:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
-          workspace: << pipeline.parameters.workspace >>
   test-upgrade-workflow:
     when:
-      equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >> ]
+      equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - test-upgrade:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
-          workspace: << pipeline.parameters.workspace >>
+          hcledit_version: << pipeline.parameters.hcledit_version >>
   examples-plan-test-workflow:
     when:
-      equal: ["examples-plan-test-workflow", << pipeline.parameters.GHA_Action >> ]
+      equal:
+        ["examples-plan-test-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - tf-plan-test:
           context: aws-oidc
