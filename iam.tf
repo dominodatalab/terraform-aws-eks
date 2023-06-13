@@ -32,11 +32,6 @@ resource "aws_iam_policy" "route53" {
   policy = data.aws_iam_policy_document.route53[0].json
 }
 
-resource "aws_iam_role_policy_attachment" "route53" {
-  count      = var.route53_hosted_zone_name != null ? length(module.eks.info.nodes.roles) : 0
-  policy_arn = aws_iam_policy.route53[0].arn
-  role       = lookup(module.eks.info.nodes.roles[count.index], "name")
-}
 
 
 locals {

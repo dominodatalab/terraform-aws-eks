@@ -43,6 +43,6 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_change_hash"></a> [change\_hash](#output\_change\_hash) | Hash of all templated files |
-| <a name="output_filename"></a> [filename](#output\_filename) | Filename of primary script |
+| <a name="output_filepath"></a> [filepath](#output\_filepath) | Filename of primary script |
 | <a name="output_resources_directory"></a> [resources\_directory](#output\_resources\_directory) | Directory for provisioned scripts and templated files |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

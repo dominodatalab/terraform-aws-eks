@@ -6,7 +6,7 @@ resource "random_integer" "port" {
 locals {
   k8s_functions_sh_filename = "k8s-functions.sh"
   k8s_functions_sh_template = "k8s-functions.sh.tftpl"
-  k8s_pre_setup_sh_filename = "k8s-pre-setup.sh"
+  k8s_pre_setup_sh_file     = "k8s-pre-setup.sh"
   k8s_pre_setup_sh_template = "k8s-pre-setup.sh.tftpl"
   aws_auth_filename         = "aws-auth.yaml"
   aws_auth_template         = "aws-auth.yaml.tftpl"
@@ -32,7 +32,7 @@ locals {
     }
 
     k8s_presetup = {
-      filename = local.k8s_pre_setup_sh_filename
+      filename = local.k8s_pre_setup_sh_file
       content = templatefile("${local.templates_dir}/${local.k8s_pre_setup_sh_template}", {
         k8s_functions_sh_filename = local.k8s_functions_sh_filename
       })
