@@ -18,29 +18,6 @@ variable "region" {
   }
 }
 
-variable "node_groups" {
-  description = "EKS managed node groups definition."
-  type = map(object({
-    ami                   = optional(string, null)
-    bootstrap_extra_args  = optional(string, "")
-    instance_types        = list(string)
-    spot                  = optional(bool, false)
-    min_per_az            = number
-    max_per_az            = number
-    desired_per_az        = number
-    availability_zone_ids = list(string)
-    labels                = map(string)
-    taints                = optional(list(object({ key = string, value = optional(string), effect = string })), [])
-    tags                  = optional(map(string), {})
-    instance_tags         = optional(map(string), {})
-    gpu                   = optional(bool, false)
-    volume = object({
-      size = string
-      type = string
-    })
-  }))
-}
-
 variable "network_info" {
   description = <<EOF
     id = VPC ID.
@@ -142,46 +119,47 @@ variable "kms_info" {
 
 variable "eks" {
   description = <<EOF
-    k8s_version = EKS cluster k8s version.
+    k8s_version = "EKS cluster k8s version."
     kubeconfig = {
-      extra_args = Optional extra args when generating kubeconfig.
-      path       = Fully qualified path name to write the kubeconfig file. Defaults to '<current working directory>/kubeconfig'
+      extra_args = "Optional extra args when generating kubeconfig."
+      path       = "Fully qualified path name to write the kubeconfig file."
     }
     public_access = {
-      enabled = Enable EKS API public endpoint.
-      cidrs   = List of CIDR ranges permitted for accessing the EKS public endpoint.
+      enabled = "Enable EKS API public endpoint."
+      cidrs   = "List of CIDR ranges permitted for accessing the EKS public endpoint."
     }
-    List of Custom role maps for aws auth configmap
-    custom_role_maps = [{
+    "Custom role maps for aws auth configmap"
+    custom_role_maps = {
       rolearn = string
       username = string
       groups = list(string)
-    }]
-    master_role_names = IAM role names to be added as masters in EKS.
-    cluster_addons = EKS cluster addons. vpc-cni is installed separately.
-    ssm_log_group_name = "CloudWatch log group to send the SSM session logs to."
+    }
+    master_role_names = "IAM role names to be added as masters in eks."
+    cluster_addons = "EKS cluster addons. vpc-cni is installed separately."
     vpc_cni = Configuration for AWS VPC CNI
+    ssm_log_group_name = "CloudWatch log group to send the SSM session logs to."
     identity_providers = "Configuration for IDP(Identity Provider)."
+  }
   EOF
 
   type = object({
-    k8s_version = optional(string)
+    k8s_version = optional(string, "1.25")
     kubeconfig = optional(object({
-      extra_args = optional(string)
-      path       = optional(string)
-    }))
+      extra_args = optional(string, "")
+      path       = optional(string, null)
+    }), {})
     public_access = optional(object({
-      enabled = optional(bool)
-      cidrs   = optional(list(string))
-    }))
+      enabled = optional(bool, false)
+      cidrs   = optional(list(string), [])
+    }), {})
     custom_role_maps = optional(list(object({
       rolearn  = string
       username = string
       groups   = list(string)
-    })))
-    master_role_names  = optional(list(string))
-    cluster_addons     = optional(list(string))
-    ssm_log_group_name = optional(string)
+    })), [])
+    master_role_names  = optional(list(string), [])
+    cluster_addons     = optional(list(string), ["kube-proxy", "coredns"])
+    ssm_log_group_name = optional(string, "session-manager")
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
     }))
@@ -197,19 +175,7 @@ variable "eks" {
     })), [])
   })
 
-  validation {
-    condition     = var.eks.public_access.enabled ? length(var.eks.public_access.cidrs) > 0 : true
-    error_message = "eks.public_access.cidrs must be configured when public access is enabled"
-  }
-
-  validation {
-    condition = !var.eks.public_access.enabled ? true : alltrue([
-      for cidr in var.eks.public_access.cidrs :
-      try(cidrhost(cidr, 0), null) == regex("^(.*)/", cidr)[0] &&
-      try(cidrnetmask(cidr), null) != null
-    ])
-    error_message = "All elements in eks.public_access.cidrs list must be valid CIDR blocks"
-  }
+  default = {}
 }
 
 variable "ssh_key" {
@@ -221,4 +187,15 @@ variable "ssh_key" {
     path          = string
     key_pair_name = string
   })
+}
+
+variable "create_eks_role_arn" {
+  description = "Role arn to assume during the EKS cluster creation."
+  type        = string
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "Deployment tags."
+  default     = {}
 }

@@ -3,9 +3,9 @@ output "change_hash" {
   value       = local.change_hash
 }
 
-output "filename" {
+output "filepath" {
   description = "Filename of primary script"
-  value       = basename(local_file.templates["k8s_presetup"].filename)
+  value       = "${local.resources_directory}/${local.k8s_pre_setup_sh_file}"
 }
 
 output "resources_directory" {

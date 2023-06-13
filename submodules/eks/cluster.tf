@@ -98,17 +98,6 @@ resource "aws_eks_addon" "vpc_cni" {
   })
 }
 
-resource "aws_eks_addon" "this" {
-  for_each                    = toset(var.eks.cluster_addons)
-  cluster_name                = aws_eks_cluster.this.name
-  resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "OVERWRITE"
-  addon_name                  = each.key
-
-  depends_on = [
-    aws_eks_node_group.node_groups,
-  ]
-}
 
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
