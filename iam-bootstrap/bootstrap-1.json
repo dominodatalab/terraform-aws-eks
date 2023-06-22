@@ -85,8 +85,7 @@
                 "ec2:RevokeSecurityGroupEgress",
                 "ec2:RevokeSecurityGroupIngress",
                 "ec2:RunInstances",
-                "ssm:GetParameter",
-                "acm:RequestCertificate"
+                "ssm:GetParameter"
             ],
             "Resource": [
                 "*"
