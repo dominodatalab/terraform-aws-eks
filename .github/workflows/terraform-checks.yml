@@ -1,4 +1,3 @@
-
 name: Lint-Format-Scan
 on: [push]
 jobs:
@@ -97,6 +96,15 @@ jobs:
         uses: pre-commit/action@v3.0.0
         with:
           extra_args: terraform_checkov --all-files
+  check_aws_partition:
+    name: Check for hardcoded aws partition
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Check for hardcoded aws partition
+        uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: check_aws_partition --all-files
   test-examples:
     runs-on: ubuntu-latest
     steps:
