@@ -98,7 +98,9 @@
                 "acm:RequestCertificate",
                 "acm:DescribeCertificate",
                 "acm:GetCertificate",
-                "acm:ListTagsForCertificate"
+                "acm:ListTagsForCertificate",
+                "acm:ListCertificates",
+                "acm:DeleteCertificate"
             ],
             "Resource": [
                 "*"
