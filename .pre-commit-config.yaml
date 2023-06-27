@@ -1,4 +1,3 @@
-
 ## NOTE: Changes(rename/add/delete) to pre-commit ids need to be replicated in .github/workflows/terraform-checks.yml(GHA).
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -11,7 +10,7 @@ repos:
   - repo: https://github.com/dominodatalab/pre-commit-circleci
     rev: v0.0.3
     hooks:
-    -   id: circleci-validate
+      - id: circleci-validate
         args: [--org-slug, github/cerebrotech]
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.20.0
@@ -26,48 +25,55 @@ repos:
         # See #4 on https://github.com/antonbabenko/pre-commit-terraform#terraform_validate
         exclude: submodules/eks/[^/]+$
         args:
-          - '--hook-config=--retry-once-with-cleanup=true'
+          - "--hook-config=--retry-once-with-cleanup=true"
       - id: terraform_providers_lock
         args:
-         - --tf-init-args=-upgrade
+          - --tf-init-args=-upgrade
       - id: terraform_docs
         args:
-          - '--args=--lockfile=false'
-          - '--hook-config=--path-to-file=README.md'
-          - '--hook-config=--add-to-existing-file=true'
-          - '--hook-config=--create-file-if-not-exist=true'
-          - '--hook-config=--recursive.enabled=true'
-          - '--hook-config=--recursive.path=submodules'
+          - "--args=--lockfile=false"
+          - "--hook-config=--path-to-file=README.md"
+          - "--hook-config=--add-to-existing-file=true"
+          - "--hook-config=--create-file-if-not-exist=true"
+          - "--hook-config=--recursive.enabled=true"
+          - "--hook-config=--recursive.path=submodules"
       - id: terraform_fmt
       - id: terraform_tflint
         args:
-          - '--args=--config=__GIT_WORKING_DIR__/.tflint.hcl'
-          - '--args=--only=terraform_deprecated_interpolation'
-          - '--args=--only=terraform_deprecated_index'
-          - '--args=--only=terraform_unused_declarations'
-          - '--args=--only=terraform_comment_syntax'
-          - '--args=--only=terraform_documented_outputs'
-          - '--args=--only=terraform_documented_variables'
-          - '--args=--only=terraform_typed_variables'
-          - '--args=--only=terraform_module_pinned_source'
-          - '--args=--only=terraform_naming_convention'
-          - '--args=--only=terraform_required_version'
-          - '--args=--only=terraform_required_providers'
-          - '--args=--only=terraform_standard_module_structure'
-          - '--args=--only=terraform_workspace_remote'
-          - '--args=--enable-rule=aws_iam_policy_document_gov_friendly_arns'
-          - '--args=--enable-rule=aws_iam_policy_gov_friendly_arns'
-          - '--args=--enable-rule=aws_iam_role_policy_gov_friendly_arns'
+          - "--args=--config=__GIT_WORKING_DIR__/.tflint.hcl"
+          - "--args=--only=terraform_deprecated_interpolation"
+          - "--args=--only=terraform_deprecated_index"
+          - "--args=--only=terraform_unused_declarations"
+          - "--args=--only=terraform_comment_syntax"
+          - "--args=--only=terraform_documented_outputs"
+          - "--args=--only=terraform_documented_variables"
+          - "--args=--only=terraform_typed_variables"
+          - "--args=--only=terraform_module_pinned_source"
+          - "--args=--only=terraform_naming_convention"
+          - "--args=--only=terraform_required_version"
+          - "--args=--only=terraform_required_providers"
+          - "--args=--only=terraform_standard_module_structure"
+          - "--args=--only=terraform_workspace_remote"
+          - "--args=--enable-rule=aws_iam_policy_document_gov_friendly_arns"
+          - "--args=--enable-rule=aws_iam_policy_gov_friendly_arns"
+          - "--args=--enable-rule=aws_iam_role_policy_gov_friendly_arns"
       - id: terraform_checkov
         args:
-          - '--args=--compact'
-          - '--args=--quiet'
-          - '--args=--skip-check CKV_CIRCLECIPIPELINES_2,CKV_CIRCLECIPIPELINES_6,CKV2_AWS_11,CKV2_AWS_12,CKV2_AWS_6,CKV_AWS_109,CKV_AWS_111,CKV_AWS_135,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_18,CKV_AWS_184,CKV_AWS_19,CKV_AWS_21,CKV_AWS_66,CKV_AWS_88,CKV2_GHA_1,CKV_AWS_163,CKV_AWS_39,CKV_AWS_38,CKV2_AWS_61,CKV2_AWS_62,CKV_AWS_136,CKV_AWS_329,CKV_AWS_338,CKV_AWS_339,CKV_AWS_341,CKV_AWS_356,CKV2_AWS_19'
+          - "--args=--compact"
+          - "--args=--quiet"
+          - "--args=--skip-check CKV_CIRCLECIPIPELINES_2,CKV_CIRCLECIPIPELINES_6,CKV2_AWS_11,CKV2_AWS_12,CKV2_AWS_6,CKV_AWS_109,CKV_AWS_111,CKV_AWS_135,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_18,CKV_AWS_184,CKV_AWS_19,CKV_AWS_21,CKV_AWS_66,CKV_AWS_88,CKV2_GHA_1,CKV_AWS_163,CKV_AWS_39,CKV_AWS_38,CKV2_AWS_61,CKV2_AWS_62,CKV_AWS_136,CKV_AWS_329,CKV_AWS_338,CKV_AWS_339,CKV_AWS_341,CKV_AWS_356,CKV2_AWS_19"
       - id: terraform_tfsec
         args:
-          - '--args=-e aws-s3-specify-public-access-block,aws-cloudwatch-log-group-customer-key,aws-s3-enable-bucket-logging,aws-s3-enable-versioning,aws-s3-no-public-buckets,aws-ec2-require-vpc-flow-logs-for-all-vpcs,aws-s3-encryption-customer-key,aws-ec2-no-public-egress-sgr,aws-iam-no-policy-wildcards,aws-s3-block-public-acls,aws-s3-block-public-policy,aws-s3-enable-bucket-encryption,aws-s3-ignore-public-acls,aws-ec2-no-public-ingress-sgr,aws-ecr-repository-customer-key,aws-ecr-enable-image-scans,aws-eks-no-public-cluster-access,aws-eks-no-public-cluster-access-to-cidr'
+          - "--args=-e aws-s3-specify-public-access-block,aws-cloudwatch-log-group-customer-key,aws-s3-enable-bucket-logging,aws-s3-enable-versioning,aws-s3-no-public-buckets,aws-ec2-require-vpc-flow-logs-for-all-vpcs,aws-s3-encryption-customer-key,aws-ec2-no-public-egress-sgr,aws-iam-no-policy-wildcards,aws-s3-block-public-acls,aws-s3-block-public-policy,aws-s3-enable-bucket-encryption,aws-s3-ignore-public-acls,aws-ec2-no-public-ingress-sgr,aws-ecr-repository-customer-key,aws-ecr-enable-image-scans,aws-eks-no-public-cluster-access,aws-eks-no-public-cluster-access-to-cidr"
       # - id: terrascan # Skipping until they update lifecycle block; Data resources do not have lifecycle settings, so a lifecycle block is not allowed.
-        # args:
-        #   - '--args=--non-recursive'
-        #   - '--args=--policy-type=aws'
-        #   - '--args=--skip-rules=AC_AWS_0369' #Flow logs are enabled, terrascan does not follow the logical path of the resource
+      # args:
+      #   - '--args=--non-recursive'
+      #   - '--args=--policy-type=aws'
+      #   - '--args=--skip-rules=AC_AWS_0369' #Flow logs are enabled, terrascan does not follow the logical path of the resource
+  - repo: local
+    hooks:
+      - id: check_aws_partition
+        name: Check for hard coded AWS partition
+        entry: ./bin/check-aws-partition.sh
+        language: script
+        files: ".*"
