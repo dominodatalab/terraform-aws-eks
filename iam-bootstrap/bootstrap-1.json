@@ -85,7 +85,16 @@
                 "ec2:RevokeSecurityGroupEgress",
                 "ec2:RevokeSecurityGroupIngress",
                 "ec2:RunInstances",
-                "ssm:GetParameter",
+                "ssm:GetParameter"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "ACMUngated",
+            "Effect": "Allow",
+            "Action": [
                 "acm:RequestCertificate",
                 "acm:DescribeCertificate",
                 "acm:GetCertificate",
