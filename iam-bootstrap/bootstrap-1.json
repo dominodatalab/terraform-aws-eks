@@ -92,6 +92,21 @@
             ]
         },
         {
+            "Sid": "ACMUngated",
+            "Effect": "Allow",
+            "Action": [
+                "acm:RequestCertificate",
+                "acm:DescribeCertificate",
+                "acm:GetCertificate",
+                "acm:ListTagsForCertificate",
+                "acm:ListCertificates",
+                "acm:DeleteCertificate"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
             "Sid": "ECRGated",
             "Effect": "Allow",
             "Action": [
