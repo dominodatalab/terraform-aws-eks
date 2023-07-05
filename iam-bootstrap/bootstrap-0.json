@@ -144,7 +144,8 @@
         "route53:GetHostedZone",
         "route53:ListTagsForResource",
         "route53:ChangeResourceRecordSets",
-        "route53:GetChange"
+        "route53:GetChange",
+        "route53:ListResourceRecordSets"
       ],
       "Resource": "*"
     },
