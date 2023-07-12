@@ -1,6 +1,7 @@
 locals {
   endpoint_services = toset([for service in var.vpc_endpoint_services : service.name])
-  
+
+
   listeners = distinct(flatten([
     for service in var.vpc_endpoint_services : [
       for port in service.ports : {
