@@ -39,11 +39,12 @@ moved {
 }
 
 module "network" {
-  source              = "./submodules/network"
-  deploy_id           = var.deploy_id
-  region              = var.region
-  node_groups         = local.node_groups
-  network             = var.network
+  source                = "./submodules/network"
+  deploy_id             = var.deploy_id
+  region                = var.region
+  node_groups           = local.node_groups
+  network               = var.network
+  vpc_endpoint_services = var.vpc_endpoint_services
   flow_log_bucket_arn = { arn = module.storage.info.s3.buckets.monitoring.arn }
 }
 
