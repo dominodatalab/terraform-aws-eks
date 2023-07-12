@@ -9,13 +9,13 @@ variable "region" {
 }
 
 variable "vpc_endpoint_services" {
-  type    = list(object({
-    name = string
-    ports = list(number)
+  type = list(object({
+    name     = string
+    ports    = list(number)
     cert_arn = string
   }))
   description = "VPCs endpoints services"
-  default = []
+  default     = []
 }
 
 variable "deploy_id" {

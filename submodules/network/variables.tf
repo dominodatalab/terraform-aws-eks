@@ -19,13 +19,13 @@ variable "region" {
 }
 
 variable "vpc_endpoint_services" {
-  type    = list(object({
-    name = string
-    ports = list(number)
+  type = list(object({
+    name     = string
+    ports    = list(number)
     cert_arn = string
   }))
   description = "VPCs endpoints services"
-  default = []
+  default     = []
 }
 
 ## This is an object in order to be used as a conditional in count, due to https://github.com/hashicorp/terraform/issues/26755
