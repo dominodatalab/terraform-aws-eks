@@ -12,6 +12,10 @@ locals {
   ]))
 }
 
+resource "aws_s3_bucket" "lb_logs" {
+  bucket              = "${var.deploy_id}-lb-logs"
+}
+
 resource "aws_lb" "nlbs" {
   for_each            = local.endpoint_services
 
@@ -19,6 +23,14 @@ resource "aws_lb" "nlbs" {
   load_balancer_type  = "network"
 
   subnets             = [for subnet in aws_subnet.public : subnet.id]
+
+  enable_deletion_protection = true
+  enable_cross_zone_load_balancing = true
+
+  access_logs {
+    bucket  = aws_s3_bucket.lb_logs.bucket
+    enabled = true
+  }
 }
 
 resource "aws_lb_target_group" "target_groups" {
