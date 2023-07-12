@@ -45,7 +45,7 @@ module "network" {
   node_groups           = local.node_groups
   network               = var.network
   vpc_endpoint_services = var.vpc_endpoint_services
-  flow_log_bucket_arn = { arn = module.storage.info.s3.buckets.monitoring.arn }
+  flow_log_bucket_arn   = { arn = module.storage.info.s3.buckets.monitoring.arn }
 }
 
 locals {
