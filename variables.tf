@@ -264,6 +264,11 @@ variable "network" {
       vpc     = The IPv4 CIDR block for the VPC.
       pod     = The IPv4 CIDR block for the Pod subnets.
     }
+    vpc_endpoint_services = [{
+      name      = Name of the VPC Enpoint Service.
+      ports     = List of ports exposing the VPC Enpoint Service. i.e [8080, 8081]
+      cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
+    }]
     use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
   EOF
 
@@ -286,6 +291,11 @@ variable "network" {
       vpc = optional(string, "10.0.0.0/16")
       pod = optional(string, "100.64.0.0/16")
     }), {})
+    vpc_endpoint_services = optional(list(object({
+      name     = optional(string)
+      ports    = optional(list(number))
+      cert_arn = optional(string)
+    })), [])
     use_pod_cidr = optional(bool, true)
   })
 

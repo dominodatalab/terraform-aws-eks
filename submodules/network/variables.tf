@@ -18,16 +18,6 @@ variable "region" {
   }
 }
 
-variable "vpc_endpoint_services" {
-  type = list(object({
-    name     = string
-    ports    = list(number)
-    cert_arn = string
-  }))
-  description = "VPCs endpoints services"
-  default     = []
-}
-
 ## This is an object in order to be used as a conditional in count, due to https://github.com/hashicorp/terraform/issues/26755
 variable "flow_log_bucket_arn" {
   type        = object({ arn = string })
@@ -60,6 +50,11 @@ variable "network" {
       vpc     = The IPv4 CIDR block for the VPC.
       pod     = The IPv4 CIDR block for the Pod subnets.
     }
+    vpc_endpoint_services = [{
+      name      = Name of the VPC Enpoint Service.
+      ports     = List of ports exposing the VPC Enpoint Service. i.e [8080, 8081]
+      cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
+    }]
     use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
   EOF
 
@@ -82,6 +77,11 @@ variable "network" {
       vpc = optional(string)
       pod = optional(string)
     }))
+    vpc_endpoint_services = optional(list(object({
+      name     = optional(string)
+      ports    = optional(list(number))
+      cert_arn = optional(string)
+    })))
     use_pod_cidr = optional(bool)
   })
 
