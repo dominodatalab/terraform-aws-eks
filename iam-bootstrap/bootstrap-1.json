@@ -163,5 +163,14 @@
             ],
             "Resource": "*"
         }
+        {
+            "Sid": "ELBGated",
+            "Effect": "Allow",
+            "Action": [
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:DescribeTargetGroups"
+            ],
+            "Resource": "*"
+        }
     ]
 }
