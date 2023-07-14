@@ -168,8 +168,10 @@
             "Effect": "Allow",
             "Action": [
                 "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:DescribeLoadBalancers",
                 "elasticloadbalancing:CreateTargetGroup",
                 "elasticloadbalancing:DescribeTargetGroups",
+                "elasticloadbalancing:ModifyTargetGroupAttributes",
                 "elasticloadbalancing:AddTags"
             ],
             "Resource": "*"
