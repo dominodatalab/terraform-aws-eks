@@ -91,29 +91,33 @@ commands:
   tf_init_apply:
     description: "Terraform init"
     steps:
-      - aws-cli/setup:
-          role-arn: "${AWS_IAM_ROLE}"
-          session-duration: "43200"
-      - envsubst/install
       - run:
           name: Terraform init/validate/apply
           working_directory: tests
           command: |
             set -e
             echo "Current dir: $(pwd)"
-            if [ -n "$MAJOR_MOD_VERSION" ] && (( $MAJOR_MOD_VERSION < 3 )) ; then
+            if [ -f "migrated.txt" ]; then
+              echo "This legacy deployment has been migrated"
+              bash ci-deploy.sh deploy
+            elif [ -n "$MAJOR_MOD_VERSION" ] && (( $MAJOR_MOD_VERSION < 3 )) ; then
               echo "Running legacy monolithic deploy"
               terraform init
               terraform validate
               terraform apply --auto-approve --input=false
               bash -xp migrate-states.sh
-            elif [ -f "migrated.txt" ]; then
-              echo "This legacy deployment has been migrated"
-              bash ci-deploy.sh deploy
             else
               echo "Running ci-deploy.sh deploy"
               bash ci-deploy.sh deploy
             fi
+  tf_deploy:
+    description: "Terraform deploy"
+    steps:
+      - aws-cli/setup:
+          role-arn: "${AWS_IAM_ROLE}"
+          session-duration: "43200"
+      - envsubst/install
+      - tf_init_apply
   tf_destroy:
     description: "Terraform destroy"
     steps:
@@ -130,8 +134,7 @@ commands:
       - run:
           name: Terraform plan test
           working_directory: examples
-          command: |
-            bash tf-plan-test.sh
+          command: bash tf-plan-test.sh
 jobs:
   tf-plan-test:
     docker:
@@ -160,7 +163,7 @@ jobs:
           helm_version: << parameters.helm_version >>
       - gen_pvt_key
       - set_tf_vars
-      - tf_init_apply
+      - tf_deploy
       - tf_destroy
   test-upgrade:
     docker:
@@ -196,7 +199,6 @@ jobs:
               echo "Setting module source to: ${ROOT_MOD_SOURCE}"
               cat \<<< $(jq --arg mod_source "${ROOT_MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
             else
-              mv terraform.tfvars ./infra/terraform.tfvars
               for dir in "${MOD_DIRS[@]}"; do
                 if [ "$dir" != "infra" ]; then
                   MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git//submodules/${dir}?ref=${latest_release_tag}"
@@ -208,7 +210,7 @@ jobs:
                 cat "${dir}/main.tf"
               done
             fi
-      - tf_init_apply
+      - tf_deploy
       - run:
           name: "Upgrade module by applying this commit"
           working_directory: tests
