@@ -162,9 +162,9 @@
                 "s3:DeleteObjectVersion"
             ],
             "Resource": "*"
-        }
+        },
         {
-            "Sid": "ELBGated",
+            "Sid": "ELBUngated",
             "Effect": "Allow",
             "Action": [
                 "elasticloadbalancing:CreateLoadBalancer",
