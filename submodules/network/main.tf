@@ -1,6 +1,10 @@
+data "aws_partition" "current" {}
+data "aws_caller_identity" "aws_account" {}
+
 locals {
   create_vpc   = var.network.vpc.id == null
   provided_vpc = var.network.vpc.id != null
+  aws_account_id = data.aws_caller_identity.aws_account.account_id
 }
 
 data "aws_subnet" "public" {

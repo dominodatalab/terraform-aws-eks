@@ -17,10 +17,72 @@ resource "aws_s3_bucket" "lb_logs" {
   bucket = "${var.deploy_id}-lb-logs"
 }
 
+resource "aws_s3_bucket_policy" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+  policy = data.aws_iam_policy_document.lb_logs.json
+}
+
+data "aws_iam_policy_document" "lb_logs" {
+  statement {
+    sid       = "AWSLogDeliveryAclCheck"
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${var.deploy_id}-lb-logs"]
+    actions   = ["s3:GetBucketAcl"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = ["${local.aws_account_id}"]
+    }
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:${data.aws_partition.current.partition}:logs:${var.region}:${local.aws_account_id}:*"]
+    }
+
+    principals {
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
+  }
+
+  statement {
+    sid       = "AWSLogDeliveryWrite"
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${var.deploy_id}-lb-logs/AWSLogs/*"]
+    actions   = ["s3:PutObject"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:x-amz-acl"
+      values   = ["bucket-owner-full-control"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = ["${local.aws_account_id}"]
+    }
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:${data.aws_partition.current.partition}:logs:${var.region}:${local.aws_account_id}:*"]
+    }
+
+    principals {
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
+  }
+}
+
+
 resource "aws_lb" "nlbs" {
   for_each = local.endpoint_services
 
-  name               = each.value
+  name               = "${var.deploy_id}-${each.value}"
   load_balancer_type = "network"
 
   subnets = [for subnet in aws_subnet.public : subnet.id]
@@ -37,7 +99,7 @@ resource "aws_lb" "nlbs" {
 resource "aws_lb_target_group" "target_groups" {
   for_each = local.endpoint_services
 
-  name     = each.value
+  name     = "${var.deploy_id}-${each.value}"
   port     = 80 # Not used but required
   protocol = "TCP"
   vpc_id   = aws_vpc.this[0].id

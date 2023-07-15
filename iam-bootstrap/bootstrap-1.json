@@ -169,10 +169,16 @@
             "Action": [
                 "elasticloadbalancing:CreateLoadBalancer",
                 "elasticloadbalancing:DescribeLoadBalancers",
+                "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
                 "elasticloadbalancing:CreateTargetGroup",
                 "elasticloadbalancing:DescribeTargetGroups",
                 "elasticloadbalancing:ModifyTargetGroupAttributes",
-                "elasticloadbalancing:AddTags"
+                "elasticloadbalancing:DescribeTargetGroupAttributes",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:DescribeListeners",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:DescribeTags"
             ],
             "Resource": "*"
         }
