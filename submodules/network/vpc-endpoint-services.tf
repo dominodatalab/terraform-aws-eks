@@ -15,6 +15,9 @@ locals {
 
 resource "aws_s3_bucket" "lb_logs" {
   bucket = "${var.deploy_id}-lb-logs"
+
+  force_destroy = true
+  object_lock_enabled = false
 }
 
 resource "aws_s3_bucket_policy" "lb_logs" {
@@ -87,7 +90,7 @@ resource "aws_lb" "nlbs" {
 
   subnets = [for subnet in aws_subnet.public : subnet.id]
 
-  enable_deletion_protection       = true
+  enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
 
   access_logs {
@@ -118,4 +121,14 @@ resource "aws_lb_listener" "listeners" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.target_groups[each.value.service].arn
   }
+}
+
+resource "aws_vpc_endpoint_service" "vpc_endpoint_services" {
+  for_each = local.endpoint_services
+
+  acceptance_required        = false
+  network_load_balancer_arns = [aws_lb.nlbs[each.value].arn]
+
+  private_dns_name = "${each.value}.infra-team-sandbox.domino.tech"
+
 }

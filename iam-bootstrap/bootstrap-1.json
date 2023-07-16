@@ -169,14 +169,17 @@
             "Action": [
                 "elasticloadbalancing:CreateLoadBalancer",
                 "elasticloadbalancing:DescribeLoadBalancers",
+                "elasticloadbalancing:DeleteLoadBalancer",
                 "elasticloadbalancing:ModifyLoadBalancerAttributes",
                 "elasticloadbalancing:DescribeLoadBalancerAttributes",
                 "elasticloadbalancing:CreateTargetGroup",
                 "elasticloadbalancing:DescribeTargetGroups",
+                "elasticloadbalancing:DeleteTargetGroup",
                 "elasticloadbalancing:ModifyTargetGroupAttributes",
                 "elasticloadbalancing:DescribeTargetGroupAttributes",
                 "elasticloadbalancing:CreateListener",
                 "elasticloadbalancing:DescribeListeners",
+                "elasticloadbalancing:DeleteListener",
                 "elasticloadbalancing:AddTags",
                 "elasticloadbalancing:DescribeTags"
             ],
