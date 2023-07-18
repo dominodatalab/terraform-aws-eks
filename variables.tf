@@ -258,6 +258,7 @@ variable "network" {
       name      = Name of the VPC Enpoint Service.
       ports     = List of ports exposing the VPC Enpoint Service. i.e [8080, 8081]
       cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
+      private_dns = Private DNS for the VPC Enpoint Service.
     }]
     use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
   EOF

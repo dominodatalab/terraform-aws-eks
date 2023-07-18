@@ -1,6 +1,5 @@
 locals {
-  endpoint_services = toset([for service in var.network.vpc_endpoint_services : service.name])
-
+  endpoint_services = tomap({for service in var.network.vpc_endpoint_services : "${service.name}" => service.private_dns})
 
   listeners = distinct(flatten([
     for service in var.network.vpc_endpoint_services : [
@@ -85,7 +84,7 @@ data "aws_iam_policy_document" "lb_logs" {
 resource "aws_lb" "nlbs" {
   for_each = local.endpoint_services
 
-  name               = "${var.deploy_id}-${each.value}"
+  name               = "${var.deploy_id}-${each.key}"
   load_balancer_type = "network"
 
   subnets = [for subnet in aws_subnet.public : subnet.id]
@@ -102,7 +101,7 @@ resource "aws_lb" "nlbs" {
 resource "aws_lb_target_group" "target_groups" {
   for_each = local.endpoint_services
 
-  name     = "${var.deploy_id}-${each.value}"
+  name     = "${var.deploy_id}-${each.key}"
   port     = 80 # Not used but required
   protocol = "TCP"
   vpc_id   = aws_vpc.this[0].id
@@ -127,8 +126,8 @@ resource "aws_vpc_endpoint_service" "vpc_endpoint_services" {
   for_each = local.endpoint_services
 
   acceptance_required        = false
-  network_load_balancer_arns = [aws_lb.nlbs[each.value].arn]
+  network_load_balancer_arns = [aws_lb.nlbs[each.key].arn]
 
-  private_dns_name = "${each.value}.infra-team-sandbox.domino.tech"
+  private_dns_name = each.value
 
 }
