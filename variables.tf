@@ -286,6 +286,7 @@ variable "network" {
       name     = optional(string)
       ports    = optional(list(number))
       cert_arn = optional(string)
+      private_dns = optional(string)
     })), [])
     use_pod_cidr = optional(bool, true)
   })
