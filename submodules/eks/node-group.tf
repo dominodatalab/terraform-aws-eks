@@ -27,6 +27,9 @@ data "aws_iam_policy_document" "eks_nodes" {
   }
 }
 
+# default tags for use on the asg's
+data "aws_default_tags" "this" {}
+
 resource "aws_iam_role" "eks_nodes" {
   name               = "${local.eks_cluster_name}-eks-nodes"
   assume_role_policy = data.aws_iam_policy_document.eks_nodes.json
@@ -252,6 +255,13 @@ locals {
         key   = format("k8s.io/cluster-autoscaler/node-template/label/%v", lkey)
         value = lvalue
     }]],
+    [for tkey, tvalue in merge(v.node_group.tags, data.aws_default_tags.this.tags) : [
+      {
+        name  = name
+        key   = tkey
+        value = tvalue
+      }
+    ]],
     [for t in v.node_group.taints : [
       {
         name  = name
