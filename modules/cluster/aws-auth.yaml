@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    - rolearn: arn:aws:iam::890728157128:role/joaquintest040-eks-nodes
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+    - rolearn: arn:aws:iam::890728157128:role/joaquintest040-create-eks
+      username: arn:aws:iam::890728157128:role/joaquintest040-create-eks
+      groups:
+        - system:masters
+    - rolearn: arn:aws:iam::890728157128:role/joaquintest040-eks
+      username: arn:aws:iam::890728157128:role/joaquintest040-eks
+      groups:
+        - system:masters

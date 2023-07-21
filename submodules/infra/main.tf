@@ -12,7 +12,7 @@ locals {
 }
 
 module "storage" {
-  source       = "./submodules/storage"
+  source       = "../storage"
   deploy_id    = var.deploy_id
   network_info = module.network.info
   kms_info     = local.kms_info
@@ -41,7 +41,7 @@ moved {
 }
 
 module "network" {
-  source              = "./submodules/network"
+  source              = "../network"
   deploy_id           = var.deploy_id
   region              = var.region
   node_groups         = local.node_groups
@@ -69,7 +69,7 @@ resource "aws_key_pair" "domino" {
 module "bastion" {
   count = var.bastion.enabled ? 1 : 0
 
-  source       = "./submodules/bastion"
+  source       = "../bastion"
   deploy_id    = var.deploy_id
   region       = var.region
   ssh_key      = local.ssh_key
