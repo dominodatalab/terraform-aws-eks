@@ -114,6 +114,12 @@ variable "network" {
   }
 }
 
+variable "route53_hosted_zone_name" {
+  type        = string
+  description = "Hosted zone for External DNS zone."
+  default     = null
+}
+
 variable "node_groups" {
   description = "EKS managed node groups definition."
   type = map(object({

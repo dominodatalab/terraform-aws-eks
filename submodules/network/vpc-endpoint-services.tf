@@ -12,16 +12,10 @@ locals {
   ]))
 }
 
-resource "aws_s3_bucket" "lb_logs" {
-  bucket = "${var.deploy_id}-lb-logs"
-
-  force_destroy = true
-  object_lock_enabled = false
-}
-
-resource "aws_s3_bucket_policy" "lb_logs" {
-  bucket = aws_s3_bucket.lb_logs.id
-  policy = data.aws_iam_policy_document.lb_logs.json
+data "aws_route53_zone" "hosted" {
+  count        = var.route53_hosted_zone_name != null ? 1 : 0
+  name         = var.route53_hosted_zone_name
+  private_zone = false
 }
 
 data "aws_iam_policy_document" "lb_logs" {
@@ -80,6 +74,17 @@ data "aws_iam_policy_document" "lb_logs" {
   }
 }
 
+resource "aws_s3_bucket" "lb_logs" {
+  bucket = "${var.deploy_id}-lb-logs"
+
+  force_destroy = true
+  object_lock_enabled = false
+}
+
+resource "aws_s3_bucket_policy" "lb_logs" {
+  bucket = aws_s3_bucket.lb_logs.id
+  policy = data.aws_iam_policy_document.lb_logs.json
+}
 
 resource "aws_lb" "nlbs" {
   for_each = local.endpoint_services
@@ -130,4 +135,19 @@ resource "aws_vpc_endpoint_service" "vpc_endpoint_services" {
 
   private_dns_name = each.value
 
+  tags = {
+    "Name" = "${var.deploy_id}-${each.key}"
+  }
+}
+
+resource "aws_route53_record" "service_endpoint_private_dns_verification" {
+  for_each = local.endpoint_services
+
+  zone_id = data.aws_route53_zone.hosted[0].zone_id
+  name    = each.value
+  type    = "TXT"
+  ttl     = 1800
+  records = [
+    aws_vpc_endpoint_service.vpc_endpoint_services[each.key].private_dns_name_configuration[0].value
+  ]
 }
