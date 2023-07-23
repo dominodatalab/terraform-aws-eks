@@ -262,7 +262,7 @@ data "aws_iam_policy_document" "custom_eks_node_policy" {
   ]
 }
 
-# https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.3/docs/install/iam_policy.json
+# https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/install/iam_policy.json
 data "aws_iam_policy_document" "load_balancer_controller_policy" {
   statement {
     sid       = ""
