@@ -75,6 +75,18 @@ data "aws_iam_policy_document" "create_eks_role" {
     resources = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/${var.deploy_id}-*"]
     effect    = "Allow"
   }
+
+  statement {
+    sid = "EKSDeployerIAMSvcLinkedRole"
+    actions = [
+      "iam:CreateServiceLinkedRole",
+      "iam:AttachRolePolicy",
+      "iam:PutRolePolicy"
+    ]
+    resources = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/aws-service-role/*"]
+    effect    = "Allow"
+  }
+
 }
 
 resource "aws_iam_policy" "create_eks_role" {
