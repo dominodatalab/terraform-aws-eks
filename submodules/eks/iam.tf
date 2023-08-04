@@ -27,13 +27,13 @@ data "aws_iam_policy_document" "load_balancer_controller" {
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(aws_iam_openid_connect_provider.oidc_provider.id, ".*?\\/", "")}:sub"
+      variable = "${replace(aws_iam_openid_connect_provider.oidc_provider.id, "/arn:.*:oidc-provider//", "")}:sub"
       values   = ["system:serviceaccount:domino-platform:${var.deploy_id}-load-balancer-controller"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(aws_iam_openid_connect_provider.oidc_provider.id, ".*?\\/", "")}:aud"
+      variable = "${replace(aws_iam_openid_connect_provider.oidc_provider.id, "/arn:.*:oidc-provider//", "")}:aud"
       values   = ["sts.amazonaws.com"]
     }
 
