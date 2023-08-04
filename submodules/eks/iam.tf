@@ -27,19 +27,19 @@ data "aws_iam_policy_document" "load_balancer_controller" {
 
     condition {
       test     = "StringEquals"
-      variable = "oidc.eks.us-west-2.amazonaws.com/id/${aws_iam_openid_connect_provider.oidc_provider.id}:sub"
-      values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
+      variable = "${replace(aws_iam_openid_connect_provider.oidc_provider.id, ".*?\\/", "")}:sub"
+      values   = ["system:serviceaccount:domino-platform:${var.deploy_id}-load-balancer-controller"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "oidc.eks.us-west-2.amazonaws.com/id/${aws_iam_openid_connect_provider.oidc_provider.id}:aud"
+      variable = "${replace(aws_iam_openid_connect_provider.oidc_provider.id, ".*?\\/", "")}:aud"
       values   = ["sts.amazonaws.com"]
     }
 
     principals {
       type        = "Federated"
-      identifiers = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:oidc-provider/oidc.eks.${var.region}.amazonaws.com/id/${aws_iam_openid_connect_provider.oidc_provider.id}"]
+      identifiers = ["${aws_iam_openid_connect_provider.oidc_provider.id}"]
     }
   }
 }
