@@ -5,6 +5,7 @@
       "Sid": "S3Gated",
       "Effect": "Allow",
       "Action": [
+        "s3:AbortMultipartUpload",
         "s3:CreateBucket",
         "s3:DeleteBucket",
         "s3:DeleteBucketPolicy",
@@ -24,6 +25,7 @@
         "s3:GetEncryptionConfiguration",
         "s3:GetLifecycleConfiguration",
         "s3:GetReplicationConfiguration",
+        "s3:ListMultipartUploadParts",
         "s3:*Object",
         "s3:PutAccountPublicAccessBlock",
         "s3:PutBucketAcl",
