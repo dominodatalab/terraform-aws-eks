@@ -39,13 +39,13 @@ moved {
 }
 
 module "network" {
-  source                    = "./submodules/network"
-  deploy_id                 = var.deploy_id
-  region                    = var.region
-  node_groups               = local.node_groups
-  network                   = var.network
-  route53_hosted_zone_name  = var.route53_hosted_zone_name
-  flow_log_bucket_arn = { arn = module.storage.info.s3.buckets.monitoring.arn }
+  source                   = "./submodules/network"
+  deploy_id                = var.deploy_id
+  region                   = var.region
+  node_groups              = local.node_groups
+  network                  = var.network
+  route53_hosted_zone_name = var.route53_hosted_zone_name
+  flow_log_bucket_arn      = { arn = module.storage.info.s3.buckets.monitoring.arn }
 }
 
 locals {

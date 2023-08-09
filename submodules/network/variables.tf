@@ -79,9 +79,9 @@ variable "network" {
       pod = optional(string)
     }))
     vpc_endpoint_services = optional(list(object({
-      name     = optional(string)
-      ports    = optional(list(number))
-      cert_arn = optional(string)
+      name        = optional(string)
+      ports       = optional(list(number))
+      cert_arn    = optional(string)
       private_dns = optional(string)
     })))
     use_pod_cidr = optional(bool)
