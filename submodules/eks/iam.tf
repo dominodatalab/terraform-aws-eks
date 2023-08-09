@@ -39,7 +39,7 @@ data "aws_iam_policy_document" "load_balancer_controller" {
 
     principals {
       type        = "Federated"
-      identifiers = ["${aws_iam_openid_connect_provider.oidc_provider.id}"]
+      identifiers = [aws_iam_openid_connect_provider.oidc_provider.id]
     }
   }
 }

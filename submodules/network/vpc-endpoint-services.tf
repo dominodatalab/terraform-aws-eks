@@ -1,5 +1,5 @@
 locals {
-  endpoint_services = tomap({ for service in var.network.vpc_endpoint_services : "${service.name}" => service.private_dns })
+  endpoint_services = tomap({ for service in var.network.vpc_endpoint_services : service.name => service.private_dns })
 
   listeners = distinct(flatten([
     for service in var.network.vpc_endpoint_services : [
@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "lb_logs" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceAccount"
-      values   = ["${local.aws_account_id}"]
+      values   = [local.aws_account_id]
     }
 
     condition {
@@ -58,7 +58,7 @@ data "aws_iam_policy_document" "lb_logs" {
     condition {
       test     = "StringEquals"
       variable = "aws:SourceAccount"
-      values   = ["${local.aws_account_id}"]
+      values   = [local.aws_account_id]
     }
 
     condition {
