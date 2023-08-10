@@ -39,8 +39,7 @@
         "s3:PutEncryptionConfiguration"
       ],
       "Resource": [
-        "arn:${partition}:s3:::${deploy_id}-*",
-        "arn:${partition}:s3:::${deploy_id}-backups/*"
+        "arn:${partition}:s3:::${deploy_id}-*"
       ]
     },
     {
