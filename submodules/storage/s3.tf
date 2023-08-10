@@ -415,7 +415,7 @@ resource "aws_s3_bucket_policy" "buckets_policies" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryption" {
-  for_each = { for k, v in local.s3_buckets : k => v if k != "monitoring" }
+  for_each = { for k, v in local.s3_buckets : k => v if k != "monitoring" && k != "velero" }
 
   bucket = each.value.bucket_name
   rule {
@@ -463,4 +463,72 @@ resource "aws_s3_bucket_public_access_block" "block_public_accss" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket" "velero" {
+  bucket              = "${var.deploy_id}-velero"
+  force_destroy       = var.storage.s3.force_destroy_on_deletion
+  object_lock_enabled = false
+}
+
+data "aws_iam_policy_document" "velero" {
+  statement {
+    effect = "Deny"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.velero.bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.velero.bucket}/*",
+    ]
+
+    actions = ["s3:*"]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "velero" {
+  bucket = aws_s3_bucket.velero.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+    bucket_key_enabled = false
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "velero" {
+  bucket = aws_s3_bucket.velero.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_acl" "velero" {
+  depends_on = [aws_s3_bucket_ownership_controls.velero]
+
+  bucket = aws_s3_bucket.velero.id
+
+  access_control_policy {
+
+    owner {
+      id = data.aws_canonical_user_id.current.id
+    }
+
+    grant {
+      grantee {
+        type = "CanonicalUser"
+        id   = data.aws_canonical_user_id.current.id
+      }
+      permission = "FULL_CONTROL"
+    }
+  }
 }
