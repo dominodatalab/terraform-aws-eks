@@ -2,7 +2,7 @@ data "terraform_remote_state" "infra" {
   backend = "local"
 
   config = {
-    path = "${path.module}/../infra/terraform.tfstate"
+    path = "${path.module}/../infra.tfstate"
   }
 }
 
@@ -10,7 +10,7 @@ data "terraform_remote_state" "eks" {
   backend = "local"
 
   config = {
-    path = "${path.module}/../cluster/terraform.tfstate"
+    path = "${path.module}/../cluster.tfstate"
   }
 }
 
@@ -25,7 +25,7 @@ locals {
 }
 
 module "nodes" {
-  source = "./../../submodules/nodes"
+  source = "./../../modules/nodes"
   region = local.infra.region
 
   ssh_key                = local.infra.ssh_key

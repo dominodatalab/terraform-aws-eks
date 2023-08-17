@@ -18,7 +18,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_infra"></a> [infra](#module\_infra) | ./../../ | n/a |
+| <a name="module_infra"></a> [infra](#module\_infra) | ./../../modules/infra | n/a |
 
 ## Resources
 

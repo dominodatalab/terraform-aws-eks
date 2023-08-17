@@ -1,4 +1,4 @@
-# eks
+# cluster
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -18,7 +18,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_eks"></a> [eks](#module\_eks) | ./../../submodules/eks | n/a |
+| <a name="module_eks"></a> [eks](#module\_eks) | ./../../modules/eks | n/a |
 
 ## Resources
 

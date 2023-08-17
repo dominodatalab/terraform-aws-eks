@@ -17,7 +17,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_nodes"></a> [nodes](#module\_nodes) | ./../../submodules/nodes | n/a |
+| <a name="module_nodes"></a> [nodes](#module\_nodes) | ./../../modules/nodes | n/a |
 
 ## Resources
 
@@ -35,5 +35,7 @@
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_nodes"></a> [nodes](#output\_nodes) | Nodes details. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

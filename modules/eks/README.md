@@ -24,7 +24,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_k8s_setup"></a> [k8s\_setup](#module\_k8s\_setup) | ./k8s | n/a |
+| <a name="module_k8s_setup"></a> [k8s\_setup](#module\_k8s\_setup) | ./submodules/k8s | n/a |
 
 ## Resources
 

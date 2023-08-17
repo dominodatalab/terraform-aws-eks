@@ -17,7 +17,7 @@ locals {
 }
 
 module "infra" {
-  source = "./../../"
+  source = "./../../../modules/infra/"
 
   deploy_id              = var.deploy_id
   additional_node_groups = var.additional_node_groups

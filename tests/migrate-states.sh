@@ -2,9 +2,10 @@
 
 set -euo pipefail
 
-CLUSTER_DIR="./cluster"
-NODES_DIR="./nodes"
-INFRA_DIR="./infra"
+BASE_TF_DIR="terraform"
+CLUSTER_DIR="./${BASE_TF_DIR}/cluster"
+NODES_DIR="./${BASE_TF_DIR}/nodes"
+INFRA_DIR="./${BASE_TF_DIR}/infra"
 
 mod_name="module.$(jq -r '.module[0] | keys[0]' main.tf.json)"
 
@@ -16,7 +17,7 @@ migrate_cluster_state() {
 
   terraform state mv \
     -state="terraform.tfstate" \
-    -state-out="${CLUSTER_DIR}/terraform.tfstate" \
+    -state-out="${CLUSTER_DIR}.tfstate" \
     "${mod_name}.module.eks" module.eks
 
   ls "${CLUSTER_DIR}"
@@ -30,17 +31,17 @@ migrate_infra_state() {
 
   terraform state mv \
     -state="terraform.tfstate" \
-    -state-out="${INFRA_DIR}/terraform.tfstate" \
+    -state-out="${INFRA_DIR}.tfstate" \
     "${mod_name}" module.infra
 
-  terraform -chdir="${INFRA_DIR}" state rm 'module.infra.aws_iam_role_policy_attachment.route53[0]'
+  terraform -chdir="${INFRA_DIR}" state rm -state="${INFRA_DIR}.tfstate" 'module.infra.aws_iam_role_policy_attachment.route53[0]'
 
   ls "${INFRA_DIR}"
 }
 
 run_tf_refresh() {
   DIR="${1// /}"
-  terraform -chdir="${DIR}" apply -refresh-only --auto-approve -input=false
+  terraform -chdir="${DIR}" -state="${DIR}.tfstate" apply -refresh-only --auto-approve -input=false
 }
 
 migrate_nodes_state() {
@@ -72,8 +73,8 @@ migrate_nodes_state() {
     echo "Migrating resource $resource"
 
     terraform state mv \
-      -state="${CLUSTER_DIR}/terraform.tfstate" \
-      -state-out="${NODES_DIR}/terraform.tfstate" \
+      -state="${CLUSTER_DIR}.tfstate" \
+      -state-out="${NODES_DIR}.tfstate" \
       "${resource}" "module.nodes.${resource#module.eks.}"
   done
 }

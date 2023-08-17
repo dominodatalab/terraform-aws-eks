@@ -6,7 +6,7 @@ locals {
 module "k8s_setup" {
   count = local.run_setup
 
-  source       = "./k8s"
+  source       = "./submodules/k8s"
   ssh_key      = var.ssh_key
   bastion_info = var.bastion_info
   network_info = var.network_info

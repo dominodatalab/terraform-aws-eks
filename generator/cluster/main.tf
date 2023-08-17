@@ -15,7 +15,7 @@ locals {
 }
 
 module "eks" {
-  source    = "./../../submodules/eks"
+  source    = "./../../modules/eks"
   deploy_id = local.infra.deploy_id
   region    = local.infra.region
 

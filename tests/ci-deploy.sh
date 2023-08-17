@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-declare -a MOD_DIRS=('infra' 'cluster' 'nodes')
+BASE_TF_DIR="terraform"
+declare -a MOD_DIRS=("${BASE_TF_DIR}/infra" "${BASE_TF_DIR}/cluster" "${BASE_TF_DIR}/nodes")
 SH_DIR="$(cd "$(dirname "$${BASH_SOURCE[0]}")" && pwd)"
 ROOT_MOD_SOURCE="./../.."
-INFRA_DIR="${SH_DIR}/infra"
+INFRA_DIR="${SH_DIR}/${BASE_TF_DIR}/infra"
 
 deploy() {
   [ -f "${SH_DIR}/domino.pem" ] || ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "${SH_DIR}/domino.pem"
@@ -13,8 +14,8 @@ deploy() {
     echo "Running terraform apply in ${dir}"
     terraform -chdir="${SH_DIR}/${dir}" init
     terraform -chdir="${SH_DIR}/${dir}" validate
-    terraform -chdir="${SH_DIR}/${dir}" apply --auto-approve --input=false
-    terraform -chdir="${SH_DIR}/${dir}" apply --refresh-only --auto-approve --input=false
+    terraform -chdir="${SH_DIR}/${dir}" apply -state="${SH_DIR}/${dir}.tfstate" --auto-approve --input=false
+    terraform -chdir="${SH_DIR}/${dir}" apply -state="${SH_DIR}/${dir}.tfstate" --refresh-only --auto-approve --input=false
   done
 }
 
@@ -50,7 +51,7 @@ destroy() {
   for ((i = (len - 1); i >= 0; i--)); do
     dir="${MOD_DIRS[$i]}"
     echo "Running terraform destroy in ${dir}"
-    terraform -chdir="${SH_DIR}/${dir}" destroy --auto-approve --input=false || terraform -chdir="${SH_DIR}/${dir}" destroy --refresh=false --auto-approve --input=false
+    terraform -chdir="${SH_DIR}/${dir}" destroy -state="${SH_DIR}/${dir}.tfstate" --auto-approve --input=false || terraform -chdir="${SH_DIR}/${dir}" -state="${SH_DIR}/${BASE_TF_DIR}/${dir}.tfstate" destroy --refresh=false --auto-approve --input=false
   done
 }
 
@@ -82,11 +83,8 @@ set_mod_src_latest_rel() {
     cat <<<$(jq --arg mod_source "${ROOT_MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' main.tf.json) >main.tf.json
   else
     for dir in "${MOD_DIRS[@]}"; do
-      if [ "$dir" != "infra" ]; then
-        MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git//submodules/${dir}?ref=${latest_release_tag}"
-      else
-        MOD_SOURCE="${ROOT_MOD_SOURCE}"
-      fi
+      MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git//modules/${dir}?ref=${latest_release_tag}"
+
       echo "Setting module source to local ref: ${MOD_SOURCE} on ${dir}"
       hcledit attribute set "module.${dir}.source" "\"${MOD_SOURCE}\"" -u -f "${dir}/main.tf"
       cat "${dir}/main.tf"
