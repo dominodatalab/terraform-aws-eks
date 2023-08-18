@@ -52,5 +52,7 @@ No modules.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_info"></a> [info](#output\_info) | Nodes details. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

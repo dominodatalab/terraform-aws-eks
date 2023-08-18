@@ -26,14 +26,6 @@ orbs:
   envsubst: sawadashota/envsubst@1.1.0
 
 commands:
-  set_tf_vars:
-    description: "Sets Terraform variables"
-    steps:
-      - envsubst/install
-      - run:
-          name: Configure terraform vars
-          working_directory: tests
-          command: bash ci-deploy.sh set_tf_vars
   install_tf:
     description: "Install Terraform"
     parameters:
@@ -47,13 +39,40 @@ commands:
     parameters:
       hcledit_version:
         type: string
+        default: "0.2.9"
     steps:
       - run:
           name: Install HCL edit
-          working_directory: tests
+          working_directory: tests/deploy
           environment:
             HCLEDIT_VERSION: << parameters.hcledit_version >>
           command: bash ci-deploy.sh install_hcledit
+  set_current_mod_source:
+    description: "Set up module source to current branch."
+    steps:
+      - run:
+          name: "Set module source to current branch"
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh set_mod_src_circle_branch
+  set_aws_creds:
+    description: "Sets short-lived creds"
+    steps:
+      - aws-cli/setup:
+          role-arn: "${AWS_IAM_ROLE}"
+          session-duration: "900"
+  set_tf_vars:
+    description: "Sets Terraform variables"
+    steps:
+      - envsubst/install
+      - install_hcledit
+      - set_aws_creds
+      - run:
+          name: Bootstrap terraform module/vars.
+          working_directory: tests/deploy
+          command: |
+            bash ci-deploy.sh setup_modules
+            bash ci-deploy.sh set_tf_vars
+      - set_current_mod_source
   install_helm:
     description: "Install Helm"
     parameters:
@@ -62,38 +81,41 @@ commands:
     steps:
       - run:
           name: Install Helm
-          working_directory: tests
+          working_directory: tests/deploy
           environment:
             HELM_VERSION: << parameters.helm_version >>
           command: bash ci-deploy.sh install_helm
-  gen_pvt_key:
-    description: "Generates ssh key"
-    steps:
-      - run:
-          name: Generate pvt key
-          working_directory: tests
-          command: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem
   tf_init_apply:
     description: "Terraform init"
     steps:
       - run:
           name: Terraform init/validate/apply
-          working_directory: tests
+          working_directory: tests/deploy
           command: |
             ## Most of this verbiage will go away after release.
             set -e
-            echo "Current dir: $(pwd)"
+            echo "Current dir: $PWD"
+            export SH_DIR="$PWD"
+
             if [ -f "migrated.txt" ]; then
               echo "This legacy deployment has been migrated"
               bash ci-deploy.sh deploy
             elif [ -n "$MAJOR_MOD_VERSION" ] && (( $MAJOR_MOD_VERSION < 3 )) ; then
+              source meta.sh
+
+              echo "Generating Deployment pvt key."
+              export LEGACY_PVT_KEY="${LEGACY_DIR}/domino.pem"
+              envsubst < "${LEGACY_DIR}/ci.tfvars.tftpl" | tee "${LEGACY_DIR}/terraform.tfvars"
+              ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$LEGACY_PVT_KEY"
+
               echo "Running legacy monolithic deploy"
-              envsubst < ci.tfvars.tftpl | tee terraform.tfvars
-              terraform init
-              terraform validate
-              terraform apply --auto-approve --input=false
-              bash -xp migrate-states.sh
+              terraform -chdir="$LEGACY_DIR" init
+              terraform -chdir="$LEGACY_DIR" validate
+              terraform -chdir="$LEGACY_DIR" apply --auto-approve --input=false
+
+              bash -xp ../../bin/state-migration/migrate-states.sh
             else
+
               echo "Running ci-deploy.sh deploy"
               bash ci-deploy.sh deploy
             fi
@@ -109,17 +131,15 @@ commands:
     steps:
       - run:
           name: Terraform destroy
-          working_directory: tests
+          working_directory: tests/deploy
           command: bash ci-deploy.sh destroy
           when: always
   tf_plan_test:
     steps:
-      - aws-cli/setup:
-          role-arn: "${AWS_IAM_ROLE}"
-          session-duration: "900"
+      - set_aws_creds
       - run:
           name: Terraform plan test
-          working_directory: examples
+          working_directory: tests/plan
           command: bash tf-plan-test.sh
 jobs:
   tf-plan-test:
@@ -147,7 +167,6 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - gen_pvt_key
       - set_tf_vars
       - tf_deploy
       - tf_destroy
@@ -167,19 +186,14 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - install_hcledit:
-          hcledit_version: << parameters.hcledit_version >>
-      - gen_pvt_key
+      - install_hcledit
       - set_tf_vars
       - run:
           name: "Set module source to latest published release"
-          working_directory: tests
+          working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_latest_rel
       - tf_deploy
-      - run:
-          name: "Upgrade module by applying this commit"
-          working_directory: tests
-          command: bash ci-deploy.sh set_mod_src_local
+      - set_current_mod_source
       - tf_init_apply
       - tf_destroy
 

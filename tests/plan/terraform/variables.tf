@@ -110,6 +110,7 @@ variable "eks" {
   })
 
   default = {}
+
 }
 
 variable "default_node_groups" {

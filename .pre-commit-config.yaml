@@ -74,6 +74,6 @@ repos:
     hooks:
       - id: check_aws_partition
         name: Check for hard coded AWS partition
-        entry: ./bin/check-aws-partition.sh
+        entry: ./bin/pre-commit/check-aws-partition.sh
         language: script
         files: ".*"

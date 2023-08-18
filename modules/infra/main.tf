@@ -80,6 +80,7 @@ module "bastion" {
 }
 
 locals {
-  bastion_info      = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
-  node_iam_policies = compact([module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn, try(aws_iam_policy.route53[0].arn, "")])
+  bastion_info              = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
+  node_iam_policies_storage = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
+  node_iam_policies         = var.route53_hosted_zone_name != null ? concat(local.node_iam_policies_storage, [aws_iam_policy.route53[0].arn]) : local.node_iam_policies_storage
 }

@@ -1,4 +1,6 @@
-# infra
+# terraform
+
+:warning: **DO NOT USE TO PROVISION INFRASTRUCTURE.This implementation is meant for testing purposes ONLY.**
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -7,48 +9,22 @@
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.4.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
-| <a name="requirement_local"></a> [local](#requirement\_local) | >= 2.2.0 |
-| <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1 |
-| <a name="requirement_tls"></a> [tls](#requirement\_tls) | >= 3.4.0 |
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.0 |
-| <a name="provider_time"></a> [time](#provider\_time) | >= 0.9.1 |
-| <a name="provider_tls"></a> [tls](#provider\_tls) | >= 3.4.0 |
+No providers.
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_bastion"></a> [bastion](#module\_bastion) | ./submodules/bastion | n/a |
-| <a name="module_network"></a> [network](#module\_network) | ./submodules/network | n/a |
-| <a name="module_storage"></a> [storage](#module\_storage) | ./submodules/storage | n/a |
+| <a name="module_eks"></a> [eks](#module\_eks) | ./../../../modules/eks | n/a |
+| <a name="module_infra"></a> [infra](#module\_infra) | ./../../../modules/infra/ | n/a |
+| <a name="module_nodes"></a> [nodes](#module\_nodes) | ./../../../modules/nodes | n/a |
 
 ## Resources
 
-| Name | Type |
-|------|------|
-| [aws_iam_policy.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
-| [aws_iam_policy.route53](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
-| [aws_iam_role.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
-| [aws_iam_role_policy_attachment.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_key_pair.domino](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair) | resource |
-| [aws_kms_alias.domino](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
-| [aws_kms_key.domino](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
-| [time_sleep.create_eks_role_30_seconds](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
-| [aws_caller_identity.aws_account](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
-| [aws_default_tags.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/default_tags) | data source |
-| [aws_ec2_instance_type.all](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_type) | data source |
-| [aws_iam_policy_document.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.kms_key_global](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.route53](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_kms_key.key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
-| [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
-| [aws_route53_zone.hosted](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
-| [tls_public_key.domino](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/public_key) | data source |
+No resources.
 
 ## Inputs
 
@@ -69,22 +45,5 @@
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_additional_node_groups"></a> [additional\_node\_groups](#output\_additional\_node\_groups) | Additional EKS managed node groups definition. |
-| <a name="output_bastion"></a> [bastion](#output\_bastion) | Bastion details, if it was created. |
-| <a name="output_create_eks_role_arn"></a> [create\_eks\_role\_arn](#output\_create\_eks\_role\_arn) | Role arn to assume during the EKS cluster creation. |
-| <a name="output_default_node_groups"></a> [default\_node\_groups](#output\_default\_node\_groups) | Default nodegroups. |
-| <a name="output_deploy_id"></a> [deploy\_id](#output\_deploy\_id) | Domino Deployment ID. |
-| <a name="output_domino_key_pair"></a> [domino\_key\_pair](#output\_domino\_key\_pair) | Domino key pair |
-| <a name="output_efs_security_group"></a> [efs\_security\_group](#output\_efs\_security\_group) | Security Group ID for EFS |
-| <a name="output_eks"></a> [eks](#output\_eks) | EKS variables. |
-| <a name="output_hostname"></a> [hostname](#output\_hostname) | Domino instance URL. |
-| <a name="output_kms"></a> [kms](#output\_kms) | KMS key details, if enabled. |
-| <a name="output_network"></a> [network](#output\_network) | Network details. |
-| <a name="output_node_iam_policies"></a> [node\_iam\_policies](#output\_node\_iam\_policies) | Policies attached to EKS nodes role |
-| <a name="output_region"></a> [region](#output\_region) | Deployment Region. |
-| <a name="output_ssh_key"></a> [ssh\_key](#output\_ssh\_key) | SSH key path,name. |
-| <a name="output_storage"></a> [storage](#output\_storage) | Storage details. |
-| <a name="output_tags"></a> [tags](#output\_tags) | Deployment tags. |
+No outputs.
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

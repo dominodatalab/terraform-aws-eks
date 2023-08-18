@@ -244,13 +244,13 @@ resource "aws_iam_policy" "custom_eks_node_policy" {
 }
 
 locals {
-  eks_aws_node_iam_policies = toset([
+  eks_aws_node_iam_policies = [
     "AmazonEKSWorkerNodePolicy",
     "AmazonEKS_CNI_Policy",
     "AmazonEC2ContainerRegistryReadOnly",
     "AmazonSSMManagedInstanceCore",
     "AmazonElasticFileSystemReadOnlyAccess",
-  ])
+  ]
 
   custom_node_policies = concat([aws_iam_policy.custom_eks_node_policy.arn], var.node_iam_policies)
 }
