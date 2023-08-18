@@ -132,6 +132,7 @@
         "eks:ListTagsForResource",
         "eks:TagResource",
         "eks:UntagResource",
+        "eks:UpdateNodegroupConfig",
         "eks:UpdateNodegroupVersion"
       ],
       "Resource": "*"
