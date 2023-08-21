@@ -10,8 +10,6 @@ validate_vars() {
   done
 }
 
-legacy_state="${LEGACY_DIR}/terraform.tfstate"
-
 migrate_cluster_state() {
 
   echo "Migrating EKS module state"
@@ -19,7 +17,7 @@ migrate_cluster_state() {
   terraform -chdir="$CLUSTER_DIR" init --reconfigure --upgrade
 
   terraform state mv \
-    -state="$legacy_state" \
+    -state="$LEGACY_STATE" \
     -state-out="$CLUSTER_STATE" \
     "${MOD_NAME}.module.eks" module.eks
 
@@ -33,7 +31,7 @@ migrate_infra_state() {
   terraform -chdir="$INFRA_DIR" init --reconfigure --upgrade
 
   terraform state mv \
-    -state="$legacy_state" \
+    -state="$LEGACY_STATE" \
     -state-out="$INFRA_STATE" \
     "${MOD_NAME}" module.infra
 

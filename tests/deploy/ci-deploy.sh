@@ -2,8 +2,6 @@
 set -euo pipefail
 
 : "${SH_DIR:=$(cd "$(dirname "$0")" && pwd)}"
-CI_DEPLOY="true"
-export CI_DEPLOY SH_DIR
 
 source "${SH_DIR}/meta.sh"
 

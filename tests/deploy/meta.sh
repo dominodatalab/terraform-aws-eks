@@ -2,10 +2,13 @@
 
 : "${SH_DIR:=$(cd "$(dirname "$0")" && pwd)}"
 
+CI_DEPLOY="true"
 DEPLOY_DIR="${SH_DIR}/deploy-test"
+PVT_KEY="${DEPLOY_DIR}/domino.pem"
+
 LEGACY_DIR="${SH_DIR}/legacy-test"
 LEGACY_TF="${LEGACY_DIR}/main.tf.json"
-PVT_KEY="${DEPLOY_DIR}/domino.pem"
+LEGACY_STATE="${LEGACY_DIR}/terraform.tfstate"
 LEGACY_PVT_KEY="${LEGACY_DIR}/domino.pem"
 
-export SH_DIR DEPLOY_DIR LEGACY_DIR LEGACY_TF PVT_KEY LEGACY_PVT_KEY
+export SH_DIR CI_DEPLOY DEPLOY_DIR LEGACY_DIR LEGACY_TF PVT_KEY LEGACY_STATE LEGACY_PVT_KEY

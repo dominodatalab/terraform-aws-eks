@@ -94,15 +94,18 @@ commands:
           command: |
             ## Most of this verbiage will go away after release.
             set -e
-            echo "Current dir: $PWD"
+
             export SH_DIR="$PWD"
+            echo "Current dir: $PWD"
 
             if [ -f "migrated.txt" ]; then
               echo "This legacy deployment has been migrated"
               bash ci-deploy.sh deploy
             elif [ -n "$MAJOR_MOD_VERSION" ] && (( $MAJOR_MOD_VERSION < 3 )) ; then
-              source meta.sh
 
+              echo "CI determined this is a legacy deploy."
+
+              source meta.sh
               echo "Generating Deployment pvt key."
               export LEGACY_PVT_KEY="${LEGACY_DIR}/domino.pem"
               envsubst < "${LEGACY_DIR}/ci.tfvars.tftpl" | tee "${LEGACY_DIR}/terraform.tfvars"
@@ -113,9 +116,9 @@ commands:
               terraform -chdir="$LEGACY_DIR" validate
               terraform -chdir="$LEGACY_DIR" apply --auto-approve --input=false
 
+              echo "Running state migration on CI."
               bash -xp ../../bin/state-migration/migrate-states.sh
             else
-
               echo "Running ci-deploy.sh deploy"
               bash ci-deploy.sh deploy
             fi
