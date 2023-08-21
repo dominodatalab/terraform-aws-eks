@@ -16,7 +16,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_infra"></a> [infra](#module\_infra) | ./../../../../modules/infra/ | n/a |
+| <a name="module_infra"></a> [infra](#module\_infra) | github.com/dominodatalab/terraform-aws-eks.git//modules/infra | <MOD_VERSION> |
 
 ## Resources
 

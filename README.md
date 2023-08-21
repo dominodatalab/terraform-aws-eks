@@ -55,6 +55,8 @@ If successful, you should get a structure similar to this:
 ```bash
 domino-deploy
 ├── README.md
+├── meta.sh
+├── set-mod-version.sh
 ├── terraform
 │   ├── cluster
 │   │   ├── README.md
@@ -78,6 +80,28 @@ domino-deploy
 ```
 
 **Note**: It's recommended to go through the README.md within the deploy_dir for further details.
+
+### Update modules' version
+You can update the modules version using a script or manually.
+
+#### Using script
+You can update the modules version using the `set-mod-version.sh`
+
+##### Prerequisites
+* hcledit
+
+```bash
+./set-mod-version.sh "$mod_version"
+```
+
+#### Manually
+Replace the `<MOD_VERSION>` in the following files with the `mod_version` value.
+
+```bash
+domino-deploy/terraform/infra/main.tf
+domino-deploy/terraform/cluster/main.tf
+domino-deploy/terraform/nodes/main.tf
+```
 
 ### Review and Configure `infra.tfvars`
 Your initial setup is guided by the Terraform variables in `domino-deploy/terraform/infra.tfvars`. Ensure you review and modify this file as needed.

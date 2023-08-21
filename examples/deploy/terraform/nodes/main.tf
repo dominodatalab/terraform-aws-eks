@@ -25,7 +25,7 @@ locals {
 }
 
 module "nodes" {
-  source = "./../../../../modules/nodes"
+  source = "github.com/dominodatalab/terraform-aws-eks.git//modules/nodes?ref=<MOD_VERSION>"
   region = local.infra.region
 
   ssh_key                = local.infra.ssh_key

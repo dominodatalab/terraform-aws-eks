@@ -18,7 +18,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_eks"></a> [eks](#module\_eks) | ./../../../../modules/eks | n/a |
+| <a name="module_eks"></a> [eks](#module\_eks) | github.com/dominodatalab/terraform-aws-eks.git//modules/eks | <MOD_VERSION> |
 
 ## Resources
 
