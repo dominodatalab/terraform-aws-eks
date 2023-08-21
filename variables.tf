@@ -353,13 +353,15 @@ variable "storage" {
 
 variable "kms" {
   description = <<EOF
-    enabled = "Toggle,if set use either the specified KMS key_id or a Domino-generated one"
-    key_id  = optional(string, null)
+    enabled             = "Toggle, if set use either the specified KMS key_id or a Domino-generated one"
+    key_id              = optional(string, null)
+    additional_policies = "Allows setting additional KMS key policies when using a Domino-generated key"
   EOF
 
   type = object({
-    enabled = optional(bool, true)
-    key_id  = optional(string, null)
+    enabled             = optional(bool, true)
+    key_id              = optional(string, null)
+    additional_policies = optional(string, null)
   })
 
   validation {
@@ -370,6 +372,11 @@ variable "kms" {
   validation {
     condition     = var.kms.key_id != null ? var.kms.enabled : true
     error_message = "var.kms.enabled must be true if var.kms.key_id is provided."
+  }
+
+  validation {
+    condition     = var.kms.key_id != null ? var.kms.additional_policies == null : true
+    error_message = "var.kms.additional_policies cannot be provided if if var.kms.key_id is provided."
   }
 
   default = {}
