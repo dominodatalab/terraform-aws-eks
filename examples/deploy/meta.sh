@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-echo "mod meta"
-set -x
 SH_DIR="$(realpath "$(dirname "$0")")"
 BASE_TF_DIR="${SH_DIR}/terraform"
 declare -a MOD_DIRS=(
