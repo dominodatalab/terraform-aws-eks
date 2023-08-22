@@ -6,6 +6,8 @@ validate_vars() {
   local -n mod_vars=$2
   error="false"
 
+  echo "Validating vars"
+
   for var in "${input_vars[@]}"; do
     if [ -z "${!var// /}" ]; then
       echo "Error: $var is expected to be set by the user and its not set or is empty."
@@ -20,7 +22,11 @@ validate_vars() {
     fi
   done
 
-  [ "$error" == "true" ] && exit 1
+  if test "$error" == "true"; then
+    return 1
+  else
+    return 0
+  fi
 }
 
 migrate_cluster_state() {
@@ -137,8 +143,13 @@ declare -a required_module_vars=(
   "NODES_STATE"
 )
 
+if ! validate_vars required_input_vars required_module_vars; then
+  echo "Variable validation failed."
+  exit 1
+fi
+
 echo "Running state migration !!!"
-validate_vars required_input_vars required_module_vars
+
 migrate_all
 copy_ssh_key
 refresh_all
