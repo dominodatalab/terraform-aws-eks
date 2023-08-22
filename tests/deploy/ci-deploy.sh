@@ -12,7 +12,9 @@ source "${SH_DIR}/meta.sh"
 if test -f "${DEPLOY_DIR}/meta.sh"; then
   # module vars
   echo "Getting module vars"
-  source "${DEPLOY_DIR}/meta.sh"
+  pushd "$DEPLOY_DIR" >/dev/null
+  source "meta.sh"
+  popd >/dev/null 2>&1
 fi
 
 # remote module vars
