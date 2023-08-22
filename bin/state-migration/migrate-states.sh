@@ -2,9 +2,19 @@
 set -euo pipefail
 
 validate_vars() {
-  for var_name in "${required_vars[@]}"; do
-    if [ -z "${!var_name// /}" ]; then
-      echo "Error: $var_name is not set or is empty."
+  local -n input_vars=$1
+  local -n mod_vars=$2
+
+  for var in "${input_vars[@]}"; do
+    if [ -z "${!var// /}" ]; then
+      echo "Error: $var is expected to be set by the user and its not set or is empty."
+      exit 1
+    fi
+  done
+
+  for var in "${mod_vars[@]}"; do
+    if [ -z "${!var// /}" ]; then
+      echo "Error: $var is expected to be sourced from ${DEPLOY_DIR}/meta.sh and its not set or is empty."
       exit 1
     fi
   done
@@ -108,23 +118,28 @@ fi
 
 source "${DEPLOY_DIR}/meta.sh" || { echo "${DEPLOY_DIR}/meta.sh is not present" && exit 1; }
 
+# For CI purposes only `MOD_NAME` must be set by user.
 [ "$CI_DEPLOY" == "true" ] && MOD_NAME="module.$(jq -r '.module[0] | keys[0]' ${LEGACY_DIR}/main.tf.json)"
 
-declare -a required_vars=(
+declare -a required_input_vars=(
   "MOD_NAME"
+  "PVT_KEY"
   "LEGACY_DIR"
+  "LEGACY_PVT_KEY"
+  "LEGACY_STATE"
+)
+
+declare -a required_module_vars=(
   "CLUSTER_DIR"
   "CLUSTER_STATE"
   "INFRA_DIR"
   "INFRA_STATE"
   "NODES_DIR"
   "NODES_STATE"
-  "LEGACY_PVT_KEY"
-  "PVT_KEY"
 )
 
 echo "Running state migration !!!"
-validate_vars
+validate_vars required_input_vars required_module_vars
 migrate_all
 copy_ssh_key
 adjust_vars

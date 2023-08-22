@@ -1,5 +1,5 @@
 module "infra" {
-  source = "github.com/dominodatalab/terraform-aws-eks.git//modules/infra?ref=<MOD_VERSION>"
+  source = "./../../../../modules/infra"
 
   deploy_id              = var.deploy_id
   additional_node_groups = var.additional_node_groups

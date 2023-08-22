@@ -19,7 +19,3 @@ INFRA_STATE="${BASE_TF_DIR}/infra.tfstate"
 CLUSTER_VARS="${BASE_TF_DIR}/cluster.tfvars"
 NODES_VARS="${BASE_TF_DIR}/nodes.tfvars"
 INFRA_VARS="${BASE_TF_DIR}/infra.tfvars"
-
-for dir in "${MOD_DIRS[@]}"; do
-  echo "${dir}/main.tf"
-done

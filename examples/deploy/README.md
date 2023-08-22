@@ -12,6 +12,8 @@ The script expects the following directory structure:
 ```
 examples/deploy
 ├── README.md
+├── meta.sh
+├── set-mod-version.sh
 ├── terraform
 │   ├── cluster
 │   │   ├── README.md
@@ -39,8 +41,7 @@ examples/deploy
 * Each of component's state and output(when the `output` command is invoked) is saved in the `terraform` directory:
 
 ```bash
-.
-└── terraform
+└── examples/deploy/terraform
    ├── cluster.outputs
    ├── cluster.tfstate
    ├── infra.outputs
@@ -142,6 +143,12 @@ To use the script, invoke it with the desired command and component:
 ## Common Operations
 
 For some frequently performed operations, follow the steps outlined below:
+
+### Initial install
+See the repo's [README](../../README.md#bootstrap-module) for how to bootstrap the module.
+
+### Updating the modules' version
+See `README` [Update modules version](../../README.md#update-modules-version)
 
 ### K8s Upgrade
 

@@ -15,7 +15,7 @@ locals {
 }
 
 module "eks" {
-  source    = "github.com/dominodatalab/terraform-aws-eks.git//modules/eks?ref=<MOD_VERSION>"
+  source    = "./../../../../modules/eks"
   deploy_id = local.infra.deploy_id
   region    = local.infra.region
 

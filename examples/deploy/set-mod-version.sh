@@ -21,13 +21,13 @@ validate_mod_version() {
     mapfile -t tag_array <<<$("${curl_cmd[@]}" "$url" | jq -r '.[].name | select(test("^v\\d+\\.\\d+\\.\\d+$"))')
 
     for tag in "${tag_array[@]}"; do
-      [[ "$mod_version" == "$tag" ]] && return
+      [[ "$MOD_VERSION" == "$tag" ]] && return
     done
     url=$(echo "$response" | grep -i 'rel="next"' | sed -n 's/.*<\([^>]*\)>; rel="next".*/\1/p' || echo "")
 
   done
 
-  echo "Error: The mod_version $mod_version is not a suitable tag for the modules source."
+  echo "Error: The MOD_VERSION $MOD_VERSION is not a suitable tag for the modules source."
   exit 1
 }
 
@@ -39,13 +39,13 @@ set_module_version() {
     if [ $name == "cluster" ]; then
       name="eks"
     fi
-    hcledit attribute set "module.${name}.source" \"github.com/dominodatalab/terraform-aws-eks.git//modules/"${name}"?ref="${mod_version}"\" -f "$file" --update
+    hcledit attribute set "module.${name}.source" \"github.com/dominodatalab/terraform-aws-eks.git//modules/"${name}"?ref="${MOD_VERSION}"\" -f "$file" --update
   done
 
 }
 
-mod_version="$1"
-[ -z "${mod_version// /}" ] && { echo "Provide a module version in the format $(vX.X.X), ie $(v3.0.0)" && exit 1; }
+MOD_VERSION="$1"
+[ -z "${MOD_VERSION// /}" ] && { echo "Provide a module version in the format $(vX.X.X), ie $(v3.0.0)" && exit 1; }
 
 SH_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "${SH_DIR}/meta.sh"

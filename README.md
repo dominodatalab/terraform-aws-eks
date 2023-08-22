@@ -33,14 +33,14 @@ Always refer to each section's respective README or documentation for detailed i
 ### Set your desired module version and deployment directory:
 Update the following values:
 ```bash
-mod_version='3.0.0'
-deploy_dir='domino-deploy'
+MOD_VERSION='v3.0.0'
+DEPLOY_DIR='domino-deploy'
 ```
-:warning: Ensure the deploy_dir does not exist or is currently empty.
+:warning: Ensure the DEPLOY_DIR does not exist or is currently empty.
 
 ```bash
-mkdir -p "$deploy_dir"
-terraform -chdir="$deploy_dir" init -backend=false -from-module="github.com/dominodatalab/terraform-aws-eks.git//examples/deploy?ref=${mod_version}"
+mkdir -p "$DEPLOY_DIR"
+terraform -chdir="$DEPLOY_DIR" init -backend=false -from-module="github.com/dominodatalab/terraform-aws-eks.git//examples/deploy?ref=${MOD_VERSION}"
 ```
 Ignore this message:
 
@@ -79,29 +79,32 @@ domino-deploy
 └── tf.sh
 ```
 
-**Note**: It's recommended to go through the README.md within the deploy_dir for further details.
+**Note**: It's recommended to go through the README.md within the DEPLOY_DIR for further details.
 
-### Update modules' version
+### Update modules version
 You can update the modules version using a script or manually.
 
 #### Using script
 You can update the modules version using the `set-mod-version.sh`
 
 ##### Prerequisites
-* hcledit
+* [hcledit](https://github.com/minamijoyo/hcledit)
+
+#### Command
 
 ```bash
-./set-mod-version.sh "$mod_version"
+./set-mod-version.sh "$MOD_VERSION"
 ```
 
 #### Manually
-Replace the `<MOD_VERSION>` in the following files with the `mod_version` value.
+Update the modules' source with the `MOD_VERSION` value.
 
-```bash
-domino-deploy/terraform/infra/main.tf
-domino-deploy/terraform/cluster/main.tf
-domino-deploy/terraform/nodes/main.tf
-```
+For example if `MOD_VERSION=v3.0.0`
+
+* **infra/main.tf** : Update `module.infra.source` from `"./../../../../modules/infra"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/infra?ref=v3.0.0`
+* **cluster/main.tf** : Update `module.eks.source` from `"./../../../../modules/eks"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/eks?ref=v3.0.0`
+* **nodes/main.tf** : Update `module.nodes.source` from `"./../../../../modules/nodes"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/nodes?ref=v3.0.0`
+
 
 ### Review and Configure `infra.tfvars`
 Your initial setup is guided by the Terraform variables in `domino-deploy/terraform/infra.tfvars`. Ensure you review and modify this file as needed.

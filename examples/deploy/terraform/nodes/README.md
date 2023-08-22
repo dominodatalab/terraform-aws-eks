@@ -17,7 +17,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_nodes"></a> [nodes](#module\_nodes) | github.com/dominodatalab/terraform-aws-eks.git//modules/nodes | <MOD_VERSION> |
+| <a name="module_nodes"></a> [nodes](#module\_nodes) | ./../../../../modules/nodes | n/a |
 
 ## Resources
 
