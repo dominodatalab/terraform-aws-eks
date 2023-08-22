@@ -6,10 +6,12 @@ set -x
 SH_DIR="$(realpath "$(dirname "$0")")"
 
 # ci vars
+echo "Getting CI vars"
 source "${SH_DIR}/meta.sh"
 
 if test -f "${DEPLOY_DIR}/meta.sh"; then
   # module vars
+  echo "Getting module vars"
   source "${DEPLOY_DIR}/meta.sh"
 fi
 
