@@ -115,6 +115,7 @@ resource "aws_eks_node_group" "node_groups" {
   lifecycle {
     ignore_changes = [
       scaling_config[0].desired_size,
+      scaling_config[0].min_size,
     ]
   }
 
