@@ -126,8 +126,8 @@ variable "eks" {
       path       = Fully qualified path name to write the kubeconfig file.
     }
     public_access = {
-      enabled = Enable EKS API public endpoint.
-      cidrs   = List of CIDR ranges permitted for accessing the EKS public endpoint.
+      enabled = "Enable EKS API public endpoint."
+      cidrs   = "List of CIDR ranges permitted for accessing the EKS public endpoint."
     }
     Custom role maps for aws auth configmap
     custom_role_maps = {
