@@ -1,0 +1,146 @@
+{
+  "data": [
+    {
+      "aws_ami": {
+        "eks_node": {
+          "most_recent": true,
+          "owners": ["amazon"],
+          "filter": [
+            {
+              "name": "name",
+              "values": ["amazon-eks-node-${var.k8s_version}-*"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "module": [
+    {
+      "domino_eks": {
+        "source": "github.com/dominodatalab/terraform-aws-eks.git?ref=v2.1.8",
+        "deploy_id": "${var.deploy_id}",
+        "region": "${var.region}",
+        "route53_hosted_zone_name": "deploys-delta.domino.tech",
+        "bastion": {
+          "enabled": true,
+          "install_binaries": true
+        },
+        "eks": {
+          "k8s_version": "${var.k8s_version}",
+          "master_role_names": ["okta-poweruser", "okta-fulladmin"]
+        },
+        "kms": {
+          "enabled": true
+        },
+        "ssh_pvt_key_path": "${var.ssh_pvt_key_path}",
+        "tags": "${var.tags}",
+        "default_node_groups": {
+          "compute": {
+            "spot": true,
+            "availability_zone_ids": ["usw2-az1", "usw2-az2"],
+            "instance_types": [
+              "m4.2xlarge",
+              "m5.2xlarge",
+              "m5a.2xlarge",
+              "m5ad.2xlarge",
+              "m5d.2xlarge",
+              "m5dn.2xlarge",
+              "m5n.2xlarge",
+              "m5zn.2xlarge",
+              "m6id.2xlarge"
+            ],
+            "ami": "${data.aws_ami.eks_node.image_id}"
+          },
+          "platform": {
+            "availability_zone_ids": ["usw2-az1", "usw2-az2"]
+          },
+          "gpu": {
+            "availability_zone_ids": ["usw2-az1", "usw2-az2"]
+          }
+        },
+        "additional_node_groups": {
+          "other_az": {
+            "instance_types": ["m5.2xlarge"],
+            "availability_zone_ids": ["usw2-az3"],
+            "desired_per_az": 0,
+            "min_per_az": 0,
+            "max_per_az": 10,
+            "labels": { "dominodatalab.com/node-pool": "other-az" },
+            "volume": { "size": 100, "type": "gp3" }
+          }
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "deploy_id": {
+        "type": "string",
+        "description": "Domino Deployment ID."
+      }
+    },
+    {
+      "ssh_pvt_key_path": {
+        "type": "string",
+        "description": "ssh key path."
+      }
+    },
+    {
+      "region": {
+        "type": "string",
+        "description": "AWS region for the deployment",
+        "default": "us-west-2"
+      }
+    },
+    {
+      "tags": {
+        "type": "map(string)",
+        "description": "Deployment tags.",
+        "default": {
+          "deploy": "test"
+        }
+      }
+    },
+    {
+      "k8s_version": {
+        "type": "string",
+        "description": "EKS cluster k8s version.",
+        "default": "1.27"
+      }
+    }
+  ],
+  "terraform": [
+    {
+      "required_version": ">= 1.4.0",
+      "required_providers": [
+        {
+          "aws": {
+            "source": "hashicorp/aws",
+            "version": "~> 5.0"
+          },
+          "random": {
+            "source": "hashicorp/random",
+            "version": "~> 3.0"
+          }
+        }
+      ]
+    }
+  ],
+  "provider": [
+    {
+      "aws": {
+        "alias": "local",
+        "region": "${var.region}"
+      }
+    }
+  ],
+  "output": [
+    {
+      "domino_eks": {
+        "description": "EKS module outputs",
+        "value": "${module.domino_eks}"
+      }
+    }
+  ]
+}
