@@ -375,7 +375,7 @@ variable "kms" {
   }
 
   validation {
-    condition     = var.kms.key_id != null ? var.kms.additional_policies == null : true
+    condition     = var.kms.key_id != null ? length(var.kms.additional_policies) == 0 : true
     error_message = "var.kms.additional_policies cannot be provided if if var.kms.key_id is provided."
   }
 
