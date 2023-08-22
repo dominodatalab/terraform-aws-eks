@@ -74,7 +74,7 @@ set_eks_worker_ami() {
   #1 is latest
   precedence="$1"
   k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
-  CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=amazon-eks-node-${k8s_version}*" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
+  CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=amazon-eks-node-${k8s_version// /}*" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
   export CUSTOM_AMI
 }
 
@@ -90,7 +90,7 @@ set_tf_vars() {
   local default_nodes
 
   export CUSTOM_AMI PVT_KEY
-  default_nodes=$(envsubst <"${$INFRA_VARS_TPL}" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
+  default_nodes=$(envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
   echo "default_node_groups = $default_nodes" >"$NODES_VARS"
 
   echo "Infra vars:" && cat "$INFRA_VARS"
