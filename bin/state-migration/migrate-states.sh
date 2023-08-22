@@ -4,20 +4,23 @@ set -euo pipefail
 validate_vars() {
   local -n input_vars=$1
   local -n mod_vars=$2
+  error="false"
 
   for var in "${input_vars[@]}"; do
     if [ -z "${!var// /}" ]; then
       echo "Error: $var is expected to be set by the user and its not set or is empty."
-      exit 1
+      error="true"
     fi
   done
 
   for var in "${mod_vars[@]}"; do
     if [ -z "${!var// /}" ]; then
       echo "Error: $var is expected to be sourced from ${DEPLOY_DIR}/meta.sh and its not set or is empty."
-      exit 1
+      error="true"
     fi
   done
+
+  [ "$error" == "true" ] && exit 1
 }
 
 migrate_cluster_state() {
@@ -89,10 +92,6 @@ copy_ssh_key() {
     { echo "Regenerating pub key" && ssh-keygen -y -f "$PVT_KEY" >"${PVT_KEY}.pub"; }
 }
 
-adjust_vars() {
-  [ "$CI_DEPLOY" == "true" ] && bash "${SH_DIR}/ci-deploy.sh" 'set_tf_vars'
-}
-
 refresh_all() {
   bash "${DEPLOY_DIR}/tf.sh" refresh all
 }
@@ -142,7 +141,6 @@ echo "Running state migration !!!"
 validate_vars required_input_vars required_module_vars
 migrate_all
 copy_ssh_key
-# adjust_vars
 refresh_all
 cleanup
 
