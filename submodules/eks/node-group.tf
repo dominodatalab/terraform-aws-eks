@@ -255,7 +255,7 @@ locals {
         key   = format("k8s.io/cluster-autoscaler/node-template/label/%v", lkey)
         value = lvalue
     }]],
-    [for tkey, tvalue in merge(v.node_group.tags, data.aws_default_tags.this.tags) : [
+    [for tkey, tvalue in data.aws_default_tags.this.tags : [
       {
         name  = name
         key   = tkey
