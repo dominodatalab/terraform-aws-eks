@@ -10,6 +10,7 @@ jobs:
         uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.1.0
         env:
           CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}
+          TARGET_BRANCH: ${{ github.event.pull_request.head.ref }}
   test-upgrade:
     runs-on: ubuntu-latest
     steps:
