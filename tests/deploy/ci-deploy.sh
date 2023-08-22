@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SH_DIR="$(realpath "$(dirname "$0")")"
+SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 # ci vars
 echo "Getting CI vars"
 source "${SH_DIR}/meta.sh"

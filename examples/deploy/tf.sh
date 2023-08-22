@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SH_DIR="$(realpath "$(dirname "$0")")"
+SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+
 BASE_TF_DIR="${SH_DIR}/terraform"
 
 declare -a MOD_DIRS=(

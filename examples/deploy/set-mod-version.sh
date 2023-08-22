@@ -47,7 +47,8 @@ set_module_version() {
 MOD_VERSION="$1"
 [ -z "${MOD_VERSION// /}" ] && { echo "Provide a module version in the format $(vX.X.X), ie $(v3.0.0)" && exit 1; }
 
-SH_DIR="$(realpath "$(dirname "$0")")"
+SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+
 source "${SH_DIR}/meta.sh"
 validate_mod_version
 set_module_version
