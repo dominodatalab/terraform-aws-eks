@@ -70,6 +70,8 @@ commands:
           name: Bootstrap terraform module/vars.
           working_directory: tests/deploy
           command: |
+            export SH_DIR="$PWD"
+            echo "Current dir: $PWD"
             bash ci-deploy.sh setup_modules
             bash ci-deploy.sh set_tf_vars
       - set_current_mod_source
@@ -94,7 +96,6 @@ commands:
           command: |
             ## Most of this verbiage will go away after release.
             set -e
-
             export SH_DIR="$PWD"
             echo "Current dir: $PWD"
 
@@ -105,7 +106,6 @@ commands:
 
               echo "CI determined this is a legacy deploy."
 
-              source meta.sh
               echo "Generating Deployment pvt key."
               export LEGACY_PVT_KEY="${LEGACY_DIR}/domino.pem"
               envsubst < "${LEGACY_DIR}/ci.tfvars.tftpl" | tee "${LEGACY_DIR}/terraform.tfvars"

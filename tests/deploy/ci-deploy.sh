@@ -11,7 +11,6 @@ BASE_REMOTE_MOD_SRC="${BASE_REMOTE_SRC}//modules"
 
 deploy() {
   component=${1:-all}
-  source "${DEPLOY_DIR}/meta.sh"
   pushd "$DEPLOY_DIR" >/dev/null
   for tf_cmd in 'init' 'validate' 'apply'; do
     bash "./tf.sh" "$tf_cmd" "$component" || {
@@ -33,6 +32,7 @@ set_ci_branch_name() {
 setup_modules() {
   mkdir -p "$DEPLOY_DIR"
   set_ci_branch_name
+  echo "Running init from module: -from-module=${BASE_REMOTE_SRC}//examples/deploy?ref=${CI_BRANCH_NAME} at: $DEPLOY_DIR"
   terraform -chdir="$DEPLOY_DIR" init -backend=false -from-module="${BASE_REMOTE_SRC}//examples/deploy?ref=${CI_BRANCH_NAME}"
 }
 
@@ -66,7 +66,6 @@ set_eks_worker_ami() {
 }
 
 set_tf_vars() {
-  source "${DEPLOY_DIR}/meta.sh"
   # We want to test passing an ami.
   set_eks_worker_ami '1'
   if [ -z $CUSTOM_AMI ]; then
@@ -95,9 +94,6 @@ deploy_latest_ami_nodes() {
 
 destroy() {
   component=${1:-all}
-
-  source "${DEPLOY_DIR}/meta.sh"
-
   pushd "$DEPLOY_DIR" >/dev/null
   bash "./tf.sh" destroy "$component"
   popd >/dev/null 2>&1
@@ -113,8 +109,6 @@ set_mod_src() {
 }
 
 set_all_mod_src() {
-  source "${DEPLOY_DIR}/meta.sh"
-
   local ref="$1"
   local base_local_mod_src="./../../../../../modules"
 
