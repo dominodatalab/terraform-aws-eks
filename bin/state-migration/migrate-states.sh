@@ -142,7 +142,7 @@ echo "Running state migration !!!"
 validate_vars required_input_vars required_module_vars
 migrate_all
 copy_ssh_key
-adjust_vars
+# adjust_vars
 refresh_all
 cleanup
 
