@@ -4,7 +4,7 @@
    {
       "Sid": "AllowAll",
       "Effect": "Allow",
-      "Principal": "*",
+      "Principal": "arn:aws:iam::123457890:root",
       "Action": ["kms:Decrypt"],
       "Resource": "*"
    }

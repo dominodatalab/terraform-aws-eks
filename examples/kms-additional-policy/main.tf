@@ -16,6 +16,6 @@ module "domino_eks" {
     }
   }
   kms = {
-    additional_policies = file("${path.module}/kms-policy.json")
+    additional_policies = [file("${path.module}/kms-policy.json")]
   }
 }

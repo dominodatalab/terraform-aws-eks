@@ -361,7 +361,7 @@ variable "kms" {
   type = object({
     enabled             = optional(bool, true)
     key_id              = optional(string, null)
-    additional_policies = optional(string, null)
+    additional_policies = optional(list(string), [])
   })
 
   validation {

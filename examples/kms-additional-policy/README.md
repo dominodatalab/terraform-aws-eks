@@ -1,34 +1,15 @@
-
-# Create additional EKS node_group.
+# Adds a custom KMS key policy 
 
 ### Provide full path for existing ssh key:  `ssh_pvt_key_path`
 ### Otherwise generate using:
 ```bash
 ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem
 ```
-### Create an additional node_group.
+### Add a custom KMS key policy
 
 ```hcl
-  additional_node_groups = {
-    custom-group-0 = {
-      instance_types = [
-        "m5.2xlarge"
-      ],
-      min_per_az     = 0,
-      max_per_az     = 10,
-      desired_per_az = 0,
-      availability_zone_ids = [
-        "usw2-az1",
-        "usw2-az2"
-      ],
-      labels = {
-        "dominodatalab.com/node-pool" = "custom-group-0"
-      },
-      volume = {
-        size = 100,
-        type = "gp3"
-      }
-    }
+  kms = {
+    additional_policies = [file("${path.module}/kms-policy.json")]
   }
 ```
 
