@@ -34,6 +34,7 @@ setup_modules() {
   set_ci_branch_name
   echo "Running init from module: -from-module=${BASE_REMOTE_SRC}//examples/deploy?ref=${CI_BRANCH_NAME} at: $DEPLOY_DIR"
   terraform -chdir="$DEPLOY_DIR" init -backend=false -from-module="${BASE_REMOTE_SRC}//examples/deploy?ref=${CI_BRANCH_NAME}"
+  source "${DEPLOY_DIR}/meta.sh"
 }
 
 install_helm() {
@@ -76,6 +77,9 @@ set_tf_vars() {
   local default_nodes
 
   export CUSTOM_AMI PVT_KEY
+  if [ -z "$INFRA_VARS" ] || [ -z "$CLUSTER_VARS" ] || [ -z "$NODES_VARS" ]; then
+    source "${DEPLOY_DIR}/meta.sh"
+  fi
   default_nodes=$(envsubst <"${SH_DIR}/infra-ci.tfvars.tftpl" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
   echo "default_node_groups = $default_nodes" >"$NODES_VARS"
 

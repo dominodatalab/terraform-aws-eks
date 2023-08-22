@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SH_DIR="$(cd "$(dirname "$0")" && pwd)"
+SH_DIR="$(realpath "$(dirname "$0")")"
 BASE_TF_DIR="${SH_DIR}/terraform"
 declare -a MOD_DIRS=(
   "${BASE_TF_DIR}/infra"
