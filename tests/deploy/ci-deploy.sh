@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${SH_DIR:=$(cd "$(dirname "$0")" && pwd)}"
+SH_DIR="$(realpath "$(dirname "$0")")"
 
 source "${SH_DIR}/meta.sh"
 

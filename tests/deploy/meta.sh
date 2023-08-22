@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-: "${SH_DIR:=$(cd "$(dirname "$0")" && pwd)}"
+SH_DIR="$(realpath "$(dirname "$0")")"
 
 CI_DEPLOY="true"
 DEPLOY_DIR="${SH_DIR}/deploy-test"
