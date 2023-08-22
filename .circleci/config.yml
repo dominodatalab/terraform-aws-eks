@@ -96,7 +96,6 @@ commands:
           command: |
             ## Most of this verbiage will go away after release.
             set -e
-            export SH_DIR="$PWD"
             echo "Current dir: $PWD"
 
             if [ -f "migrated.txt" ]; then
@@ -104,7 +103,8 @@ commands:
               bash ci-deploy.sh deploy
             elif [ -n "$MAJOR_MOD_VERSION" ] && (( $MAJOR_MOD_VERSION < 3 )) ; then
 
-              source meta.sh
+              export SH_DIR="$PWD"
+              source "${PWD}/meta.sh"
 
               echo "CI determined this is a legacy deploy."
 
