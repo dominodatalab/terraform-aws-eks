@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-set -x #todo rm
-echo "ci vars"
+
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
 CI_DEPLOY="true"
