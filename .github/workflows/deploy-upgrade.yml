@@ -18,3 +18,4 @@ jobs:
         uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.7
         env:
           CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}
+          TARGET_BRANCH: ${{ github.event.pull_request.head.ref }}
