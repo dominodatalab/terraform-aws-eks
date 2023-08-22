@@ -5,6 +5,12 @@
 *.tfstate
 *.tfstate.*
 
+*infra.outputs*
+*cluster.outputs*
+*nodes.outputs*
+**migrated.txt
+**/deploy-test/*
+
 **.terraform.lock.hcl*
 **.terraform.lock.hcl
 # Crash log files
