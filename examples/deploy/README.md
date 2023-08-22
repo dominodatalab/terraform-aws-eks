@@ -150,9 +150,8 @@ See the repo's [README](../../README.md#bootstrap-module) for how to bootstrap t
 ### Updating the modules' version
 See `README` [Update modules version](../../README.md#update-modules-version)
 
-### K8s Upgrade
-
-#### Kubernetes Upgrade:
+### Kubernetes Upgrade:
+In order to update Kubernetes we will need to update the `cluster` and the `nodes`.
 
 1. Update the `k8s-version` variable in the `cluster.tfvars` file.
 2. Update cluster:
@@ -174,7 +173,7 @@ See `README` [Update modules version](../../README.md#update-modules-version)
       ./tf.sh apply nodes
       ```
 
-#### Nodes Upgrade:
+### Nodes Upgrade:
 In order to just update the nodes to the latest AMI for the existing version.
 
 1. Update nodes:

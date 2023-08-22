@@ -19,6 +19,6 @@ bastion = {
 }
 kms = {
   enabled = true
-  # Replace with desired kms key_id
-  key_id = "6222fa8b-419e-4d3e-b9bc-2427e38326d5"
+  # If bringing your own replace with desired kms key_id
+  key_id = "your-own-kms-key-id"
 }

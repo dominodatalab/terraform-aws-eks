@@ -6,8 +6,8 @@ SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 echo "Getting CI vars"
 source "${SH_DIR}/meta.sh"
 
+# module vars
 if test -f "${DEPLOY_DIR}/meta.sh"; then
-  # module vars
   echo "Getting module vars"
   pushd "$DEPLOY_DIR" >/dev/null
   source "meta.sh"
@@ -43,7 +43,6 @@ setup_modules() {
   set_ci_branch_name
   echo "Running init from module: -from-module=${BASE_REMOTE_SRC}//examples/deploy?ref=${CI_BRANCH_NAME} at: $DEPLOY_DIR"
   terraform -chdir="$DEPLOY_DIR" init -backend=false -from-module="${BASE_REMOTE_SRC}//examples/deploy?ref=${CI_BRANCH_NAME}"
-  source "${DEPLOY_DIR}/meta.sh"
 }
 
 install_helm() {

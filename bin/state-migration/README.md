@@ -19,10 +19,9 @@ Ensure all prerequisites are met.
 1. Copy Script:
   * Copy the script from bin/state-migration/migrate-states.sh to your deployment directory (DEPLOY_DIR).
   ```bash
-  cp bin/state-migration/migrate-states.sh $DEPLOY_DIR
+  cp bin/state-migration/migrate-states.sh "$DEPLOY_DIR"
   ```
 2. Verify Files:
-  * After copying, check the DEPLOY_DIR. You should see the following scripts at its root:
   ```bash
   ls "$DEPLOY_DIR"
   ```

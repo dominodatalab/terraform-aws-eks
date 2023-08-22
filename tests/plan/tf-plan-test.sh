@@ -1,5 +1,6 @@
 #! /usr/bin/env bash
 
+SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 exclude=("bring-your-vpc.tfvars" "kms.tfvars")
 
 failed_vars=()
@@ -23,16 +24,16 @@ verify_aws_creds() {
 }
 
 tf_plan() {
-  local tfvars="${1}"
+  local tfvars="$1"
   terraform -chdir=terraform init
-  terraform -chdir=terraform plan -var-file=./../../../examples/tfvars/${tfvars} -var "ssh_pvt_key_path=plan-test.pem"
+  terraform -chdir=terraform plan -var-file="$tfvars" -var "ssh_pvt_key_path=plan-test.pem"
 
   if [ "$?" != "0" ]; then
     printf "\033[0;31mERROR: terraform plan failed for $tfvars\033[0m.\n"
-    failed_vars+=("${tfvars}")
+    failed_vars+=("$(basename $tfvars)")
   else
     printf "\033[0;32mSUCCESS: terraform plan succeeded for $tfvars\033[0m.\n"
-    success_vars+=("${tfvars}")
+    success_vars+=("$(basename $tfvars)")
   fi
 
 }
@@ -52,7 +53,7 @@ run_terraform_plans() {
     $skip && continue
 
     printf "\n\033[0;33mRunning terraform plan for ${base_tfvars}\033[0m:\n"
-    tf_plan "${base_tfvars}"
+    tf_plan "$(realpath $tfvars)"
   done
 
 }
@@ -68,7 +69,8 @@ create_kms_key() {
   else
     printf "\n\033[0;32mKMS key created successfully\033[0m\n"
   fi
-  export KMS_KEY_ID="$(terraform -chdir="$dir" output kms_key_id)"
+  KMS_KEY_ID="$(terraform -chdir="$dir" output -raw kms_key_id)"
+  export KMS_KEY_ID
 }
 
 destroy_kms_key() {
@@ -79,29 +81,30 @@ destroy_kms_key() {
 }
 
 test_kms() {
-  KMS_KEY_ID=""
   create_kms_key
   if test -z $KMS_KEY_ID; then
     printf "\033[0;31mERROR Obtaining KMS_KEY_ID \033[0m.\n"
     exit 1
   fi
-  temp_file=$(mktemp)
-  KMS_VARS_FILE="../../examples/tfvars/kms.tfvars"
-  envsubst <"${KMS_VARS_FILE}" >"$temp_file" && mv "$temp_file" "${KMS_VARS_FILE}"
 
-  tf_plan "$(basename ${KMS_VARS_FILE})"
+  KMS_VARS_FILE="../../examples/tfvars/kms.tfvars"
+  vars="${SH_DIR}/kms.tfvars"
+
+  cat $KMS_VARS_FILE | sed "s/key_id = \".*\"/key_id = \"$KMS_KEY_ID\"/" | tee -a "$vars"
+
+  tf_plan "$(realpath $vars)" && rm "$vars"
 }
 
 finish() {
   destroy_kms_key
 
   if [ "${#success_vars[@]}" != "0" ]; then
-    printf "\n\033[0;32mThe following examples ran the terraform plan successfully:\033[0m\n"
+    printf "\n\033[0;32mThe following examples ran a terraform plan successfully:\033[0m\n"
     printf '\033[0;32m%s\n\033[0m' "${success_vars[@]}"
   fi
 
   if [ "${#failed_vars[@]}" != "0" ]; then
-    printf "\n\033[0;31mThe following examples failed the terraform plan:\033[0m\n"
+    printf "\n\033[0;31mThe following examples failed to run a terraform plan:\033[0m\n"
     printf '\033[0;31m%s\n\033[0m' "${failed_vars[@]} "
     exit 1
   fi

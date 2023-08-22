@@ -30,7 +30,7 @@ Always refer to each section's respective README or documentation for detailed i
 
 ## Bootstrap module
 
-### Set your desired module version and deployment directory:
+### 1. Set your desired module version and deployment directory:
 Update the following values:
 ```bash
 MOD_VERSION='v3.0.0'
@@ -81,7 +81,7 @@ domino-deploy
 
 **Note**: It's recommended to go through the README.md within the DEPLOY_DIR for further details.
 
-### Update modules version
+### 2. Update modules version
 You can update the modules version using a script or manually.
 
 #### Using script
@@ -106,11 +106,11 @@ For example if `MOD_VERSION=v3.0.0`
 * **nodes/main.tf** : Update `module.nodes.source` from `"./../../../../modules/nodes"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/nodes?ref=v3.0.0`
 
 
-### Review and Configure `infra.tfvars`
+### 3. Review and Configure `infra.tfvars`
 Your initial setup is guided by the Terraform variables in `domino-deploy/terraform/infra.tfvars`. Ensure you review and modify this file as needed.
 
 
-### Create SSH Key pair
+### 4. Create SSH Key pair
 The deployment requires an SSH key. Update the `ssh_pvt_key_path` variable in `domino-deploy/terraform/infra.tfvars` with the full path of your key.
 
 If you don't have an SSH key, you can create one using:
