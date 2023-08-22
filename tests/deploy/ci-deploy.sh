@@ -5,7 +5,13 @@ set -x
 
 SH_DIR="$(realpath "$(dirname "$0")")"
 
+# ci vars
 source "${SH_DIR}/meta.sh"
+
+if test -f "${DEPLOY_DIR}/meta.sh"; then
+  # module vars
+  source "${DEPLOY_DIR}/meta.sh"
+fi
 
 # remote module vars
 BASE_REMOTE_SRC="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
@@ -69,19 +75,17 @@ set_eks_worker_ami() {
 }
 
 set_tf_vars() {
-  # We want to test passing an ami.
   set_eks_worker_ami '1'
   if [ -z $CUSTOM_AMI ]; then
     echo 'CUSTOM_AMI is not set.'
+    # We want to test passing an ami.
+    exit 1
   fi
 
   [ -f "$PVT_KEY" ] || { ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$PVT_KEY" && chmod 600 "$PVT_KEY"; }
   local default_nodes
 
   export CUSTOM_AMI PVT_KEY
-  if [ -z "$INFRA_VARS" ] || [ -z "$CLUSTER_VARS" ] || [ -z "$NODES_VARS" ]; then
-    source "${DEPLOY_DIR}/meta.sh"
-  fi
   default_nodes=$(envsubst <"${SH_DIR}/infra-ci.tfvars.tftpl" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
   echo "default_node_groups = $default_nodes" >"$NODES_VARS"
 

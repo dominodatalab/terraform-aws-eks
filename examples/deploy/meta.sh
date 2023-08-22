@@ -19,3 +19,15 @@ INFRA_STATE="${BASE_TF_DIR}/infra.tfstate"
 CLUSTER_VARS="${BASE_TF_DIR}/cluster.tfvars"
 NODES_VARS="${BASE_TF_DIR}/nodes.tfvars"
 INFRA_VARS="${BASE_TF_DIR}/infra.tfvars"
+
+export BASE_TF_DIR \
+  MOD_DIRS \
+  INFRA_DIR \
+  CLUSTER_DIR \
+  NODES_DIR \
+  CLUSTER_STATE \
+  NODES_STATE \
+  INFRA_STATE \
+  CLUSTER_VARS \
+  NODES_VARS \
+  INFRA_VARS
