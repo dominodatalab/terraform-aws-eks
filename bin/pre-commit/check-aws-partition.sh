@@ -5,7 +5,7 @@ exec 1>&2
 check_aws_partition() {
   declare -A failed_files
 
-  for file in $(git ls-files | grep -v "check-aws-partition.sh"); do
+  for file in "$@"; do
     if grep -q "arn:aws" "${file}"; then
       failed_files["${file}"]=1
     fi
@@ -22,6 +22,6 @@ check_aws_partition() {
 
 }
 
-check_aws_partition
+check_aws_partition "$@"
 exit_code=$?
 exit $exit_code
