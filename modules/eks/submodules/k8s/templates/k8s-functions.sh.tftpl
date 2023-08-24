@@ -177,3 +177,5 @@ close_ssh_tunnel_to_k8s_api() {
     ssh -S $TUNNEL_SOCKET_FILE -O exit ${bastion_user}@${bastion_public_ip}
   fi
 }
+
+echo 'this is just a tmp test'
