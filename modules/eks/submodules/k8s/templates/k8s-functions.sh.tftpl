@@ -14,7 +14,6 @@ open_ssh_tunnel_to_k8s_api() {
     ssh-keygen -R "${bastion_public_ip}" || true
 
     ls -ltr "${ssh_pvt_key_path}"
-    cat "${ssh_pvt_key_path}"
     chmod 400 "${ssh_pvt_key_path}"
     ssh -v -q -N -f -M -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -o "ExitOnForwardFailure=yes" -i "${ssh_pvt_key_path}" -D ${k8s_tunnel_port} -S "$TUNNEL_SOCKET_FILE" ${bastion_user}@${bastion_public_ip} || { printf "$RED Failed to establish k8s ssh tunnel. $EC\n" && exit 1; }
   else
