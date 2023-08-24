@@ -22,7 +22,7 @@ deploy() {
   component=${1:-all}
   pushd "$DEPLOY_DIR" >/dev/null
   for tf_cmd in 'init' 'validate' 'apply'; do
-    bash "./tf.sh" "$tf_cmd" "$component" || {
+    bash "./tf.sh" "$component" "$tf_cmd" || {
       echo "Terraform $tf_cmd failed. Exiting..."
       return 1
     }
@@ -114,7 +114,7 @@ deploy_latest_ami_nodes() {
 destroy() {
   component=${1:-all}
   pushd "$DEPLOY_DIR" >/dev/null
-  bash "./tf.sh" destroy "$component"
+  bash "./tf.sh" "$component" destroy
   popd >/dev/null 2>&1
 }
 

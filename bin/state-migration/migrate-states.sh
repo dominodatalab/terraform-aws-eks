@@ -99,7 +99,7 @@ copy_ssh_key() {
 }
 
 refresh_all() {
-  bash "${DEPLOY_DIR}/tf.sh" refresh all
+  bash "${DEPLOY_DIR}/tf.sh" all refresh
 }
 
 cleanup() {

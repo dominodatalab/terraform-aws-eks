@@ -94,14 +94,14 @@ run_tf_command() {
 }
 
 if [[ "$#" -ne 2 ]]; then
-  echo "Usage: ./tf.sh <command> <component>"
-  echo "Supported commands: init, plan, apply, destroy, output"
+  echo "Usage: ./tf.sh <component> <command>"
   echo "Components: infra, cluster, nodes, all"
+  echo "Supported commands: init, plan, apply, destroy, output"
   exit 1
 fi
 
-command=$1
-component=$2
+component=$1
+command=$2
 
 case $component in
 infra)
