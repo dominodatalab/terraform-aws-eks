@@ -31,10 +31,14 @@ deploy() {
 }
 
 set_ci_branch_name() {
-  PR_NUMBER=$(echo "$CIRCLE_BRANCH" | sed -n 's/^pull\/\([0-9]*\)\/head/\1/p')
-  CI_BRANCH_NAME=$(curl -s \
-    "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" |
-    jq -r .head.ref)
+  if [[ "$CIRCLE_BRANCH" =~ ^pull/[0-9]+/head$ ]]; then
+    PR_NUMBER=$(echo "$CIRCLE_BRANCH" | sed -n 's/^pull\/\([0-9]*\)\/head/\1/p')
+    CI_BRANCH_NAME=$(curl -s \
+      "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" |
+      jq -r .head.ref)
+  else
+    CI_BRANCH_NAME="$CIRCLE_BRANCH"
+  fi
   export CI_BRANCH_NAME
 }
 
@@ -67,9 +71,14 @@ install_hcledit() {
 }
 
 set_eks_worker_ami() {
-  #1 is latest
+  # We can potentially test AMI upgrades in CI.
+  # 1 is latest.
   precedence="$1"
   k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
+  if ! aws sts get-caller-identity; then
+    echo "Incorrect AWS credentials."
+    exit 1
+  fi
   CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=amazon-eks-node-${k8s_version// /}*" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
   export CUSTOM_AMI
 }
