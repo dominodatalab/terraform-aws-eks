@@ -97,7 +97,7 @@ For node configurations and upgrades, the design follows a similar pattern:
 
 * The `nodes` module allows you to override the default node configurations (`default_node_groups`) and any additional node configurations (`additional_node_groups`).
 * This is done using the `merge` function, ensuring you can easily add or modify node groups as required.
-* In scenarios where only the node pool requires an update, you can simply modify the `nodes.tfvars` and run `./tf.sh apply nodes`. This avoids the need to reapply the `infra` or `cluster` modules, streamlining node management.
+* In scenarios where only the node pool requires an update, you can simply modify the `nodes.tfvars` and run `./tf.sh nodes apply`. This avoids the need to re-apply the `infra` or `cluster` modules, streamlining node management.
 
 With this structure, the infrastructure maintains a clear hierarchy of variable propagation, ensuring ease of use, flexibility, and minimal disruptions during updates and upgrades.
 
@@ -107,8 +107,10 @@ With this structure, the infrastructure maintains a clear hierarchy of variable 
 To use the script, invoke it with the desired command and component:
 
 ```bash
-./tf.sh <command> <component>
+./tf.sh <component> <command>
 ```
+
+* **component**: The component you wish to apply the command on. Supported components are `infra`, `cluster`, `nodes`, and `all`. Using `all` will apply the command on all components.
 
 * **command**: Supported commands include:
   * init: Initializes the Terraform configurations.
@@ -117,7 +119,6 @@ To use the script, invoke it with the desired command and component:
   * destroy: Destroys the Terraform resources.
   * output: Shows the output values of your configurations.
   * refresh: Refreshes the Terraform state file.
-* **component**: The component you wish to apply the command on. Supported components are `infra`, `cluster`, `nodes`, and `all`. Using `all` will apply the command on all components.
 
 
 ## Examples
@@ -125,19 +126,19 @@ To use the script, invoke it with the desired command and component:
 * To preview the execution plan of the cluster:
 
 ```bash
-./tf.sh plan cluster
+./tf.sh cluster plan
 ```
 
 * To create all components:
 
 ```bash
-./tf.sh apply all
+./tf.sh all apply
 ```
 
 * To destroy all components:
 
 ```bash
-./tf.sh destroy all
+./tf.sh all destroy
 ```
 
 ## Common Operations
@@ -157,20 +158,20 @@ In order to update Kubernetes we will need to update the `cluster` and the `node
 2. Update cluster:
    1. Plan and review the changes:
       ```bash
-      ./tf.sh plan cluster
+      ./tf.sh cluster plan
       ```
    2. Apply the changes:
       ```bash
-      ./tf.sh apply cluster
+      ./tf.sh cluster apply
       ```
 3. Update nodes:
    1. Plan and review the changes:
       ```bash
-      ./tf.sh plan nodes
+      ./tf.sh nodes plan
       ```
    2. Apply the changes:
       ```bash
-      ./tf.sh apply nodes
+      ./tf.sh nodes apply
       ```
 
 ### Nodes Upgrade:
@@ -179,9 +180,9 @@ In order to just update the nodes to the latest AMI for the existing version.
 1. Update nodes:
    1. Plan and review the changes:
       ```bash
-      ./tf.sh plan nodes
+      ./tf.sh nodes plan
       ```
    2. Apply the changes:
       ```bash
-      ./tf.sh apply nodes
+      ./tf.sh nodes apply
       ```
