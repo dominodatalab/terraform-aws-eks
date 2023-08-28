@@ -17,7 +17,7 @@ verify_terraform() {
 
 tf_plan() {
   local dir="${1}"
-  terraform -chdir="$dir" init
+  terraform -chdir="$dir" init -upgrade
   terraform -chdir="$dir" plan
 
   if [ "$?" != "0" ]; then

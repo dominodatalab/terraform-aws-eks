@@ -4,6 +4,9 @@ locals {
 
 data "aws_iam_policy_document" "kms_key_global" {
   count = local.create_kms_key
+
+  override_policy_documents = var.kms.additional_policies
+
   statement {
     actions = [
       "kms:Create*",
