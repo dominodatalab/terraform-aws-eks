@@ -48,9 +48,9 @@ module "network" {
 }
 
 module "privatelink" {
-  source              = "./submodules/privatelink"
-  deploy_id           = var.deploy_id
-  region              = var.region
+  source    = "./submodules/privatelink"
+  deploy_id = var.deploy_id
+  region    = var.region
 }
 
 locals {
