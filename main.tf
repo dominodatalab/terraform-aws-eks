@@ -53,7 +53,7 @@ module "privatelink" {
   region                   = var.region
   vpc_endpoint_services    = var.vpc_endpoint_services
   route53_hosted_zone_name = var.route53_hosted_zone_name
-  network_info             = [module.network.info]
+  network_info             = module.network.info
 }
 
 locals {
