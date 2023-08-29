@@ -28,12 +28,12 @@ variable "vpc_endpoint_services" {
     }]
   EOF
 
-  type = optional(list(object({
+  type = list(object({
     name        = optional(string)
     ports       = optional(list(number))
     cert_arn    = optional(string)
     private_dns = optional(string)
-  })))
+  }))
 }
 
 variable "route53_hosted_zone_name" {
@@ -54,12 +54,12 @@ variable "network_info" {
     }), {})
   EOF
 
-  type = optional(object({
+  type = object({
     vpc_id = optional(string)
     subnets = optional(object({
       private = optional(list(string))
       public  = optional(list(string))
       pod     = optional(list(string))
     }))
-  }))
+  })
 }
