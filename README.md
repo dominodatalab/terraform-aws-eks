@@ -92,6 +92,7 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="module_bastion"></a> [bastion](#module\_bastion) | ./submodules/bastion | n/a |
 | <a name="module_eks"></a> [eks](#module\_eks) | ./submodules/eks | n/a |
 | <a name="module_network"></a> [network](#module\_network) | ./submodules/network | n/a |
+| <a name="module_privatelink"></a> [privatelink](#module\_privatelink) | ./submodules/privatelink | n/a |
 | <a name="module_storage"></a> [storage](#module\_storage) | ./submodules/storage | n/a |
 
 ## Resources

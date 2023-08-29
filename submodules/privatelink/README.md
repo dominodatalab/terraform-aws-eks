@@ -17,15 +17,15 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_caller_identity.aws_account](https://registry.terraform.io/providers/hashicorp/aws/latest/ocs/data-sources/caller_identity) | data source |
-| [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/ata-sources/partition) | data source |
+| [aws_caller_identity.aws_account](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | string` | n/a | yes |
-| <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | string` | n/a | yes |
+| <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
+| <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 
 ## Outputs
 
