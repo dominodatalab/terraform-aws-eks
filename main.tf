@@ -47,6 +47,12 @@ module "network" {
   flow_log_bucket_arn = { arn = module.storage.info.s3.buckets.monitoring.arn }
 }
 
+module "privatelink" {
+  source              = "./submodules/privatelink"
+  deploy_id           = var.deploy_id
+  region              = var.region
+}
+
 locals {
   ssh_pvt_key_path = abspath(pathexpand(var.ssh_pvt_key_path))
   ssh_key = {

@@ -1,0 +1,19 @@
+variable "deploy_id" {
+  type        = string
+  description = "Domino Deployment ID"
+
+  validation {
+    condition     = can(regex("^[a-z-0-9]{3,32}$", var.deploy_id))
+    error_message = "Argument deploy_id must: start with a letter, contain lowercase alphanumeric characters(can contain hyphens[-]) with length between 3 and 32 characters."
+  }
+}
+
+variable "region" {
+  type        = string
+  description = "AWS region for the deployment"
+  nullable    = false
+  validation {
+    condition     = can(regex("(us(-gov)?|ap|ca|cn|eu|sa|me|af|il)-(central|(north|south)?(east|west)?)-[0-9]", var.region))
+    error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2, us-gov-west-1."
+  }
+}
