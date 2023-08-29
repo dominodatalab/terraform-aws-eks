@@ -48,9 +48,12 @@ module "network" {
 }
 
 module "privatelink" {
-  source    = "./submodules/privatelink"
-  deploy_id = var.deploy_id
-  region    = var.region
+  source                   = "./submodules/privatelink"
+  deploy_id                = var.deploy_id
+  region                   = var.region
+  route53_hosted_zone_name = var.route53_hosted_zone_name
+  network_info             = [module.network.info]
+  depends_on               = [module.network]
 }
 
 locals {
