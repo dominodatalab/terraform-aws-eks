@@ -51,9 +51,9 @@ module "privatelink" {
   source                   = "./submodules/privatelink"
   deploy_id                = var.deploy_id
   region                   = var.region
+  vpc_endpoint_services    = var.vpc_endpoint_services
   route53_hosted_zone_name = var.route53_hosted_zone_name
   network_info             = [module.network.info]
-  depends_on               = [module.network]
 }
 
 locals {
