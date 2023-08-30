@@ -63,13 +63,13 @@ variable "network_info" {
         az        = string
         az_id     = string
       }))
-      public  = list(object({
+      public = list(object({
         name      = string
         subnet_id = string
         az        = string
         az_id     = string
       }))
-      pod     = list(object({
+      pod = list(object({
         name      = string
         subnet_id = string
         az        = string
