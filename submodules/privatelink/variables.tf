@@ -55,11 +55,11 @@ variable "network_info" {
   EOF
 
   type = object({
-    vpc_id = optional(string)
-    subnets = optional(object({
-      private = optional(list(string))
-      public  = optional(list(string))
-      pod     = optional(list(string))
-    }))
+    vpc_id = string
+    subnets = object({
+      private = list(string)
+      public  = list(string)
+      pod     = list(string)
+    })
   })
 }
