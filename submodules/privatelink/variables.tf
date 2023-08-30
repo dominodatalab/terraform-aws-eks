@@ -58,22 +58,22 @@ variable "network_info" {
     vpc_id = string
     subnets = object({
       private = list(object({
-        name = string
+        name      = string
         subnet_id = string
-        az = string
-        az_id = string
+        az        = string
+        az_id     = string
       }))
       public  = list(object({
-        name = string
+        name      = string
         subnet_id = string
-        az = string
-        az_id = string
+        az        = string
+        az_id     = string
       }))
       pod     = list(object({
-        name = string
+        name      = string
         subnet_id = string
-        az = string
-        az_id = string
+        az        = string
+        az_id     = string
       }))
     })
   })
