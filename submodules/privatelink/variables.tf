@@ -57,9 +57,24 @@ variable "network_info" {
   type = object({
     vpc_id = string
     subnets = object({
-      private = list(string)
-      public  = list(string)
-      pod     = list(string)
+      private = list(object({
+        name = string
+        subnet_id = string
+        az = string
+        az_id = string
+      }))
+      public  = list(object({
+        name = string
+        subnet_id = string
+        az = string
+        az_id = string
+      }))
+      pod     = list(object({
+        name = string
+        subnet_id = string
+        az = string
+        az_id = string
+      }))
     })
   })
 }
