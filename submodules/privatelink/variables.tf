@@ -90,3 +90,9 @@ variable "namespace" {
   description = "Namespace for IAM Policy conditions"
   default     = "domino-platform"
 }
+
+variable "monitoring_bucket" {
+  type        = string
+  description = "Monitoring bucket"
+  nullable    = false
+}

@@ -74,18 +74,6 @@ data "aws_iam_policy_document" "lb_logs" {
   }
 }
 
-resource "aws_s3_bucket" "lb_logs" {
-  bucket = "${var.deploy_id}-lb-logs"
-
-  force_destroy       = true
-  object_lock_enabled = false
-}
-
-resource "aws_s3_bucket_policy" "lb_logs" {
-  bucket = aws_s3_bucket.lb_logs.id
-  policy = data.aws_iam_policy_document.lb_logs.json
-}
-
 resource "aws_lb" "nlbs" {
   for_each = local.endpoint_services
 
@@ -98,7 +86,7 @@ resource "aws_lb" "nlbs" {
   enable_cross_zone_load_balancing = true
 
   access_logs {
-    bucket  = aws_s3_bucket.lb_logs.bucket
+    bucket  = var.monitoring_bucket
     enabled = true
   }
 }

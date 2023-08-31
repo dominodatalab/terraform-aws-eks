@@ -1,3 +1,7 @@
+locals {
+  oidc_provider_prefix = replace(var.oidc_provider_id, "/arn:.*:oidc-provider//", "")
+}
+
 data "aws_iam_policy_document" "load_balancer_controller" {
   statement {
     sid     = ""
@@ -6,13 +10,13 @@ data "aws_iam_policy_document" "load_balancer_controller" {
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(var.oidc_provider_id, "/arn:.*:oidc-provider//", "")}:sub"
+      variable = "${local.oidc_provider_prefix}:sub"
       values   = ["system:serviceaccount:${var.namespace}:${var.deploy_id}-load-balancer-controller"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(var.oidc_provider_id, "/arn:.*:oidc-provider//", "")}:aud"
+      variable = "${local.oidc_provider_prefix}:aud"
       values   = ["sts.amazonaws.com"]
     }
 
