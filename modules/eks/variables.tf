@@ -226,12 +226,6 @@ variable "route53_hosted_zone_name" {
   default     = null
 }
 
-variable "oidc_provider_id" {
-  type        = string
-  description = "OIDC Provider ID"
-  nullable    = false
-}
-
 variable "monitoring_bucket" {
   type        = string
   description = "Monitoring bucket"

@@ -74,5 +74,9 @@ output "node_iam_policies" {
 output "create_eks_role_arn" {
   description = "Role arn to assume during the EKS cluster creation."
   value       = aws_iam_role.create_eks_role.arn
+}
 
+output "monitoring_bucket" {
+  description = "Monitoring Bucket"
+  value       = module.storage.info.s3.buckets.monitoring.bucket_name
 }
