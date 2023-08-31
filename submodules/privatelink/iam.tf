@@ -22,3 +22,27 @@ data "aws_iam_policy_document" "load_balancer_controller" {
     }
   }
 }
+
+data "aws_iam_policy_document" "load_balancer_controller_policy" {
+  source_policy_documents = [
+    file("${path.module}/aws-load-balancer-controller_2.5.4_iam_policy.json")
+  ]
+}
+
+resource "aws_iam_role" "load_balancer_controller" {
+  name               = "${var.deploy_id}-load-balancer-controller"
+  assume_role_policy = data.aws_iam_policy_document.load_balancer_controller.json
+  lifecycle {
+    ignore_changes = [name]
+  }
+}
+
+resource "aws_iam_policy" "load_balancer_controller" {
+  name   = "${var.deploy_id}-load-balancer-controller"
+  policy = data.aws_iam_policy_document.load_balancer_controller_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "load_balancer_controller" {
+  role       = aws_iam_role.load_balancer_controller.name
+  policy_arn = aws_iam_policy.load_balancer_controller.arn
+}
