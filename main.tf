@@ -54,6 +54,7 @@ module "privatelink" {
   vpc_endpoint_services    = var.vpc_endpoint_services
   route53_hosted_zone_name = var.route53_hosted_zone_name
   network_info             = module.network.info
+  oidc_provider_id         = module.eks.info.cluster.oidc.id
 }
 
 locals {

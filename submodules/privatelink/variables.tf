@@ -78,3 +78,15 @@ variable "network_info" {
     })
   })
 }
+
+variable "oidc_provider_id" {
+  type        = string
+  description = "OIDC Provider ID"
+  nullable    = false
+}
+
+variable "namespace" {
+  type        = string
+  description = "Namespace for IAM Policy conditions"
+  default     = "domino-platform"
+}

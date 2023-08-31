@@ -200,6 +200,7 @@ locals {
       )
       custom_roles = var.eks.custom_role_maps
       oidc = {
+        id  = aws_iam_openid_connect_provider.oidc_provider.id
         arn = aws_iam_openid_connect_provider.oidc_provider.arn
         url = aws_iam_openid_connect_provider.oidc_provider.url
       }
