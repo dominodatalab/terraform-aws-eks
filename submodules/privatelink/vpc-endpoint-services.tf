@@ -1,5 +1,5 @@
 locals {
-  endpoint_services = tomap({ for service in var.vpc_endpoint_services : service.name => service.private_dns })
+  endpoint_services = { for service in var.vpc_endpoint_services : service.name => service.private_dns }
 
   listeners = distinct(flatten([
     for service in var.vpc_endpoint_services : [
