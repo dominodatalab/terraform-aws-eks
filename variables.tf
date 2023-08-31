@@ -29,7 +29,6 @@ variable "deploy_id" {
 variable "route53_hosted_zone_name" {
   type        = string
   description = "Optional hosted zone for External DNS zone."
-  nullable    = false
 }
 
 variable "tags" {
