@@ -199,3 +199,41 @@ variable "tags" {
   description = "Deployment tags."
   default     = {}
 }
+
+variable "vpc_endpoint_services" {
+  description = <<EOF
+    [{
+      name      = Name of the VPC Enpoint Service.
+      ports     = List of ports exposing the VPC Enpoint Service. i.e [8080, 8081]
+      cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
+      private_dns = Private DNS for the VPC Enpoint Service.
+    }]
+  EOF
+
+  type = list(object({
+    name        = optional(string)
+    ports       = optional(list(number))
+    cert_arn    = optional(string)
+    private_dns = optional(string)
+  }))
+
+  default = []
+}
+
+variable "route53_hosted_zone_name" {
+  type        = string
+  description = "Hosted zone for External DNS zone."
+  default     = null
+}
+
+variable "oidc_provider_id" {
+  type        = string
+  description = "OIDC Provider ID"
+  nullable    = false
+}
+
+variable "monitoring_bucket" {
+  type        = string
+  description = "Monitoring bucket"
+  nullable    = false
+}
