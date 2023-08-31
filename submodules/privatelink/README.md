@@ -1,6 +1,6 @@
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
- ## Requirements
- 
+## Requirements
+
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
@@ -13,6 +13,10 @@
 | <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.0 |
 
 ## Modules
+
+No modules.
+
+## Resources
 
 | Name | Type |
 |------|------|
@@ -32,9 +36,9 @@
 | [aws_iam_policy_document.load_balancer_controller_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
 | [aws_route53_zone.hosted](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
- 
+
 ## Inputs
- 
+
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
@@ -46,7 +50,7 @@
 | <a name="input_vpc_endpoint_services"></a> [vpc\_endpoint\_services](#input\_vpc\_endpoint\_services) | [{<br>      name      = Name of the VPC Enpoint Service.<br>      ports     = List of ports exposing the VPC Enpoint Service. i.e [8080, 8081]<br>      cert\_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.<br>      private\_dns = Private DNS for the VPC Enpoint Service.<br>    }] | <pre>list(object({<br>    name        = optional(string)<br>    ports       = optional(list(number))<br>    cert_arn    = optional(string)<br>    private_dns = optional(string)<br>  }))</pre> | n/a | yes |
 
 ## Outputs
- 
+
 | Name | Description |
 |------|-------------|
 | <a name="output_info"></a> [info](#output\_info) | Target groups... |
