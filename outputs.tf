@@ -31,3 +31,8 @@ output "eks" {
   description = "EKS details."
   value       = module.eks.info
 }
+
+output "privatelink" {
+  description = "Private Link details."
+  value       = module.privatelink.info
+}
