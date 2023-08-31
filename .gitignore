@@ -10,6 +10,7 @@
 *nodes.outputs*
 **migrated.txt
 **/deploy-test/*
+**terraform.plan
 
 **.terraform.lock.hcl*
 **.terraform.lock.hcl

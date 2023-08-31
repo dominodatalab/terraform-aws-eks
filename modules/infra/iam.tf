@@ -35,7 +35,7 @@ resource "aws_iam_policy" "route53" {
 
 
 locals {
-  create_eks_role_name = "${var.deploy_id}-create-eks"
+  create_eks_role_name = coalesce(var.eks.creation_role_name, "${var.deploy_id}-create-eks")
 }
 
 data "aws_iam_policy_document" "create_eks_role" {
@@ -81,7 +81,6 @@ data "aws_iam_policy_document" "create_eks_role" {
     resources = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/aws-service-role/*"]
     effect    = "Allow"
   }
-
 }
 
 resource "aws_iam_policy" "create_eks_role" {

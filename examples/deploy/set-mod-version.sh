@@ -2,6 +2,11 @@
 set -euo pipefail
 
 validate_mod_version() {
+  [[ -n "${MOD_VALIDATION_OFF:-}" ]] && {
+    echo 'MOD_VALIDATION_OFF is set, skipping module version validation'
+    return
+  }
+
   url="https://api.github.com/repos/dominodatalab/terraform-aws-eks/tags"
 
   local curl_cmd=("curl" "-s")
@@ -48,7 +53,7 @@ MOD_VERSION="$1"
 [ -z "${MOD_VERSION// /}" ] && { echo "Provide a module version in the format $(vX.X.X), ie $(v3.0.0)" && exit 1; }
 
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-
 source "${SH_DIR}/meta.sh"
+
 validate_mod_version
 set_module_version

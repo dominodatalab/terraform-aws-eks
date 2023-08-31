@@ -1,7 +1,7 @@
 # Terraform Multi-Module Management
 
 ## Overview
-The `tf.sh` script provides a convenient method to manage multiple Terraform configurations for various components of a system. The primary modules managed by this script include `infra`, `cluster`, and `nodes`. These components might represent different layers of an infrastructure deployment.
+The `tf.sh` script provides a convenient method to manage multiple Terraform configurations for various components of a system. The primary modules managed by this script include `infra`, `cluster`, and `nodes`. These components might represent different layers of an infrastructure deployment. Similarly the `set-mod-version.sh` script helps to set the source module version on all three modules(`infra`, `cluster`, and `nodes`), see [README](../../README.md#Using_script).
 
 ## Pre-requisites
 * Ensure that `terraform` is installed and accessible in your path.
@@ -10,7 +10,7 @@ The `tf.sh` script provides a convenient method to manage multiple Terraform con
 ## Directory Structure
 The script expects the following directory structure:
 ```
-examples/deploy
+deploy
 ├── README.md
 ├── meta.sh
 ├── set-mod-version.sh
@@ -37,11 +37,11 @@ examples/deploy
 ```
 
 * Each subdirectory under `terraform` (e.g., `infra`, `cluster`, `nodes`) should contain its respective Terraform configurations.
-* Each component is expected to have a corresponding `.tfvars` file at the root directory. For instance, for the `infra` component, there should be an `infra.tfvars` in the root directory.
+* Each component is expected to have a corresponding `.tfvars` file at the `terraform` directory. For instance, for the `infra` component, there should be an `terraform/infra.tfvars` file.
 * Each of component's state and output(when the `output` command is invoked) is saved in the `terraform` directory:
 
 ```bash
-└── examples/deploy/terraform
+└─ deploy/terraform
    ├── cluster.outputs
    ├── cluster.tfstate
    ├── infra.outputs
@@ -51,56 +51,7 @@ examples/deploy
 ```
 ## Variables structure
 
-The modular design of this Terraform setup allows for a streamlined flow of variable values across different stages of your infrastructure, from the foundational `infra` module up to the more specialized `nodes` module.
-
-
-### Inter-module Variable Propagation
-
-1. **From `infra` to `cluster`**:
-   * The `infra` module is where most foundational variables are defined. Once provisioned, these variable values can be consumed by the `cluster` module using Terraform's [remote state data source](https://www.terraform.io/docs/language/state/remote-state-data.html).
-
-2. **From both `infra` and `cluster` to `nodes`**:
-   * The `nodes` module consumes variable values from both the `infra` and `cluster` modules. This is achieved by accessing their respective remote states.
-
-### infra.tfvars
-You can find examples in the examples/tfvars directory. This file accommodates all variables defined in modules/infra.
-
-### cluster.tfvars
-This file provides the capability to override the k8s_version variable, aiding in Kubernetes upgrades.
-
-### nodes.tfvars
-This file allows you to override two variables: default_node_groups and additional_node_groups, making it easier to update node groups.
-
-### Overriding Variables for Kubernetes Upgrades
-
-The ability to upgrade Kubernetes without affecting other infrastructure components is crucial for maintainability:
-
-```bash
-.
-├── README.md
-├── cluster.tfvars
-├── infra.tfvars
-├── nodes.tfvars
-├── terraform
-│   ├── cluster
-│   ├── infra
-│   └── nodes
-└── tf.sh
-```
-
-* The `cluster` module accepts a variable named `k8s_version` via the `cluster.tfvars`.
-* While the initial value of `k8s_version` comes from the `infra` module, you have the flexibility to overwrite it in the `cluster` module via the the `cluster.tfvars`. This facilitates Kubernetes version upgrades without making changes to the underlying infrastructure set up by the `infra` module.
-
-### Enhancing Flexibility in Node Configurations
-
-For node configurations and upgrades, the design follows a similar pattern:
-
-* The `nodes` module allows you to override the default node configurations (`default_node_groups`) and any additional node configurations (`additional_node_groups`).
-* This is done using the `merge` function, ensuring you can easily add or modify node groups as required.
-* In scenarios where only the node pool requires an update, you can simply modify the `nodes.tfvars` and run `./tf.sh nodes apply`. This avoids the need to re-apply the `infra` or `cluster` modules, streamlining node management.
-
-With this structure, the infrastructure maintains a clear hierarchy of variable propagation, ensuring ease of use, flexibility, and minimal disruptions during updates and upgrades.
-
+See [README](../../README.md#Review_and_Configure_tfvars)
 
 ## Usage
 
@@ -110,16 +61,20 @@ To use the script, invoke it with the desired command and component:
 ./tf.sh <component> <command>
 ```
 
-* **component**: The component you wish to apply the command on. Supported components are `infra`, `cluster`, `nodes`, and `all`. Using `all` will apply the command on all components.
+* **component**: The component parameter refers to the specific section of your architecture that you wish to target with a command. Supported components include `infra`, `cluster`, `nodes`, and `all`. Selecting all will execute the command across `infra`, `cluster` and `nodes`.
+  The script uses the component parameter to identify corresponding Terraform directories and to name both the Terraform variables file (`terraform/${component}.tfvars`) and the Terraform state file (`terraform/${component}.tfstate`). If you create a custom folder named `mydir` that includes your Terraform configuration, setup a terraform variables file(`terraform/mydir.tfstate`), and state file(`terraform/mydir.tfstate`) if existing, then you can utilize the tf.sh script to execute Terraform commands. For example, running `./tf.sh mydir plan`.
+
+  It's important to note that your custom directory, mydir, ***will not*** be included when using the `all` value for components.
 
 * **command**: Supported commands include:
-  * init: Initializes the Terraform configurations.
-  * plan: Shows the execution plan of Terraform.
-  * apply: Applies the Terraform configurations.
-  * destroy: Destroys the Terraform resources.
-  * output: Shows the output values of your configurations.
-  * refresh: Refreshes the Terraform state file.
-
+  * `init`: Initializes the Terraform configurations.
+  * `plan`: Shows the execution plan of Terraform.
+  * `apply`: Applies the Terraform configurations.
+  * `destroy`: Destroys the Terraform resources.
+  * `output`: Shows the output values of your configurations.
+  * `refresh`: Refreshes the Terraform state file.
+  * `plan_out`: Generates a plan and writes it to `terraform/${component}-terraform.plan`.
+  * `apply_plan`: Applies plan located at `terraform/${component}-terraform.plan`.
 
 ## Examples
 
@@ -141,6 +96,18 @@ To use the script, invoke it with the desired command and component:
 ./tf.sh all destroy
 ```
 
+* To perform a plan and write it to a file(the plan file will be stored at: `terraform/${component}-terraform.plan`):
+
+```bash
+./tf.sh cluster plan_out
+```
+
+* To apply a a previously generated plan stored at `terraform/${component}-terraform.plan` for this example `terraform/cluster-terraform.plan`:
+
+```bash
+./tf.sh cluster apply_plan
+```
+
 ## Common Operations
 
 For some frequently performed operations, follow the steps outlined below:
@@ -154,7 +121,7 @@ See `README` [Update modules version](../../README.md#update-modules-version)
 ### Kubernetes Upgrade:
 In order to update Kubernetes we will need to update the `cluster` and the `nodes`.
 
-1. Update the `k8s-version` variable in the `cluster.tfvars` file.
+1. Set the `eks.k8s_version` variable to desired version(At most it can be 2 minor versions ahead.)
 2. Update cluster:
    1. Plan and review the changes:
       ```bash
@@ -165,6 +132,7 @@ In order to update Kubernetes we will need to update the `cluster` and the `node
       ./tf.sh cluster apply
       ```
 3. Update nodes:
+Given that the nodes source the k8s version from `eks` we just need to plan and apply.
    1. Plan and review the changes:
       ```bash
       ./tf.sh nodes plan
@@ -175,14 +143,12 @@ In order to update Kubernetes we will need to update the `cluster` and the `node
       ```
 
 ### Nodes Upgrade:
-In order to just update the nodes to the latest AMI for the existing version.
-
-1. Update nodes:
-   1. Plan and review the changes:
-      ```bash
-      ./tf.sh nodes plan
-      ```
-   2. Apply the changes:
-      ```bash
-      ./tf.sh nodes apply
-      ```
+Given that the nodes module looks for the latest AMI we just need to plan and apply:
+1. Plan and review the changes:
+   ```bash
+   ./tf.sh nodes plan
+   ```
+2. Apply the changes:
+   ```bash
+   ./tf.sh nodes apply
+   ```

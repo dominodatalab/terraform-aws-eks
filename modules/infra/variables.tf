@@ -53,6 +53,7 @@ variable "ssh_pvt_key_path" {
 
 variable "eks" {
   description = <<EOF
+    creation_role_name = Only meant to support an imported role.
     k8s_version = EKS cluster k8s version.
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
@@ -77,7 +78,8 @@ variable "eks" {
   EOF
 
   type = object({
-    k8s_version = optional(string, "1.27")
+    creation_role_name = optional(string, null)
+    k8s_version        = optional(string, "1.27")
     kubeconfig = optional(object({
       extra_args = optional(string, "")
       path       = optional(string, null)

@@ -8,10 +8,8 @@ data "terraform_remote_state" "infra" {
 
 locals {
   infra = data.terraform_remote_state.infra.outputs.infra
-
-  eks = var.k8s_version != null ? merge(local.infra.eks, {
-    k8s_version = var.k8s_version
-  }) : local.infra.eks
+  eks   = var.eks != null ? var.eks : local.infra.eks
+  kms   = var.kms_info != null ? var.kms_info : local.infra.kms
 }
 
 module "eks" {
@@ -24,7 +22,7 @@ module "eks" {
   efs_security_group  = local.infra.efs_security_group
   eks                 = local.eks
   network_info        = local.infra.network
-  kms_info            = local.infra.kms
+  kms_info            = local.kms
   bastion_info        = local.infra.bastion
   create_eks_role_arn = local.infra.create_eks_role_arn
   tags                = local.infra.tags
@@ -37,8 +35,6 @@ provider "aws" {
     tags = var.tags
   }
 }
-
-
 
 terraform {
   required_version = ">= 1.4.0"

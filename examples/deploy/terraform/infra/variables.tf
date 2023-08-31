@@ -13,6 +13,52 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "network" {
+  description = <<EOF
+    vpc = {
+      id = Existing vpc id, it will bypass creation by this module.
+      subnets = {
+        private = Existing private subnets.
+        public  = Existing public subnets.
+        pod     = Existing pod subnets.
+      }), {})
+    }), {})
+    network_bits = {
+      public  = Number of network bits to allocate to the public subnet. i.e /27 -> 32 IPs.
+      private = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.
+      pod     = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.
+    }
+    cidrs = {
+      vpc     = The IPv4 CIDR block for the VPC.
+      pod     = The IPv4 CIDR block for the Pod subnets.
+    }
+    use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
+  EOF
+
+  type = object({
+    vpc = optional(object({
+      id = optional(string, null)
+      subnets = optional(object({
+        private = optional(list(string), [])
+        public  = optional(list(string), [])
+        pod     = optional(list(string), [])
+      }), {})
+    }), {})
+    network_bits = optional(object({
+      public  = optional(number, 27)
+      private = optional(number, 19)
+      pod     = optional(number, 19)
+      }
+    ), {})
+    cidrs = optional(object({
+      vpc = optional(string, "10.0.0.0/16")
+      pod = optional(string, "100.64.0.0/16")
+    }), {})
+    use_pod_cidr = optional(bool, true)
+  })
+
+  default = {}
+}
 
 variable "default_node_groups" {
   description = "EKS managed node groups definition."
@@ -138,6 +184,54 @@ variable "additional_node_groups" {
   default = {}
 }
 
+variable "storage" {
+  description = <<EOF
+    storage = {
+      efs = {
+        access_point_path = Filesystem path for efs.
+        backup_vault = {
+          create        = Create backup vault for EFS toggle.
+          force_destroy = Toggle to allow automatic destruction of all backups when destroying.
+          backup = {
+            schedule           = Cron-style schedule for EFS backup vault (default: once a day at 12pm).
+            cold_storage_after = Move backup data to cold storage after this many days.
+            delete_after       = Delete backup data after this many days.
+          }
+        }
+      }
+      s3 = {
+        force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
+      }
+      ecr = {
+        force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories.
+      }
+    }
+  }
+  EOF
+  type = object({
+    efs = optional(object({
+      access_point_path = optional(string, "/domino")
+      backup_vault = optional(object({
+        create        = optional(bool, true)
+        force_destroy = optional(bool, true)
+        backup = optional(object({
+          schedule           = optional(string, "0 12 * * ? *")
+          cold_storage_after = optional(number, 35)
+          delete_after       = optional(number, 125)
+        }), {})
+      }), {})
+    }), {})
+    s3 = optional(object({
+      force_destroy_on_deletion = optional(bool, true)
+    }), {})
+    ecr = optional(object({
+      force_destroy_on_deletion = optional(bool, true)
+    }), {})
+  })
+
+  default = {}
+}
+
 variable "kms" {
   description = <<EOF
     enabled = Toggle,if set use either the specified KMS key_id or a Domino-generated one.
@@ -153,6 +247,7 @@ variable "kms" {
 
 variable "eks" {
   description = <<EOF
+    creation_role_name = Only meant to support an imported role.
     k8s_version = EKS cluster k8s version.
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
@@ -177,7 +272,8 @@ variable "eks" {
   EOF
 
   type = object({
-    k8s_version = optional(string)
+    creation_role_name = optional(string, null)
+    k8s_version        = optional(string)
     kubeconfig = optional(object({
       extra_args = optional(string)
       path       = optional(string)
