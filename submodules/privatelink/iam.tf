@@ -26,7 +26,7 @@ data "aws_iam_policy_document" "load_balancer_controller" {
 data "aws_iam_policy_document" "load_balancer_controller_policy" {
   source_policy_documents = [
     templatefile("${path.module}/aws-load-balancer-controller_2.5.4_iam_policy.json", {
-      partition  = data.aws_partition.current.partition
+      partition = data.aws_partition.current.partition
     })
   ]
 }
