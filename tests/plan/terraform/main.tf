@@ -30,6 +30,7 @@ module "eks" {
   bastion_info        = module.infra.bastion
   create_eks_role_arn = module.infra.create_eks_role_arn
   tags                = module.infra.tags
+  monitoring_bucket   = module.infra.monitoring_bucket
 }
 
 
