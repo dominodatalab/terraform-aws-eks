@@ -55,7 +55,7 @@ module "privatelink" {
   route53_hosted_zone_name = var.route53_hosted_zone_name
   network_info             = module.network.info
   oidc_provider_id         = module.eks.info.cluster.oidc.id
-  monitoring_bucket        = module.storage.s3.buckets.monitoring.bucket_name
+  monitoring_bucket        = module.storage.info.s3.buckets.monitoring.bucket_name
 }
 
 locals {
