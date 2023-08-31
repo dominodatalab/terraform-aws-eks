@@ -18,62 +18,6 @@ data "aws_route53_zone" "hosted" {
   private_zone = false
 }
 
-data "aws_iam_policy_document" "lb_logs" {
-  statement {
-    sid       = "AWSLogDeliveryAclCheck"
-    effect    = "Allow"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${var.deploy_id}-lb-logs"]
-    actions   = ["s3:GetBucketAcl"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceAccount"
-      values   = [local.aws_account_id]
-    }
-
-    condition {
-      test     = "ArnLike"
-      variable = "aws:SourceArn"
-      values   = ["arn:${data.aws_partition.current.partition}:logs:${var.region}:${local.aws_account_id}:*"]
-    }
-
-    principals {
-      type        = "Service"
-      identifiers = ["delivery.logs.amazonaws.com"]
-    }
-  }
-
-  statement {
-    sid       = "AWSLogDeliveryWrite"
-    effect    = "Allow"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${var.deploy_id}-lb-logs/AWSLogs/*"]
-    actions   = ["s3:PutObject"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "s3:x-amz-acl"
-      values   = ["bucket-owner-full-control"]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceAccount"
-      values   = [local.aws_account_id]
-    }
-
-    condition {
-      test     = "ArnLike"
-      variable = "aws:SourceArn"
-      values   = ["arn:${data.aws_partition.current.partition}:logs:${var.region}:${local.aws_account_id}:*"]
-    }
-
-    principals {
-      type        = "Service"
-      identifiers = ["delivery.logs.amazonaws.com"]
-    }
-  }
-}
-
 resource "aws_lb" "nlbs" {
   for_each = local.endpoint_services
 
