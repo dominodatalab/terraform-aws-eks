@@ -147,6 +147,7 @@ aws s3 rb s3://"${AWS_TERRAFORM_REMOTE_STATE_BUCKET}" --force
 | <a name="output_hostname"></a> [hostname](#output\_hostname) | Domino instance URL. |
 | <a name="output_kms"></a> [kms](#output\_kms) | KMS key details, if enabled. |
 | <a name="output_network"></a> [network](#output\_network) | Network details. |
+| <a name="output_privatelink"></a> [privatelink](#output\_privatelink) | Private Link details. |
 | <a name="output_storage"></a> [storage](#output\_storage) | Storage details. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
