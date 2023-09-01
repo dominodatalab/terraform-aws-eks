@@ -233,7 +233,7 @@ variable "monitoring_bucket" {
 }
 
 variable "enabled_private_link" {
-  type    = bool
+  type        = bool
   description = "Enable Private Link connections"
-  default = false
+  default     = false
 }
