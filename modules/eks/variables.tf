@@ -231,3 +231,8 @@ variable "monitoring_bucket" {
   description = "Monitoring bucket"
   nullable    = false
 }
+
+variable "enabled_private_link" {
+  type    = bool
+  default = false
+}

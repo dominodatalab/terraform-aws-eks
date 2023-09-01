@@ -1,4 +1,5 @@
 module "privatelink" {
+  count                    = var.enabled_private_link ? 1 : 0
   source                   = "./submodules/privatelink"
   deploy_id                = var.deploy_id
   region                   = var.region
