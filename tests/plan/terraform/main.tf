@@ -21,17 +21,17 @@ module "eks" {
   deploy_id = module.infra.deploy_id
   region    = module.infra.region
 
-  ssh_key               = module.infra.ssh_key
-  node_iam_policies     = module.infra.node_iam_policies
-  efs_security_group    = module.infra.efs_security_group
-  eks                   = module.infra.eks
-  network_info          = module.infra.network
-  kms_info              = module.infra.kms
-  bastion_info          = module.infra.bastion
-  create_eks_role_arn   = module.infra.create_eks_role_arn
-  tags                  = module.infra.tags
-  monitoring_bucket     = module.infra.monitoring_bucket
-  enabled_private_link  = var.enabled_private_link
+  ssh_key              = module.infra.ssh_key
+  node_iam_policies    = module.infra.node_iam_policies
+  efs_security_group   = module.infra.efs_security_group
+  eks                  = module.infra.eks
+  network_info         = module.infra.network
+  kms_info             = module.infra.kms
+  bastion_info         = module.infra.bastion
+  create_eks_role_arn  = module.infra.create_eks_role_arn
+  tags                 = module.infra.tags
+  monitoring_bucket    = module.infra.monitoring_bucket
+  enabled_private_link = var.enabled_private_link
 }
 
 
