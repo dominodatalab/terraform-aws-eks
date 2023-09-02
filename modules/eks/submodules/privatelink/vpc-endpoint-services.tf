@@ -24,7 +24,7 @@ resource "aws_lb" "nlbs" {
   name               = "${var.deploy_id}-${each.key}"
   load_balancer_type = "network"
 
-  subnets = [for subnet in var.network_info.subnets.public : subnet.id]
+  subnets = [for subnet in var.network_info.subnets.public : subnet.subnet_id]
 
   enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
