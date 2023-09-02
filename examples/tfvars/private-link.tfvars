@@ -12,22 +12,11 @@ default_node_groups = {
   platform = {
     "availability_zone_ids" = ["usw2-az1", "usw2-az2"]
   }
-}
 
-bastion = {
-  enabled = true
-}
-network = {
-  ## The following are not real values
-  vpc = {
-    id = "vpc-notrealb8ca349af"
-    subnets = {
-      private = ["subnet-notrealvalb2319f", "subnet-notrealval9be2580"]
-      public  = ["subnet-notrealval126cd0", "subnet-notrealval178f224"]
-      pod     = ["subnet-notrealval126cgf4", "subnet-notrealval178f64"]
-    }
+  ## bastion is enabled by default
+  bastion = {
+    enabled = true
   }
-  use_pod_cidr = false
 }
 
 enabled_private_link = true
