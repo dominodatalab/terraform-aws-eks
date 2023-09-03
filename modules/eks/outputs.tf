@@ -6,7 +6,7 @@ output "info" {
   )
 }
 
-output "privatelink" {
-  description = "Private Link"
+output "privatelink_info" {
+  description = "Private Link Info"
   value       = module.privatelink.info
 }
