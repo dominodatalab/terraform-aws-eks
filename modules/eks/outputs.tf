@@ -5,3 +5,8 @@ output "info" {
     }
   )
 }
+
+output "privatelink" {
+  description = "Private Link"
+  value       = module.privatelink.info
+}
