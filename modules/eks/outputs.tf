@@ -6,7 +6,8 @@ output "info" {
   )
 }
 
-output "privatelink_info" {
+output "privatelink" {
+  count       = var.enabled_private_link ? 1 : 0
   description = "Private Link Info"
   value       = module.privatelink.info
 }
