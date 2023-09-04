@@ -89,5 +89,5 @@
 | Name | Description |
 |------|-------------|
 | <a name="output_info"></a> [info](#output\_info) | EKS information |
-| <a name="output_privatelink"></a> [privatelink\_info](#output\_privatelink\_info) | Private Link Info |
+| <a name="output_privatelink"></a> [privatelink](#output\_privatelink) | Private Link Info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
