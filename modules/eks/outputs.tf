@@ -7,7 +7,6 @@ output "info" {
 }
 
 output "privatelink" {
-  count       = var.enabled_private_link ? 1 : 0
   description = "Private Link Info"
-  value       = module.privatelink.info
+  value       = var.enabled_private_link ? module.privatelink.info : null
 }
