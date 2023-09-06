@@ -1,8 +1,8 @@
 locals {
-  endpoint_services = { for service in var.vpc_endpoint_services : service.name => service.private_dns }
+  endpoint_services = { for service in var.privatelink.vpc_endpoint_services : service.name => service.private_dns }
 
   listeners = distinct(flatten([
-    for service in var.vpc_endpoint_services : [
+    for service in var.privatelink.vpc_endpoint_services : [
       for port in service.ports : {
         service  = service.name
         port     = port
@@ -13,7 +13,7 @@ locals {
 }
 
 data "aws_route53_zone" "hosted" {
-  name         = var.route53_hosted_zone_name
+  name         = var.privatelink.route53_hosted_zone_name
   private_zone = false
 }
 
@@ -29,7 +29,7 @@ resource "aws_lb" "nlbs" {
   enable_cross_zone_load_balancing = true
 
   access_logs {
-    bucket  = var.monitoring_bucket
+    bucket  = var.privatelink.monitoring_bucket
     enabled = true
   }
 }

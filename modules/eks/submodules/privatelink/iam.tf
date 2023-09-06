@@ -11,7 +11,7 @@ data "aws_iam_policy_document" "load_balancer_controller" {
     condition {
       test     = "StringEquals"
       variable = "${local.oidc_provider_prefix}:sub"
-      values   = ["system:serviceaccount:${var.namespace}:${var.deploy_id}-load-balancer-controller"]
+      values   = ["system:serviceaccount:${var.privatelink.namespace}:${var.deploy_id}-load-balancer-controller"]
     }
 
     condition {
