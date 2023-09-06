@@ -229,7 +229,7 @@ variable "route53_hosted_zone_name" {
 variable "monitoring_bucket" {
   type        = string
   description = "Monitoring bucket"
-  
+
   validation {
     condition     = !var.enable_private_link || (var.enable_private_link && var.monitoring_bucket != null)
     error_message = "Monitoring bucket should be provided"
