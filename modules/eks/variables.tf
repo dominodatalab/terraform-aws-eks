@@ -226,6 +226,12 @@ variable "route53_hosted_zone_name" {
   default     = null
 }
 
+variable "namespace" {
+  type        = string
+  description = "Namespace for IAM Policy conditions"
+  default     = "domino-platform"
+}
+
 variable "monitoring_bucket" {
   type        = string
   description = "Monitoring bucket"
