@@ -28,8 +28,9 @@ module "eks" {
   bastion_info        = local.infra.bastion
   create_eks_role_arn = local.infra.create_eks_role_arn
   tags                = local.infra.tags
-  monitoring_bucket   = local.infra.monitoring_bucket
-
+  privatelink = {
+    monitoring_bucket   = local.infra.monitoring_bucket  
+  }
 }
 
 provider "aws" {
