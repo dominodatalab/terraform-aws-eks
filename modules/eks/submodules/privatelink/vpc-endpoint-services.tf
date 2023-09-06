@@ -73,7 +73,7 @@ resource "aws_vpc_endpoint_service" "vpc_endpoint_services" {
 }
 
 resource "aws_route53_record" "service_endpoint_private_dns_verification" {
-  count    = var.route53_hosted_zone_name != null ? 1 : 0
+  count = var.route53_hosted_zone_name != null ? 1 : 0
 
   for_each = local.endpoint_services
 
