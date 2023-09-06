@@ -33,6 +33,7 @@ module "eks" {
   privatelink = {
     enabled           = var.enable_private_link
     monitoring_bucket = module.infra.monitoring_bucket
+    route53_hosted_zone_name = var.route53_hosted_zone_name
   }
 }
 
