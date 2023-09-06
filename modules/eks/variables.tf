@@ -231,7 +231,7 @@ variable "privatelink" {
   })
 
   validation {
-    condition     = var.privatelink.enabled && var.privatelink.route53_hosted_zone_name != null
+    condition     = !var.privatelink.enabled || (var.privatelink.enabled && var.privatelink.route53_hosted_zone_name)
     error_message = "Route53 Hosted Zone Name cannot be null"
   }
 
