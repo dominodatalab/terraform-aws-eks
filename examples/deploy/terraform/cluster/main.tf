@@ -29,7 +29,7 @@ module "eks" {
   create_eks_role_arn = local.infra.create_eks_role_arn
   tags                = local.infra.tags
   privatelink = {
-    monitoring_bucket   = local.infra.monitoring_bucket  
+    monitoring_bucket = local.infra.monitoring_bucket
   }
 }
 
