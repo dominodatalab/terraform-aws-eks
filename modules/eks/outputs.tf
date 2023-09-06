@@ -8,5 +8,5 @@ output "info" {
 
 output "privatelink" {
   description = "Private Link Info"
-  value       = var.enable_private_link ? module.privatelink[0].info : null
+  value       = var.privatelink.enabled ? module.privatelink[0].info : null
 }
