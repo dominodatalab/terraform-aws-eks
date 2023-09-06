@@ -218,16 +218,16 @@ variable "privatelink" {
 
 
   type = object({
-    enabled = bool
-    namespace = string
-    monitoring_bucket = string
-    route53_hosted_zone_name = string
-    vpc_endpoint_services = list(object({
+    enabled                  = optional(bool, false)
+    namespace                = optional(string, "domino-platform")
+    monitoring_bucket        = optional(string, null)
+    route53_hosted_zone_name = optional(string, null)
+    vpc_endpoint_services = optional(list(object({
       name        = optional(string)
       ports       = optional(list(number))
       cert_arn    = optional(string)
       private_dns = optional(string)
-    }))
+    })), [])
   })
 
   validation {
