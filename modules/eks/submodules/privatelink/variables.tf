@@ -39,6 +39,7 @@ variable "vpc_endpoint_services" {
 variable "route53_hosted_zone_name" {
   type        = string
   description = "Hosted zone for External DNS zone."
+  nullable    = false
 }
 
 variable "network_info" {
@@ -88,6 +89,7 @@ variable "namespace" {
   type        = string
   description = "Namespace for IAM Policy conditions"
   default     = "domino-platform"
+  nullable    = false
 }
 
 variable "monitoring_bucket" {

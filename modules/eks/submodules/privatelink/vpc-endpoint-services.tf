@@ -13,7 +13,6 @@ locals {
 }
 
 data "aws_route53_zone" "hosted" {
-  count        = var.route53_hosted_zone_name != null ? 1 : 0
   name         = var.route53_hosted_zone_name
   private_zone = false
 }
@@ -75,7 +74,7 @@ resource "aws_vpc_endpoint_service" "vpc_endpoint_services" {
 resource "aws_route53_record" "service_endpoint_private_dns_verification" {
   for_each = local.endpoint_services
 
-  zone_id = data.aws_route53_zone.hosted[0].zone_id
+  zone_id = data.aws_route53_zone.hosted.zone_id
   name    = each.value
   type    = "TXT"
   ttl     = 1800
