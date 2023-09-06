@@ -19,4 +19,4 @@ default_node_groups = {
   }
 }
 
-enabled_private_link = true
+enable_private_link = true

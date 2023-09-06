@@ -382,7 +382,7 @@ variable "kms" {
   default = {}
 }
 
-variable "enabled_private_link" {
+variable "enable_private_link" {
   type        = bool
   description = "Enable Private Link connections"
   default     = false

@@ -21,10 +21,10 @@ variable "region" {
 variable "vpc_endpoint_services" {
   description = <<EOF
     [{
-      name      = Name of the VPC Enpoint Service.
-      ports     = List of ports exposing the VPC Enpoint Service. i.e [8080, 8081]
+      name      = Name of the VPC Endpoint Service.
+      ports     = List of ports exposing the VPC Endpoint Service. i.e [8080, 8081]
       cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
-      private_dns = Private DNS for the VPC Enpoint Service.
+      private_dns = Private DNS for the VPC Endpoint Service.
     }]
   EOF
 

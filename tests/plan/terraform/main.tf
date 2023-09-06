@@ -31,7 +31,7 @@ module "eks" {
   create_eks_role_arn  = module.infra.create_eks_role_arn
   tags                 = module.infra.tags
   monitoring_bucket    = module.infra.monitoring_bucket
-  enabled_private_link = var.enabled_private_link
+  enable_private_link = var.enable_private_link
 }
 
 
