@@ -223,7 +223,7 @@ variable "vpc_endpoint_services" {
 variable "route53_hosted_zone_name" {
   type        = string
   description = "Hosted zone for External DNS zone."
-  default     = null
+  nullable    = false
 }
 
 variable "namespace" {
