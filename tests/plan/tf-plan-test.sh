@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-exclude=("bring-your-vpc.tfvars" "kms.tfvars")
+exclude=("bring-your-vpc.tfvars" "kms.tfvars" "private-link.tfvars")
 
 failed_vars=()
 success_vars=()

@@ -81,6 +81,7 @@
 | <a name="output_eks"></a> [eks](#output\_eks) | EKS variables. |
 | <a name="output_hostname"></a> [hostname](#output\_hostname) | Domino instance URL. |
 | <a name="output_kms"></a> [kms](#output\_kms) | KMS key details, if enabled. |
+| <a name="output_monitoring_bucket"></a> [monitoring\_bucket](#output\_monitoring\_bucket) | Monitoring Bucket |
 | <a name="output_network"></a> [network](#output\_network) | Network details. |
 | <a name="output_node_iam_policies"></a> [node\_iam\_policies](#output\_node\_iam\_policies) | Policies attached to EKS nodes role |
 | <a name="output_region"></a> [region](#output\_region) | Deployment Region. |
