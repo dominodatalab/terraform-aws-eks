@@ -28,6 +28,7 @@ module "eks" {
   bastion_info        = local.infra.bastion
   create_eks_role_arn = local.infra.create_eks_role_arn
   tags                = local.infra.tags
+
 }
 
 provider "aws" {
