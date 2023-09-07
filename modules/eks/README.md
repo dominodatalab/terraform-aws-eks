@@ -25,6 +25,7 @@
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_k8s_setup"></a> [k8s\_setup](#module\_k8s\_setup) | ./submodules/k8s | n/a |
+| <a name="module_privatelink"></a> [privatelink](#module\_privatelink) | ./submodules/privatelink | n/a |
 
 ## Resources
 
@@ -75,6 +76,7 @@
 | <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | key\_id  = KMS key id.<br>    key\_arn = KMS key arn.<br>    enabled = KMS key is enabled | <pre>object({<br>    key_id  = string<br>    key_arn = string<br>    enabled = bool<br>  })</pre> | n/a | yes |
 | <a name="input_network_info"></a> [network\_info](#input\_network\_info) | id = VPC ID.<br>    subnets = {<br>      public = List of public Subnets.<br>      [{<br>        name = Subnet name.<br>        subnet\_id = Subnet ud<br>        az = Subnet availability\_zone<br>        az\_id = Subnet availability\_zone\_id<br>      }]<br>      private = List of private Subnets.<br>      [{<br>        name = Subnet name.<br>        subnet\_id = Subnet ud<br>        az = Subnet availability\_zone<br>        az\_id = Subnet availability\_zone\_id<br>      }]<br>      pod = List of pod Subnets.<br>      [{<br>        name = Subnet name.<br>        subnet\_id = Subnet ud<br>        az = Subnet availability\_zone<br>        az\_id = Subnet availability\_zone\_id<br>      }]<br>    } | <pre>object({<br>    vpc_id = string<br>    subnets = object({<br>      public = list(object({<br>        name      = string<br>        subnet_id = string<br>        az        = string<br>        az_id     = string<br>      }))<br>      private = list(object({<br>        name      = string<br>        subnet_id = string<br>        az        = string<br>        az_id     = string<br>      }))<br>      pod = list(object({<br>        name      = string<br>        subnet_id = string<br>        az        = string<br>        az_id     = string<br>      }))<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_node_iam_policies"></a> [node\_iam\_policies](#input\_node\_iam\_policies) | Additional IAM Policy Arns for Nodes | `list(string)` | n/a | yes |
+| <a name="input_privatelink"></a> [privatelink](#input\_privatelink) | {<br>      enabled = Enable Private Link connections.<br>      namespace = Namespace for IAM Policy conditions.<br>      monitoring\_bucket = Bucket for NLBs monitoring.<br>      route53\_hosted\_zone\_name = Hosted zone for External DNS zone.<br>      vpc\_endpoint\_services = [{<br>        name      = Name of the VPC Endpoint Service.<br>        ports     = List of ports exposing the VPC Endpoint Service. i.e [8080, 8081]<br>        cert\_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.<br>        private\_dns = Private DNS for the VPC Endpoint Service.<br>      }]<br>    } | <pre>object({<br>    enabled                  = optional(bool, false)<br>    namespace                = optional(string, "domino-platform")<br>    monitoring_bucket        = optional(string, null)<br>    route53_hosted_zone_name = optional(string, null)<br>    vpc_endpoint_services = optional(list(object({<br>      name        = optional(string)<br>      ports       = optional(list(number))<br>      cert_arn    = optional(string)<br>      private_dns = optional(string)<br>    })), [])<br>  })</pre> | `{}` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 | <a name="input_ssh_key"></a> [ssh\_key](#input\_ssh\_key) | path          = SSH private key filepath.<br>    key\_pair\_name = AWS key\_pair name. | <pre>object({<br>    path          = string<br>    key_pair_name = string<br>  })</pre> | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Deployment tags. | `map(string)` | `{}` | no |
@@ -84,4 +86,5 @@
 | Name | Description |
 |------|-------------|
 | <a name="output_info"></a> [info](#output\_info) | EKS information |
+| <a name="output_privatelink"></a> [privatelink](#output\_privatelink) | Private Link Info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

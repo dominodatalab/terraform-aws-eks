@@ -30,6 +30,11 @@ module "eks" {
   bastion_info        = module.infra.bastion
   create_eks_role_arn = module.infra.create_eks_role_arn
   tags                = module.infra.tags
+  privatelink = {
+    enabled                  = var.enable_private_link
+    monitoring_bucket        = module.infra.monitoring_bucket
+    route53_hosted_zone_name = var.route53_hosted_zone_name
+  }
 }
 
 
