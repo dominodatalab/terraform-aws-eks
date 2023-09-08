@@ -51,7 +51,7 @@ deploy
 ```
 ## Variables structure
 
-See [README](../../README.md#Review_and_Configure_tfvars)
+See [README](../../README.md#3-review-and-configure-tfvars)
 
 ## Usage
 
@@ -116,7 +116,7 @@ For some frequently performed operations, follow the steps outlined below:
 See the repo's [README](../../README.md#bootstrap-module) for how to bootstrap the module.
 
 ### Updating the modules' version
-See `README` [Update modules version](../../README.md#update-modules-version)
+See `README` [Update modules version](../../README.md#2-update-modules-version)
 
 ### Kubernetes Upgrade:
 In order to update Kubernetes we will need to update the `cluster` and the `nodes`.

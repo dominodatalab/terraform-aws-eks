@@ -154,3 +154,74 @@ If you don't have an SSH key, you can create one using:
 ```bash
  ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem && chmod 600 domino.pem
 ```
+
+### 5. Deploy
+#### 1. Set `AWS` credentials and verify.
+```bash
+aws sts get-caller-identity
+```
+
+#### 2. Change onto `domino-deploy`(or whatever your `DEPLOY_DIR` is)
+
+```bash
+cd domino-deploy
+```
+
+#### 3. Plan and Apply.
+:warning: It is recommended to become familiar with the `tf.sh` [usage](./examples/deploy/README.md#usage).
+
+At this point all requirements should be set to provision the infrastructure.
+
+For each of the modules, run `init`, `plan`, inspect the plan, then `apply` in the following order:
+
+1. `infra`
+2. `cluster`
+3. `nodes`
+
+Note: You can use `all` instead but it is recommended that the `plan`  and `apply` be done one at a time, so that the plans can be carefully examined.
+
+1. Init all
+
+```bash
+./tf.sh all init
+```
+
+2. `infra` plan.
+
+```bash
+./tf.sh infra plan
+```
+3. :exclamation: Carefully inspect the actions detailed in the `infra` plan for correctness, before proceeding.
+
+4. `infra` apply
+
+```bash
+./tf.sh infra apply
+```
+
+5. `cluster` plan
+
+```bash
+./tf.sh cluster plan
+```
+
+6. :exclamation: Carefully inspect the actions detailed in the `cluster` plan for correctness, before proceeding.
+
+7. `cluster` apply
+
+```bash
+./tf.sh cluster apply
+```
+
+8. nodes plan
+
+```bash
+./tf.sh nodes plan
+```
+9.  :exclamation: Carefully inspect the actions detailed in the `nodes` plan for correctness, before proceeding.
+
+10.  `nodes` apply
+
+```bash
+./tf.sh nodes apply
+```
