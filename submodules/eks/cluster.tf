@@ -85,11 +85,18 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
 }
 
 
+data "aws_eks_addon_version" "default" {
+  for_each           = toset(concat(["vpc-cni"], var.eks.cluster_addons))
+  addon_name         = each.key
+  kubernetes_version = aws_eks_cluster.this.version
+}
+
 resource "aws_eks_addon" "vpc_cni" {
   cluster_name                = aws_eks_cluster.this.name
+  addon_name                  = "vpc-cni"
+  addon_version               = data.aws_eks_addon_version.default["vpc-cni"].version
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
-  addon_name                  = "vpc-cni"
   configuration_values = jsonencode({
     env = merge(
       {},
@@ -101,9 +108,10 @@ resource "aws_eks_addon" "vpc_cni" {
 resource "aws_eks_addon" "this" {
   for_each                    = toset(var.eks.cluster_addons)
   cluster_name                = aws_eks_cluster.this.name
+  addon_name                  = each.key
+  addon_version               = data.aws_eks_addon_version.default[each.key].version
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
-  addon_name                  = each.key
 
   depends_on = [
     aws_eks_node_group.node_groups,
