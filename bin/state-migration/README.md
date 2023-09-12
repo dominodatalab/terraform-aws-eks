@@ -46,7 +46,7 @@ Ensure all prerequisites are met.
     * **LEGACY_STATE**: Path to the Terraform state file for the deployment you're migrating. This file is typically named `terraform.tfstate`.
 
 4. Run the script:
-  * Change onto `DEPLOY_DIR` and run the script
+  * Change into `DEPLOY_DIR` and run the script
   ```bash
   cd $DEPLOY_DIR
   ./migrate-states.sh

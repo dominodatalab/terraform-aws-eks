@@ -19,8 +19,8 @@ data "terraform_remote_state" "eks" {
 locals {
   infra                  = data.terraform_remote_state.infra.outputs.infra
   eks                    = data.terraform_remote_state.eks.outputs.eks
-  default_node_groups    = var.default_node_groups != null ? merge(local.infra.default_node_groups, var.default_node_groups) : local.infra.default_node_groups
-  additional_node_groups = var.additional_node_groups != null ? merge(local.infra.additional_node_groups, var.additional_node_groups) : local.infra.additional_node_groups
+  default_node_groups    = var.default_node_groups != null ? var.default_node_groups : local.infra.default_node_groups
+  additional_node_groups = var.additional_node_groups != null ? var.additional_node_groups : local.infra.additional_node_groups
 
 }
 

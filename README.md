@@ -18,6 +18,10 @@
   * Purpose: Ensures the integrity and functionality of the module.
   * Contents: Contains automation-driven tests intended for validation and continuous integration (CI) checks.
 
+* bin/state-migration/:
+  * Purpose: Contains automation to perform terraform state migration, from a monolithic module to a multi-module structure.
+  * Contents: Script and documentation to perform terraform state migration.
+
 Always refer to each section's respective README or documentation for detailed information and usage guidelines.
 
 ## Prerequisites
@@ -36,7 +40,7 @@ Update the following values:
 MOD_VERSION='v3.0.0'
 DEPLOY_DIR='domino-deploy'
 ```
-:warning: Ensure the DEPLOY_DIR does not exist or is currently empty.
+:warning: Ensure the `DEPLOY_DIR` does not exist or is currently empty.
 
 ```bash
 mkdir -p "$DEPLOY_DIR"
@@ -52,6 +56,7 @@ with Terraform immediately by creating Terraform configuration files.
 ```
 
 If successful, you should get a structure similar to this:
+
 ```bash
 domino-deploy
 ├── README.md
@@ -79,7 +84,7 @@ domino-deploy
 └── tf.sh
 ```
 
-**Note**: It's recommended to go through the README.md within the DEPLOY_DIR for further details.
+**Note**: It's recommended to go through the README.md within the `DEPLOY_DIR` for further details.
 
 ### 2. Update modules version
 You can update the modules version using a script or manually.
@@ -106,14 +111,119 @@ For example if `MOD_VERSION=v3.0.0`
 * **nodes/main.tf** : Update `module.nodes.source` from `"./../../../../modules/nodes"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/nodes?ref=v3.0.0`
 
 
-### 3. Review and Configure `infra.tfvars`
-Your initial setup is guided by the Terraform variables in `domino-deploy/terraform/infra.tfvars`. Ensure you review and modify this file as needed.
+### 3. Review and Configure `tfvars`
+
+Consult available variables within each of the modules `variables.tf`
+
+* `domino-deploy/terraform/infra/variables.tf`
+  * `deploy_id`
+  * `region`
+  * `tags`
+  * `network`
+  * `default_node_groups`
+  * `additional_node_groups`
+  * `storage`
+  * `kms`
+  * `eks`
+  * `ssh_pvt_key_path`
+  * `route53_hosted_zone_name`
+  * `bastion`
+
+* `domino-deploy/terraform/cluster/variables.tf`
+  * `eks`
+  * `kms_info`: :warning: Variable is only intended for migrating infrastructure, it is not recommended to set it.
+
+* `domino-deploy/terraform/nodes/variables.tf`
+  * `default_node_groups`
+  * `additional_node_groups`
+
+Configure terraform variables at:
+
+* `domino-deploy/terraform/infra.tfvars`
+* `domino-deploy/terraform/cluster.tfvars`
+* `domino-deploy/terraform/nodes.tfvars`
+
+**NOTE**: The `eks` configuration is required in both the `infra` and `cluster` modules because the Kubernetes version is used for installing the `kubectl` binary on the bastion host. Similarly, `default_node_groups` and `additional_node_groups` must be defined in both the `infra` and `nodes` modules, as the `availability zones` for the `nodes` are necessary for setting up the network infrastructure.
+The `eks` module will source its information from the `infra` outputs if it is not configured on `cluster.tfvars`, as will the `nodes` module if the variables are not configured on `nodes.tfvars`. We recommended setting the variables in `eks` and `nodes` from the beggining as future kubernetes upgrades will be driven from `cluster.tfvars` and `nodes.tfvars`.
 
 
 ### 4. Create SSH Key pair
-The deployment requires an SSH key. Update the `ssh_pvt_key_path` variable in `domino-deploy/terraform/infra.tfvars` with the full path of your key.
+The deployment requires an SSH key. Update the `ssh_pvt_key_path` variable in `domino-deploy/terraform/infra.tfvars` with the full path of your key (we recommend you place your key under the `domino-deploy/terraform` directory).
 
 If you don't have an SSH key, you can create one using:
 ```bash
  ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f domino.pem && chmod 600 domino.pem
 ```
+
+### 5. Deploy
+#### 1. Set `AWS` credentials and verify.
+```bash
+aws sts get-caller-identity
+```
+
+#### 2. Change into `domino-deploy`(or whatever your `DEPLOY_DIR` is)
+
+```bash
+cd domino-deploy
+```
+
+#### 3. Plan and Apply.
+:warning: It is recommended to become familiar with the `tf.sh` [usage](./examples/deploy/README.md#usage).
+
+At this point all requirements should be set to provision the infrastructure.
+
+For each of the modules, run `init`, `plan`, inspect the plan, then `apply` in the following order:
+
+1. `infra`
+2. `cluster`
+3. `nodes`
+
+Note: You can use `all` instead but it is recommended that the `plan`  and `apply` be done one at a time, so that the plans can be carefully examined.
+
+1. Init all
+
+```bash
+./tf.sh all init
+```
+
+2. `infra` plan.
+
+```bash
+./tf.sh infra plan
+```
+3. :exclamation: Carefully inspect the actions detailed in the `infra` plan for correctness, before proceeding.
+
+4. `infra` apply
+
+```bash
+./tf.sh infra apply
+```
+
+5. `cluster` plan
+
+```bash
+./tf.sh cluster plan
+```
+
+6. :exclamation: Carefully inspect the actions detailed in the `cluster` plan for correctness, before proceeding.
+
+7. `cluster` apply
+
+```bash
+./tf.sh cluster apply
+```
+
+8. nodes plan
+
+```bash
+./tf.sh nodes plan
+```
+9.  :exclamation: Carefully inspect the actions detailed in the `nodes` plan for correctness, before proceeding.
+
+10.  `nodes` apply
+
+```bash
+./tf.sh nodes apply
+```
+
+### At this point your deployment has been completed.
