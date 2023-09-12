@@ -161,7 +161,7 @@ If you don't have an SSH key, you can create one using:
 aws sts get-caller-identity
 ```
 
-#### 2. Change onto `domino-deploy`(or whatever your `DEPLOY_DIR` is)
+#### 2. Change into `domino-deploy`(or whatever your `DEPLOY_DIR` is)
 
 ```bash
 cd domino-deploy
@@ -225,3 +225,5 @@ Note: You can use `all` instead but it is recommended that the `plan`  and `appl
 ```bash
 ./tf.sh nodes apply
 ```
+
+### At this point your deployment has been completed.
