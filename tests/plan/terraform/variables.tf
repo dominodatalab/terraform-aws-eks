@@ -362,11 +362,13 @@ variable "kms" {
   description = <<EOF
     enabled = Toggle,if set use either the specified KMS key_id or a Domino-generated one.
     key_id  = optional(string, null)
+    additional_policies = "Allows setting additional KMS key policies when using a Domino-generated key"
   EOF
 
   type = object({
-    enabled = optional(bool, true)
-    key_id  = optional(string, null)
+    enabled             = optional(bool, true)
+    key_id              = optional(string, null)
+    additional_policies = optional(list(string), [])
   })
 
   validation {

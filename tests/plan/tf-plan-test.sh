@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-exclude=("bring-your-vpc.tfvars" "kms.tfvars" "private-link.tfvars")
+exclude=("bring-your-vpc.tfvars" "kms-byok.tfvars" "private-link.tfvars" "kms-add-policies.tfvars")
 
 failed_vars=()
 success_vars=()
@@ -12,7 +12,7 @@ verify_terraform() {
     exit 1
   else
     terraform_version=$(terraform --version | awk '/Terraform/ {print $2}')
-    printf "\033[0;32mTerraform version $terraform_version is installed.\033[0m\n"
+    printf "\033[0;32mTerraform version ${terraform_version// /} is installed.\033[0m\n"
   fi
 }
 
@@ -25,7 +25,7 @@ verify_aws_creds() {
 
 tf_plan() {
   local tfvars="$1"
-  terraform -chdir=terraform init
+  terraform -chdir=terraform init -upgrade
   terraform -chdir=terraform plan -var-file="$tfvars" -var "ssh_pvt_key_path=plan-test.pem"
 
   if [ "$?" != "0" ]; then
@@ -80,19 +80,34 @@ destroy_kms_key() {
   terraform -chdir="$dir" destroy --auto-approve || terraform -chdir="$dir" destroy --auto-approve --refresh=false
 }
 
-test_kms() {
+test_byok_kms() {
   create_kms_key
   if test -z $KMS_KEY_ID; then
     printf "\033[0;31mERROR Obtaining KMS_KEY_ID \033[0m.\n"
     exit 1
   fi
 
-  KMS_VARS_FILE="../../examples/tfvars/kms.tfvars"
-  vars="${SH_DIR}/kms.tfvars"
+  local KMS_VARS_FILE="../../examples/tfvars/kms-byok.tfvars"
+  local vars_file="$(basename $KMS_VARS_FILE)"
 
-  cat $KMS_VARS_FILE | sed "s/key_id = \".*\"/key_id = \"$KMS_KEY_ID\"/" | tee -a "$vars"
+  cat $KMS_VARS_FILE | sed "s/key_id = \".*\"/key_id = \"$KMS_KEY_ID\"/" | tee "$vars_file"
 
-  tf_plan "$(realpath $vars)" && rm "$vars"
+  tf_plan "$(realpath $vars_file)" && rm "$vars_file"
+}
+
+test_addpolicies_kms() {
+  local KMS_VARS_FILE="../../examples/tfvars/kms-add-policies.tfvars"
+  local vars_file="$(basename $KMS_VARS_FILE)"
+
+  KMS_POLICY="$(cat kms-policy.json)"
+  sed "s|additional_policies = .*|additional_policies = [$KMS_POLICY]|" $KMS_VARS_FILE | tee "$vars_file"
+
+  tf_plan "$(realpath $vars_file)" && rm "$vars_file"
+}
+
+test_kms() {
+  test_byok_kms
+  test_addpolicies_kms
 }
 
 finish() {
