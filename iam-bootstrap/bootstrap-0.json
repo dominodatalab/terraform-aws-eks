@@ -83,7 +83,8 @@
         "arn:${partition}:iam::${account_id}:role/${deploy_id}-*",
         "arn:${partition}:iam::${account_id}:instance-profile/${deploy_id}-*",
         "arn:${partition}:iam::${account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling",
-        "arn:${partition}:iam::${account_id}:oidc-provider/oidc.eks*"
+        "arn:${partition}:iam::${account_id}:oidc-provider/oidc.eks*",
+        "arn:${partition}:iam::${account_id}:role/aws-service-role/*"
       ]
     },
     {
