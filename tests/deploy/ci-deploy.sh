@@ -161,8 +161,7 @@ set_mod_src_local() {
 
 set_mod_src_latest_rel() {
   echo "Updating module source to the latest published release."
-
-  latest_release_tag="$(curl -s https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest | jq -r .tag_name)"
+  latest_release_tag="$(curl -sSfL -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest | jq -r '.tag_name')"
   echo "Latest published release tag is: ${latest_release_tag}"
   local ROOT_MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git?ref=${latest_release_tag}"
   MAJOR_MOD_VERSION=$(echo "${latest_release_tag}" | awk -F'.' '{print $1}' | sed 's/^v//')
