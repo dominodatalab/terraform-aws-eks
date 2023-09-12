@@ -119,7 +119,7 @@ variable "kms_info" {
 
 variable "eks" {
   description = <<EOF
-    creation_role_name = Only meant to support an imported role.
+    creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.

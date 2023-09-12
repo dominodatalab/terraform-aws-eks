@@ -148,7 +148,7 @@ The `eks` module will source its information from the `infra` outputs if it is n
 
 
 ### 4. Create SSH Key pair
-The deployment requires an SSH key. Update the `ssh_pvt_key_path` variable in `domino-deploy/terraform/infra.tfvars` with the full path of your key(we recommend you place your key under the `domino-deploy/terraform` directory).
+The deployment requires an SSH key. Update the `ssh_pvt_key_path` variable in `domino-deploy/terraform/infra.tfvars` with the full path of your key (we recommend you place your key under the `domino-deploy/terraform` directory).
 
 If you don't have an SSH key, you can create one using:
 ```bash

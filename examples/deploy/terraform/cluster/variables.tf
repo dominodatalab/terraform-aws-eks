@@ -2,7 +2,7 @@
 
 variable "eks" {
   description = <<EOF
-    creation_role_name = Only meant to support an imported role.
+    creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
@@ -12,7 +12,7 @@ variable "eks" {
       enabled = Enable EKS API public endpoint.
       cidrs   = List of CIDR ranges permitted for accessing the EKS public endpoint.
     }
-    "Custom role maps for aws auth configmap
+    Custom role maps for aws auth configmap
     custom_role_maps = {
       rolearn  = string
       username = string
@@ -66,9 +66,11 @@ variable "eks" {
 variable "kms_info" {
   description = <<EOF
     Overrides the KMS key information. Meant for migrated configurations.
-    key_id  = KMS key id.
-    key_arn = KMS key arn.
-    enabled = KMS key is enabled.
+    {
+      key_id  = KMS key id.
+      key_arn = KMS key arn.
+      enabled = KMS key is enabled.
+    }
   EOF
   type = object({
     key_id  = string
