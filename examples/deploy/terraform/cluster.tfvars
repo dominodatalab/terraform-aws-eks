@@ -1,1 +1,2 @@
-k8s_version = null
+eks      = null
+kms_info = null

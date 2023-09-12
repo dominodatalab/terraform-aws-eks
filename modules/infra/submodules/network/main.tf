@@ -23,7 +23,6 @@ locals {
   az_ids     = local.provided_vpc ? distinct(data.aws_subnet.private[*].availability_zone_id) : distinct(flatten([for name, ng in var.node_groups : ng.availability_zone_ids]))
   num_of_azs = length(local.az_ids)
 
-
   ## Calculating public and private subnets based on the base base cidr and desired network bits
   base_cidr_network_bits = tonumber(regex("[^/]*$", var.network.cidrs.vpc))
   ## We have one Cidr to carve the nw bits for both pvt and public subnets

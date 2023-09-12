@@ -62,7 +62,7 @@ variable "eks" {
       enabled = Enable EKS API public endpoint.
       cidrs   = List of CIDR ranges permitted for accessing the EKS public endpoint.
     }
-    "Custom role maps for aws auth configmap
+    Custom role maps for aws auth configmap
     custom_role_maps = {
       rolearn  = string
       username = string

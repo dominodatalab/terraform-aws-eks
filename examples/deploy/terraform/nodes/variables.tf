@@ -1,3 +1,4 @@
+## Used to overwrite the `default_node_groups` and `additional_node_groups` variables passed through the `infra` outputs.
 
 variable "default_node_groups" {
   description = "EKS managed node groups definition."

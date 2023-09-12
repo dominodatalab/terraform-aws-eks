@@ -119,31 +119,33 @@ variable "kms_info" {
 
 variable "eks" {
   description = <<EOF
-    k8s_version = "EKS cluster k8s version."
+    creation_role_name = Name of the role to import.
+    k8s_version = EKS cluster k8s version.
     kubeconfig = {
-      extra_args = "Optional extra args when generating kubeconfig."
-      path       = "Fully qualified path name to write the kubeconfig file."
+      extra_args = Optional extra args when generating kubeconfig.
+      path       = Fully qualified path name to write the kubeconfig file.
     }
     public_access = {
-      enabled = "Enable EKS API public endpoint."
-      cidrs   = "List of CIDR ranges permitted for accessing the EKS public endpoint."
+      enabled = Enable EKS API public endpoint.
+      cidrs   = List of CIDR ranges permitted for accessing the EKS public endpoint.
     }
-    "Custom role maps for aws auth configmap"
+    Custom role maps for aws auth configmap
     custom_role_maps = {
       rolearn = string
       username = string
       groups = list(string)
     }
-    master_role_names = "IAM role names to be added as masters in eks."
-    cluster_addons = "EKS cluster addons. vpc-cni is installed separately."
+    master_role_names = IAM role names to be added as masters in eks.
+    cluster_addons = EKS cluster addons. vpc-cni is installed separately.
     vpc_cni = Configuration for AWS VPC CNI
-    ssm_log_group_name = "CloudWatch log group to send the SSM session logs to."
-    identity_providers = "Configuration for IDP(Identity Provider)."
+    ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
+    identity_providers = Configuration for IDP(Identity Provider).
   }
   EOF
 
   type = object({
-    k8s_version = optional(string, "1.27")
+    creation_role_name = optional(string, null)
+    k8s_version        = optional(string, "1.27")
     kubeconfig = optional(object({
       extra_args = optional(string, "")
       path       = optional(string, null)
