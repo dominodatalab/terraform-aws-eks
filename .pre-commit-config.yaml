@@ -76,4 +76,4 @@ repos:
         name: Check for hard coded AWS partition
         entry: ./bin/pre-commit/check-aws-partition.sh
         language: script
-        exclude: "^(bin|tests/plan)"
+        exclude: "^(bin|examples)"

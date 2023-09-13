@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-exclude=("bring-your-vpc.tfvars" "kms-byok.tfvars" "private-link.tfvars" "kms-add-policies.tfvars")
+exclude=("bring-your-vpc.tfvars" "kms-byok.tfvars" "private-link.tfvars")
 
 failed_vars=()
 success_vars=()
@@ -95,21 +95,6 @@ test_byok_kms() {
   tf_plan "$(realpath $vars_file)" && rm "$vars_file"
 }
 
-test_addpolicies_kms() {
-  local KMS_VARS_FILE="../../examples/tfvars/kms-add-policies.tfvars"
-  local vars_file="$(basename $KMS_VARS_FILE)"
-
-  KMS_POLICY="$(cat kms-policy.json)"
-  sed "s|additional_policies = .*|additional_policies = [$KMS_POLICY]|" $KMS_VARS_FILE | tee "$vars_file"
-
-  tf_plan "$(realpath $vars_file)" && rm "$vars_file"
-}
-
-test_kms() {
-  test_byok_kms
-  test_addpolicies_kms
-}
-
 finish() {
   destroy_kms_key
 
@@ -129,4 +114,4 @@ trap finish EXIT ERR INT TERM
 verify_terraform
 verify_aws_creds
 run_terraform_plans
-test_kms
+test_byok_kms

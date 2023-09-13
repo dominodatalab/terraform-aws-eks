@@ -15,6 +15,20 @@ default_node_groups = {
 }
 
 kms = {
-  enabled             = true
-  additional_policies = []
+  enabled = true
+  additional_policies = [<<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+      "Sid": "AllowAll",
+      "Effect": "Allow",
+      "Principal": "arn:aws:iam::123457890:root",
+      "Action": ["kms:Decrypt"],
+      "Resource": "*"
+   }
+  ]
+}
+EOF
+  ]
 }
