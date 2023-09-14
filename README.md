@@ -2,7 +2,10 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/dominodatalab/terraform-aws-eks/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/dominodatalab/terraform-aws-eks/tree/main)
 
+:warning: Important: If you have existing infrastructure created with a version of this module < `v3.0.0` you will need to migrate your state before updating the module to versions >= `v3.0.0`. See [state-migration](./bin/state-migration/README.md#terraform-state-migration-guide) for more details.
+
 :warning: Important: Starting from version v2.0.0, this module has KMS enabled by default. If you utilized a prior version without setting the kms.enabled variable, ensure you define kms.enabled = false to preserve your existing state. Failing to do so will default to kms.enabled = true, potentially causing the destruction of your existing infrastructure and possible data loss.
+
 
 ## Repository Structure
 
@@ -35,7 +38,7 @@ Always refer to each section's respective README or documentation for detailed i
 ## Bootstrap module
 
 ### 1. Set your desired module version and deployment directory:
-Update the following values:
+Update the following values(Using `v3.0.0` and `domino-deploy` as an example):
 ```bash
 MOD_VERSION='v3.0.0'
 DEPLOY_DIR='domino-deploy'
