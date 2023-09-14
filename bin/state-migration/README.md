@@ -1,6 +1,6 @@
 # Terraform State Migration Guide
 ## Overview
-This script is designed to assist with the migration of a monolithic Terraform state to a modular design. The original implementation provisioned the infrastructure (infra), EKS cluster, and nodes under a single Terraform state. The new design segregates these into three distinct Terraform states: Infrastructure, EKS Cluster, and Nodes.
+This script is designed to assist with the migration of a monolithic Terraform(versions < v3.0.0 of this module) state to a modular design (versions >= v3.0.0 of this module). The original implementation provisioned the infrastructure (infra), EKS cluster, and nodes under a single Terraform state. The new design segregates these into three distinct Terraform states: Infrastructure, EKS Cluster, and Nodes.
 
 ## Prerequisites
 * Terraform installed.
