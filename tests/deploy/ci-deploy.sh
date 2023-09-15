@@ -32,12 +32,13 @@ deploy() {
 set_ci_branch_name() {
   if [[ "$CIRCLE_BRANCH" =~ ^pull/[0-9]+/head$ ]]; then
     PR_NUMBER=$(echo "$CIRCLE_BRANCH" | sed -n 's/^pull\/\([0-9]*\)\/head/\1/p')
-    CI_BRANCH_NAME=$(curl -s \
+    ci_branch_name=$(curl -s \
       "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" |
       jq -r .head.ref)
   else
-    CI_BRANCH_NAME="$CIRCLE_BRANCH"
+    ci_branch_name="$CIRCLE_BRANCH"
   fi
+  CI_BRANCH_NAME=$(jq -rn --arg br "$ci_branch_name" '$br|@uri')
   export CI_BRANCH_NAME
 }
 
