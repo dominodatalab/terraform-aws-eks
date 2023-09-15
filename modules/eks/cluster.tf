@@ -99,7 +99,8 @@ resource "aws_eks_addon" "vpc_cni" {
   configuration_values = jsonencode({
     env = merge(
       {},
-      try(var.eks.vpc_cni.prefix_delegation, false) ? { ENABLE_PREFIX_DELEGATION = "true" } : {}
+      coalesce(try(var.eks.vpc_cni.prefix_delegation, null), false) ? { ENABLE_PREFIX_DELEGATION = "true" } : {},
+      coalesce(try(var.eks.vpc_cni.annotate_pod_ip, null), true) ? { ANNOTATE_POD_IP = "true" } : {}
     )
   })
 }
