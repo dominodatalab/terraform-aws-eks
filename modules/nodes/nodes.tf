@@ -144,6 +144,13 @@ locals {
         key   = format("k8s.io/cluster-autoscaler/node-template/label/%v", lkey)
         value = lvalue
     }]],
+    [for tkey, tvalue in v.node_group.instance_tags : [
+      {
+        name  = name
+        key   = tkey
+        value = tvalue
+      }
+    ]],
     [for t in v.node_group.taints : [
       {
         name  = name
