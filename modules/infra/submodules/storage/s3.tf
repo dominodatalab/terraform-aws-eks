@@ -73,7 +73,6 @@ resource "aws_s3_bucket" "blobs" {
   bucket              = "${var.deploy_id}-blobs"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
-
 }
 
 data "aws_iam_policy_document" "blobs" {

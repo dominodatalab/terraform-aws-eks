@@ -43,5 +43,6 @@ No resources.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_domino_config_values"></a> [domino\_config\_values](#output\_domino\_config\_values) | Values used to update the `domino.yml` for installation. |
 | <a name="output_infra"></a> [infra](#output\_infra) | Infrastructure outputs. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
