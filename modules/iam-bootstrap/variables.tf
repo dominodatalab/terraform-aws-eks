@@ -35,3 +35,9 @@ variable "max_session_duration" {
   description = "Maximum session duration for role in seconds"
   default     = 43200
 }
+
+variable "additional_policy_names" {
+  type        = list(string)
+  description = "Additional IAM policies to attach"
+  default     = []
+}
