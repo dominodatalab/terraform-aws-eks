@@ -68,6 +68,22 @@ run_tf_command() {
     fi
   fi
 
+  update_node_groups() {
+    echo "Updating EKS Node Pools"
+    mapfile -t node_pools < <(terraform -chdir="$dir" state list -state="$state_path" | grep 'aws_eks_node_group.node_groups')
+
+    if [[ ${#node_pools[@]} -eq 0 ]]; then
+      echo "Error: No node pools found to update."
+      exit 1
+    fi
+
+    printf "Updating the following node_groups one at a time...\n%s\n" "${node_pools[@]}"
+    for np in "${node_pools[@]}"; do
+      echo "Updating $np"
+      terraform apply --target "$np" --auto-approve
+    done
+  }
+
   case $cmd in
   init)
     terraform -chdir="$dir" init
@@ -110,6 +126,13 @@ run_tf_command() {
     else
       echo "No state found for $name"
     fi
+    ;;
+  roll_nodes)
+    if [[ $dir != "nodes" ]]; then
+      echo "Invalid component: ${dir} .The 'roll_nodes' command is only applicable to 'nodes'"
+      exit 1
+    fi
+    update_node_groups
     ;;
   destroy)
     if state_exists "$dir" && has_resources "$dir"; then

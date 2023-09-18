@@ -2,6 +2,7 @@
 set -euo pipefail
 
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
+
 # ci vars
 echo "Getting CI vars"
 source "${SH_DIR}/meta.sh"
@@ -9,9 +10,7 @@ source "${SH_DIR}/meta.sh"
 # module vars
 if test -f "${DEPLOY_DIR}/meta.sh"; then
   echo "Getting module vars"
-  pushd "$DEPLOY_DIR" >/dev/null
-  source "meta.sh"
-  popd >/dev/null 2>&1
+  source "${DEPLOY_DIR}/meta.sh"
 fi
 
 # remote module vars
