@@ -72,6 +72,7 @@ To use the script, invoke it with the desired command and component:
   * `apply`: Applies the Terraform configurations.
   * `destroy`: Destroys the Terraform resources.
   * `output`: Shows the output values of your configurations.
+  * `output` `<myoutput>`: Shows a specific output value..
   * `refresh`: Refreshes the Terraform state file.
   * `plan_out`: Generates a plan and writes it to `terraform/${component}-terraform.plan`.
   * `apply_plan`: Applies plan located at `terraform/${component}-terraform.plan`.

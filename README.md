@@ -33,17 +33,23 @@ Always refer to each section's respective README or documentation for detailed i
 * [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started#install-terraform) >= v1.3.0
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) cli >= 1.25.0
 * [helm](https://helm.sh/docs/intro/install/) >= 3.9
+* [hcledit](https://github.com/minamijoyo/hcledit)
+* bash >= 4.0
 
 
 ## Bootstrap module
+We first need to setup the module structure.
 
 ### 1. Set your desired module version and deployment directory:
+Set up the following environment variables.
 Update the following values(Using `v3.0.0` and `domino-deploy` as an example):
 ```bash
 MOD_VERSION='v3.0.0'
 DEPLOY_DIR='domino-deploy'
 ```
 :warning: Ensure the `DEPLOY_DIR` does not exist or is currently empty.
+
+Create the `DEPLOY_DIR` and use terraform to bootstrap the module from source.
 
 ```bash
 mkdir -p "$DEPLOY_DIR"
@@ -58,7 +64,7 @@ The directory has no Terraform configuration files. You may begin working
 with Terraform immediately by creating Terraform configuration files.
 ```
 
-If successful, you should get a structure similar to this:
+:white_check_mark: If successful, you should get a structure similar to this:
 
 ```bash
 domino-deploy
@@ -230,3 +236,12 @@ Note: You can use `all` instead but it is recommended that the `plan`  and `appl
 ```
 
 ### At this point your deployment has been completed.
+
+### Retrieve Configuration Values for `domino.yaml`.
+Run the command below to generate a list of infrastructure values. These values are necessary for configuring the domino.yaml file, which is in turn used for installing the Domino product.
+
+```bash
+./tf.sh infra output domino_config_values
+```
+
+This command will output a set of key-value pairs, extracted from the infrastructure setup, that can be used as inputs in the domino.yaml configuration file.

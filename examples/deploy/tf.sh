@@ -27,12 +27,12 @@ check_dependencies() {
   local name=$1
   if [[ $name == "cluster" ]]; then
     if ! has_resources "${BASE_TF_DIR}/infra"; then
-      echo "Cannot plan/apply 'cluster' without 'infra' being provisioned."
+      printf "\nERROR: Cannot plan/apply 'cluster' without 'infra' being provisioned !!!\n\n"
       exit 1
     fi
   elif [[ $name == "nodes" ]]; then
     if ! has_resources "${BASE_TF_DIR}/infra" || ! has_resources "${BASE_TF_DIR}/cluster"; then
-      echo "Cannot plan/apply 'nodes' without 'infra' and 'cluster' being provisioned."
+      printf "\nERROR: Cannot plan/apply 'nodes' without 'infra' and 'cluster' being provisioned. being provisioned !!!\n\n"
       exit 1
     fi
   fi
@@ -42,6 +42,12 @@ check_dependencies() {
 run_tf_command() {
   local dir="$1"
   local cmd="$2"
+
+  if [[ "$#" == 3 ]]; then
+    local param=$3
+  else
+    local param='false'
+  fi
 
   local name=$(basename "$dir")
 
@@ -122,7 +128,11 @@ run_tf_command() {
     ;;
   output)
     if state_exists "$dir"; then
-      terraform -chdir="$dir" output -state="$state_path" | tee "${BASE_TF_DIR}/${name}.outputs"
+      if [ $param != "false" ]; then
+        terraform -chdir="$dir" output -state="$state_path" "$param"
+      else
+        terraform -chdir="$dir" output -state="$state_path" | tee "${BASE_TF_DIR}/${name}.outputs"
+      fi
     else
       echo "No state found for $name"
     fi
@@ -148,7 +158,16 @@ run_tf_command() {
   esac
 }
 
-if [[ "$#" -ne 2 ]]; then
+component=$1
+command=$2
+
+if [[ "$#" == 3 ]]; then
+  param=$3
+else
+  param='false'
+fi
+
+if [[ "$command" != "output" ]] && [[ "$#" -ne 2 ]]; then
   echo "Usage: ./tf.sh <component> <command>"
 
   echo -e "\nComponents:"
@@ -159,24 +178,26 @@ if [[ "$#" -ne 2 ]]; then
   echo "Note: If an unlisted component is provided, the script will attempt to execute the given command, assuming the corresponding directory is properly configured."
 
   echo -e "\nCommands:"
-  echo -e "  init     \tInitialize the working directory."
-  echo -e "  validate \tCheck the syntax and validate the configuration."
-  echo -e "  plan     \tGenerate an execution plan."
-  echo -e "  plan_out \tGenerate a plan and save it to a file."
-  echo -e "  apply    \tExecute the actions proposed in the Terraform plan."
-  echo -e "  refresh  \tUpdate local state with remote resources."
-  echo -e "  destroy  \tDestroy the Terraform-managed infrastructure."
-  echo -e "  output   \tDisplay outputs from the Terraform state."
+  echo -e "  init     \t\tInitialize the working directory."
+  echo -e "  validate \t\tCheck the syntax and validate the configuration."
+  echo -e "  plan     \t\tGenerate an execution plan."
+  echo -e "  plan_out \t\tGenerate a plan and save it to a file."
+  echo -e "  apply    \t\tExecute the actions proposed in the Terraform plan."
+  echo -e "  refresh  \t\tUpdate local state with remote resources."
+  echo -e "  destroy  \t\tDestroy the Terraform-managed infrastructure."
+  echo -e "  output   \t\tDisplay outputs from the Terraform state."
+  echo -e "  output <param> \tDisplay a specific output."
 
   exit 1
 fi
 
-component=$1
-command=$2
-
 case $component in
 infra | cluster | nodes)
-  run_tf_command "${BASE_TF_DIR}/${component}" "$command"
+  if [[ "$param" != "false" ]]; then
+    run_tf_command "${BASE_TF_DIR}/${component}" "$command" "$param"
+  else
+    run_tf_command "${BASE_TF_DIR}/${component}" "$command"
+  fi
   ;;
 all)
   if [[ "$command" == "destroy" ]]; then
