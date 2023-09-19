@@ -83,10 +83,9 @@ run_tf_command() {
       exit 1
     fi
 
-    printf "Updating the following node_groups one at a time...\n%s\n" "${node_pools[@]}"
     for np in "${node_pools[@]}"; do
       echo "Updating $np"
-      terraform apply --target "$np" --auto-approve
+      terraform -chdir="$dir" apply -input=false -state="$state_path" -target="$np" -auto-approve
     done
   }
 
@@ -138,8 +137,8 @@ run_tf_command() {
     fi
     ;;
   roll_nodes)
-    if [[ $dir != "nodes" ]]; then
-      echo "Invalid component: ${dir} .The 'roll_nodes' command is only applicable to 'nodes'"
+    if [[ "$name" != "nodes" ]]; then
+      echo "Invalid component: ${name} .The 'roll_nodes' command is only applicable to 'nodes'"
       exit 1
     fi
     update_node_groups
@@ -158,16 +157,7 @@ run_tf_command() {
   esac
 }
 
-component=$1
-command=$2
-
-if [[ "$#" == 3 ]]; then
-  param=$3
-else
-  param='false'
-fi
-
-if [[ "$command" != "output" ]] && [[ "$#" -ne 2 ]]; then
+usage() {
   echo "Usage: ./tf.sh <component> <command>"
 
   echo -e "\nComponents:"
@@ -187,8 +177,27 @@ if [[ "$command" != "output" ]] && [[ "$#" -ne 2 ]]; then
   echo -e "  destroy  \t\tDestroy the Terraform-managed infrastructure."
   echo -e "  output   \t\tDisplay outputs from the Terraform state."
   echo -e "  output <param> \tDisplay a specific output."
+  echo -e "  roll_nodes \t\tUpdates the resources 'aws_eks_node_group.node_groups' one at a time."
+  echo "Note: This is suitable in case you do not want to update all nodes at the same time."
+}
 
+# Check number of arguments
+if [[ "$#" -ne 3 ]] && [[ "$#" -ne 2 ]]; then
+  usage
   exit 1
+fi
+
+component=$1
+command=$2
+
+if [[ "$#" -eq 3 ]]; then
+  if [[ "$command" != "output" ]]; then
+    usage
+    exit 1
+  fi
+  param=$3
+else
+  param='false'
 fi
 
 case $component in

@@ -72,10 +72,11 @@ To use the script, invoke it with the desired command and component:
   * `apply`: Applies the Terraform configurations.
   * `destroy`: Destroys the Terraform resources.
   * `output`: Shows the output values of your configurations.
-  * `output` `<myoutput>`: Shows a specific output value..
+  * `output` `<myoutput>`: Shows a specific output value.
   * `refresh`: Refreshes the Terraform state file.
   * `plan_out`: Generates a plan and writes it to `terraform/${component}-terraform.plan`.
   * `apply_plan`: Applies plan located at `terraform/${component}-terraform.plan`.
+  * `roll_nodes`: (Rollout nodes)Runs apply one at a time on `aws_eks_node_group.node_groups` resources.
 
 ## Examples
 
@@ -145,11 +146,20 @@ Given that the nodes source the k8s version from `eks` we just need to plan and 
 
 ### Nodes Upgrade:
 Given that the nodes module looks for the latest AMI we just need to plan and apply:
+
 1. Plan and review the changes:
-   ```bash
-   ./tf.sh nodes plan
-   ```
-2. Apply the changes:
-   ```bash
-   ./tf.sh nodes apply
-   ```
+
+```bash
+./tf.sh nodes plan
+```
+
+2. :warning: In case of large amount of `node_groups` or if just want to update one `node_group` at a time.
+
+```bash
+./tf.sh nodes roll_nodes
+```
+Otherwise to update all `node_groups` in parallel.
+
+```bash
+./tf.sh nodes apply
+```
