@@ -5,6 +5,13 @@
 *.tfstate
 *.tfstate.*
 
+*infra.outputs*
+*cluster.outputs*
+*nodes.outputs*
+**migrated.txt
+**/deploy-test/*
+**terraform.plan
+
 **.terraform.lock.hcl*
 **.terraform.lock.hcl
 # Crash log files
@@ -31,6 +38,7 @@ override.tf.json
 # example: *tfplan*
 aws-auth.yaml
 domino.pem
+plan-test.pem*
 domino.pem.pub
 k8s-functions.sh
 k8s-pre-setup.sh
@@ -41,3 +49,4 @@ terraform_tfsec.txt
 eniconfig.yaml
 kubeconfig-proxy
 terraform.tfvars
+k8s-proxy-tunnel.sh

@@ -1,0 +1,189 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "EFSUngated",
+            "Effect": "Allow",
+            "Action": [
+                "backup-storage:MountCapsule",
+                "elasticfilesystem:Backup",
+                "elasticfilesystem:CreateAccessPoint",
+                "elasticfilesystem:CreateFileSystem",
+                "elasticfilesystem:CreateMountTarget",
+                "elasticfilesystem:DescribeAccessPoints",
+                "elasticfilesystem:DescribeFileSystemPolicy",
+                "elasticfilesystem:DescribeFileSystems",
+                "elasticfilesystem:DescribeLifecycleConfiguration",
+                "elasticfilesystem:DescribeMountTargets",
+                "elasticfilesystem:DescribeMountTargetSecurityGroups",
+                "elasticfilesystem:ListTagsForResource",
+                "elasticfilesystem:ModifyMountTargetSecurityGroups",
+                "elasticfilesystem:TagResource",
+                "elasticfilesystem:UntagResource"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "EC2BastionGated",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:ModifyInstanceAttribute",
+                "ec2:MonitorInstances",
+                "ec2:StartInstances",
+                "ec2:StopInstances",
+                "ec2:TerminateInstances"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "ec2:ResourceTag/Name": "${deploy_id}-bastion"
+                }
+            }
+        },
+        {
+            "Sid": "EC2GeneralUngated",
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:CreateAutoScalingGroup",
+                "autoscaling:CreateOrUpdateTags",
+                "autoscaling:DeleteTags",
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeScalingActivities",
+                "autoscaling:DescribeScheduledActions",
+                "autoscaling:DescribeTags",
+                "autoscaling:UpdateAutoScalingGroup",
+                "ec2:*InternetGateway*",
+                "ec2:*NatGateway*",
+                "ec2:*NetworkAcl*",
+                "ec2:*NetworkInterface*",
+                "ec2:*Route*",
+                "ec2:*Subnet*",
+                "ec2:*Vpc*",
+                "ec2:AllocateAddress",
+                "ec2:AssociateAddress",
+                "ec2:AuthorizeSecurityGroupEgress",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:CreateLaunchTemplate",
+                "ec2:CreateLaunchTemplateVersion",
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateTags",
+                "ec2:DeleteKeyPair",
+                "ec2:DeleteTags",
+                "ec2:Describe*",
+                "ec2:DescribeAccountAttributes",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeImages",
+                "ec2:DescribeInstances",
+                "ec2:DescribeLaunchTemplates",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DisassociateAddress",
+                "ec2:GetLaunchTemplateData",
+                "ec2:ImportKeyPair",
+                "ec2:ModifyInstanceMetadataOptions",
+                "ec2:ReleaseAddress",
+                "ec2:RevokeSecurityGroupEgress",
+                "ec2:RevokeSecurityGroupIngress",
+                "ec2:RunInstances",
+                "ssm:GetParameter"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "ACMUngated",
+            "Effect": "Allow",
+            "Action": [
+                "acm:RequestCertificate",
+                "acm:DescribeCertificate",
+                "acm:GetCertificate",
+                "acm:ListTagsForCertificate",
+                "acm:ListCertificates",
+                "acm:DeleteCertificate"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "ECRGated",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:CreateRepository",
+                "ecr:DescribeRepositories",
+                "ecr:ListTagsForResource",
+                "ecr:TagResource"
+            ],
+            "Resource": [
+                "arn:${partition}:ecr:*:*:repository/${deploy_id}/*"
+            ]
+        },
+        {
+            "Sid": "KMSUngated",
+            "Effect": "Allow",
+            "Action": [
+                "kms:CreateGrant",
+                "kms:CreateAlias",
+                "kms:CreateKey",
+                "kms:DescribeKey",
+                "kms:EnableKeyRotation",
+                "kms:GenerateDataKey",
+                "kms:GenerateDataKeyWithoutPlaintext",
+                "kms:GetKeyRotationStatus",
+                "kms:GetKeyPolicy",
+                "kms:ListAliases",
+                "kms:ListResourceTags",
+                "kms:PutKeyPolicy",
+                "kms:RetireGrant",
+                "kms:ScheduleKeyDeletion",
+                "kms:TagResource",
+                "kms:UpdateAlias"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "DeletesUngated",
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:DeleteAutoScalingGroup",
+                "ec2:DeleteFlowLogs",
+                "ec2:DeleteLaunchTemplate",
+                "ec2:DeleteSecurityGroup",
+                "ecr:DeleteRepository",
+                "eks:DeleteCluster",
+                "eks:DeleteNodegroup",
+                "elasticfilesystem:DeleteAccessPoint",
+                "elasticfilesystem:DeleteFileSystem",
+                "elasticfilesystem:DeleteMountTarget",
+                "kms:DeleteAlias",
+                "logs:DeleteLogDelivery",
+                "logs:DeleteLogGroup",
+                "s3:DeleteObjectVersion"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "ELBUngated",
+            "Effect": "Allow",
+            "Action": [
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:DescribeLoadBalancers",
+                "elasticloadbalancing:DeleteLoadBalancer",
+                "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                "elasticloadbalancing:CreateTargetGroup",
+                "elasticloadbalancing:DescribeTargetGroups",
+                "elasticloadbalancing:DeleteTargetGroup",
+                "elasticloadbalancing:ModifyTargetGroupAttributes",
+                "elasticloadbalancing:DescribeTargetGroupAttributes",
+                "elasticloadbalancing:CreateListener",
+                "elasticloadbalancing:DescribeListeners",
+                "elasticloadbalancing:DeleteListener",
+                "elasticloadbalancing:AddTags",
+                "elasticloadbalancing:DescribeTags"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
