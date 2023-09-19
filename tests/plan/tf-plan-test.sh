@@ -11,8 +11,8 @@ verify_terraform() {
     printf "\n\033[0;31mError: Terraform is not installed!!!\033[0m\n"
     exit 1
   else
-    terraform_version=$(terraform --version | awk '/Terraform/ {print $2}')
-    printf "\033[0;32mTerraform version ${terraform_version// /} is installed.\033[0m\n"
+    terraform_version=$(terraform --version | awk '/Terraform/ {print $2}' | awk -F 'version' '{print $1}' | tr -d '[:space:]')
+    printf "\033[0;32mTerraform version: ${terraform_version} is installed.\033[0m\n"
   fi
 }
 
@@ -25,8 +25,14 @@ verify_aws_creds() {
 
 tf_plan() {
   local tfvars="$1"
+  local test_pem="terraform/plan-test.pem"
+
+  if [ ! -f "$test_pem" ]; then
+    ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$test_pem" && chmod 400 "$test_pem"
+  fi
+
   terraform -chdir=terraform init -upgrade
-  terraform -chdir=terraform plan -var-file="$tfvars" -var "ssh_pvt_key_path=plan-test.pem"
+  terraform -chdir=terraform plan -var-file="$tfvars" -var "ssh_pvt_key_path=$(basename $test_pem)"
 
   if [ "$?" != "0" ]; then
     printf "\033[0;31mERROR: terraform plan failed for $tfvars\033[0m.\n"
@@ -35,7 +41,6 @@ tf_plan() {
     printf "\033[0;32mSUCCESS: terraform plan succeeded for $tfvars\033[0m.\n"
     success_vars+=("$(basename $tfvars)")
   fi
-
 }
 
 run_terraform_plans() {

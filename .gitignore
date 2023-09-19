@@ -38,6 +38,7 @@ override.tf.json
 # example: *tfplan*
 aws-auth.yaml
 domino.pem
+plan-test.pem*
 domino.pem.pub
 k8s-functions.sh
 k8s-pre-setup.sh
