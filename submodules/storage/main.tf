@@ -37,5 +37,11 @@ locals {
       policy_json = data.aws_iam_policy_document.registry.json
       arn         = aws_s3_bucket.registry.arn
     }
+    velero = {
+      bucket_name = aws_s3_bucket.velero.bucket
+      id          = aws_s3_bucket.velero.id
+      policy_json = data.aws_iam_policy_document.velero.json
+      arn         = aws_s3_bucket.velero.arn
+    }
   }
 }
