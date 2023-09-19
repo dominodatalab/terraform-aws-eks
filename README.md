@@ -235,7 +235,44 @@ Note: You can use `all` instead but it is recommended that the `plan`  and `appl
 ./tf.sh nodes apply
 ```
 
-### At this point your deployment has been completed.
+### At this point the infrastructure has been created.
+
+
+### Interacting with Kubernetes
+To interact with the EKS Control Plane using kubectl or helm commands, you'll need to set up both the appropriate AWS credentials and the KUBECONFIG environment variable. If your EKS cluster is private, you can use mechanisms provided by this module to establish an SSH tunnel through a Bastion host. However, if your EKS endpoint is publicly accessible, you only need to follow steps 1-3 below.
+
+For ease of setup, use the k8s-functions.sh script, which contains helper functions for cluster configuration.
+
+#### Steps
+1. Verify AWS Credentials: Ensure your AWS credentials are properly configured by running the following command:
+
+```bash
+aws sts get-caller-identity
+```
+
+2. Import Functions: Source the k8s-functions.sh script to import its functions into your current shell.
+
+```bash
+source k8s-functions.sh
+```
+
+3. Set `KUBECONFIG`: Use the check_kubeconfig function to set the `KUBECONFIG` environment variable appropriately.
+
+```bash
+check_kubeconfig
+```
+
+4. Open SSH Tunnel (Optional): If your EKS cluster is private, open an SSH tunnel through the Bastion host by executing:
+
+```bash
+open_ssh_tunnel_to_k8s_api
+```
+
+5. Close SSH Tunnel: To close the SSH tunnel, run:
+
+```bash
+close_ssh_tunnel_to_k8s_api
+```
 
 ### Retrieve Configuration Values for `domino.yaml`.
 Run the command below to generate a list of infrastructure values. These values are necessary for configuring the domino.yaml file, which is in turn used for installing the Domino product.

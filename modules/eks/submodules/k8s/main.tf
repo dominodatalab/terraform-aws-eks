@@ -4,26 +4,18 @@ resource "random_integer" "port" {
 }
 
 locals {
-  k8s_functions_sh_filename    = "k8s-functions.sh"
-  k8s_functions_sh_template    = "k8s-functions.sh.tftpl"
-  k8s_pre_setup_sh_file        = "k8s-pre-setup.sh"
-  k8s_pre_setup_sh_template    = "k8s-pre-setup.sh.tftpl"
-  k8s_proxy_tunnel_sh_filename = "k8s-proxy-tunnel.sh"
-  k8s_proxy_tunnel_sh_template = "k8s-proxy-tunnel.sh.tftpl"
-  aws_auth_filename            = "aws-auth.yaml"
-  aws_auth_template            = "aws-auth.yaml.tftpl"
-  eniconfig_filename           = length(var.network_info.subnets.pod) != 0 ? "eniconfig.yaml" : ""
-  eniconfig_template           = "eniconfig.yaml.tftpl"
-  resources_directory          = path.cwd
-  templates_dir                = "${path.module}/templates"
+  k8s_functions_sh_filename = "k8s-functions.sh"
+  k8s_functions_sh_template = "k8s-functions.sh.tftpl"
+  k8s_pre_setup_sh_file     = "k8s-pre-setup.sh"
+  k8s_pre_setup_sh_template = "k8s-pre-setup.sh.tftpl"
+  aws_auth_filename         = "aws-auth.yaml"
+  aws_auth_template         = "aws-auth.yaml.tftpl"
+  eniconfig_filename        = length(var.network_info.subnets.pod) != 0 ? "eniconfig.yaml" : ""
+  eniconfig_template        = "eniconfig.yaml.tftpl"
+  resources_directory       = path.cwd
+  templates_dir             = "${path.module}/templates"
 
   templates = {
-    k8s_proxy_tunnel_sh = {
-      filename = local.k8s_proxy_tunnel_sh_filename
-      content = templatefile("${local.templates_dir}/${local.k8s_proxy_tunnel_sh_template}", {
-        k8s_functions_sh_filename = local.k8s_functions_sh_filename
-      })
-    }
     k8s_functions_sh = {
       filename = local.k8s_functions_sh_filename
       content = templatefile("${local.templates_dir}/${local.k8s_functions_sh_template}", {

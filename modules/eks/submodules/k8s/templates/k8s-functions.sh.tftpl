@@ -7,15 +7,21 @@ EC="\e[0m"
 KUBECONFIG="${kubeconfig_path}"
 KUBECONFIG_PROXY="$KUBECONFIG-proxy"
 TUNNEL_SOCKET_FILE=$${TUNNEL_SOCKET_FILE:-/tmp/k8s-tunnel-socket-${k8s_tunnel_port}}
+kubeconfig=""
 
 open_ssh_tunnel_to_k8s_api() {
   if [[ -n "${bastion_public_ip}" && -n "${bastion_user}" ]]; then
+    close_ssh_tunnel_to_k8s_api >/dev/null 2>&1 || true
     printf "$GREEN Opening k8s tunnel ... $EC \n"
-    ssh-keygen -R "${bastion_public_ip}" || true
+    ssh-keygen -R "${bastion_public_ip}" >/dev/null 2>&1 || true
 
-    ls -ltr "${ssh_pvt_key_path}"
     chmod 400 "${ssh_pvt_key_path}"
-    ssh -v -q -N -f -M -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -o "ExitOnForwardFailure=yes" -i "${ssh_pvt_key_path}" -D ${k8s_tunnel_port} -S "$TUNNEL_SOCKET_FILE" ${bastion_user}@${bastion_public_ip} || { printf "$RED Failed to establish k8s ssh tunnel. $EC\n" && exit 1; }
+    if ssh -v -q -N -f -M -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -o "ExitOnForwardFailure=yes" -i "${ssh_pvt_key_path}" -D ${k8s_tunnel_port} -S "$TUNNEL_SOCKET_FILE" ${bastion_user}@${bastion_public_ip}; then
+      printf "$GREEN Established k8s ssh tunnel. $EC\n"
+    else
+      printf "$RED Failed to establish k8s ssh tunnel. $EC\n"
+      exit 1
+    fi
   else
     printf "$GREEN No bastion, no tunnel needed... $EC \n"
   fi
@@ -28,13 +34,14 @@ check_kubeconfig() {
       echo "$KUBECONFIG exists, creating $KUBECONFIG_PROXY for proxy use."
       cp $KUBECONFIG $KUBECONFIG_PROXY
       kubectl --kubeconfig $KUBECONFIG_PROXY config set "clusters.${eks_cluster_arn}.proxy-url" "socks5://127.0.0.1:${k8s_tunnel_port}"
-      export kubeconfig=$KUBECONFIG_PROXY
+      kubeconfig=$KUBECONFIG_PROXY
     else
-      export kubeconfig=$KUBECONFIG
+      kubeconfig=$KUBECONFIG
     fi
   else
     echo "$KUBECONFIG does not exist." && exit 1
   fi
+  export KUBECONFIG="$kubeconfig"
   echo
 }
 
