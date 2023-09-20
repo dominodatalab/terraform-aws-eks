@@ -164,6 +164,7 @@ variable "eks" {
     ssm_log_group_name = optional(string, "session-manager")
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
+      annotate_pod_ip   = optional(bool)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
