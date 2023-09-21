@@ -20,7 +20,7 @@ open_ssh_tunnel_to_k8s_api() {
       printf "$GREEN Established k8s ssh tunnel. $EC\n"
     else
       printf "$RED Failed to establish k8s ssh tunnel. $EC\n"
-      exit 1
+      return 1
     fi
   else
     printf "$GREEN No bastion, no tunnel needed... $EC \n"

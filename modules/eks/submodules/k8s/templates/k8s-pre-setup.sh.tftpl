@@ -1,12 +1,29 @@
-#! /usr/bin/env bash
-
-set -ex
+#!/usr/bin/env bash
+set -euo pipefail
 
 source ${k8s_functions_sh_filename}
 
+open_ssh_tunnel() {
+  local max_retries=5
+  local sleep_time=10
+  local success=0
+  for ((i = 1; i <= max_retries && success == 0; i++)); do
+    open_ssh_tunnel_to_k8s_api && success=1
+    if [[ $success -eq 0 && $i -ne $max_retries ]]; then
+      echo "Attempt ${i} failed. Retrying in ${sleep_time} seconds..."
+      sleep $sleep_time
+    fi
+  done
+
+  if [[ $success -eq 0 ]]; then
+    echo "Failed to open SSH tunnel after $max_retries attempts. Exiting..."
+    exit 1
+  fi
+}
+
 trap close_ssh_tunnel_to_k8s_api EXIT
-open_ssh_tunnel_to_k8s_api
 check_kubeconfig
+open_ssh_tunnel
 
 for arg in "$@"; do
   "$arg"
