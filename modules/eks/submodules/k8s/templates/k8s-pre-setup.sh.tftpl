@@ -10,7 +10,7 @@ open_ssh_tunnel() {
   for ((i = 1; i <= max_retries && success == 0; i++)); do
     open_ssh_tunnel_to_k8s_api && success=1
     if [[ $success -eq 0 && $i -ne $max_retries ]]; then
-      echo "Attempt ${i} failed. Retrying in ${sleep_time} seconds..."
+      echo "Attempt $i failed. Retrying in $sleep_time seconds..."
       sleep $sleep_time
     fi
   done
