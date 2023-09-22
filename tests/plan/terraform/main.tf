@@ -50,3 +50,17 @@ module "nodes" {
   kms_info               = module.infra.kms
   tags                   = module.infra.tags
 }
+
+
+
+module "single_node" {
+  count  = var.single_node != null ? 1 : 0
+  source = "./../../../modules/single-node"
+
+  region       = module.infra.region
+  ssh_key      = module.infra.ssh_key
+  single_node  = var.single_node
+  eks_info     = module.eks.info
+  network_info = module.infra.network
+  kms_info     = module.infra.kms
+}

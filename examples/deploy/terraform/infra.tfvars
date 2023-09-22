@@ -1,6 +1,6 @@
 additional_node_groups = {}
 bastion = {
-  enabled = true
+  enabled = false
 }
 default_node_groups = {
   compute = {
@@ -13,7 +13,7 @@ default_node_groups = {
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
 }
-deploy_id = "dominoeks001"
+deploy_id = "dominoeks003"
 eks = {
   cluster_addons     = null
   creation_role_name = null
