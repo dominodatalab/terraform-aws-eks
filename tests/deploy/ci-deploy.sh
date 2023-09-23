@@ -149,6 +149,14 @@ set_all_mod_src() {
   done
 }
 
+setup_single_node_tf() {
+  local node_mod_dir="single-node"
+  local node_deploy_mod_dir="${node_mod_dir}/${node_mod_dir}"
+
+  cp -r "$node_mod_dir" "$node_deploy_mod_dir"
+  mv "${node_deploy_mod_dir}/single-node.tfvars" "${BASE_TF_DIR}/single-node.tfvars"
+}
+
 set_mod_src_circle_branch() {
   set_ci_branch_name
   set_all_mod_src "$CI_BRANCH_NAME"
