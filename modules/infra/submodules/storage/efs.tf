@@ -6,7 +6,8 @@ resource "aws_efs_file_system" "eks" {
   kms_key_id                      = local.kms_key_arn
 
   tags = {
-    "Name" = var.deploy_id
+    "Name"        = var.deploy_id
+    "backup-plan" = "remote"
   }
 
   lifecycle {
