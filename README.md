@@ -282,3 +282,7 @@ Run the command below to generate a list of infrastructure values. These values 
 ```
 
 This command will output a set of key-value pairs, extracted from the infrastructure setup, that can be used as inputs in the domino.yaml configuration file.
+
+
+## Domino Backups
+To make our backups safe we could use cross account backups, in case you want to apply this you can use the following [module](https://github.com/dominodatalab/terraform-aws-domino-backup) to enabled this.
