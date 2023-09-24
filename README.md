@@ -285,4 +285,35 @@ This command will output a set of key-value pairs, extracted from the infrastruc
 
 
 ## Domino Backups
-To make our backups safe we could use cross account backups, in case you want to apply this you can use the following [module](https://github.com/dominodatalab/terraform-aws-domino-backup) to enabled this.
+To make our backups safe we could use cross account backups (Accounts under same AWS Organization), in case you want to apply this you can use the following [module](https://github.com/dominodatalab/terraform-aws-domino-backup) to enabled this and the following steps:
+
+1. Define another provider for the backup account in `main.tf` for infra module.
+
+Location
+```bash
+domino-deploy
+├── terraform
+│   ├── infra
+│   │   ├── main.tf
+```
+
+Content
+```
+provider "aws" {
+  alias   = "domino-backup"
+  region  = <<Backup Account Region>>
+  profile = <<Profile Account Here>>
+}
+```
+
+2. Create a file called `backup.tf` in the infra module with the following content
+
+```
+module "backups" {
+  count  = 1
+  source = "github.com/dominodatalab/terraform-aws-domino-backup.git?ref=v1.0.3"
+  providers = {
+    aws.dst = aws.domino-backup
+  }
+}
+```
