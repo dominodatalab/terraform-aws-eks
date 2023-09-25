@@ -157,6 +157,7 @@ setup_single_node_tf() {
   cp -r "$node_mod_dir" "$node_deploy_mod_dir"
   mv "${node_deploy_mod_dir}/single-node.tfvars" "${BASE_TF_DIR}/single-node.tfvars"
 
+  set_ci_branch_name
   MOD_SOURCE="${BASE_REMOTE_MOD_SRC}/${node_mod_dir}?ref=${CI_BRANCH_NAME}"
 
   echo "Updating single_node mod source to ${MOD_SOURCE}..."
