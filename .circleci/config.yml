@@ -120,6 +120,26 @@ commands:
               echo "Running ci-deploy.sh deploy"
               bash ci-deploy.sh deploy
             fi
+  tf_deploy_single_node:
+    description: "Terraform deploy single-node"
+    steps:
+      - run:
+          name: "Setup single-node module"
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh setup_single_node_tf
+      - run:
+          name: "Deploy single-node"
+          working_directory: tests/deploy
+          command: |
+            bash ci-deploy.sh setup_single_node_tf
+            bash ci-deploy.sh deploy single-node
+  tf_destroy_single_node:
+    description: "Terraform destroy single-node"
+    steps:
+      - run:
+          name: "Destroy single-node"
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh destroy single-node
   tf_deploy:
     description: "Terraform deploy"
     steps:
@@ -170,6 +190,8 @@ jobs:
           helm_version: << parameters.helm_version >>
       - set_tf_vars
       - tf_deploy
+      - tf_deploy_single_node
+      - tf_destroy_single_node
       - tf_destroy
   test-upgrade:
     docker:
@@ -187,7 +209,6 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - install_hcledit
       - set_tf_vars
       - run:
           name: "Set module source to latest published release"
