@@ -151,7 +151,7 @@ set_all_mod_src() {
 
 setup_single_node_tf() {
   local node_mod_dir="single-node"
-  local node_deploy_mod_dir="${node_mod_dir}/${node_mod_dir}"
+  local node_deploy_mod_dir="${BASE_TF_DIR}/${node_mod_dir}"
 
   cp -r "$node_mod_dir" "$node_deploy_mod_dir"
   mv "${node_deploy_mod_dir}/single-node.tfvars" "${BASE_TF_DIR}/single-node.tfvars"
