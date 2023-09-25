@@ -136,6 +136,7 @@ variable "eks_info" {
       })
     })
     nodes = object({
+      nodes_master      = bool
       security_group_id = string
       roles = list(object({
         name = string

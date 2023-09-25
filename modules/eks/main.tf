@@ -213,6 +213,7 @@ locals {
       }
     }
     nodes = {
+      nodes_master      = var.eks.nodes_master
       security_group_id = aws_security_group.eks_nodes.id
       roles = [{
         arn  = aws_iam_role.eks_nodes.arn
