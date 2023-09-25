@@ -3,6 +3,11 @@ output "infra" {
   value       = module.infra
 }
 
+output "ssh_bastion_command" {
+  description = "Command used in order to ssh to bastion."
+  value       = module.infra.bastion.ssh_bastion_command
+}
+
 output "domino_config_values" {
   description = "Values used to update the `domino.yml` for installation."
   value = {
