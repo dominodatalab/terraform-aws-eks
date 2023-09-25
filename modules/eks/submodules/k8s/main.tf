@@ -42,7 +42,7 @@ locals {
       filename = local.aws_auth_filename
       content = templatefile("${local.templates_dir}/${local.aws_auth_template}",
         {
-          nodes_master         = try(var.eks_info.nodes_master, false)
+          nodes_master         = try(var.eks_info.nodes.nodes_master, false)
           eks_node_role_arns   = toset(var.eks_info.nodes.roles[*].arn)
           eks_master_role_arns = toset(var.eks_info.cluster.roles[*].arn)
           eks_custom_role_maps = var.eks_info.cluster.custom_roles
