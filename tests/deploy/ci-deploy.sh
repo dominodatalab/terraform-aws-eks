@@ -155,6 +155,8 @@ setup_single_node_tf() {
 
   cp -r "$node_mod_dir" "$node_deploy_mod_dir"
   mv "${node_deploy_mod_dir}/single-node.tfvars" "${BASE_TF_DIR}/single-node.tfvars"
+
+  set_mod_src "$MOD_SOURCE" "${node_deploy_mod_dir}/main.tf" "single_node"
 }
 
 set_mod_src_circle_branch() {
