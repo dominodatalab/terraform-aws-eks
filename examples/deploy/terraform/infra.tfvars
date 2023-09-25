@@ -1,6 +1,6 @@
 additional_node_groups = {}
 bastion = {
-  enabled = false
+  enabled = true
 }
 default_node_groups = {
   compute = {
