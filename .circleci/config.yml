@@ -47,13 +47,20 @@ commands:
           environment:
             HCLEDIT_VERSION: << parameters.hcledit_version >>
           command: bash ci-deploy.sh install_hcledit
-  set_current_mod_source:
+  set_mod_source_current:
     description: "Set up module source to current branch."
     steps:
       - run:
           name: "Set module source to current branch"
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_circle_branch
+  set_mod_source_latest_rel:
+    description: "Set up module source to current branch."
+    steps:
+      - run:
+          name: "Set module source to latest published release"
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh set_mod_src_latest_rel
   set_aws_creds:
     description: "Sets short-lived creds"
     steps:
@@ -72,7 +79,6 @@ commands:
           command: |
             bash ci-deploy.sh setup_modules
             bash ci-deploy.sh set_tf_vars
-      - set_current_mod_source
   install_helm:
     description: "Install Helm"
     parameters:
@@ -189,6 +195,7 @@ jobs:
       - install_helm:
           helm_version: << parameters.helm_version >>
       - set_tf_vars
+      - set_mod_source_current
       - tf_deploy
       - tf_deploy_single_node
       - tf_destroy_single_node
@@ -210,12 +217,9 @@ jobs:
       - install_helm:
           helm_version: << parameters.helm_version >>
       - set_tf_vars
-      - run:
-          name: "Set module source to latest published release"
-          working_directory: tests/deploy
-          command: bash ci-deploy.sh set_mod_src_latest_rel
+      - set_mod_source_latest_rel
       - tf_deploy
-      - set_current_mod_source
+      - set_mod_source_current
       - tf_init_apply
       - tf_destroy
 
