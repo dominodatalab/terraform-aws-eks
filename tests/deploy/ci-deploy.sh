@@ -170,6 +170,10 @@ deploy_single_node() {
   deploy "single-node"
 }
 
+destroy_single_node() {
+  destroy "single-node"
+}
+
 set_mod_src_circle_branch() {
   set_ci_branch_name
   set_all_mod_src "$CI_BRANCH_NAME"
