@@ -197,3 +197,9 @@ variable "single_node" {
     error_message = "var.single_node.owner is required if var.single_node.name_prefix is specified "
   }
 }
+
+variable "run_post_node_setup" {
+  description = "Toggle installing addons and calico"
+  type        = bool
+  default     = true
+}

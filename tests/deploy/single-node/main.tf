@@ -23,9 +23,10 @@ module "single_node" {
   source = "./../../../modules/single-node"
   region = local.infra.region
 
-  ssh_key      = local.infra.ssh_key
-  single_node  = var.single_node
-  eks_info     = local.eks
-  network_info = local.infra.network
-  kms_info     = local.infra.kms
+  ssh_key             = local.infra.ssh_key
+  single_node         = var.single_node
+  eks_info            = local.eks
+  network_info        = local.infra.network
+  kms_info            = local.infra.kms
+  run_post_node_setup = false
 }

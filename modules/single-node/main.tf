@@ -28,7 +28,7 @@ data "aws_ami" "single_node" {
 
 
 data "aws_eks_addon_version" "default" {
-  for_each           = toset(var.eks_info.cluster.addons)
+  for_each           = var.run_post_node_setup ? toset(var.eks_info.cluster.addons) : []
   addon_name         = each.key
   kubernetes_version = var.eks_info.cluster.version
 }
@@ -53,7 +53,7 @@ resource "terraform_data" "node_is_ready" {
 
 
 resource "aws_eks_addon" "this" {
-  for_each                    = toset(var.eks_info.cluster.addons)
+  for_each                    = var.run_post_node_setup ? toset(var.eks_info.cluster.addons) : []
   cluster_name                = var.eks_info.cluster.specs.name
   addon_name                  = each.key
   addon_version               = data.aws_eks_addon_version.default[each.key].version
@@ -64,7 +64,7 @@ resource "aws_eks_addon" "this" {
 }
 
 resource "terraform_data" "calico_setup" {
-  count = try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) && var.run_post_node_setup ? 1 : 0
 
   triggers_replace = [
     filemd5(var.eks_info.k8s_pre_setup_sh_file)
