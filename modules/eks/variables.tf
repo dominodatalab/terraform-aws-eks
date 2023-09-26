@@ -163,8 +163,8 @@ variable "eks" {
     cluster_addons     = optional(list(string), ["kube-proxy", "coredns"])
     ssm_log_group_name = optional(string, "session-manager")
     vpc_cni = optional(object({
-      prefix_delegation = optional(bool)
-      annotate_pod_ip   = optional(bool)
+      prefix_delegation = optional(bool, false)
+      annotate_pod_ip   = optional(bool, true)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
