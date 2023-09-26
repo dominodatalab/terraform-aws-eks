@@ -55,6 +55,7 @@ variable "eks" {
   description = <<EOF
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
+    nodes_master  Grants the nodes role system:master access. NOT recomended
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
       path       = Fully qualified path name to write the kubeconfig file.

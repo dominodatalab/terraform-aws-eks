@@ -54,6 +54,7 @@ variable "ssh_pvt_key_path" {
 variable "eks" {
   description = <<EOF
     k8s_version = EKS cluster k8s version.
+    nodes_master  Grants the nodes role system:master access. NOT recomended
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
       path       = Fully qualified path name to write the kubeconfig file.
@@ -77,7 +78,8 @@ variable "eks" {
   EOF
 
   type = object({
-    k8s_version = optional(string, "1.27")
+    k8s_version  = optional(string, "1.27")
+    nodes_master = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
       path       = optional(string, null)
