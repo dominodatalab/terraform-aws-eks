@@ -150,7 +150,6 @@ set_all_mod_src() {
 }
 
 setup_single_node_tf() {
-  set -x
   echo "Setting up single_node module."
   local node_mod_dir="single-node"
   local BASE_TF_DIR="${DEPLOY_DIR}/terraform"
@@ -158,7 +157,6 @@ setup_single_node_tf() {
 
   mv "${node_mod_dir}/single-node.tfvars" "${BASE_TF_DIR}/single-node.tfvars"
   cat "${BASE_TF_DIR}/single-node.tfvars"
-
   cp -r "$node_mod_dir" "$node_deploy_mod_dir"
 
   set_ci_branch_name
@@ -166,7 +164,6 @@ setup_single_node_tf() {
 
   echo "Updating single_node mod source to ${MOD_SOURCE}..."
   set_mod_src "$MOD_SOURCE" "${node_deploy_mod_dir}/main.tf" "single_node"
-  set +x
 }
 
 set_mod_src_circle_branch() {
