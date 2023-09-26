@@ -136,7 +136,7 @@ commands:
       - run:
           name: "Deploy single-node"
           working_directory: tests/deploy
-          command: bash ci-deploy.sh deploy single-node
+          command: bash ci-deploy.sh deploy_single_node
   tf_destroy_single_node:
     description: "Terraform destroy single-node"
     steps:

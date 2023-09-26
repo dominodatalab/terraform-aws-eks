@@ -166,6 +166,10 @@ setup_single_node_tf() {
   set_mod_src "$MOD_SOURCE" "${node_deploy_mod_dir}/main.tf" "single_node"
 }
 
+deploy_single_node() {
+  deploy "single-node"
+}
+
 set_mod_src_circle_branch() {
   set_ci_branch_name
   set_all_mod_src "$CI_BRANCH_NAME"
