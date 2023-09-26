@@ -455,11 +455,17 @@ resource "aws_s3_bucket_versioning" "buckets_versioning" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "block_public_accss" {
+resource "aws_s3_bucket_public_access_block" "block_public_access" {
   for_each                = local.s3_buckets
   bucket                  = each.value.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+
+moved {
+  from = aws_s3_bucket_public_access_block.block_public_accss
+  to   = aws_s3_bucket_public_access_block.block_public_access
 }
