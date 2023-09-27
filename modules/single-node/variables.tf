@@ -152,7 +152,6 @@ variable "region" {
   }
 }
 
-
 variable "kms_info" {
   description = <<EOF
     key_id  = KMS key id.
@@ -185,7 +184,7 @@ variable "single_node" {
       effect = string
     })), [])
     volume = optional(object({
-      size = optional(number, 1000)
+      size = optional(number, 200)
       type = optional(string, "gp3")
     }), {})
   })
