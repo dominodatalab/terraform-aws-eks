@@ -153,7 +153,6 @@ Configure terraform variables at:
 * `domino-deploy/terraform/nodes.tfvars`
 
 **NOTE**: The `eks` configuration is required in both the `infra` and `cluster` modules because the Kubernetes version is used for installing the `kubectl` binary on the bastion host. Similarly, `default_node_groups` and `additional_node_groups` must be defined in both the `infra` and `nodes` modules, as the `availability zones` for the `nodes` are necessary for setting up the network infrastructure.
-The `eks` module will source its information from the `infra` outputs if it is not configured on `cluster.tfvars`, as will the `nodes` module if the variables are not configured on `nodes.tfvars`. We recommended setting the variables in `eks` and `nodes` from the beggining as future kubernetes upgrades will be driven from `cluster.tfvars` and `nodes.tfvars`.
 
 
 ### 4. Create SSH Key pair
