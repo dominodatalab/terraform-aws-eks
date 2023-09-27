@@ -125,6 +125,8 @@ resource "aws_instance" "single_node" {
     http_tokens            = "required"
     instance_metadata_tags = "disabled"
   }
+
+  tags = local.instance_labels
 }
 
 
