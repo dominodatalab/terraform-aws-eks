@@ -123,9 +123,9 @@ install_calico() {
   check_remove_calico
 
   printf "$GREEN Installing Calico Operator $EC \n"
-  helm_cmd upgrade 'calico-tigera-operator' \
+  helm_cmd upgrade "calico-tigera-operator" \
     tigera-operator \
-    --repo 'https://projectcalico.docs.tigera.io/charts' \
+    --repo "https://projectcalico.docs.tigera.io/charts" \
     --kubeconfig "$kubeconfig" \
     --namespace "tigera-operator" \
     --version "${calico_version}" \
