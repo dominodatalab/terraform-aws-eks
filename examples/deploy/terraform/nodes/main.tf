@@ -17,10 +17,8 @@ data "terraform_remote_state" "eks" {
 
 
 locals {
-  infra                  = data.terraform_remote_state.infra.outputs.infra
-  eks                    = data.terraform_remote_state.eks.outputs.eks
-  default_node_groups    = var.default_node_groups != null ? var.default_node_groups : local.infra.default_node_groups
-  additional_node_groups = var.additional_node_groups != null ? var.additional_node_groups : local.infra.additional_node_groups
+  infra = data.terraform_remote_state.infra.outputs.infra
+  eks   = data.terraform_remote_state.eks.outputs.eks
 
 }
 
@@ -29,8 +27,8 @@ module "nodes" {
   region = local.infra.region
 
   ssh_key                = local.infra.ssh_key
-  default_node_groups    = local.default_node_groups
-  additional_node_groups = local.additional_node_groups
+  default_node_groups    = var.default_node_groups
+  additional_node_groups = var.additional_node_groups
   eks_info               = local.eks
   network_info           = local.infra.network
   kms_info               = local.infra.kms
