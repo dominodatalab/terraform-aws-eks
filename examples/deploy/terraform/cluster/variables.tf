@@ -61,7 +61,7 @@ variable "eks" {
     })))
   })
 
-  default = null
+  default = {}
 }
 
 variable "kms_info" {
