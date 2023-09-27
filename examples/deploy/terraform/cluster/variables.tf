@@ -29,7 +29,6 @@ variable "eks" {
   type = object({
     creation_role_name = optional(string, null)
     k8s_version        = optional(string)
-    nodes_master       = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string)
       path       = optional(string)
