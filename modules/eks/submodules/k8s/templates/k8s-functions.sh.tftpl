@@ -23,12 +23,12 @@ open_ssh_tunnel_to_k8s_api() {
       return 1
     fi
   else
-    printf "$GREEN No bastion, no tunnel needed... $EC \n"
+    printf "$GREEN No bastion, no tunnel needed... $EC\n"
   fi
 }
 
 check_kubeconfig() {
-  printf "$GREEN Checking if $KUBECONFIG exists... $EC \n"
+  printf "$GREEN Checking if $KUBECONFIG exists... $EC\n"
   if test -f "$KUBECONFIG"; then
     if [[ -n "${bastion_public_ip}" ]]; then
       echo "$KUBECONFIG exists, creating $KUBECONFIG_PROXY for proxy use."
@@ -135,8 +135,6 @@ install_calico() {
     --timeout 10m \
     --create-namespace \
     --install
-
-  printf "$EC \n"
 }
 
 validate_url() {
@@ -158,27 +156,24 @@ kubectl_apply() {
     printf "$RED $k8s_manifest does not exist. $EC \n"
     exit 1
   fi
-  printf "$EC \n"
 }
 
 helm_cmd() {
-  printf "$GREEN Running helm $@...$EC \n"
+  printf "Running helm $@...\n"
   helm --kubeconfig "$kubeconfig" $@
   if [ $? -ne 0 ]; then
     printf "$RED Error running helm $@ $EC \n"
     exit 1
   fi
-  printf "$EC \n"
 }
 
 kubectl_cmd() {
-  printf "$GREEN  kubectl $@... $EC \n"
+  printf "kubectl $@...\n"
   kubectl --kubeconfig "$kubeconfig" $@
   if [ $? -ne 0 ]; then
     printf "$RED Error running kubectl $@ $EC \n"
     exit 1
   fi
-  printf "$EC \n"
 }
 
 wait_for_node() {
