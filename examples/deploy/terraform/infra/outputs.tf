@@ -20,6 +20,13 @@ output "domino_config_values" {
         region = var.region
       }
     }
+    internal_docker_registry = {
+      s3_override = {
+        region         = var.region
+        bucket         = module.infra.storage.s3.buckets.registry.bucket_name
+        sse_kms_key_id = module.infra.kms.key_arn
+      }
+    }
     external_docker_registry = module.infra.storage.ecr.container_registry
     storage_classes = {
       block = {
