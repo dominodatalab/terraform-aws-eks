@@ -54,17 +54,18 @@ locals {
 }
 
 
-data "aws_eks_addon_version" "default" {
+data "aws_eks_addon_version" "most_recent" {
   for_each           = toset(var.eks_info.cluster.addons)
   addon_name         = each.key
   kubernetes_version = var.eks_info.cluster.version
+  most_recent        = true
 }
 
 resource "aws_eks_addon" "this" {
   for_each                    = toset(var.eks_info.cluster.addons)
   cluster_name                = var.eks_info.cluster.specs.name
   addon_name                  = each.key
-  addon_version               = data.aws_eks_addon_version.default[each.key].version
+  addon_version               = data.aws_eks_addon_version.most_recent[each.key].version
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
   depends_on = [
