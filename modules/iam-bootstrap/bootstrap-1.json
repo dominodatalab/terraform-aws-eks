@@ -149,7 +149,8 @@
         "kms:RetireGrant",
         "kms:ScheduleKeyDeletion",
         "kms:TagResource",
-        "kms:UpdateAlias"
+        "kms:UpdateAlias",
+        "kms:UntagResource"
       ],
       "Resource": "*"
     },
