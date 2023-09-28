@@ -356,7 +356,8 @@ variable "storage" {
     }), {})
     ecr = optional(object({
       force_destroy_on_deletion = optional(bool, true)
-    }), {})
+    }), {}),
+    enable_remote_backup = optional(bool, false)
   })
 
   default = {}

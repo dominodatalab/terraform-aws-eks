@@ -5,11 +5,10 @@ resource "aws_efs_file_system" "eks" {
   throughput_mode                 = "bursting"
   kms_key_id                      = local.kms_key_arn
 
-  tags = {
-    "Name"        = var.deploy_id
-    "backup-plan" = "remote"
-  }
-
+  tags = merge(local.backup_tagging, {
+    "Name" = var.deploy_id
+  })
+  
   lifecycle {
     ignore_changes = [
       kms_key_id,

@@ -42,6 +42,7 @@ variable "storage" {
       ecr = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories.
       }
+      enable_remote_backup = Enable tagging required for cross-account backups
     }
   }
   EOF
@@ -64,6 +65,7 @@ variable "storage" {
     ecr = optional(object({
       force_destroy_on_deletion = optional(bool)
     }))
+    enable_remote_backup = optional(bool)
   })
 }
 

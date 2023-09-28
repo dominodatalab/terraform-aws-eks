@@ -38,4 +38,8 @@ locals {
       arn         = aws_s3_bucket.registry.arn
     }
   }
+
+  backup_tagging = var.enable_remote_backup ? {
+    "backup_plan" = "cross-account"
+  } : {}
 }
