@@ -8,7 +8,6 @@ data "terraform_remote_state" "infra" {
 
 locals {
   infra = data.terraform_remote_state.infra.outputs.infra
-  eks   = var.eks != null ? var.eks : local.infra.eks
   kms   = var.kms_info != null ? var.kms_info : local.infra.kms
 }
 
@@ -20,7 +19,7 @@ module "eks" {
   ssh_key             = local.infra.ssh_key
   node_iam_policies   = local.infra.node_iam_policies
   efs_security_group  = local.infra.efs_security_group
-  eks                 = local.eks
+  eks                 = var.eks
   network_info        = local.infra.network
   kms_info            = local.kms
   bastion_info        = local.infra.bastion

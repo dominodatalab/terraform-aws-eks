@@ -54,6 +54,7 @@ variable "ssh_pvt_key_path" {
 variable "eks" {
   description = <<EOF
     k8s_version = EKS cluster k8s version.
+    nodes_master  Grants the nodes role system:master access. NOT recomended
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
       path       = Fully qualified path name to write the kubeconfig file.
@@ -77,7 +78,8 @@ variable "eks" {
   EOF
 
   type = object({
-    k8s_version = optional(string, "1.27")
+    k8s_version  = optional(string, "1.27")
+    nodes_master = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
       path       = optional(string, null)
@@ -96,6 +98,7 @@ variable "eks" {
     ssm_log_group_name = optional(string, "session-manager")
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
+      annotate_pod_ip   = optional(bool)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
@@ -388,4 +391,31 @@ variable "enable_private_link" {
   type        = bool
   description = "Enable Private Link connections"
   default     = false
+}
+
+variable "single_node" {
+  description = "Additional EKS managed node groups definition."
+  type = object({
+    name                 = optional(string, "single-node")
+    bootstrap_extra_args = optional(string, "")
+    ami = optional(object({
+      name_prefix = optional(string, null)
+      owner       = optional(string, null)
+
+    }))
+    instance_type            = optional(string, "m5.2xlarge")
+    authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
+    labels                   = optional(map(string))
+    taints = optional(list(object({
+      key    = string
+      value  = optional(string)
+      effect = string
+    })), [])
+    volume = optional(object({
+      size = optional(number, 1000)
+      type = optional(string, "gp3")
+    }), {})
+  })
+
+  default = null
 }

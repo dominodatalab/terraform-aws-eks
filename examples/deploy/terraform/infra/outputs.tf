@@ -27,6 +27,7 @@ output "domino_config_values" {
         sse_kms_key_id = module.infra.kms.key_arn
       }
     }
+    external_docker_registry = module.infra.storage.ecr.container_registry
     storage_classes = {
       block = {
         parameters = {

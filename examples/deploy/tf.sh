@@ -85,7 +85,7 @@ run_tf_command() {
 
     for np in "${node_pools[@]}"; do
       echo "Updating $np"
-      terraform -chdir="$dir" apply -input=false -state="$state_path" -target="$np" -auto-approve
+      terraform -chdir="$dir" apply -input=false -parallelism=5 -state="$state_path" -target="$np" -auto-approve
     done
   }
 
@@ -104,7 +104,9 @@ run_tf_command() {
     ;;
   apply)
     check_dependencies $name
-    terraform -chdir="$dir" apply -input=false -state="$state_path" -var-file="$tfvars_file" -auto-approve
+    parallelism="10"
+    [ "$name" == "nodes" ] && parallelism="5"
+    terraform -chdir="$dir" apply -input=false -parallelism="$parallelism" -state="$state_path" -var-file="$tfvars_file" -auto-approve
     ;;
   apply_plan)
     check_dependencies $name

@@ -249,6 +249,7 @@ variable "eks" {
   description = <<EOF
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
+    nodes_master  Grants the nodes role system:master access. NOT recomended
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
       path       = Fully qualified path name to write the kubeconfig file.
@@ -274,6 +275,7 @@ variable "eks" {
   type = object({
     creation_role_name = optional(string, null)
     k8s_version        = optional(string)
+    nodes_master       = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string)
       path       = optional(string)
@@ -292,6 +294,7 @@ variable "eks" {
     ssm_log_group_name = optional(string)
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
+      annotate_pod_ip   = optional(bool)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
