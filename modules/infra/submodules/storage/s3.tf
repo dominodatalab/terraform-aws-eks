@@ -145,6 +145,7 @@ resource "aws_s3_bucket" "logs" {
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
+  tags = local.backup_tagging
 }
 
 data "aws_iam_policy_document" "logs" {
