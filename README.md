@@ -304,7 +304,7 @@ provider "aws" {
 }
 ```
 
-2. Under `main.tf` in the infra module add the following content
+2. Add the following content
 
 ```
 module "backups" {
