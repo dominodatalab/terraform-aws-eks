@@ -172,6 +172,7 @@
         "kms:DeleteAlias",
         "logs:DeleteLogDelivery",
         "logs:DeleteLogGroup",
+        "logs:UntagLogGroup",
         "s3:DeleteObjectVersion"
       ],
       "Resource": "*"
