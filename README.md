@@ -281,3 +281,37 @@ Run the command below to generate a list of infrastructure values. These values 
 ```
 
 This command will output a set of key-value pairs, extracted from the infrastructure setup, that can be used as inputs in the domino.yaml configuration file.
+
+
+## Domino Backups
+If you would like to increase the safety of data stored in AWS S3 and EFS by backing them up into another account (Accounts under same AWS Organization), use the [terraform-aws-domino-backup](https://github.com/dominodatalab/terraform-aws-domino-backup) module:
+
+1. Define another provider for the backup account in `main.tf` for infra module.
+
+Location
+```bash
+domino-deploy
+├── terraform
+│   ├── infra
+│   │   ├── main.tf
+```
+
+Content
+```
+provider "aws" {
+  alias   = "domino-backup"
+  region  = <<Backup Account Region>>
+}
+```
+
+2. Add the following content
+
+```
+module "backups" {
+  count  = 1
+  source = "github.com/dominodatalab/terraform-aws-domino-backup.git?ref=v1.0.10"
+  providers = {
+    aws.dst = aws.domino-backup
+  }
+}
+```
