@@ -284,7 +284,7 @@ This command will output a set of key-value pairs, extracted from the infrastruc
 
 
 ## Domino Backups
-(Accounts under same AWS Organization)
+If you would like to increase the safety of data stored in AWS S3 and EFS by backing them up into another account (Accounts under same AWS Organization), use the [terraform-aws-domino-backup](https://github.com/dominodatalab/terraform-aws-domino-backup) module:
 
 1. Define another provider for the backup account in `main.tf` for infra module.
 
@@ -301,11 +301,10 @@ Content
 provider "aws" {
   alias   = "domino-backup"
   region  = <<Backup Account Region>>
-  profile = <<Profile Account Here>>
 }
 ```
 
-2. Create a file called `backup.tf` in the infra module with the following content
+2. Under `main.tf` in the infra module add the following content
 
 ```
 module "backups" {
