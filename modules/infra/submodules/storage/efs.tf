@@ -8,7 +8,7 @@ resource "aws_efs_file_system" "eks" {
   tags = merge(local.backup_tagging, {
     "Name" = var.deploy_id
   })
-  
+
   lifecycle {
     ignore_changes = [
       kms_key_id,

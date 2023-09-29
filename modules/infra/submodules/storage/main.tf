@@ -39,7 +39,7 @@ locals {
     }
   }
 
-  backup_tagging = var.enable_remote_backup ? {
+  backup_tagging = var.storage.enable_remote_backup ? {
     "backup_plan" = "cross-account"
   } : {}
 }
