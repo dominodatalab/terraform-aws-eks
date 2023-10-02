@@ -89,6 +89,14 @@ locals {
       type                          = "ingress"
       source_cluster_security_group = true
     }
+    ingress_cluster_8080 = {
+      description                   = "Cluster API to Vault Agent webhook"
+      protocol                      = "tcp"
+      from_port                     = 8080
+      to_port                       = 8080
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
     ingress_cluster_443 = {
       description                   = "Cluster API to node groups 443"
       protocol                      = "tcp"
