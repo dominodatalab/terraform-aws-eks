@@ -163,3 +163,15 @@ Otherwise to update all `node_groups` in parallel.
 ```bash
 ./tf.sh nodes apply
 ```
+
+### VPC CNI addon upgrade
+
+If Kubernetes has been upgraded without corresponding VPC CNI addon version updates, it might require multiple jumps. VPC CNI only allows a single minor version update per upgrade:
+```
+Updating VPC-CNI can only go up or down 1 minor version at a time
+```
+
+If the next minor version is not supported, it may require deleting the VPC CNI addon while preserving the actual resources:
+```
+aws eks delete-addon --cluster-name <cluster name> --addon-name vpc-cni --preserve
+```
