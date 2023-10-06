@@ -20,6 +20,7 @@ locals {
       arn         = aws_s3_bucket.blobs.arn
     }
     costs = {
+      count       = var.domino_cost.storage_enabled ? 1 : 0
       bucket_name = aws_s3_bucket.costs.bucket
       id          = aws_s3_bucket.costs.id
       policy_json = data.aws_iam_policy_document.costs.json
