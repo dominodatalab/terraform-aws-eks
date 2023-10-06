@@ -6,14 +6,15 @@ module "infra" {
   bastion                = var.bastion
   default_node_groups    = var.default_node_groups
 
-  network                  = var.network
-  eks                      = var.eks
-  kms                      = var.kms
-  storage                  = var.storage
-  region                   = var.region
-  route53_hosted_zone_name = var.route53_hosted_zone_name
-  ssh_pvt_key_path         = var.ssh_pvt_key_path
-  tags                     = var.tags
+  network                     = var.network
+  eks                         = var.eks
+  kms                         = var.kms
+  storage                     = var.storage
+  region                      = var.region
+  route53_hosted_zone_name    = var.route53_hosted_zone_name
+  route53_hosted_zone_private = var.route53_hosted_zone_private
+  ssh_pvt_key_path            = var.ssh_pvt_key_path
+  tags                        = var.tags
 }
 
 

@@ -322,6 +322,12 @@ variable "route53_hosted_zone_name" {
   default     = null
 }
 
+variable "route53_hosted_zone_private" {
+  type        = bool
+  description = "Is the hosted zone private"
+  default     = false
+}
+
 variable "bastion" {
   description = <<EOF
     enabled                  = Create bastion host.

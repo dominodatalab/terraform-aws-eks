@@ -1,7 +1,7 @@
 data "aws_route53_zone" "hosted" {
   count        = var.route53_hosted_zone_name != null ? 1 : 0
   name         = var.route53_hosted_zone_name
-  private_zone = false
+  private_zone = var.route53_hosted_zone_private
 }
 
 data "aws_iam_policy_document" "route53" {
