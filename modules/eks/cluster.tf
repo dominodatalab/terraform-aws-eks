@@ -70,6 +70,7 @@ resource "aws_eks_cluster" "this" {
   lifecycle {
     ignore_changes = [
       encryption_config,
+      kubernetes_network_config
     ]
   }
 }
