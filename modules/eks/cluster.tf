@@ -49,7 +49,7 @@ resource "aws_eks_cluster" "this" {
 
   kubernetes_network_config {
     ip_family         = "ipv4"
-    service_ipv4_cidr = "172.20.0.0/16"
+    service_ipv4_cidr = var.eks.service_ipv4_cidr
   }
 
   vpc_config {
