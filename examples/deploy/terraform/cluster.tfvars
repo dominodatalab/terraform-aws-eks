@@ -1,4 +1,5 @@
 eks = {
+  service_ipv4_cidr  = null
   cluster_addons     = null
   creation_role_name = null
   custom_role_maps   = null

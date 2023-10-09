@@ -1,19 +1,7 @@
 additional_node_groups = {}
-bastion = {
-  enabled = true
-}
-default_node_groups = {
-  compute = {
-    availability_zone_ids = ["usw2-az1", "usw2-az2"]
-  }
-  gpu = {
-    availability_zone_ids = ["usw2-az1", "usw2-az2"]
-  }
-  platform = {
-    availability_zone_ids = ["usw2-az1", "usw2-az2"]
-  }
-}
-deploy_id = "dominoeks003"
+bastion                = null
+default_node_groups    = null
+deploy_id              = null
 eks = {
   cluster_addons     = null
   creation_role_name = null
@@ -25,6 +13,7 @@ eks = {
     path       = null
   }
   master_role_names = null
+  nodes_master      = false
   public_access = {
     cidrs   = null
     enabled = null
@@ -32,9 +21,7 @@ eks = {
   ssm_log_group_name = null
   vpc_cni            = null
 }
-kms = {
-  enabled = true
-}
+kms = null
 network = {
   cidrs = {
     pod = "100.64.0.0/16"
@@ -55,9 +42,10 @@ network = {
     }
   }
 }
-region                   = "us-west-2"
-route53_hosted_zone_name = null
-ssh_pvt_key_path         = "domino.pem"
+region                      = null
+route53_hosted_zone_name    = null
+route53_hosted_zone_private = false
+ssh_pvt_key_path            = null
 storage = {
   ecr = {
     force_destroy_on_deletion = true
@@ -78,7 +66,4 @@ storage = {
     force_destroy_on_deletion = true
   }
 }
-tags = {
-  deploy_id   = "dominoeks001"
-  deploy_type = "terraform-aws-eks"
-}
+tags = null
