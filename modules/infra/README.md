@@ -24,6 +24,7 @@
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_bastion"></a> [bastion](#module\_bastion) | ./submodules/bastion | n/a |
+| <a name="module_cost_usage_report"></a> [cost-usage-report](#module\_cost-usage-report) | ./submodules/cost-usage-report | n/a |
 | <a name="module_network"></a> [network](#module\_network) | ./submodules/network | n/a |
 | <a name="module_storage"></a> [storage](#module\_storage) | ./submodules/storage | n/a |
 
@@ -73,7 +74,6 @@
 |------|-------------|
 | <a name="output_additional_node_groups"></a> [additional\_node\_groups](#output\_additional\_node\_groups) | Additional EKS managed node groups definition. |
 | <a name="output_bastion"></a> [bastion](#output\_bastion) | Bastion details, if it was created. |
-| <a name="module_cost-usage-report"></a> [cost-usage-report](#module\_cost-usage-report) | ./submodules/cost-usage-report | n/a |
 | <a name="output_create_eks_role_arn"></a> [create\_eks\_role\_arn](#output\_create\_eks\_role\_arn) | Role arn to assume during the EKS cluster creation. |
 | <a name="output_default_node_groups"></a> [default\_node\_groups](#output\_default\_node\_groups) | Default nodegroups. |
 | <a name="output_deploy_id"></a> [deploy\_id](#output\_deploy\_id) | Domino Deployment ID. |

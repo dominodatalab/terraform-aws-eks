@@ -36,7 +36,7 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
   depends_on = [
     aws_glue_catalog_database.aws_cur_database,
     aws_iam_role.aws_cur_crawler_component_function_role,
-    aws_s3_bucket.cur_report_bucket
+    aws_s3_bucket.cur_report
   ]
 }
 
@@ -86,7 +86,12 @@ resource "aws_athena_workgroup" "athena_work_group" {
     publish_cloudwatch_metrics_enabled = true
 
     result_configuration {
-      output_location = "s3://${aws_s3_bucket.athena_result_bucket.bucket}/"
+      output_location = "s3://${aws_s3_bucket.athena_result.bucket}/"
+
+      encryption_configuration {
+        encryption_option = "SSE_KMS"
+        kms_key_arn       = local.kms_key_arn
+      }
     }
   }
 }

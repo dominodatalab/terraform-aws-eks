@@ -61,6 +61,10 @@ resource "aws_lambda_function" "aws_cur_initializer" {
     }
   }
 
+  tracing_config {
+    mode = "Active"
+  }
+
   depends_on = [
     aws_iam_role_policy.aws_cur_crawler_lambda_executor,
     aws_glue_crawler.aws_cur_crawler
@@ -73,7 +77,7 @@ resource "aws_lambda_permission" "aws_s3_cur_event_lambda_permission" {
   function_name  = aws_lambda_function.aws_cur_initializer.arn
   source_account = local.aws_account_id
   principal      = "s3.amazonaws.com"
-  source_arn     = aws_s3_bucket.cur_report_bucket.arn
+  source_arn     = aws_s3_bucket.cur_report.arn
 }
 
 data "archive_file" "aws_s3_cur_notification_zip" {
@@ -135,5 +139,9 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
     aws_lambda_permission.aws_s3_cur_event_lambda_permission,
     aws_iam_role.aws_cur_lambda_executor
   ]
+
+  tracing_config {
+    mode = "Active"
+  }
 }
 

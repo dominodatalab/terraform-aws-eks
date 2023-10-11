@@ -71,7 +71,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
     ]
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report_bucket.bucket}/${var.s3_bucket_prefix}/dominoCost/dominoCost*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/${var.s3_bucket_prefix}/dominoCost/dominoCost*",
     ]
   }
 
@@ -200,7 +200,7 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
     ]
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report_bucket.bucket}"
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}"
     ]
   }
 }
