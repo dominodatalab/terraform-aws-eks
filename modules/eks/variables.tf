@@ -119,6 +119,7 @@ variable "kms_info" {
 
 variable "eks" {
   description = <<EOF
+    service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
@@ -145,6 +146,7 @@ variable "eks" {
   EOF
 
   type = object({
+    service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
     k8s_version        = optional(string, "1.27")
     nodes_master       = optional(bool, false)
