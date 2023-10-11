@@ -1,6 +1,6 @@
 # three IAM roles
 
-data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" { # aws_cur_crawler_component_function
+data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" {
   statement {
     effect = "Allow"
 
@@ -9,11 +9,20 @@ data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" { # aw
       identifiers = ["glue.amazonaws.com"]
     }
 
-    actions = ["sts:AssumeRole"]
+    actions = [
+      "sts:AssumeRole"
+    ]
   }
 }
 
-data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" { # aws_cur_crawler_component_function
+resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
+  name_prefix        = "crawler_component_function_role"
+  assume_role_policy = data.aws_iam_policy_document.cur_crawler_component_assume_role_policy.json
+
+  tags = var.tags
+}
+
+data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
 
   statement {
     sid = "CloudWatch"
@@ -62,7 +71,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" { # a
     ]
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report_bucket.bucket}/${var.s3_bucket_prefix}/dominoCost/dominoCost*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/${var.s3_bucket_prefix}/dominoCost/dominoCost*",
     ]
   }
 
@@ -72,26 +81,22 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" { # a
     effect = "Allow"
 
     actions = [
+      "kms:GenerateDataKey",
       "kms:Decrypt",
+      "kms:Encrypt",
     ]
 
-    resources = ["*"]
+    resources = [
+      local.kms_key_arn
+    ]
   }
 
-}
-
-resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
-  name_prefix        = "crawler_component_function_role"
-  assume_role_policy = data.aws_iam_policy_document.cur_crawler_component_assume_role_policy.json
-
-  tags = var.tags
 }
 
 resource "aws_iam_role_policy" "aws_cur_crawler_component_function_policy" {
   role   = aws_iam_role.aws_cur_crawler_component_function_role.name
   policy = data.aws_iam_policy_document.aws_cur_crawler_component_function_policy.json
 }
-
 
 
 data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor_assume" {
@@ -105,6 +110,11 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor_assume" {
 
     actions = ["sts:AssumeRole"]
   }
+}
+
+resource "aws_iam_role" "aws_cur_crawler_lambda_executor" {
+  name               = "${var.cur_report_name}-crawler-lambda-executor"
+  assume_role_policy = data.aws_iam_policy_document.aws_cur_crawler_lambda_executor_assume.json
 }
 
 data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
@@ -138,11 +148,6 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
   }
 }
 
-resource "aws_iam_role" "aws_cur_crawler_lambda_executor" {
-  name               = "${var.cur_report_name}-crawler-trigger-executor"
-  assume_role_policy = data.aws_iam_policy_document.aws_cur_crawler_lambda_executor_assume.json
-}
-
 resource "aws_iam_role_policy" "aws_cur_crawler_lambda_executor" {
   role   = aws_iam_role.aws_cur_crawler_lambda_executor.name
   policy = data.aws_iam_policy_document.aws_cur_crawler_lambda_executor.json
@@ -160,6 +165,11 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor_assume" {
 
     actions = ["sts:AssumeRole"]
   }
+}
+
+resource "aws_iam_role" "aws_cur_lambda_executor" {
+  name               = "${var.cur_report_name}-lambda-executor"
+  assume_role_policy = data.aws_iam_policy_document.aws_cur_lambda_executor_assume.json
 }
 
 data "aws_iam_policy_document" "aws_cur_lambda_executor" {
@@ -190,14 +200,9 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
     ]
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report_bucket.bucket}"
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}"
     ]
   }
-}
-
-resource "aws_iam_role" "aws_cur_lambda_executor" {
-  name               = "${var.cur_report_name}-lambda-executor"
-  assume_role_policy = data.aws_iam_policy_document.aws_cur_lambda_executor_assume.json
 }
 
 resource "aws_iam_role_policy" "aws_cur_lambda_executor" {

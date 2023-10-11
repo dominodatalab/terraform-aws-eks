@@ -10,7 +10,9 @@ output "s3_bucket_prefix" {
 
 output "s3_bucket_arn" {
   description = "ARN of S3 bucket used for storing CUR data. This may be provisioned by this module or not."
-  value       = aws_s3_bucket.cur_report_bucket.*.arn
+  value = [
+    aws_s3_bucket.cur_report[0].arn
+  ]
 }
 
 output "s3_bucket_region" {
@@ -45,7 +47,7 @@ output "crawler_role_arn" {
 
 output "athena_region" {
   description = "athena region"
-  value = aws_cur_report_definition.aws_cur_report_definition.s3_region
+  value       = aws_cur_report_definition.aws_cur_report_definition.s3_region
 }
 
 output "glue_catalog_database_name" {
@@ -59,5 +61,6 @@ output "glue_catalog_table_name" {
 }
 
 output "athena_query_result_s3" {
-  value = aws_s3_bucket.athena_result_bucket.bucket
+  description = "S3 location for athena query results"
+  value       = aws_s3_bucket.athena_result.bucket
 }

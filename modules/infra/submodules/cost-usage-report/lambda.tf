@@ -1,12 +1,6 @@
-
-resource "aws_lambda_permission" "aws_s3_cur_event_lambda_permission" {
-  statement_id   = "AllowExecutionFromS3Bucket"
-  action         = "lambda:InvokeFunction"
-  function_name  = aws_lambda_function.aws_cur_initializer.arn
-  source_account = data.aws_caller_identity.current.account_id
-  principal      = "s3.amazonaws.com"
-  source_arn     = aws_s3_bucket.cur_report_bucket.arn
-}
+#locals {
+#  aws_account_id = data.aws_caller_identity.aws_account.account_id
+#}
 
 data "archive_file" "aws_cur_initializer_zip" {
   type        = "zip"
@@ -51,14 +45,14 @@ data "archive_file" "aws_cur_initializer_zip" {
 
 resource "aws_lambda_function" "aws_cur_initializer" {
   function_name = local.lambda_function_name
+  role          = aws_iam_role.aws_cur_crawler_lambda_executor.arn
 
-  role = aws_iam_role.aws_cur_crawler_lambda_executor.arn
-
-  runtime          = "nodejs16.x"
-  handler          = "index.handler"
   filename         = data.archive_file.aws_cur_initializer_zip.output_path
   source_code_hash = data.archive_file.aws_cur_initializer_zip.output_base64sha256
+  handler          = "index.handler"
   timeout          = 30
+  runtime          = "nodejs16.x"
+
   reserved_concurrent_executions = 1
 
   environment {
@@ -67,13 +61,44 @@ resource "aws_lambda_function" "aws_cur_initializer" {
     }
   }
 
+  tracing_config {
+    mode = "Active"
+  }
+
+  vpc_config {
+    // Every subnet should be able to reach an EFS mount target in the same Availability Zone.
+    // Cross-AZ mounts are not permitted.
+    subnet_ids         = [local.private_subnet_ids]
+    security_group_ids = [aws_security_group.lambda]
+  }
+
   depends_on = [
     aws_iam_role_policy.aws_cur_crawler_lambda_executor,
     aws_glue_crawler.aws_cur_crawler
   ]
 }
 
+resource "aws_security_group" "lambda" {
+  name        = "${var.deploy_id}-lambda"
+  description = "EFS security group"
+  vpc_id      = var.network_info.vpc_id
 
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = {
+    "Name" = "${var.deploy_id}-lambda"
+  }
+}
+
+resource "aws_lambda_permission" "aws_s3_cur_event_lambda_permission" {
+  statement_id   = "AllowExecutionFromS3Bucket"
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.aws_cur_initializer.arn
+  source_account = local.aws_account_id
+  principal      = "s3.amazonaws.com"
+  source_arn     = aws_s3_bucket.cur_report.arn
+}
 
 data "archive_file" "aws_s3_cur_notification_zip" {
   type        = "zip"
@@ -118,20 +143,31 @@ data "archive_file" "aws_s3_cur_notification_zip" {
 }
 
 resource "aws_lambda_function" "aws_s3_cur_notification" {
-  function_name    = "aws_s3_cur_notification-lambda"
+  function_name = "aws_s3_cur_notification-lambda"
+  role          = aws_iam_role.aws_cur_lambda_executor.arn
+
   filename         = data.archive_file.aws_s3_cur_notification_zip.output_path
   source_code_hash = data.archive_file.aws_s3_cur_notification_zip.output_base64sha256
+  handler          = "index.handler"
+  timeout          = 30
+  runtime          = "nodejs16.x"
 
-  handler = "index.handler"
-  timeout = 30
-  runtime = "nodejs16.x"
   reserved_concurrent_executions = 1
-  role = aws_iam_role.aws_cur_lambda_executor.arn
 
   depends_on = [
     aws_lambda_function.aws_cur_initializer,
     aws_lambda_permission.aws_s3_cur_event_lambda_permission,
     aws_iam_role.aws_cur_lambda_executor
   ]
-}
 
+  vpc_config {
+    // Every subnet should be able to reach an EFS mount target in the same Availability Zone.
+    // Cross-AZ mounts are not permitted.
+    subnet_ids         = [local.private_subnet_ids]
+    security_group_ids = [aws_security_group.lambda]
+  }
+
+  tracing_config {
+    mode = "Active"
+  }
+}
