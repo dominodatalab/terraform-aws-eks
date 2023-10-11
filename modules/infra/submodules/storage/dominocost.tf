@@ -1,4 +1,5 @@
 resource "aws_s3_bucket" "costs" {
+  count               = var.domino_cost.storage_enabled ? 1 : 0
   bucket              = "${var.deploy_id}-costs-long-term-storage"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
