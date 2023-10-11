@@ -1,9 +1,5 @@
 # An Amazon S3 notification
 
-locals {
-  lambda_function_name = "${var.cur_report_name}-crawler-initializer"
-}
-
 resource "aws_s3_bucket_notification" "aws_put_s3_cur_notification" {
   bucket = var.cur_report_bucket_name
 

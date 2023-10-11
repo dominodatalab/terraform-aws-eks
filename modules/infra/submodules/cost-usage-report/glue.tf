@@ -2,13 +2,6 @@
 # An AWS Glue crawler
 # Two Lambda functions
 
-locals {
-  # Defined by AWS.
-  aws_account_id              = data.aws_caller_identity.aws_account.account_id
-  glue_log_group_default_name = "/aws-glue/crawlers"
-  report_status_table_name    = "cost_and_usage_data_status_tb"
-}
-
 resource "aws_glue_catalog_database" "aws_cur_database" { # done
   description = "Contains CUR data based on contents from the S3 bucket '${var.cur_report_bucket_name}'"
   name        = "${var.aws_glue_database}-db"

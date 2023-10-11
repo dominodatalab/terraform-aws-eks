@@ -11,6 +11,11 @@ locals {
   }
 }
 
+module "cost-usage-report" {
+  source = "./submodules/cost-usage-report"
+  kms_info = local.kms_info
+}
+
 module "storage" {
   source       = "./submodules/storage"
   deploy_id    = var.deploy_id
@@ -23,6 +28,7 @@ data "aws_ec2_instance_type" "all" {
   for_each      = toset(flatten([for ng in merge(var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
   instance_type = each.value
 }
+
 locals {
   node_groups = {
     for name, ng in

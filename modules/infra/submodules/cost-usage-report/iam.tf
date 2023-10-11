@@ -81,10 +81,14 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
     effect = "Allow"
 
     actions = [
+      "kms:GenerateDataKey",
       "kms:Decrypt",
+      "kms:Encrypt",
     ]
 
-    resources = ["*"]
+    resources = [
+      local.kms_key_arn
+    ]
   }
 
 }
@@ -171,7 +175,7 @@ resource "aws_iam_role" "aws_cur_lambda_executor" {
 data "aws_iam_policy_document" "aws_cur_lambda_executor" {
 
   statement {
-    sid  = "CloudWatch"
+    sid = "CloudWatch"
 
     effect = "Allow"
 
