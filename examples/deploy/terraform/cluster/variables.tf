@@ -2,6 +2,7 @@
 
 variable "eks" {
   description = <<EOF
+    service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     kubeconfig = {
@@ -27,6 +28,7 @@ variable "eks" {
   EOF
 
   type = object({
+    service_ipv4_cidr  = optional(string)
     creation_role_name = optional(string, null)
     k8s_version        = optional(string)
     kubeconfig = optional(object({
