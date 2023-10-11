@@ -45,7 +45,7 @@ output "crawler_role_arn" {
 
 output "athena_region" {
   description = "athena region"
-  value = aws_cur_report_definition.aws_cur_report_definition.s3_region
+  value       = aws_cur_report_definition.aws_cur_report_definition.s3_region
 }
 
 output "glue_catalog_database_name" {

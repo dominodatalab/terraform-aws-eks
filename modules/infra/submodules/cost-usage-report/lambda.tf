@@ -119,14 +119,14 @@ data "archive_file" "aws_s3_cur_notification_zip" {
 }
 
 resource "aws_lambda_function" "aws_s3_cur_notification" {
-  function_name    = "aws_s3_cur_notification-lambda"
-  role             = aws_iam_role.aws_cur_lambda_executor.arn
+  function_name = "aws_s3_cur_notification-lambda"
+  role          = aws_iam_role.aws_cur_lambda_executor.arn
 
-  filename          = data.archive_file.aws_s3_cur_notification_zip.output_path
-  source_code_hash  = data.archive_file.aws_s3_cur_notification_zip.output_base64sha256
-  handler           = "index.handler"
-  timeout           = 30
-  runtime           = "nodejs16.x"
+  filename         = data.archive_file.aws_s3_cur_notification_zip.output_path
+  source_code_hash = data.archive_file.aws_s3_cur_notification_zip.output_base64sha256
+  handler          = "index.handler"
+  timeout          = 30
+  runtime          = "nodejs16.x"
 
   reserved_concurrent_executions = 1
 

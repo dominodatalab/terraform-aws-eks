@@ -25,9 +25,9 @@ resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
 data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
 
   statement {
-    sid     = "CloudWatch"
+    sid = "CloudWatch"
 
-    effect  = "Allow"
+    effect = "Allow"
 
     actions = [
       "logs:CreateLogStream",
@@ -41,9 +41,9 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
   }
 
   statement {
-    sid     = "Glue"
+    sid = "Glue"
 
-    effect  = "Allow"
+    effect = "Allow"
 
     actions = [
       "glue:ImportCatalogToGlue",
@@ -61,9 +61,9 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
   }
 
   statement {
-    sid     = "S3"
+    sid = "S3"
 
-    effect  = "Allow"
+    effect = "Allow"
 
     actions = [
       "s3:GetObject",
@@ -76,9 +76,9 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
   }
 
   statement {
-    sid     = "S3Decrypt"
+    sid = "S3Decrypt"
 
-    effect  = "Allow"
+    effect = "Allow"
 
     actions = [
       "kms:Decrypt",
@@ -116,9 +116,9 @@ resource "aws_iam_role" "aws_cur_crawler_lambda_executor" {
 data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
 
   statement {
-    sid     = "CloudWatch"
+    sid = "CloudWatch"
 
-    effect  = "Allow"
+    effect = "Allow"
 
     actions = [
       "logs:CreateLogStream",
@@ -132,9 +132,9 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
   }
 
   statement {
-    sid     = "Glue"
+    sid = "Glue"
 
-    effect  = "Allow"
+    effect = "Allow"
 
     actions = [
       "glue:StartCrawler",
@@ -171,9 +171,9 @@ resource "aws_iam_role" "aws_cur_lambda_executor" {
 data "aws_iam_policy_document" "aws_cur_lambda_executor" {
 
   statement {
-    sid     = "CloudWatch"
+    sid  = "CloudWatch"
 
-    effect  = "Allow"
+    effect = "Allow"
 
     actions = [
       "logs:CreateLogStream",
@@ -187,9 +187,9 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
   }
 
   statement {
-    sid     = "Glue"
+    sid = "Glue"
 
-    effect  = "Allow"
+    effect = "Allow"
 
     actions = [
       "s3:PutBucketNotification"

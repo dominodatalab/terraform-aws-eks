@@ -22,8 +22,8 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
   role          = aws_iam_role.aws_cur_crawler_component_function_role.name
 
   s3_target {
-    path        = "s3://${var.cur_report_bucket_name}/${var.s3_bucket_prefix}/${var.cur_report_name}/${var.cur_report_name}"
-    exclusions  = [
+    path = "s3://${var.cur_report_bucket_name}/${var.s3_bucket_prefix}/${var.cur_report_name}/${var.cur_report_name}"
+    exclusions = [
       "**.json",
       "**.yml",
       "**.sql",

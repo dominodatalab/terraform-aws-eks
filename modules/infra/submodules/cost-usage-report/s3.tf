@@ -33,7 +33,7 @@ data "aws_iam_policy_document" "s3_cur_report" {
 
   statement {
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "billingreports.amazonaws.com"
       ]

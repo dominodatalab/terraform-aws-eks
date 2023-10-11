@@ -8,7 +8,7 @@ resource "aws_cur_report_definition" "aws_cur_report_definition" {
   format                     = var.report_format
   compression                = var.report_compression
   report_versioning          = var.report_versioning
-  additional_artifacts       = ["ATHENA" ]
+  additional_artifacts       = ["ATHENA"]
   additional_schema_elements = ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"]
 
   s3_bucket = var.cur_report_bucket_name
