@@ -10,8 +10,8 @@ data "aws_iam_policy_document" "costs" {
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs.bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs.bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*",
     ]
 
     actions = ["s3:*"]
@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "costs" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "costs" {
   statement {
     sid       = "DenyUnEncryptedObjectUploads"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
