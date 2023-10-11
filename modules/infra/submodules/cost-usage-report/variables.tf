@@ -71,28 +71,10 @@ variable "s3_bucket_prefix" {
   default     = "domino-cur"
 }
 
-variable "cur_role_arn" {
-  description = "ARN of the role to assume in order to provision the Cost and Usage Reports S3 bucket in us-east-1."
-  type        = string
-  default     = ""
-}
-
-variable "cur_role_session_name" {
-  description = "Session name to use when assuming `cur_role_arn`."
-  type        = string
-  default     = null
-}
-
 variable "lambda_log_group_retention_days" {
   description = "Number of days to retain logs from the Lambda function, which ensures Glue Crawler runs when new CUR data is available."
   type        = number
   default     = 14
-}
-
-variable "glue_crawler_create_log_group" {
-  description = "Whether to create a CloudWatch Log Group for the Glue Crawler. Crawlers share Log Group, and this gives the option of managing the Log Group with retention through this module."
-  type        = bool
-  default     = false
 }
 
 variable "glue_crawler_log_group_retention_days" {

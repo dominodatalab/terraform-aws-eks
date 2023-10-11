@@ -1,3 +1,7 @@
+data "aws_caller_identity" "aws_account" {}
+data "aws_region" "current" {}
+data "aws_partition" "current" {}
+
 resource "aws_cur_report_definition" "aws_cur_report_definition" {
   report_name                = var.cur_report_name
   time_unit                  = var.report_frequency
@@ -14,8 +18,6 @@ resource "aws_cur_report_definition" "aws_cur_report_definition" {
   depends_on = [
     aws_s3_bucket_policy.cur_report,
   ]
-
-  provider = aws.cur
 }
 
 data "aws_kms_key" "s3" {

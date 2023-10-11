@@ -50,3 +50,7 @@ eniconfig.yaml
 kubeconfig-proxy
 terraform.tfvars
 k8s-proxy-tunnel.sh
+
+# ignore locally generated system files
+*/.DS_Store
+*/.idea

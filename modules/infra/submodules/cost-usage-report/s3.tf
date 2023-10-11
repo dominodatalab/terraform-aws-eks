@@ -34,7 +34,9 @@ data "aws_iam_policy_document" "s3_cur_report" {
   statement {
     principals {
       type        = "Service"
-      identifiers = ["billingreports.amazonaws.com"]
+      identifiers = [
+        "billingreports.amazonaws.com"
+      ]
     }
 
     actions = [
@@ -48,12 +50,18 @@ data "aws_iam_policy_document" "s3_cur_report" {
   statement {
     principals {
       type        = "Service"
-      identifiers = ["billingreports.amazonaws.com"]
+      identifiers = [
+        "billingreports.amazonaws.com"
+      ]
     }
 
-    actions = ["s3:PutObject"]
+    actions = [
+      "s3:PutObject"
+    ]
 
-    resources = ["${aws_s3_bucket.cur_report_bucket.arn}/*"]
+    resources = [
+      "${aws_s3_bucket.cur_report_bucket.arn}/*"
+    ]
   }
 }
 

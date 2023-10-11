@@ -1,6 +1,6 @@
 # three IAM roles
 
-data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" { # aws_cur_crawler_component_function
+data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" {
   statement {
     effect = "Allow"
 
@@ -9,16 +9,25 @@ data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" { # aw
       identifiers = ["glue.amazonaws.com"]
     }
 
-    actions = ["sts:AssumeRole"]
+    actions = [
+      "sts:AssumeRole"
+    ]
   }
 }
 
-data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" { # aws_cur_crawler_component_function
+resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
+  name_prefix        = "crawler_component_function_role"
+  assume_role_policy = data.aws_iam_policy_document.cur_crawler_component_assume_role_policy.json
+
+  tags = var.tags
+}
+
+data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
 
   statement {
-    sid = "CloudWatch"
+    sid     = "CloudWatch"
 
-    effect = "Allow"
+    effect  = "Allow"
 
     actions = [
       "logs:CreateLogStream",
@@ -32,9 +41,9 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" { # a
   }
 
   statement {
-    sid = "Glue"
+    sid     = "Glue"
 
-    effect = "Allow"
+    effect  = "Allow"
 
     actions = [
       "glue:ImportCatalogToGlue",
@@ -52,9 +61,9 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" { # a
   }
 
   statement {
-    sid = "S3"
+    sid     = "S3"
 
-    effect = "Allow"
+    effect  = "Allow"
 
     actions = [
       "s3:GetObject",
@@ -67,9 +76,9 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" { # a
   }
 
   statement {
-    sid = "S3Decrypt"
+    sid     = "S3Decrypt"
 
-    effect = "Allow"
+    effect  = "Allow"
 
     actions = [
       "kms:Decrypt",
@@ -80,18 +89,10 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" { # a
 
 }
 
-resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
-  name_prefix        = "crawler_component_function_role"
-  assume_role_policy = data.aws_iam_policy_document.cur_crawler_component_assume_role_policy.json
-
-  tags = var.tags
-}
-
 resource "aws_iam_role_policy" "aws_cur_crawler_component_function_policy" {
   role   = aws_iam_role.aws_cur_crawler_component_function_role.name
   policy = data.aws_iam_policy_document.aws_cur_crawler_component_function_policy.json
 }
-
 
 
 data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor_assume" {
@@ -107,12 +108,17 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor_assume" {
   }
 }
 
+resource "aws_iam_role" "aws_cur_crawler_lambda_executor" {
+  name               = "${var.cur_report_name}-crawler-lambda-executor"
+  assume_role_policy = data.aws_iam_policy_document.aws_cur_crawler_lambda_executor_assume.json
+}
+
 data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
 
   statement {
-    sid = "CloudWatch"
+    sid     = "CloudWatch"
 
-    effect = "Allow"
+    effect  = "Allow"
 
     actions = [
       "logs:CreateLogStream",
@@ -126,9 +132,9 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
   }
 
   statement {
-    sid = "Glue"
+    sid     = "Glue"
 
-    effect = "Allow"
+    effect  = "Allow"
 
     actions = [
       "glue:StartCrawler",
@@ -136,11 +142,6 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
 
     resources = [aws_glue_crawler.aws_cur_crawler.arn]
   }
-}
-
-resource "aws_iam_role" "aws_cur_crawler_lambda_executor" {
-  name               = "${var.cur_report_name}-crawler-trigger-executor"
-  assume_role_policy = data.aws_iam_policy_document.aws_cur_crawler_lambda_executor_assume.json
 }
 
 resource "aws_iam_role_policy" "aws_cur_crawler_lambda_executor" {
@@ -162,12 +163,17 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor_assume" {
   }
 }
 
+resource "aws_iam_role" "aws_cur_lambda_executor" {
+  name               = "${var.cur_report_name}-lambda-executor"
+  assume_role_policy = data.aws_iam_policy_document.aws_cur_lambda_executor_assume.json
+}
+
 data "aws_iam_policy_document" "aws_cur_lambda_executor" {
 
   statement {
-    sid = "CloudWatch"
+    sid     = "CloudWatch"
 
-    effect = "Allow"
+    effect  = "Allow"
 
     actions = [
       "logs:CreateLogStream",
@@ -181,9 +187,9 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
   }
 
   statement {
-    sid = "Glue"
+    sid     = "Glue"
 
-    effect = "Allow"
+    effect  = "Allow"
 
     actions = [
       "s3:PutBucketNotification"
@@ -193,11 +199,6 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
       "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report_bucket.bucket}"
     ]
   }
-}
-
-resource "aws_iam_role" "aws_cur_lambda_executor" {
-  name               = "${var.cur_report_name}-lambda-executor"
-  assume_role_policy = data.aws_iam_policy_document.aws_cur_lambda_executor_assume.json
 }
 
 resource "aws_iam_role_policy" "aws_cur_lambda_executor" {
