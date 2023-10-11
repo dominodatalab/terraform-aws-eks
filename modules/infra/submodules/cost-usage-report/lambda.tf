@@ -65,10 +65,30 @@ resource "aws_lambda_function" "aws_cur_initializer" {
     mode = "Active"
   }
 
+  vpc_config {
+    // Every subnet should be able to reach an EFS mount target in the same Availability Zone.
+    // Cross-AZ mounts are not permitted.
+    subnet_ids         = [local.private_subnet_ids]
+    security_group_ids = [aws_security_group.lambda]
+  }
+
   depends_on = [
     aws_iam_role_policy.aws_cur_crawler_lambda_executor,
     aws_glue_crawler.aws_cur_crawler
   ]
+}
+
+resource "aws_security_group" "lambda" {
+  name        = "${var.deploy_id}-lambda"
+  description = "EFS security group"
+  vpc_id      = var.network_info.vpc_id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = {
+    "Name" = "${var.deploy_id}-lambda"
+  }
 }
 
 resource "aws_lambda_permission" "aws_s3_cur_event_lambda_permission" {
@@ -140,8 +160,14 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
     aws_iam_role.aws_cur_lambda_executor
   ]
 
+  vpc_config {
+    // Every subnet should be able to reach an EFS mount target in the same Availability Zone.
+    // Cross-AZ mounts are not permitted.
+    subnet_ids         = [local.private_subnet_ids]
+    security_group_ids = [aws_security_group.lambda]
+  }
+
   tracing_config {
     mode = "Active"
   }
 }
-

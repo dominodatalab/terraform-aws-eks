@@ -12,8 +12,10 @@ locals {
 }
 
 module "cost_usage_report" {
-  source   = "./submodules/cost-usage-report"
-  kms_info = local.kms_info
+  source       = "./submodules/cost-usage-report"
+  deploy_id    = var.deploy_id
+  kms_info     = local.kms_info
+  network_info = module.network.info
 }
 
 module "storage" {

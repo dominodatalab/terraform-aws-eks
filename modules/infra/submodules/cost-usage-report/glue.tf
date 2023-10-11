@@ -8,6 +8,26 @@ resource "aws_glue_catalog_database" "aws_cur_database" { # done
   catalog_id  = local.aws_account_id
 }
 
+
+resource "aws_glue_security_configuration" "lambda_config" {
+  name = "example"
+
+  encryption_configuration {
+    cloudwatch_encryption {
+      cloudwatch_encryption_mode = "DISABLED"
+    }
+
+    job_bookmarks_encryption {
+      job_bookmarks_encryption_mode = "DISABLED"
+    }
+
+    s3_encryption {
+      kms_key_arn        = local.kms_key_arn
+      s3_encryption_mode = "SSE-KMS"
+    }
+  }
+}
+
 resource "aws_glue_crawler" "aws_cur_crawler" {
   name          = "AWSCURCrawler-domino-cur-crawler"
   description   = "A recurring crawler that keeps your CUR table in Athena up-to-date."
@@ -30,6 +50,8 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
     delete_behavior = "DELETE_FROM_DATABASE"
     update_behavior = "UPDATE_IN_DATABASE"
   }
+
+  security_configuration = aws_glue_security_configuration.lambda_config
 
   tags = var.tags
 

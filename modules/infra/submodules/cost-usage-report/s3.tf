@@ -108,3 +108,22 @@ resource "aws_s3_bucket_policy" "cur_report" {
     aws_s3_bucket_public_access_block.cur_report
   ]
 }
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryption" {
+  for_each = { for k, v in local.s3_buckets : k => v }
+
+  bucket = each.value.bucket_name
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = local.s3_server_side_encryption
+      kms_master_key_id = local.kms_key_arn
+    }
+    bucket_key_enabled = false
+  }
+
+  lifecycle {
+    ignore_changes = [
+      rule,
+    ]
+  }
+}
