@@ -13,6 +13,10 @@ output "info" {
       container_registry = ECR base registry URL. Grab the base AWS account ECR URL and add the deploy_id. Domino will append /environment and /model.
       iam_policy_arn     = ECR IAM Policy ARN.
     }
+    costs = {
+      storage_enabled = Whether kubecost long term storage is enabled.
+      cost_federated_store = Kubecost configuration needed to create cost-analyzer secrets
+    }
   EOF
   value = {
     efs = {
@@ -30,6 +34,34 @@ output "info" {
     ecr = {
       container_registry = join("/", concat(slice(split("/", aws_ecr_repository.this["environment"].repository_url), 0, 1), [var.deploy_id]))
       iam_policy_arn     = aws_iam_policy.ecr.arn
+    }
+    costs = {
+      storage_enabled = var.domino_cost.storage_enabled
+      cost_federated_store = yamlencode(
+        {
+          "type" : "S3",
+          "config" : {
+            "bucket" : aws_s3_bucket.costs[0].bucket,
+            "endpoint" : "s3.amazonaws.com",
+            "region" : "us-east-1",
+            "aws_sdk_auth" : false,
+            "insecure" : false,
+            "signature_version2" : false,
+            "put_user_metadata" : {
+              "X-Amz-Acl" : "bucket-owner-full-control"
+            },
+            "http_config" : {
+              "idle_conn_timeout" : "90s",
+              "response_header_timeout" : "2m",
+              "insecure_skip_verify" : false
+            },
+            "trace" : {
+              "enable" : true
+            },
+            "part_size" : 134217728
+          }
+        }
+      )
     }
   }
 }
