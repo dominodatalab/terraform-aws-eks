@@ -2,11 +2,11 @@ data "aws_caller_identity" "aws_account" {}
 data "aws_partition" "current" {}
 
 locals {
-  aws_account_id              = data.aws_caller_identity.aws_account.account_id
-  kms_key_arn                 = var.kms_info.enabled ? var.kms_info.key_arn : null
-  lambda_function_name        = "${var.cur_report_name}-crawler-initializer"
-  report_status_table_name    = "cost_and_usage_data_status_tb"
-  s3_server_side_encryption   = var.kms_info.enabled ? "aws:kms" : "AES256"
+  aws_account_id            = data.aws_caller_identity.aws_account.account_id
+  kms_key_arn               = var.kms_info.enabled ? var.kms_info.key_arn : null
+  lambda_function_name      = "${var.cur_report_name}-crawler-initializer"
+  report_status_table_name  = "cost_and_usage_data_status_tb"
+  s3_server_side_encryption = var.kms_info.enabled ? "aws:kms" : "AES256"
 }
 
 resource "aws_cur_report_definition" "aws_cur_report_definition" {

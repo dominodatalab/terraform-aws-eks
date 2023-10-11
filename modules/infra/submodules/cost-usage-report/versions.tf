@@ -6,7 +6,7 @@ terraform {
       version = "~> 5"
     }
     archive = {
-      source = "hashicorp/archive"
+      source  = "hashicorp/archive"
       version = "~> 2"
     }
   }

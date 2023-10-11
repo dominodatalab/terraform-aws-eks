@@ -11,18 +11,6 @@ variable "cur_report_bucket_name" {
   default     = "domino-cur-report"
 }
 
-variable "s3_use_existing_kms_key" {
-  description = "Whether to use an existing KMS CMK for S3 SSE."
-  type        = bool
-  default     = false
-}
-
-variable "s3_kms_key_alias" {
-  description = "Alias for the KMS CMK, existing or otherwise."
-  type        = string
-  default     = ""
-}
-
 variable "aws_glue_database" {
   description = "Name of the Cost and Usage Report which will be created."
   type        = string
@@ -59,28 +47,10 @@ variable "report_compression" {
   default     = "Parquet"
 }
 
-variable "report_additional_artifacts" {
-  description = "A list of additional artifacts. Valid values are: REDSHIFT, QUICKSIGHT, ATHENA. When ATHENA exists within additional_artifacts, no other artifact type can be declared and report_versioning must be OVERWRITE_REPORT."
-  type        = set(string)
-  default     = ["ATHENA"]
-}
-
 variable "s3_bucket_prefix" {
   description = "Prefix in the S3 bucket to put reports."
   type        = string
   default     = "domino-cur"
-}
-
-variable "lambda_log_group_retention_days" {
-  description = "Number of days to retain logs from the Lambda function, which ensures Glue Crawler runs when new CUR data is available."
-  type        = number
-  default     = 14
-}
-
-variable "glue_crawler_log_group_retention_days" {
-  description = "Number of days to retain logs from the Glue Crawler, which populates the Athena table whenever new CUR data is available."
-  type        = number
-  default     = 14
 }
 
 variable "tags" {

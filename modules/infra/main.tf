@@ -11,8 +11,8 @@ locals {
   }
 }
 
-module "cost-usage-report" {
-  source = "./submodules/cost-usage-report"
+module "cost_usage_report" {
+  source   = "./submodules/cost-usage-report"
   kms_info = local.kms_info
 }
 
