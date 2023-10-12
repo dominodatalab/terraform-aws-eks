@@ -218,9 +218,8 @@ resource "aws_s3_bucket" "monitoring" {
 
 data "aws_iam_policy_document" "monitoring" {
   statement {
-
+    sid    = "DenyInsecureTransport"
     effect = "Deny"
-
     resources = [
       "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}",
       "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}/*",
@@ -241,7 +240,7 @@ data "aws_iam_policy_document" "monitoring" {
   }
 
   statement {
-    sid       = ""
+    sid       = "ELBLogDelivery"
     effect    = "Allow"
     resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}/*"]
 
@@ -289,6 +288,30 @@ data "aws_iam_policy_document" "monitoring" {
       identifiers = ["delivery.logs.amazonaws.com"]
     }
   }
+
+  statement {
+    sid       = "AWSAccessLogDeliveryWrite"
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}/*"]
+    actions   = ["s3:PutObject"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logging.s3.amazonaws.com"]
+    }
+  }
+
+  statement {
+    sid       = "AWSAccessLogDeliveryAclCheck"
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}"]
+    actions   = ["s3:GetBucketAcl"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logging.s3.amazonaws.com"]
+    }
+  }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "monitoring" {
@@ -301,6 +324,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "monitoring" {
   }
 }
 
+# This is all to reset the default, but in order to support upgrades from existing
+# infrastructure, we explicitly set it to a private ACL
 resource "aws_s3_bucket_ownership_controls" "monitoring" {
   bucket = aws_s3_bucket.monitoring.id
   rule {
@@ -308,13 +333,18 @@ resource "aws_s3_bucket_ownership_controls" "monitoring" {
   }
 }
 
+# Intermittent issues with setting the ACL too quickly after setting BucketOwnerPreferred
+resource "time_sleep" "change_s3_bucket_ownership_15_seconds" {
+  create_duration = "15s"
+  depends_on      = [aws_s3_bucket_ownership_controls.monitoring]
+}
+
 resource "aws_s3_bucket_acl" "monitoring" {
-  depends_on = [aws_s3_bucket_ownership_controls.monitoring]
+  depends_on = [time_sleep.change_s3_bucket_ownership_15_seconds]
 
   bucket = aws_s3_bucket.monitoring.id
 
   access_control_policy {
-
     owner {
       id = data.aws_canonical_user_id.current.id
     }
@@ -326,30 +356,21 @@ resource "aws_s3_bucket_acl" "monitoring" {
       }
       permission = "FULL_CONTROL"
     }
-
-    grant {
-      grantee {
-        type = "Group"
-        uri  = "http://acs.amazonaws.com/groups/s3/LogDelivery"
-      }
-      permission = "WRITE"
-    }
-
-    grant {
-      grantee {
-        type = "Group"
-        uri  = "http://acs.amazonaws.com/groups/s3/LogDelivery"
-      }
-      permission = "READ_ACP"
-    }
   }
+}
+
+resource "aws_s3_bucket_ownership_controls" "monitoring_enforced" {
+  bucket = aws_s3_bucket.monitoring.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+  depends_on = [aws_s3_bucket_acl.monitoring]
 }
 
 resource "aws_s3_bucket" "registry" {
   bucket              = "${var.deploy_id}-registry"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
-
 }
 
 data "aws_iam_policy_document" "registry" {
