@@ -54,6 +54,7 @@ resource "aws_lambda_function" "aws_cur_initializer" {
   runtime          = "nodejs16.x"
 
   reserved_concurrent_executions = 1
+  kms_key_arn                    = local.kms_key_arn
 
   environment {
     variables = {
@@ -66,16 +67,18 @@ resource "aws_lambda_function" "aws_cur_initializer" {
   }
 
   vpc_config {
-    // Every subnet should be able to reach an EFS mount target in the same Availability Zone.
-    // Cross-AZ mounts are not permitted.
-    subnet_ids         = [local.private_subnet_ids]
-    security_group_ids = [aws_security_group.lambda]
+    subnet_ids         = local.private_subnet_ids
+    security_group_ids = [aws_security_group.lambda.id]
   }
 
   depends_on = [
     aws_iam_role_policy.aws_cur_crawler_lambda_executor,
     aws_glue_crawler.aws_cur_crawler
   ]
+
+  dead_letter_config {
+    target_arn = aws_s3_bucket.cur_report.arn
+  }
 }
 
 resource "aws_security_group" "lambda" {
@@ -161,13 +164,32 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
   ]
 
   vpc_config {
-    // Every subnet should be able to reach an EFS mount target in the same Availability Zone.
-    // Cross-AZ mounts are not permitted.
-    subnet_ids         = [local.private_subnet_ids]
-    security_group_ids = [aws_security_group.lambda]
+    subnet_ids         = local.private_subnet_ids
+    security_group_ids = [aws_security_group.lambda.id]
   }
 
   tracing_config {
     mode = "Active"
   }
+
+  dead_letter_config {
+    target_arn = aws_s3_bucket.cur_report.arn
+  }
+}
+
+resource "aws_signer_signing_profile" "signing_profile" {
+  platform_id = "AWSLambda-SHA384-ECDSA"
+  name_prefix = "domino_sp_"
+}
+
+resource "aws_signer_signing_profile_permission" "sp_permission_1" {
+  profile_name = aws_signer_signing_profile.signing_profile.name
+  action       = "signer:StartSigningJob"
+  principal    = local.aws_account_id
+}
+
+resource "aws_signer_signing_profile_permission" "sp_permission_2" {
+  profile_name = aws_signer_signing_profile.signing_profile.name
+  action       = "signer:GetSigningProfile"
+  principal    = local.aws_account_id
 }

@@ -1,24 +1,29 @@
 # An AWS Glue database
 # An AWS Glue crawler
 # Two Lambda functions
+locals {
+  aws_glue_database = var.aws_glue_database
+}
 
 resource "aws_glue_catalog_database" "aws_cur_database" { # done
-  description = "Contains CUR data based on contents from the S3 bucket '${var.cur_report_bucket_name}'"
+  description = "Contains CUR data based on contents from the S3 bucket '${aws_s3_bucket.cur_report.bucket}'"
   name        = "${var.aws_glue_database}-db"
   catalog_id  = local.aws_account_id
 }
 
 
 resource "aws_glue_security_configuration" "lambda_config" {
-  name = "example"
+  name = "lambda_security_config"
 
   encryption_configuration {
     cloudwatch_encryption {
-      cloudwatch_encryption_mode = "DISABLED"
+      kms_key_arn                = local.kms_key_arn
+      cloudwatch_encryption_mode = "SSE-KMS"
     }
 
     job_bookmarks_encryption {
-      job_bookmarks_encryption_mode = "DISABLED"
+      kms_key_arn                   = local.kms_key_arn
+      job_bookmarks_encryption_mode = "CSE-KMS"
     }
 
     s3_encryption {
@@ -35,7 +40,7 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
   role          = aws_iam_role.aws_cur_crawler_component_function_role.name
 
   s3_target {
-    path = "s3://${var.cur_report_bucket_name}/${var.s3_bucket_prefix}/${var.cur_report_name}/${var.cur_report_name}"
+    path = "s3://${aws_s3_bucket.cur_report.bucket}/${var.s3_bucket_prefix}/${var.cur_report_name}/${var.cur_report_name}"
     exclusions = [
       "**.json",
       "**.yml",
@@ -51,7 +56,7 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
     update_behavior = "UPDATE_IN_DATABASE"
   }
 
-  security_configuration = aws_glue_security_configuration.lambda_config
+  security_configuration = aws_glue_security_configuration.lambda_config.name
 
   tags = var.tags
 
@@ -74,7 +79,7 @@ resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
   }
 
   storage_descriptor {
-    location      = "s3://${var.cur_report_bucket_name}/${var.s3_bucket_prefix}/${var.cur_report_name}/${local.report_status_table_name}/"
+    location      = "s3://${aws_s3_bucket.cur_report.bucket}/${var.s3_bucket_prefix}/${var.cur_report_name}/${local.report_status_table_name}/"
     input_format  = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
 

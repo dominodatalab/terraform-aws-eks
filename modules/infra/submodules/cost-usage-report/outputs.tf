@@ -11,7 +11,7 @@ output "s3_bucket_prefix" {
 output "s3_bucket_arn" {
   description = "ARN of S3 bucket used for storing CUR data. This may be provisioned by this module or not."
   value = [
-    aws_s3_bucket.cur_report[0].arn
+    aws_s3_bucket.cur_report.arn
   ]
 }
 

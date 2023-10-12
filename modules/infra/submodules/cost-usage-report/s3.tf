@@ -47,7 +47,7 @@ resource "aws_s3_bucket_policy" "athena_result" {
 
 
 resource "aws_s3_bucket" "cur_report" {
-  bucket = var.cur_report_bucket_name
+  bucket = local.cur_report_bucket
 
   tags = var.tags
 }

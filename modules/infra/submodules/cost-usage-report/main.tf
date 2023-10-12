@@ -8,6 +8,7 @@ locals {
   lambda_function_name      = "${var.cur_report_name}-crawler-initializer"
   report_status_table_name  = "cost_and_usage_data_status_tb"
   s3_server_side_encryption = var.kms_info.enabled ? "aws:kms" : "AES256"
+  cur_report_bucket         = var.cur_report_bucket_name_suffix
 
   s3_buckets = {
     report = {
@@ -34,7 +35,7 @@ resource "aws_cur_report_definition" "aws_cur_report_definition" {
   additional_artifacts       = ["ATHENA"]
   additional_schema_elements = ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"]
 
-  s3_bucket = var.cur_report_bucket_name
+  s3_bucket = aws_s3_bucket.cur_report.bucket
   s3_region = aws_s3_bucket.cur_report.region
   s3_prefix = var.s3_bucket_prefix
 
