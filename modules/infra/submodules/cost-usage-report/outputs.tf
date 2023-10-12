@@ -64,3 +64,17 @@ output "athena_query_result_s3" {
   description = "S3 location for athena query results"
   value       = aws_s3_bucket.athena_result.bucket
 }
+
+output "athena_info_configs" {
+  value = jsonencode(
+    {
+      "athenaRegion":"us-west-2",
+      "athenaDatabase": aws_glue_catalog_database.aws_cur_database.name,
+      "athenaTable": aws_glue_catalog_table.aws_cur_report_status_table.name,
+      "athenaBucketName": aws_s3_bucket.athena_result.bucket,
+      "projectID": local.aws_account_id,
+      "serviceKeyName":"xxxx",
+      "serviceKeySecret":"xxxxxx"
+    }
+  )
+}

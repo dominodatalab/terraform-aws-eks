@@ -1,6 +1,3 @@
-#locals {
-#  aws_account_id = data.aws_caller_identity.aws_account.account_id
-#}
 
 data "archive_file" "aws_cur_initializer_zip" {
   type        = "zip"
@@ -79,6 +76,8 @@ resource "aws_lambda_function" "aws_cur_initializer" {
   dead_letter_config {
     target_arn = aws_s3_bucket.cur_report.arn
   }
+
+  code_signing_config_arn = aws_signer_signing_profile.signing_profile.arn
 }
 
 resource "aws_security_group" "lambda" {
@@ -175,6 +174,8 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
   dead_letter_config {
     target_arn = aws_s3_bucket.cur_report.arn
   }
+
+  code_signing_config_arn = aws_signer_signing_profile.signing_profile.arn
 }
 
 resource "aws_signer_signing_profile" "signing_profile" {
@@ -182,13 +183,13 @@ resource "aws_signer_signing_profile" "signing_profile" {
   name_prefix = "domino_sp_"
 }
 
-resource "aws_signer_signing_profile_permission" "sp_permission_1" {
+resource "aws_signer_signing_profile_permission" "sp_permission_start" {
   profile_name = aws_signer_signing_profile.signing_profile.name
   action       = "signer:StartSigningJob"
   principal    = local.aws_account_id
 }
 
-resource "aws_signer_signing_profile_permission" "sp_permission_2" {
+resource "aws_signer_signing_profile_permission" "sp_permission_get" {
   profile_name = aws_signer_signing_profile.signing_profile.name
   action       = "signer:GetSigningProfile"
   principal    = local.aws_account_id
