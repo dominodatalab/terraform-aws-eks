@@ -331,6 +331,10 @@ resource "aws_s3_bucket_ownership_controls" "monitoring" {
   rule {
     object_ownership = "BucketOwnerPreferred"
   }
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # Intermittent issues with setting the ACL too quickly after setting BucketOwnerPreferred
