@@ -1,9 +1,6 @@
 # An AWS Glue database
 # An AWS Glue crawler
 # Two Lambda functions
-locals {
-  aws_glue_database = "${var.deploy_id}-${var.aws_glue_database}-db"
-}
 
 resource "aws_glue_catalog_database" "aws_cur_database" { # done
   description = "Contains CUR data based on contents from the S3 bucket '${aws_s3_bucket.cur_report.bucket}'"

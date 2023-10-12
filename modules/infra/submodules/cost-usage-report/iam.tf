@@ -55,6 +55,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
       "glue:BatchGetPartition",
       "glue:UpdatePartition",
       "glue:BatchCreatePartition",
+      "glue:GetSecurityConfiguration",
     ]
 
     resources = ["*"]

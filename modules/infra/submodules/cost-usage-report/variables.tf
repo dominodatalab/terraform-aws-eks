@@ -8,7 +8,7 @@ variable "deploy_id" {
   }
 }
 
-variable "athena_cur_result_bucket_name" {
+variable "athena_cur_result_bucket_suffix" {
   description = "Name of the S3 bucket into which CUR will put the cost data."
   type        = string
   default     = "aws-athena-query-results-domino-costs"
@@ -20,10 +20,10 @@ variable "cur_report_bucket_name_suffix" {
   default     = "domino-cur-report"
 }
 
-variable "aws_glue_database" {
+variable "aws_glue_database_suffix" {
   description = "Name of the Cost and Usage Report which will be created."
   type        = string
-  default     = "athena-cur-domino-cost"
+  default     = "athena-cur-domino-cost-db"
 }
 
 variable "cur_report_name" {

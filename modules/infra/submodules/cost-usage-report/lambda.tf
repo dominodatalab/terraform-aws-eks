@@ -194,3 +194,17 @@ resource "aws_signer_signing_profile_permission" "sp_permission_get" {
   action       = "signer:GetSigningProfile"
   principal    = local.aws_account_id
 }
+
+resource "aws_lambda_code_signing_config" "lambda_csc" {
+  allowed_publishers {
+    signing_profile_version_arns = [
+      aws_signer_signing_profile.signing_profile.arn,
+    ]
+  }
+
+  policies {
+    untrusted_artifact_on_deployment = "Warn"
+  }
+
+  description = "Cost Usage Report Code signing configuration"
+}
