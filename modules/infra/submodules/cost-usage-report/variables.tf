@@ -68,6 +68,15 @@ variable "tags" {
   default     = {}
 }
 
+variable "domino_cur" {
+  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
+  type = object({
+    provision_resources = optional(bool, true)
+  })
+
+  default = {}
+}
+
 variable "kms_info" {
   description = <<EOF
     key_id  = KMS key id.

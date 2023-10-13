@@ -1,81 +1,32 @@
-output "cur_report_bucket_name" {
-  description = "Name of S3 bucket used for storing CUR data. This may be provisioned by this module or not."
-  value       = aws_cur_report_definition.aws_cur_report_definition.s3_bucket
-}
-
-output "s3_bucket_prefix" {
-  description = "Prefix used for storing CUR data inside the S3 bucket."
-  value       = aws_cur_report_definition.aws_cur_report_definition.s3_prefix
-}
-
-output "s3_bucket_arn" {
-  description = "ARN of S3 bucket used for storing CUR data. This may be provisioned by this module or not."
-  value = [
-    aws_s3_bucket.cur_report.arn
-  ]
-}
-
-output "s3_bucket_region" {
-  description = "Region where the S3 bucket used for storing CUR data is provisioned. This may be provisioned by this module or not."
-  value       = aws_cur_report_definition.aws_cur_report_definition.s3_region
-}
-
-output "report_name" {
-  description = "Name of the provisioned Cost and Usage Report."
-  value       = aws_cur_report_definition.aws_cur_report_definition.report_name
-}
-
-output "lambda_crawler_trigger_arn" {
-  description = "ARN of the Lambda function responsible for triggering the Glue Crawler when new CUR data is uploaded into the S3 bucket."
-  value       = aws_lambda_function.aws_cur_initializer.arn
-}
-
-output "lambda_crawler_trigger_role_arn" {
-  description = "ARN of the IAM role used by the Lambda function responsible for starting the Glue Crawler."
-  value       = aws_iam_role.aws_cur_crawler_lambda_executor.arn
-}
-
-output "crawler_arn" {
-  description = "ARN of the Glue Crawler responsible for populating the Catalog Database with new CUR data."
-  value       = aws_lambda_function.aws_cur_initializer.arn
-}
-
-output "crawler_role_arn" {
-  description = "ARN of the IAM role used by the Glue Crawler responsible for populating the Catalog Database with new CUR data."
-  value       = aws_iam_role.aws_cur_crawler_component_function_role.arn
-}
-
-output "athena_region" {
-  description = "athena region"
-  value       = aws_cur_report_definition.aws_cur_report_definition.s3_region
-}
-
-output "glue_catalog_database_name" {
-  description = "Name of the Glue Catalog Database which is populated with CUR data."
-  value       = aws_glue_catalog_database.aws_cur_database.name
-}
-
-output "glue_catalog_table_name" {
-  description = "Name of the Glue Catalog table which is populated with CUR data."
-  value       = aws_glue_catalog_table.aws_cur_report_status_table.name
-}
-
-output "athena_query_result_s3" {
-  description = "S3 location for athena query results"
-  value       = aws_s3_bucket.athena_result.bucket
-}
-
-output "athena_info_configs" {
-  description = "Athena based cost reporting config information for kubecost cost-analyzer"
-  value = jsonencode(
-    {
-      "athenaRegion" : "us-west-2",
-      "athenaDatabase" : aws_glue_catalog_database.aws_cur_database.name,
-      "athenaTable" : aws_glue_catalog_table.aws_cur_report_status_table.name,
-      "athenaBucketName" : aws_s3_bucket.athena_result.bucket,
-      "projectID" : local.aws_account_id,
-      "serviceKeyName" : "xxxx",
-      "serviceKeySecret" : "xxxxxx"
-    }
-  )
+output "info" {
+  description = <<EOF
+    athena_info_configs = "Athena based cost reporting config information for kubecost cost-analyzer"
+    athena_region"  = "athena region"
+    athena_query_result_s3 = "S3 location for athena query results"
+    cur_report_bucket_name = "Name of S3 bucket used for storing CUR data. This may be provisioned by this module or not."
+    glue_catalog_database_name = "Name of the Glue Catalog Database which is populated with CUR data."
+    glue_catalog_table_name = "Name of the Glue Catalog table which is populated with CUR data."
+    s3_bucket_region  = "Region where the S3 bucket used for storing CUR data is provisioned. This may be provisioned by this module or not."
+    report_name = "Name of the provisioned Cost and Usage Report."
+  EOF
+  value = {
+    athena_info_configs  = jsonencode(
+      {
+        "athenaRegion" : aws_cur_report_definition.aws_cur_report_definition.s3_region,
+        "athenaDatabase" : aws_glue_catalog_database.aws_cur_database.name,
+        "athenaTable" : aws_glue_catalog_table.aws_cur_report_status_table.name,
+        "athenaBucketName" : aws_s3_bucket.athena_result.bucket,
+        "projectID" : local.aws_account_id,
+        "serviceKeyName" : "xxxx",
+        "serviceKeySecret" : "xxxxxx"
+      }
+    )
+    athena_query_result_s3 = aws_s3_bucket.athena_result.bucket
+    athena_region   = aws_cur_report_definition.aws_cur_report_definition.s3_region
+    cur_report_bucket_name = aws_cur_report_definition.aws_cur_report_definition.s3_bucket
+    glue_catalog_database_name = aws_glue_catalog_database.aws_cur_database.name
+    glue_catalog_table_name = aws_glue_catalog_table.aws_cur_report_status_table.name
+    report_name = aws_cur_report_definition.aws_cur_report_definition.report_name
+    s3_bucket_region = = aws_cur_report_definition.aws_cur_report_definition.s3_region
+  }
 }
