@@ -82,13 +82,10 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
     effect = "Allow"
 
     actions = [
-      "kms:GenerateDataKey",
       "kms:Decrypt",
     ]
 
-    resources = [
-      local.kms_key_arn
-    ]
+    resources = ["*"]
   }
 
 }
@@ -113,7 +110,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor_assume" {
 }
 
 resource "aws_iam_role" "aws_cur_crawler_lambda_executor" {
-  name               = "${var.cur_report_name}-crawler-lambda-executor"
+  name               = "${var.deploy_id}-${var.cur_report_name}-crawler-lambda-executor"
   assume_role_policy = data.aws_iam_policy_document.aws_cur_crawler_lambda_executor_assume.json
 }
 
@@ -168,7 +165,7 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor_assume" {
 }
 
 resource "aws_iam_role" "aws_cur_lambda_executor" {
-  name               = "${var.cur_report_name}-lambda-executor"
+  name               = "${var.deploy_id}-${var.cur_report_name}-lambda-executor"
   assume_role_policy = data.aws_iam_policy_document.aws_cur_lambda_executor_assume.json
 }
 
