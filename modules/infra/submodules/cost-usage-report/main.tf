@@ -20,15 +20,16 @@ locals {
       arn         = aws_s3_bucket.cur_report.arn
     }
     athena_result = {
-      bucket_name = aws_s3_bucket.athena_result.bucket
-      id          = aws_s3_bucket.athena_result.id
+      bucket_name = aws_s3_bucket.athena_result[0].bucket
+      id          = aws_s3_bucket.athena_result[0].id
       policy_json = data.aws_iam_policy_document.athena_result.json
-      arn         = aws_s3_bucket.athena_result.arn
+      arn         = aws_s3_bucket.athena_result[0].arn
     }
   }
 }
 
 resource "aws_cur_report_definition" "aws_cur_report_definition" {
+  count                      = var.domino_cur.provision_resources ? 1 : 0
   report_name                = var.cur_report_name
   time_unit                  = var.report_frequency
   format                     = var.report_format

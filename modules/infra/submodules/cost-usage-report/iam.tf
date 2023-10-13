@@ -206,4 +206,3 @@ resource "aws_iam_role_policy" "aws_cur_lambda_executor" {
   role   = aws_iam_role.aws_cur_lambda_executor.name
   policy = data.aws_iam_policy_document.aws_cur_lambda_executor.json
 }
-
