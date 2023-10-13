@@ -84,7 +84,6 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
     actions = [
       "kms:GenerateDataKey",
       "kms:Decrypt",
-      "kms:Encrypt",
     ]
 
     resources = [

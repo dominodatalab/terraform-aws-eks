@@ -77,7 +77,7 @@ resource "aws_lambda_function" "aws_cur_initializer" {
     target_arn = aws_s3_bucket.cur_report.arn
   }
 
-  code_signing_config_arn = aws_signer_signing_profile.signing_profile.arn
+  code_signing_config_arn = aws_lambda_code_signing_config.lambda_csc.arn
 }
 
 resource "aws_security_group" "lambda" {
