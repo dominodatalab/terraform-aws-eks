@@ -37,13 +37,13 @@ output "info" {
     }
     costs = {
       storage_enabled = var.domino_cost.storage_enabled
-      cost_federated_store = yamlencode(
+      cost_federated_store = var.domino_cost.storage_enabled ? yamlencode(
         {
           "type" : "S3",
           "config" : {
             "bucket" : aws_s3_bucket.costs[0].bucket,
             "endpoint" : "s3.amazonaws.com",
-            "region" : "us-east-1",
+            "region" : aws_s3_bucket.costs[0].region,
             "aws_sdk_auth" : false,
             "insecure" : false,
             "signature_version2" : false,
@@ -58,10 +58,10 @@ output "info" {
             "trace" : {
               "enable" : true
             },
-            "part_size" : 134217728
+            "part_size" : var.domino_cost.part_size
           }
         }
-      )
+      ) : ""
     }
   }
 }

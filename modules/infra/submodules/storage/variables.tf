@@ -124,7 +124,8 @@ variable "network_info" {
 variable "domino_cost" {
   description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
   type = object({
-    storage_enabled = optional(bool, true)
+    storage_enabled = optional(bool, true),
+    part_size = optional(number, 134217728)
   })
 
   default = {}
