@@ -19,7 +19,7 @@ locals {
       policy_json = data.aws_iam_policy_document.blobs.json
       arn         = aws_s3_bucket.blobs.arn
     }
-    costs =  var.domino_cost.storage_enabled ? {
+    costs = var.domino_cost.storage_enabled ? {
       bucket_name = aws_s3_bucket.costs[0].bucket
       id          = aws_s3_bucket.costs[0].id
       policy_json = data.aws_iam_policy_document.costs.json
