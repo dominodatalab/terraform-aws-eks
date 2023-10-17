@@ -109,20 +109,10 @@ data "aws_iam_policy_document" "cur_lambda_initializer_assume" {
   }
 }
 
-#resource "aws_iam_role_policy_attachment" "cur_crawler_initializer_executor" {
-#  policy_arn = aws_iam_policy.
-#  role       = aws_iam_role.cur_crawler_initializer_executor.name
-#}
-
 resource "aws_iam_role" "cur_lambda_initializer" {
   name               = "${var.deploy_id}-${var.cur_report_name}-crawler-lambda-initializer"
   assume_role_policy = data.aws_iam_policy_document.cur_lambda_initializer_assume.json
 }
-#
-#resource "aws_iam_policy" "cur_crawler_initializer_executor" {
-#  name   = "${var.deploy_id}-${var.cur_report_name}-initializer-policy"
-#  policy = data.aws_iam_policy_document.cur_lambda_initializer_assume.json
-#}
 
 data "aws_iam_policy_document" "cur_lambda_initializer_pd" {
 
@@ -175,7 +165,7 @@ resource "aws_iam_policy" "cur_lambda_initializer_p" {
 }
 
 resource "aws_iam_role_policy_attachment" "cur_lambda_initializer_rp" {
-  role   = aws_iam_role.cur_lambda_initializer.name
+  role       = aws_iam_role.cur_lambda_initializer.name
   policy_arn = aws_iam_policy.cur_lambda_initializer_p.arn
 }
 
