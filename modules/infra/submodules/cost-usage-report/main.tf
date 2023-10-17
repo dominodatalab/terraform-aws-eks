@@ -5,7 +5,7 @@ locals {
   private_subnet_ids            = var.network_info.subnets.private[*].subnet_id
   aws_account_id                = data.aws_caller_identity.aws_account.account_id
   kms_key_arn                   = var.kms_info.enabled ? var.kms_info.key_arn : null
-  lambda_function_name          = "${var.cur_report_name}-crawler-initializer"
+  initializer_lambda_function   = "${var.cur_report_name}-crawler-initializer"
   report_status_table_name      = "cost_and_usage_data_status_tb"
   s3_server_side_encryption     = var.kms_info.enabled ? "aws:kms" : "AES256"
   cur_report_bucket             = "${var.deploy_id}-${var.cur_report_bucket_name_suffix}"

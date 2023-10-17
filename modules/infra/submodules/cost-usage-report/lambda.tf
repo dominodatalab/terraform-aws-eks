@@ -1,5 +1,5 @@
 
-data "archive_file" "aws_cur_initializer_zip" {
+data "archive_file" "cur_initializer_zip" {
   type        = "zip"
   output_path = "/tmp/aws_cur_initializer.zip"
   source {
@@ -40,12 +40,12 @@ data "archive_file" "aws_cur_initializer_zip" {
   }
 }
 
-resource "aws_lambda_function" "aws_cur_initializer" {
-  function_name = local.lambda_function_name
-  role          = aws_iam_role.aws_cur_crawler_lambda_executor.arn
+resource "aws_lambda_function" "cur_lambda_initializer" {
+  function_name = local.initializer_lambda_function
+  role          = aws_iam_role.cur_lambda_initializer.arn
 
-  filename         = data.archive_file.aws_cur_initializer_zip.output_path
-  source_code_hash = data.archive_file.aws_cur_initializer_zip.output_base64sha256
+  filename         = data.archive_file.cur_initializer_zip.output_path
+  source_code_hash = data.archive_file.cur_initializer_zip.output_base64sha256
   handler          = "index.handler"
   timeout          = 30
   runtime          = "nodejs16.x"
@@ -53,6 +53,9 @@ resource "aws_lambda_function" "aws_cur_initializer" {
   reserved_concurrent_executions = 1
   kms_key_arn                    = local.kms_key_arn
 
+  depends_on = [
+    aws_glue_crawler.aws_cur_crawler
+  ]
   environment {
     variables = {
       CRAWLER_NAME = aws_glue_crawler.aws_cur_crawler.name
@@ -68,13 +71,8 @@ resource "aws_lambda_function" "aws_cur_initializer" {
     security_group_ids = [aws_security_group.lambda.id]
   }
 
-  depends_on = [
-    aws_iam_role_policy.aws_cur_crawler_lambda_executor,
-    aws_glue_crawler.aws_cur_crawler
-  ]
-
   dead_letter_config {
-    target_arn = aws_s3_bucket.cur_report.arn
+    target_arn = aws_sqs_queue.lambda_dlq.arn
   }
 
   code_signing_config_arn = aws_lambda_code_signing_config.lambda_csc.arn
@@ -96,7 +94,7 @@ resource "aws_security_group" "lambda" {
 resource "aws_lambda_permission" "aws_s3_cur_event_lambda_permission" {
   statement_id   = "AllowExecutionFromS3Bucket"
   action         = "lambda:InvokeFunction"
-  function_name  = aws_lambda_function.aws_cur_initializer.arn
+  function_name  = aws_lambda_function.cur_lambda_initializer.arn
   source_account = local.aws_account_id
   principal      = "s3.amazonaws.com"
   source_arn     = aws_s3_bucket.cur_report.arn
@@ -157,7 +155,7 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
   reserved_concurrent_executions = 1
 
   depends_on = [
-    aws_lambda_function.aws_cur_initializer,
+    aws_lambda_function.cur_lambda_initializer,
     aws_lambda_permission.aws_s3_cur_event_lambda_permission,
     aws_iam_role.aws_cur_lambda_executor
   ]
@@ -172,7 +170,7 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
   }
 
   dead_letter_config {
-    target_arn = aws_s3_bucket.cur_report.arn
+    target_arn = aws_sqs_queue.lambda_dlq.arn
   }
 
   code_signing_config_arn = aws_signer_signing_profile.signing_profile.arn
@@ -207,4 +205,8 @@ resource "aws_lambda_code_signing_config" "lambda_csc" {
   }
 
   description = "Cost Usage Report Code signing configuration"
+}
+
+resource "aws_sqs_queue" "lambda_dlq" {
+  name = "${var.deploy_id}-terraform-lambda-queue"
 }

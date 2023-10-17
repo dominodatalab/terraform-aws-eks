@@ -2,8 +2,7 @@
 resource "aws_s3_bucket" "athena_result" {
   count  = var.domino_cur.provision_resources ? 1 : 0
   bucket = local.athena_cur_result_bucket_name
-
-  tags = var.tags
+  tags   = var.tags
 }
 
 resource "aws_s3_bucket_public_access_block" "athena_result" {
@@ -49,8 +48,7 @@ resource "aws_s3_bucket_policy" "athena_result" {
 
 resource "aws_s3_bucket" "cur_report" {
   bucket = local.cur_report_bucket
-
-  tags = var.tags
+  tags   = var.tags
 }
 
 resource "aws_s3_bucket_public_access_block" "cur_report" {

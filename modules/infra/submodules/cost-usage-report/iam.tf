@@ -96,7 +96,7 @@ resource "aws_iam_role_policy" "aws_cur_crawler_component_function_policy" {
 }
 
 
-data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor_assume" {
+data "aws_iam_policy_document" "cur_lambda_initializer_assume" {
   statement {
     effect = "Allow"
 
@@ -109,12 +109,22 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor_assume" {
   }
 }
 
-resource "aws_iam_role" "aws_cur_crawler_lambda_executor" {
-  name               = "${var.deploy_id}-${var.cur_report_name}-crawler-lambda-executor"
-  assume_role_policy = data.aws_iam_policy_document.aws_cur_crawler_lambda_executor_assume.json
-}
+#resource "aws_iam_role_policy_attachment" "cur_crawler_initializer_executor" {
+#  policy_arn = aws_iam_policy.
+#  role       = aws_iam_role.cur_crawler_initializer_executor.name
+#}
 
-data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
+resource "aws_iam_role" "cur_lambda_initializer" {
+  name               = "${var.deploy_id}-${var.cur_report_name}-crawler-lambda-initializer"
+  assume_role_policy = data.aws_iam_policy_document.cur_lambda_initializer_assume.json
+}
+#
+#resource "aws_iam_policy" "cur_crawler_initializer_executor" {
+#  name   = "${var.deploy_id}-${var.cur_report_name}-initializer-policy"
+#  policy = data.aws_iam_policy_document.cur_lambda_initializer_assume.json
+#}
+
+data "aws_iam_policy_document" "cur_lambda_initializer_pd" {
 
   statement {
     sid = "CloudWatch"
@@ -133,6 +143,20 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
   }
 
   statement {
+    sid = "SQS"
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:*",
+    ]
+
+    resources = [
+      aws_sqs_queue.lambda_dlq.arn
+    ]
+  }
+
+  statement {
     sid = "Glue"
 
     effect = "Allow"
@@ -145,9 +169,14 @@ data "aws_iam_policy_document" "aws_cur_crawler_lambda_executor" {
   }
 }
 
-resource "aws_iam_role_policy" "aws_cur_crawler_lambda_executor" {
-  role   = aws_iam_role.aws_cur_crawler_lambda_executor.name
-  policy = data.aws_iam_policy_document.aws_cur_crawler_lambda_executor.json
+resource "aws_iam_policy" "cur_lambda_initializer_p" {
+  name   = "${var.deploy_id}-${var.cur_report_name}-cur-lambda-initializer"
+  policy = data.aws_iam_policy_document.cur_lambda_initializer_pd.json
+}
+
+resource "aws_iam_role_policy_attachment" "cur_lambda_initializer_rp" {
+  role   = aws_iam_role.cur_lambda_initializer.name
+  policy_arn = aws_iam_policy.cur_lambda_initializer_p.arn
 }
 
 
@@ -184,6 +213,22 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
 
     resources = [
       "arn:${data.aws_partition.current.partition}:logs:*:*:*"
+    ]
+  }
+
+  statement {
+    sid = "SQS"
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes"
+    ]
+
+    resources = [
+      aws_sqs_queue.lambda_dlq.arn
     ]
   }
 

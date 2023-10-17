@@ -107,6 +107,16 @@
       "Resource": ["*"]
     },
     {
+      "Sid": "SQSGeneralUngated",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes"
+      ],
+      "Resource": ["*"]
+    },
+    {
       "Sid": "ACMUngated",
       "Effect": "Allow",
       "Action": [

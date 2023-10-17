@@ -4,7 +4,7 @@ resource "aws_s3_bucket_notification" "aws_put_s3_cur_notification" {
   bucket = aws_s3_bucket.cur_report.bucket
 
   lambda_function {
-    lambda_function_arn = aws_lambda_function.aws_cur_initializer.arn
+    lambda_function_arn = aws_lambda_function.cur_lambda_initializer.arn
     events              = ["s3:ObjectCreated:*"]
     filter_prefix       = "${var.s3_bucket_prefix}/"
     filter_suffix       = ".parquet"
