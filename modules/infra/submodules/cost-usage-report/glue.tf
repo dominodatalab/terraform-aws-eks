@@ -2,7 +2,7 @@
 # An AWS Glue crawler
 # Two Lambda functions
 
-resource "aws_glue_catalog_database" "aws_cur_database" { # done
+resource "aws_glue_catalog_database" "aws_cur_database" {
   description = "Contains CUR data based on contents from the S3 bucket '${aws_s3_bucket.cur_report.bucket}'"
   name        = local.aws_glue_database
   catalog_id  = local.aws_account_id

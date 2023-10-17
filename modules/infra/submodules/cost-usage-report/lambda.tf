@@ -157,7 +157,6 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
   depends_on = [
     aws_lambda_function.cur_lambda_initializer,
     aws_lambda_permission.aws_s3_cur_event_lambda_permission,
-    aws_iam_role.aws_cur_lambda_executor
   ]
 
   vpc_config {
@@ -173,7 +172,7 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
     target_arn = aws_sqs_queue.lambda_dlq.arn
   }
 
-  code_signing_config_arn = aws_signer_signing_profile.signing_profile.arn
+  code_signing_config_arn = aws_lambda_code_signing_config.lambda_csc.arn
 }
 
 resource "aws_signer_signing_profile" "signing_profile" {

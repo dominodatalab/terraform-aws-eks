@@ -30,12 +30,13 @@ No modules.
 | [aws_glue_catalog_table.aws_cur_report_status_table](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/glue_catalog_table) | resource |
 | [aws_glue_crawler.aws_cur_crawler](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/glue_crawler) | resource |
 | [aws_glue_security_configuration.lambda_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/glue_security_configuration) | resource |
+| [aws_iam_policy.aws_cur_lambda_executor_p](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.cur_lambda_initializer_p](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.aws_cur_crawler_component_function_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.aws_cur_lambda_executor](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.cur_lambda_initializer](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy.aws_cur_crawler_component_function_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
-| [aws_iam_role_policy.aws_cur_lambda_executor](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy_attachment.aws_cur_lambda_executor_rpa](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.cur_lambda_initializer_rp](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_lambda_code_signing_config.lambda_csc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_code_signing_config) | resource |
 | [aws_lambda_function.aws_s3_cur_notification](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) | resource |
@@ -89,7 +90,5 @@ No modules.
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_info"></a> [info](#output\_info) | athena\_info\_configs = "Athena based cost reporting config information for kubecost cost-analyzer"<br>    athena\_region"  = "athena region"<br>    athena\_query\_result\_s3 = "S3 location for athena query results"<br>    cur\_report\_bucket\_name = "Name of S3 bucket used for storing CUR data. This may be provisioned by this module or not."<br>    glue\_catalog\_database\_name = "Name of the Glue Catalog Database which is populated with CUR data."<br>    glue\_catalog\_table\_name = "Name of the Glue Catalog table which is populated with CUR data."<br>    s3\_bucket\_region  = "Region where the S3 bucket used for storing CUR data is provisioned. This may be provisioned by this module or not."<br>    report\_name = "Name of the provisioned Cost and Usage Report." |
+No outputs.
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

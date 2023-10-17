@@ -117,6 +117,22 @@ resource "aws_iam_role" "cur_lambda_initializer" {
 data "aws_iam_policy_document" "cur_lambda_initializer_pd" {
 
   statement {
+    sid = "CreateNetworkInterface"
+
+    effect = "Allow"
+
+    actions = [
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:CreateNetworkInterface",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DescribeInstances",
+      "ec2:AttachNetworkInterface"
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
     sid = "CloudWatch"
 
     effect = "Allow"
@@ -191,6 +207,23 @@ resource "aws_iam_role" "aws_cur_lambda_executor" {
 data "aws_iam_policy_document" "aws_cur_lambda_executor" {
 
   statement {
+    sid = "CreateNetworkInterface"
+
+    effect = "Allow"
+
+    actions = [
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:CreateNetworkInterface",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DescribeInstances",
+      "ec2:AttachNetworkInterface"
+    ]
+
+    resources = ["*"]
+  }
+
+
+  statement {
     sid = "CloudWatch"
 
     effect = "Allow"
@@ -212,9 +245,7 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
     effect = "Allow"
 
     actions = [
-      "sqs:ReceiveMessage",
-      "sqs:DeleteMessage",
-      "sqs:GetQueueAttributes"
+      "sqs:*",
     ]
 
     resources = [
@@ -237,7 +268,12 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
   }
 }
 
-resource "aws_iam_role_policy" "aws_cur_lambda_executor" {
-  role   = aws_iam_role.aws_cur_lambda_executor.name
+resource "aws_iam_policy" "aws_cur_lambda_executor_p" {
+  name   = "${var.deploy_id}-${var.cur_report_name}-cur-lambda-executor"
   policy = data.aws_iam_policy_document.aws_cur_lambda_executor.json
+}
+
+resource "aws_iam_role_policy_attachment" "aws_cur_lambda_executor_rpa" {
+  role       = aws_iam_role.aws_cur_lambda_executor.name
+  policy_arn = aws_iam_policy.aws_cur_lambda_executor_p.arn
 }
