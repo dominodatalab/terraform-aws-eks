@@ -15,7 +15,7 @@ output "info" {
     }
     costs = {
       storage_enabled = Whether kubecost long term storage is enabled.
-      cost_federated_store = Kubecost configuration needed to create cost-analyzer secrets
+      costs_bucket = Bucket to be used by cost analyzer for long term storage
     }
   EOF
   value = {
@@ -37,31 +37,7 @@ output "info" {
     }
     costs = {
       storage_enabled = var.domino_cost.storage_enabled
-      cost_federated_store = var.domino_cost.storage_enabled ? yamlencode(
-        {
-          "type" : "S3",
-          "config" : {
-            "bucket" : aws_s3_bucket.costs[0].bucket,
-            "endpoint" : "s3.amazonaws.com",
-            "region" : aws_s3_bucket.costs[0].region,
-            "aws_sdk_auth" : false,
-            "insecure" : false,
-            "signature_version2" : false,
-            "put_user_metadata" : {
-              "X-Amz-Acl" : "bucket-owner-full-control"
-            },
-            "http_config" : {
-              "idle_conn_timeout" : "90s",
-              "response_header_timeout" : "2m",
-              "insecure_skip_verify" : false
-            },
-            "trace" : {
-              "enable" : true
-            },
-            "part_size" : var.domino_cost.part_size
-          }
-        }
-      ) : ""
+      costs_bucket    = aws_s3_bucket.costs[0].bucket
     }
   }
 }
