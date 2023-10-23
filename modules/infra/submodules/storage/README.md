@@ -76,5 +76,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_info"></a> [info](#output\_info) | efs = {<br>      access\_point      = EFS access point.<br>      file\_system       = EFS file\_system.<br>      security\_group\_id = EFS security group id.<br>    }<br>    s3 = {<br>      buckets        = "S3 buckets name and arn"<br>      iam\_policy\_arn = S3 IAM Policy ARN.<br>    }<br>    ecr = {<br>      container\_registry = ECR base registry URL. Grab the base AWS account ECR URL and add the deploy\_id. Domino will append /environment and /model.<br>      iam\_policy\_arn     = ECR IAM Policy ARN.<br>    }<br>    costs = {<br>      storage\_enabled = Whether kubecost long term storage is enabled.<br>      costs\_bucket = Bucket to be used by cost analyzer for long term storage<br>    } |
+| <a name="input_domino_cost"></a> [domino\_cost](#input\_domino\_cost) | Determines whether to provision domino cost related infrastructures, ie, long term storage | <pre>object({<br>    storage_enabled = optional(bool, true)<br>  })</pre> | `{}` | no |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
