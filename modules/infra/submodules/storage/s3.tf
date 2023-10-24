@@ -323,52 +323,22 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "monitoring" {
     bucket_key_enabled = false
   }
 }
+resource "terraform_data" "set_monitoring_private_acl" {
+  provisioner "local-exec" {
+    command     = "aws s3api put-bucket-acl --bucket ${aws_s3_bucket.monitoring.bucket} --acl private"
+    interpreter = ["bash", "-c"]
+  }
 
-# This is all to reset the default, but in order to support upgrades from existing
-# infrastructure, we explicitly set it to a private ACL
+  depends_on = [aws_s3_bucket.monitoring]
+}
+
+
 resource "aws_s3_bucket_ownership_controls" "monitoring" {
-  bucket = aws_s3_bucket.monitoring.id
-  rule {
-    object_ownership = "BucketOwnerPreferred"
-  }
-
-  lifecycle {
-    ignore_changes = all
-  }
-}
-
-# Intermittent issues with setting the ACL too quickly after setting BucketOwnerPreferred
-resource "time_sleep" "change_s3_bucket_ownership_15_seconds" {
-  create_duration = "15s"
-  depends_on      = [aws_s3_bucket_ownership_controls.monitoring]
-}
-
-resource "aws_s3_bucket_acl" "monitoring" {
-  depends_on = [time_sleep.change_s3_bucket_ownership_15_seconds]
-
-  bucket = aws_s3_bucket.monitoring.id
-
-  access_control_policy {
-    owner {
-      id = data.aws_canonical_user_id.current.id
-    }
-
-    grant {
-      grantee {
-        type = "CanonicalUser"
-        id   = data.aws_canonical_user_id.current.id
-      }
-      permission = "FULL_CONTROL"
-    }
-  }
-}
-
-resource "aws_s3_bucket_ownership_controls" "monitoring_enforced" {
   bucket = aws_s3_bucket.monitoring.id
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
-  depends_on = [aws_s3_bucket_acl.monitoring]
+  depends_on = [terraform_data.set_monitoring_private_acl]
 }
 
 resource "aws_s3_bucket" "registry" {
