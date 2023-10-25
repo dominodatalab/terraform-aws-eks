@@ -122,19 +122,36 @@ check_remove_calico() {
 install_calico() {
   check_remove_calico
 
-  printf "$GREEN Installing Calico Operator $EC \n"
-  helm_cmd upgrade "calico-tigera-operator" \
-    tigera-operator \
-    --repo "https://projectcalico.docs.tigera.io/charts" \
-    --kubeconfig "$kubeconfig" \
-    --namespace "tigera-operator" \
-    --version "${calico_version}" \
-    --set installation.kubernetesProvider=EKS \
-    --set installation.cni.type=AmazonVPC \
-    --set installation.registry="quay.io/" \
-    --timeout 10m \
-    --create-namespace \
-    --install
+  local max_retries=3
+  local sleep_duration=10
+
+  for i in $(seq 1 $max_retries); do
+    helm_cmd upgrade "calico-tigera-operator" \
+      tigera-operator \
+      --repo "https://projectcalico.docs.tigera.io/charts" \
+      --version "${calico_version}" \
+      --kubeconfig "$kubeconfig" \
+      --namespace "tigera-operator" \
+      --set installation.kubernetesProvider=EKS \
+      --set installation.cni.type=AmazonVPC \
+      --set installation.registry="quay.io/" \
+      --timeout 10m \
+      --create-namespace \
+      --install
+
+    if [ $? -eq 0 ]; then
+      break
+    fi
+
+    if [ $i -lt $max_retries ]; then
+      echo "Attempt $i failed. Retrying in $${sleep_duration}s..."
+      sleep $sleep_duration
+    else
+      printf "$RED Maximum attempts reached. Exiting. $EC \n"
+      exit 1
+    fi
+
+  done
 }
 
 validate_url() {
@@ -161,10 +178,11 @@ kubectl_apply() {
 helm_cmd() {
   printf "Running helm $@...\n"
   helm --kubeconfig "$kubeconfig" $@
-  if [ $? -ne 0 ]; then
+  local exit_code=$?
+  if [ $exit_code -ne 0 ]; then
     printf "$RED Error running helm $@ $EC \n"
-    exit 1
   fi
+  return $exit_code
 }
 
 kubectl_cmd() {
