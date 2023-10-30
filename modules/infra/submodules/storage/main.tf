@@ -6,7 +6,7 @@ locals {
   private_subnet_ids = var.network_info.subnets.private[*].subnet_id
   kms_key_arn        = var.kms_info.enabled ? var.kms_info.key_arn : null
 
-  s3_buckets = {
+  s3_buckets = { for k, v in {
     backups = {
       bucket_name = aws_s3_bucket.backups.bucket
       id          = aws_s3_bucket.backups.id
@@ -19,6 +19,12 @@ locals {
       policy_json = data.aws_iam_policy_document.blobs.json
       arn         = aws_s3_bucket.blobs.arn
     }
+    costs = var.storage.costs_enabled ? {
+      bucket_name = aws_s3_bucket.costs[0].bucket
+      id          = aws_s3_bucket.costs[0].id
+      policy_json = data.aws_iam_policy_document.costs[0].json
+      arn         = aws_s3_bucket.costs[0].arn
+    } : {}
     logs = {
       bucket_name = aws_s3_bucket.logs.bucket
       id          = aws_s3_bucket.logs.id
@@ -37,7 +43,7 @@ locals {
       policy_json = data.aws_iam_policy_document.registry.json
       arn         = aws_s3_bucket.registry.arn
     }
-  }
+  } : k => v if contains(keys(v), "bucket_name") }
 
   backup_tagging = var.storage.enable_remote_backup ? {
     "backup_plan" = "cross-account"
