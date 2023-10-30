@@ -437,7 +437,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryptio
 }
 
 resource "aws_s3_bucket_request_payment_configuration" "buckets_payer" {
-  for_each = { for k, v in local.s3_buckets: k => v if lookup(v, "bucket_name", null) != null }
+  for_each = local.refined_s3_buckets
   bucket   = each.value.bucket_name
   payer    = "BucketOwner"
 }
@@ -482,7 +482,8 @@ resource "aws_s3_bucket" "costs" {
 }
 
 data "aws_iam_policy_document" "costs" {
-  count               = var.storage.costs_enabled ? 1 : 0
+  count = var.storage.costs_enabled ? 1 : 0
+
   statement {
     effect = "Deny"
 

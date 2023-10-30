@@ -45,7 +45,7 @@ locals {
     }
   }
 
-  refined_s3_buckets = { for k, v in local.s3_buckets: k => v if contains(keys(v), "bucket_name") }
+  refined_s3_buckets = { for k, v in local.s3_buckets : k => v if contains(keys(v), "bucket_name") }
 
   backup_tagging = var.storage.enable_remote_backup ? {
     "backup_plan" = "cross-account"
