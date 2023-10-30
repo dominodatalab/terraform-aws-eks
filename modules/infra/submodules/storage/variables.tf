@@ -43,6 +43,7 @@ variable "storage" {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories.
       }
       enable_remote_backup = Enable tagging required for cross-account backups
+      costs_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage
     }
   }
   EOF
@@ -66,6 +67,7 @@ variable "storage" {
       force_destroy_on_deletion = optional(bool)
     }))
     enable_remote_backup = optional(bool)
+    costs_enabled = optional(bool, false)
   })
 }
 
@@ -119,13 +121,4 @@ variable "network_info" {
       })), [])
     })
   })
-}
-
-variable "domino_cost" {
-  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
-  type = object({
-    storage_enabled = optional(bool, true)
-  })
-
-  default = {}
 }

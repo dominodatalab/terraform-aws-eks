@@ -1,7 +1,7 @@
 data "aws_iam_policy_document" "s3" {
   statement {
     effect    = "Allow"
-    resources = [for b in local.s3_buckets : b.arn]
+    resources = [for b in local.refined_s3_buckets : b.arn]
 
     actions = [
       "s3:ListBucket",
@@ -14,7 +14,7 @@ data "aws_iam_policy_document" "s3" {
     sid    = ""
     effect = "Allow"
 
-    resources = [for b in local.s3_buckets : "${b.arn}/*"]
+    resources = [for b in local.refined_s3_buckets : "${b.arn}/*"]
 
     actions = [
       "s3:PutObject",
