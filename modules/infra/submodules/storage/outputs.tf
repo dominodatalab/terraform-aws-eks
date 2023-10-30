@@ -21,7 +21,7 @@ output "info" {
       security_group_id = aws_security_group.efs.id
     }
     s3 = {
-      buckets = { for k, b in local.refined_s3_buckets : k => {
+      buckets = { for k, b in local.s3_buckets : k => {
         "bucket_name" = b.bucket_name,
         "arn"         = b.arn
       } }

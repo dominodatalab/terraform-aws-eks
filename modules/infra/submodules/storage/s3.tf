@@ -412,13 +412,13 @@ data "aws_iam_policy_document" "registry" {
 }
 
 resource "aws_s3_bucket_policy" "buckets_policies" {
-  for_each = local.refined_s3_buckets
+  for_each = local.s3_buckets
   bucket   = each.value.id
   policy   = each.value.policy_json
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryption" {
-  for_each = { for k, v in local.refined_s3_buckets : k => v if k != "monitoring" }
+  for_each = { for k, v in local.s3_buckets : k => v if k != "monitoring" }
 
   bucket = each.value.bucket_name
   rule {
@@ -437,20 +437,20 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryptio
 }
 
 resource "aws_s3_bucket_request_payment_configuration" "buckets_payer" {
-  for_each = local.refined_s3_buckets
+  for_each = local.s3_buckets
   bucket   = each.value.bucket_name
   payer    = "BucketOwner"
 }
 
 resource "aws_s3_bucket_logging" "buckets_logging" {
-  for_each      = { for k, v in local.refined_s3_buckets : k => v if k != "monitoring" }
+  for_each      = { for k, v in local.s3_buckets : k => v if k != "monitoring" }
   bucket        = each.value.id
   target_bucket = aws_s3_bucket.monitoring.bucket
   target_prefix = "${each.value.bucket_name}/"
 }
 
 resource "aws_s3_bucket_versioning" "buckets_versioning" {
-  for_each = local.refined_s3_buckets
+  for_each = local.s3_buckets
   bucket   = each.value.id
 
   versioning_configuration {
@@ -460,7 +460,7 @@ resource "aws_s3_bucket_versioning" "buckets_versioning" {
 }
 
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
-  for_each                = local.refined_s3_buckets
+  for_each                = local.s3_buckets
   bucket                  = each.value.id
   block_public_acls       = true
   block_public_policy     = true
