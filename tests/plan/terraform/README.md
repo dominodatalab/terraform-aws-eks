@@ -48,7 +48,5 @@ No resources.
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_info"></a> [info](#output\_info) | athena\_info\_configs = "Athena based cost reporting config information for kubecost cost-analyzer"<br>   athena\_region"  = "athena region"<br>   athena\_query\_result\_s3 = "S3 location for athena query results"<br>   cur\_report\_bucket\_name = "Name of S3 bucket used for storing CUR data. This may be provisioned by this module or not."<br>   glue\_catalog\_database\_name = "Name of the Glue Catalog Database which is populated with CUR data."<br>   glue\_catalog\_table\_name = "Name of the Glue Catalog table which is populated with CUR data."<br>   s3\_bucket\_region  = "Region where the S3 bucket used for storing CUR data is provisioned. This may be provisioned by this module or not."<br>   report\_name = "Name of the provisioned Cost and Usage Report." |
+No outputs.
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
