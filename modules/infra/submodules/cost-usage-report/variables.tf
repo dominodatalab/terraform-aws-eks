@@ -142,3 +142,12 @@ variable "network_info" {
     })
   })
 }
+
+variable "domino_cur" {
+  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
+  type = object({
+    provision_resources = optional(bool, true)
+  })
+
+  default = {}
+}
