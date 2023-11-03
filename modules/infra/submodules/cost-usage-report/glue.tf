@@ -14,19 +14,22 @@ resource "aws_glue_security_configuration" "lambda_config" {
 
   encryption_configuration {
     cloudwatch_encryption {
-      cloudwatch_encryption_mode = "DISABLED"
+      cloudwatch_encryption_mode = "SSE-KMS"
+      kms_key_arn                = local.kms_key_arn
     }
 
     job_bookmarks_encryption {
-      job_bookmarks_encryption_mode = "DISABLED"
+      job_bookmarks_encryption_mode = "CSE-KMS"
+      kms_key_arn                   = local.kms_key_arn
     }
 
     s3_encryption {
-      kms_key_arn        = local.kms_key_arn
       s3_encryption_mode = "SSE-KMS"
+      kms_key_arn        = local.kms_key_arn
     }
   }
 }
+
 
 resource "aws_glue_crawler" "aws_cur_crawler" {
   name          = "AWSCURCrawler-domino-cur-crawler"
