@@ -18,7 +18,6 @@ module "cost_usage_report" {
   kms_info     = local.kms_info
   network_info = module.network.info
   region       = var.region
-  domino_cur   = var.domino_cur
 }
 
 module "storage" {
