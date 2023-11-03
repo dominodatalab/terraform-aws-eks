@@ -12,7 +12,7 @@ locals {
 }
 
 module "cost_usage_report" {
-  count = var.domino_cur.provision_resources ? 1 : 0
+  count        = var.domino_cur.provision_resources ? 1 : 0
   source       = "./submodules/cost-usage-report"
   deploy_id    = var.deploy_id
   kms_info     = local.kms_info

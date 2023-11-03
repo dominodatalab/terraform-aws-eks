@@ -25,7 +25,7 @@ locals {
       bucket_name = aws_s3_bucket.athena_result.bucket
       id          = aws_s3_bucket.athena_result.id
       policy_json = data.aws_iam_policy_document.athena_result.json
-      arn         = aws_s3_bucket.athena_result.arn 
+      arn         = aws_s3_bucket.athena_result.arn
     }
   }
 }
