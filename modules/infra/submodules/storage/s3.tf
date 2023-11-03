@@ -473,3 +473,72 @@ moved {
   from = aws_s3_bucket_public_access_block.block_public_accss
   to   = aws_s3_bucket_public_access_block.block_public_access
 }
+
+resource "aws_s3_bucket" "costs" {
+  count               = var.storage.costs_enabled ? 1 : 0
+  bucket              = "${var.deploy_id}-costs"
+  force_destroy       = var.storage.s3.force_destroy_on_deletion
+  object_lock_enabled = false
+}
+
+data "aws_iam_policy_document" "costs" {
+  count = var.storage.costs_enabled ? 1 : 0
+
+  statement {
+    effect = "Deny"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*",
+    ]
+
+    actions = ["s3:*"]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+
+  statement {
+    sid       = "DenyIncorrectEncryptionHeader"
+    effect    = "Deny"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*"]
+    actions   = ["s3:PutObject"]
+
+    condition {
+      test     = "StringNotEquals"
+      variable = "s3:x-amz-server-side-encryption"
+      values   = [local.s3_server_side_encryption]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+
+  statement {
+    sid       = "DenyUnEncryptedObjectUploads"
+    effect    = "Deny"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*"]
+    actions   = ["s3:PutObject"]
+
+    condition {
+      test     = "Null"
+      variable = "s3:x-amz-server-side-encryption"
+      values   = ["true"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}

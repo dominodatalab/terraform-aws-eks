@@ -32,3 +32,10 @@ single_node = {
     "dominodatalab.com/domino-node" = "true"
   },
 }
+
+storage = {
+  s3 = {
+    force_destroy_on_deletion = true
+  },
+  costs_enabled = false
+}
