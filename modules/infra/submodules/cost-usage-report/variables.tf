@@ -142,5 +142,3 @@ variable "network_info" {
     })
   })
 }
-
-

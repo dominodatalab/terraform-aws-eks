@@ -208,5 +208,5 @@ resource "aws_lambda_code_signing_config" "lambda_csc" {
 
 resource "aws_sqs_queue" "lambda_dlq" {
   kms_master_key_id = local.kms_key_arn
-  name = "${var.deploy_id}-terraform-lambda-queue"
+  name              = "${var.deploy_id}-terraform-lambda-queue"
 }
