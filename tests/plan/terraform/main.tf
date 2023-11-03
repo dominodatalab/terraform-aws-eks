@@ -13,6 +13,7 @@ module "infra" {
   route53_hosted_zone_name = var.route53_hosted_zone_name
   ssh_pvt_key_path         = var.ssh_pvt_key_path
   tags                     = var.tags
+  domino_cur               = var.domino_cur
 }
 
 
