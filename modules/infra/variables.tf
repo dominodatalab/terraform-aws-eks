@@ -36,12 +36,6 @@ variable "route53_hosted_zone_name" {
   }
 }
 
-variable "route53_hosted_zone_private" {
-  type        = bool
-  description = "Is the hosted zone private"
-  default     = false
-}
-
 variable "tags" {
   type        = map(string)
   description = "Deployment tags."
@@ -403,7 +397,7 @@ variable "kms" {
 variable "domino_cur" {
   description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
   type = object({
-    provision_resources = optional(bool, false)
+    provision_resources = optional(bool, true)
   })
 
   default = {}
