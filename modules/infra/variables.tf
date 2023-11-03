@@ -36,6 +36,12 @@ variable "route53_hosted_zone_name" {
   }
 }
 
+variable "route53_hosted_zone_private" {
+  type        = bool
+  description = "Is the hosted zone private"
+  default     = false
+}
+
 variable "tags" {
   type        = map(string)
   description = "Deployment tags."
