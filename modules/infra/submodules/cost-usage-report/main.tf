@@ -8,9 +8,11 @@ locals {
   initializer_lambda_function   = "${var.cur_report_name}-crawler-initializer"
   report_status_table_name      = "cost_and_usage_data_status_tb"
   s3_server_side_encryption     = var.kms_info.enabled ? "aws:kms" : "AES256"
+  cur_report_name               = "${var.deploy_id}-${var.cur_report_name}"
   cur_report_bucket             = "${var.deploy_id}-${var.cur_report_bucket_name_suffix}"
   athena_cur_result_bucket_name = "${var.deploy_id}-${var.athena_cur_result_bucket_suffix}"
   aws_glue_database             = "${var.deploy_id}-${var.aws_glue_database_suffix}"
+  cur_s3_region                 = "us-east-1"
 
   s3_buckets = {
     report = {
@@ -20,17 +22,16 @@ locals {
       arn         = aws_s3_bucket.cur_report.arn
     }
     athena_result = {
-      bucket_name = aws_s3_bucket.athena_result[0].bucket
-      id          = aws_s3_bucket.athena_result[0].id
+      bucket_name = aws_s3_bucket.athena_result.bucket
+      id          = aws_s3_bucket.athena_result.id
       policy_json = data.aws_iam_policy_document.athena_result.json
-      arn         = aws_s3_bucket.athena_result[0].arn
+      arn         = aws_s3_bucket.athena_result.arn 
     }
   }
 }
 
 resource "aws_cur_report_definition" "aws_cur_report_definition" {
-  count                      = var.domino_cur.provision_resources ? 1 : 0
-  report_name                = var.cur_report_name
+  report_name                = local.cur_report_name
   time_unit                  = var.report_frequency
   format                     = var.report_format
   compression                = var.report_compression
@@ -39,7 +40,7 @@ resource "aws_cur_report_definition" "aws_cur_report_definition" {
   additional_schema_elements = ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"]
 
   s3_bucket = aws_s3_bucket.cur_report.bucket
-  s3_region = aws_s3_bucket.cur_report.region
+  s3_region = local.cur_s3_region
   s3_prefix = var.s3_bucket_prefix
 
   depends_on = [

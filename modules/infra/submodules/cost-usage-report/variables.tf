@@ -21,25 +21,25 @@ variable "region" {
 variable "athena_cur_result_bucket_suffix" {
   description = "Name of the S3 bucket into which CUR will put the cost data."
   type        = string
-  default     = "aws-athena-query-results-domino-costs"
+  default     = "aws-athena-query-results-costs"
 }
 
 variable "cur_report_bucket_name_suffix" {
   description = "Name of the S3 bucket into which CUR will put the cost data."
   type        = string
-  default     = "domino-cur-report"
+  default     = "cur-report"
 }
 
 variable "aws_glue_database_suffix" {
   description = "Name of the Cost and Usage Report which will be created."
   type        = string
-  default     = "athena-cur-domino-cost-db"
+  default     = "athena-cur-cost-db"
 }
 
 variable "cur_report_name" {
   description = "Name of the Cost and Usage Report which will be created."
   type        = string
-  default     = "domino-cur-report"
+  default     = "cur-report"
 }
 
 variable "report_frequency" {
@@ -69,22 +69,13 @@ variable "report_compression" {
 variable "s3_bucket_prefix" {
   description = "Prefix in the S3 bucket to put reports."
   type        = string
-  default     = "domino-cur"
+  default     = "cur"
 }
 
 variable "tags" {
   description = "Tags which will be applied to provisioned resources."
   type        = map(string)
   default     = {}
-}
-
-variable "domino_cur" {
-  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
-  type = object({
-    provision_resources = optional(bool, true)
-  })
-
-  default = {}
 }
 
 variable "kms_info" {
@@ -150,4 +141,13 @@ variable "network_info" {
       })), [])
     })
   })
+}
+
+variable "domino_cur" {
+  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
+  type = object({
+    provision_resources = optional(bool,false)
+  })
+  
+  default={}
 }

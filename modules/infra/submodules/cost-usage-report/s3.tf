@@ -1,12 +1,11 @@
 
 resource "aws_s3_bucket" "athena_result" {
-  count  = var.domino_cur.provision_resources ? 1 : 0
   bucket = local.athena_cur_result_bucket_name
   tags   = var.tags
 }
 
 resource "aws_s3_bucket_public_access_block" "athena_result" {
-  bucket = aws_s3_bucket.athena_result[0].id
+  bucket = aws_s3_bucket.athena_result.id
 
   block_public_acls       = true
   block_public_policy     = true
@@ -19,7 +18,7 @@ data "aws_iam_policy_document" "athena_result" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result[0].bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -37,7 +36,7 @@ data "aws_iam_policy_document" "athena_result" {
 
 resource "aws_s3_bucket_policy" "athena_result" {
 
-  bucket = aws_s3_bucket.athena_result[0].id
+  bucket = aws_s3_bucket.athena_result.id
   policy = data.aws_iam_policy_document.athena_result.json
 
   depends_on = [

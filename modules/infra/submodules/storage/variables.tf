@@ -120,3 +120,4 @@ variable "network_info" {
     })
   })
 }
+

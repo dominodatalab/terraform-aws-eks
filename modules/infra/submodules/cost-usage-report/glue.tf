@@ -101,6 +101,7 @@ resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
 }
 
 resource "aws_athena_workgroup" "athena_work_group" {
+  
   name = "${var.deploy_id}_athena_work_group"
 
   configuration {
@@ -108,7 +109,7 @@ resource "aws_athena_workgroup" "athena_work_group" {
     publish_cloudwatch_metrics_enabled = true
 
     result_configuration {
-      output_location = "s3://${aws_s3_bucket.athena_result[0].bucket}/"
+      output_location = "s3://${aws_s3_bucket.athena_result.bucket}/"
 
       encryption_configuration {
         encryption_option = "SSE_KMS"

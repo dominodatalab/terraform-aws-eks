@@ -12,11 +12,13 @@ locals {
 }
 
 module "cost_usage_report" {
+  count = var.domino_cur.provision_resources ? 1 : 0
   source       = "./submodules/cost-usage-report"
   deploy_id    = var.deploy_id
   kms_info     = local.kms_info
   network_info = module.network.info
   region       = var.region
+  domino_cur   = var.domino_cur
 }
 
 module "storage" {
@@ -89,6 +91,7 @@ module "bastion" {
 }
 
 locals {
+  cost_usage_report_info    = var.domino_cur.provision_resources && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
   bastion_info              = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
   node_iam_policies_storage = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
   node_iam_policies         = var.route53_hosted_zone_name != null ? concat(local.node_iam_policies_storage, [aws_iam_policy.route53[0].arn]) : local.node_iam_policies_storage
