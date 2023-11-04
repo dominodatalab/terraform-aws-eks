@@ -481,14 +481,15 @@ resource "aws_s3_bucket" "costs" {
   object_lock_enabled = false
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "bucket-config" {
+resource "aws_s3_bucket_lifecycle_configuration" "example" {
+  count  = var.storage.costs_enabled ? 1 : 0
   bucket = aws_s3_bucket.costs[0].id
 
   rule {
-    id = "log"
+    id = "expiration"
 
     expiration {
-      days = 30
+      days = 90
     }
 
     status = "Enabled"
