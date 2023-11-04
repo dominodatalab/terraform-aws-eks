@@ -494,6 +494,16 @@ resource "aws_s3_bucket_lifecycle_configuration" "example" {
 
     status = "Enabled"
   }
+
+  rule {
+    id = "incomplete_upload"
+
+    days_after_initiation = 90
+
+    status = "Enabled"
+  }
+
+
 }
 
 data "aws_iam_policy_document" "costs" {
