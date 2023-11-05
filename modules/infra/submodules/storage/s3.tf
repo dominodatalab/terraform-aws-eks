@@ -481,7 +481,7 @@ resource "aws_s3_bucket" "costs" {
   object_lock_enabled = false
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "example" {
+resource "aws_s3_bucket_lifecycle_configuration" "costs" {
   count  = var.storage.costs_enabled ? 1 : 0
   bucket = aws_s3_bucket.costs[0].id
 
@@ -498,12 +498,12 @@ resource "aws_s3_bucket_lifecycle_configuration" "example" {
   rule {
     id = "incomplete_upload"
 
-    days_after_initiation = 90
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
 
     status = "Enabled"
   }
-
-
 }
 
 data "aws_iam_policy_document" "costs" {
