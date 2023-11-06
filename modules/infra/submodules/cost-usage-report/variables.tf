@@ -78,25 +78,46 @@ variable "tags" {
   default     = {}
 }
 
-variable "kms_info" {
+# variable "kms_info" {
+#   description = <<EOF
+#     key_id  = KMS key id.
+#     key_arn = KMS key arn.
+#     enabled = KMS key is enabled
+#   EOF
+#   type = object({
+#     key_id  = string
+#     key_arn = string
+#     enabled = bool
+#   })
+# }
+
+variable "kms" {
   description = <<EOF
-    key_id  = KMS key id.
-    key_arn = KMS key arn.
-    enabled = KMS key is enabled
+    enabled             = "Toggle, if set use either the specified KMS key_id or a Domino-generated one"
+    key_id              = optional(string, null)
+    additional_policies = "Allows setting additional KMS key policies when using a Domino-generated key"
   EOF
-  type = object({
-    key_id  = string
-    key_arn = string
-    enabled = bool
-  })
-}
 
-
-variable "domino_cur" {
-  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
   type = object({
-    provision_resources = optional(bool, true)
+    enabled             = optional(bool, true)
+    key_id              = optional(string, null)
+    additional_policies = optional(list(string), [])
   })
+
+  validation {
+    condition     = var.kms.enabled && var.kms.key_id != null ? length(var.kms.key_id) > 0 : true
+    error_message = "KMS key ID must be null or set to a non-empty string, when var.kms.enabled is."
+  }
+
+  validation {
+    condition     = var.kms.key_id != null ? var.kms.enabled : true
+    error_message = "var.kms.enabled must be true if var.kms.key_id is provided."
+  }
+
+  validation {
+    condition     = var.kms.key_id != null ? length(var.kms.additional_policies) == 0 : true
+    error_message = "var.kms.additional_policies cannot be provided if if var.kms.key_id is provided."
+  }
 
   default = {}
 }

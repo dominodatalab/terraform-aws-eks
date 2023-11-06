@@ -3,11 +3,18 @@ data "aws_partition" "current" {}
 
 locals {
   # private_subnet_ids            = var.network_info.subnets.private[*].subnet_id
+  kms_key = var.kms.key_id != null ? data.aws_kms_key.key[0] : aws_kms_key.domino[0]
+  kms_info = {
+    key_id  = local.kms_key.id
+    key_arn = local.kms_key.arn
+    enabled = var.kms.enabled
+  }
+
   aws_account_id                = data.aws_caller_identity.aws_account.account_id
-  kms_key_arn                   = var.kms_info.enabled ? var.kms_info.key_arn : null
+  kms_key_arn                   = local.kms_info.enabled ? local.kms_info.key_arn : null
   initializer_lambda_function   = "${var.cur_report_name}-crawler-initializer"
   report_status_table_name      = "cost_and_usage_data_status_tb"
-  s3_server_side_encryption     = var.kms_info.enabled ? "aws:kms" : "AES256"
+  s3_server_side_encryption     = local.kms_info.enabled ? "aws:kms" : "AES256"
   cur_report_name               = "${var.deploy_id}-${var.cur_report_name}"
   cur_report_bucket             = "${var.deploy_id}-${var.cur_report_bucket_name_suffix}"
   athena_cur_result_bucket_name = "${var.deploy_id}-${var.athena_cur_result_bucket_suffix}"

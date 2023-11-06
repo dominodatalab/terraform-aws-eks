@@ -51,7 +51,7 @@ resource "aws_lambda_function" "cur_lambda_initializer" {
   runtime          = "nodejs16.x"
 
   reserved_concurrent_executions = 1
-  # kms_key_arn                    = local.kms_key_arn
+  kms_key_arn                    = local.kms_key_arn
 
   depends_on = [
     aws_glue_crawler.aws_cur_crawler

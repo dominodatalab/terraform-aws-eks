@@ -15,7 +15,8 @@ module "cost_usage_report" {
   # count        = var.domino_cur.provision_resources ? 1 : 0
   source       = "./submodules/cost-usage-report"
   deploy_id    = var.deploy_id
-  kms_info     = local.kms_info
+  kms          = var.kms
+  # kms_info     = local.kms_info
   # network_info = module.network.info
   region       = "us-east-1"
 }
