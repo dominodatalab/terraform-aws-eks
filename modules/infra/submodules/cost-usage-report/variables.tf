@@ -91,54 +91,12 @@ variable "kms_info" {
   })
 }
 
-variable "network_info" {
-  description = <<EOF
-    id = VPC ID.
-    subnets = {
-      public = List of public Subnets.
-      [{
-        name = Subnet name.
-        subnet_id = Subnet ud
-        az = Subnet availability_zone
-        az_id = Subnet availability_zone_id
-      }]
-      private = List of private Subnets.
-      [{
-        name = Subnet name.
-        subnet_id = Subnet ud
-        az = Subnet availability_zone
-        az_id = Subnet availability_zone_id
-      }]
-      pod = List of pod Subnets.
-      [{
-        name = Subnet name.
-        subnet_id = Subnet ud
-        az = Subnet availability_zone
-        az_id = Subnet availability_zone_id
-      }]
-    }
-  EOF
+
+variable "domino_cur" {
+  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
   type = object({
-    vpc_id = string
-    subnets = object({
-      public = list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      }))
-      private = optional(list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      })), [])
-      pod = optional(list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      })), [])
-    })
+    provision_resources = optional(bool, true)
   })
+
+  default = {}
 }
