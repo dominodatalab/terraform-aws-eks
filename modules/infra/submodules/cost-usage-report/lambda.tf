@@ -66,10 +66,10 @@ resource "aws_lambda_function" "cur_lambda_initializer" {
     mode = "Active"
   }
 
-  # vpc_config {
-  #   subnet_ids         = local.private_subnet_ids
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  vpc_config {
+    subnet_ids         = local.private_subnet_ids
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   dead_letter_config {
     target_arn = aws_sqs_queue.lambda_dlq.arn
@@ -81,7 +81,7 @@ resource "aws_lambda_function" "cur_lambda_initializer" {
 resource "aws_security_group" "lambda" {
   name        = "${var.deploy_id}-lambda"
   description = "EFS security group"
-  # vpc_id      = var.network_info.vpc_id
+  vpc_id      = module.cur_network.info.vpc_id
 
   lifecycle {
     create_before_destroy = true
@@ -159,10 +159,10 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
     aws_lambda_permission.aws_s3_cur_event_lambda_permission,
   ]
 
-  # vpc_config {
-  #   subnet_ids         = local.private_subnet_ids
-  #   security_group_ids = [aws_security_group.lambda.id]
-  # }
+  vpc_config {
+    subnet_ids         = local.private_subnet_ids
+    security_group_ids = [aws_security_group.lambda.id]
+  }
 
   tracing_config {
     mode = "Active"

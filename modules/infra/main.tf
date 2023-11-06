@@ -9,6 +9,19 @@ locals {
     key_arn = local.kms_key.arn
     enabled = var.kms.enabled
   }
+
+  cur_default_node_groups = {
+    compute = {
+      availability_zone_ids = ["use1-az1", "use1-az2"]
+    }
+    gpu = {
+      availability_zone_ids = ["use1-az1", "use1-az2"]
+    }
+    platform = {
+      availability_zone_ids = ["use1-az1", "use1-az2"]
+    }
+  }
+  cur_additional_node_groups = {}
 }
 
 module "cost_usage_report" {
@@ -16,6 +29,10 @@ module "cost_usage_report" {
   source       = "./submodules/cost-usage-report"
   deploy_id    = var.deploy_id
   kms          = var.kms
+  network      = var.network
+  default_node_groups = local.cur_default_node_groups
+  additional_node_groups = local.cur_additional_node_groups
+  flow_log_bucket_arn = { arn = module.storage.info.s3.buckets.monitoring.arn }
   # kms_info     = local.kms_info
   # network_info = module.network.info
   region       = "us-east-1"

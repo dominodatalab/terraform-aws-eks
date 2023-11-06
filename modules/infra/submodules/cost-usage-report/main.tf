@@ -1,14 +1,38 @@
 data "aws_caller_identity" "aws_account" {}
 data "aws_partition" "current" {}
+data "aws_default_tags" "this" {}
 
 locals {
-  # private_subnet_ids            = var.network_info.subnets.private[*].subnet_id
+
+  cur_node_groups = {
+    for name, ng in 
+    merge(var.additional_node_groups, var.default_node_groups) :
+    name => merge(ng, {
+      instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
+    })
+  }
+}
+
+module "cur_network" {
+  source              = "./../network"
+  deploy_id           = var.deploy_id
+  region              = local.cur_region
+  node_groups         = local.cur_node_groups
+  network             = var.network
+  flow_log_bucket_arn = var.flow_log_bucket_arn
+}
+
+
+locals {
+  private_subnet_ids            = module.cur_network.info.subnets.private[*].subnet_id
   kms_key = var.kms.key_id != null ? data.aws_kms_key.key[0] : aws_kms_key.domino[0]
   kms_info = {
     key_id  = local.kms_key.id
     key_arn = local.kms_key.arn
     enabled = var.kms.enabled
   }
+
+
 
   aws_account_id                = data.aws_caller_identity.aws_account.account_id
   kms_key_arn                   = local.kms_info.enabled ? local.kms_info.key_arn : null
@@ -19,7 +43,7 @@ locals {
   cur_report_bucket             = "${var.deploy_id}-${var.cur_report_bucket_name_suffix}"
   athena_cur_result_bucket_name = "${var.deploy_id}-${var.athena_cur_result_bucket_suffix}"
   aws_glue_database             = "${var.deploy_id}-${var.aws_glue_database_suffix}"
-  cur_s3_region                 = "us-east-1"
+  cur_region                    = "us-east-1"
 
   s3_buckets = {
     report = {
@@ -47,7 +71,7 @@ resource "aws_cur_report_definition" "aws_cur_report_definition" {
   additional_schema_elements = ["RESOURCES", "SPLIT_COST_ALLOCATION_DATA"]
 
   s3_bucket = aws_s3_bucket.cur_report.bucket
-  s3_region = local.cur_s3_region
+  s3_region = local.cur_region
   s3_prefix = var.s3_bucket_prefix
 
   depends_on = [
