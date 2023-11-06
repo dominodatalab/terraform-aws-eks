@@ -17,7 +17,7 @@ module "cost_usage_report" {
   deploy_id    = var.deploy_id
   kms_info     = local.kms_info
   network_info = module.network.info
-  region       = var.region
+  region       = "us-east-1"
 }
 
 module "storage" {
