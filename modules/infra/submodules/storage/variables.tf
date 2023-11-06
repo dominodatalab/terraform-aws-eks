@@ -62,12 +62,12 @@ variable "storage" {
     }))
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool)
+      costs_enabled             = optional(bool)
     }))
     ecr = optional(object({
       force_destroy_on_deletion = optional(bool)
     }))
     enable_remote_backup = optional(bool)
-    costs_enabled        = optional(bool)
   })
 }
 
