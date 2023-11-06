@@ -78,19 +78,6 @@ variable "tags" {
   default     = {}
 }
 
-# variable "kms_info" {
-#   description = <<EOF
-#     key_id  = KMS key id.
-#     key_arn = KMS key arn.
-#     enabled = KMS key is enabled
-#   EOF
-#   type = object({
-#     key_id  = string
-#     key_arn = string
-#     enabled = bool
-#   })
-# }
-
 variable "kms" {
   description = <<EOF
     enabled             = "Toggle, if set use either the specified KMS key_id or a Domino-generated one"

@@ -25,17 +25,18 @@ locals {
 }
 
 module "cost_usage_report" {
-  # count        = var.domino_cur.provision_resources ? 1 : 0
-  source       = "./submodules/cost-usage-report"
-  deploy_id    = var.deploy_id
-  kms          = var.kms
-  network      = var.network
-  default_node_groups = local.cur_default_node_groups
+  count                  = var.domino_cur.provision_resources ? 1 : 0
+  source                 = "./submodules/cost-usage-report"
+  deploy_id              = var.deploy_id
+  kms                    = var.kms
+  network                = var.network
+  default_node_groups    = local.cur_default_node_groups
   additional_node_groups = local.cur_additional_node_groups
-  flow_log_bucket_arn = { arn = module.storage.info.s3.buckets.monitoring.arn }
-  # kms_info     = local.kms_info
-  # network_info = module.network.info
-  region       = "us-east-1"
+  flow_log_bucket_arn    = { arn = module.storage.info.s3.buckets.monitoring.arn }
+  region                 = var.domino_cur.region
+  providers = {
+    aws = aws.domino_cur_region
+  }
 }
 
 module "storage" {
@@ -108,9 +109,17 @@ module "bastion" {
 }
 
 locals {
-  # cost_usage_report_info    = var.domino_cur.provision_resources && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
-  cost_usage_report_info    = module.cost_usage_report.info
+  cost_usage_report_info    = var.domino_cur.provision_resources && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
   bastion_info              = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
   node_iam_policies_storage = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
   node_iam_policies         = var.route53_hosted_zone_name != null ? concat(local.node_iam_policies_storage, [aws_iam_policy.route53[0].arn]) : local.node_iam_policies_storage
+}
+
+
+provider "aws" {
+  region = var.domino_cur.region
+  alias  = "domino_cur_region"
+  default_tags {
+    tags = var.tags
+  }
 }
