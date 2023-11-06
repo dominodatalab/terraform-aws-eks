@@ -1,11 +1,11 @@
 deploy_id                = "circleci-${CIRCLE_BUILD_NUM}"
-region                   = "us-east-1"
+region                   = "us-west-2"
 route53_hosted_zone_name = "deploys-delta.domino.tech"
 ssh_pvt_key_path         = "${PVT_KEY}"
 
 default_node_groups = {
   compute = {
-    availability_zone_ids = ["use1-az1", "use1-az2"]
+    availability_zone_ids = ["usw2-az1", "usw2-az2"]
     ami = "${CUSTOM_AMI}"
     instance_types = [
       "m4.2xlarge",
@@ -21,16 +21,16 @@ default_node_groups = {
     spot = true
   }
   gpu = {
-    availability_zone_ids = ["use1-az1", "use1-az2"]
+    availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
   platform = {
-    "availability_zone_ids" = ["use1-az1", "use1-az2"]
+    "availability_zone_ids" = ["usw2-az1", "usw2-az2"]
   }
 }
 
 additional_node_groups = {
   other_az = {
-    availability_zone_ids = ["use1-az3"]
+    availability_zone_ids = ["usw2-az3"]
     desired_per_az        = 0
     instance_types        = ["m5.2xlarge"]
     labels = {
