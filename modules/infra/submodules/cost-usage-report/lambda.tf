@@ -11,7 +11,7 @@ data "archive_file" "cur_initializer_zip" {
           response.send(event, context, response.SUCCESS);
         } else {
           const glue = new AWS.Glue();
-          glue.startCrawler({ Name: 'AWSCURCrawler-domino-cur-crawler' }, function(err, data) {
+          glue.startCrawler({ Name: '${local.cur_crawler}' }, function(err, data) {
             if (err) {
               const responseData = JSON.parse(this.httpResponse.body);
               if (responseData['__type'] == 'CrawlerRunningException') {
@@ -143,7 +143,7 @@ data "archive_file" "aws_s3_cur_notification_zip" {
 }
 
 resource "aws_lambda_function" "aws_s3_cur_notification" {
-  function_name = "aws_s3_cur_notification-lambda"
+  function_name = local.notification_lambda_function
   role          = aws_iam_role.aws_cur_lambda_executor.arn
 
   filename         = data.archive_file.aws_s3_cur_notification_zip.output_path

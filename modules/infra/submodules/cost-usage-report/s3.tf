@@ -1,6 +1,7 @@
 
 resource "aws_s3_bucket" "athena_result" {
   bucket = local.athena_cur_result_bucket_name
+  force_destroy       = true
   tags   = var.tags
 }
 
@@ -47,6 +48,7 @@ resource "aws_s3_bucket_policy" "athena_result" {
 
 resource "aws_s3_bucket" "cur_report" {
   bucket = local.cur_report_bucket
+  force_destroy       = true
   tags   = var.tags
 }
 

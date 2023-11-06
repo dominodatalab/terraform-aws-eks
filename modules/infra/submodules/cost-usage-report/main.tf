@@ -36,7 +36,9 @@ locals {
 
   aws_account_id                = data.aws_caller_identity.aws_account.account_id
   kms_key_arn                   = local.kms_info.enabled ? local.kms_info.key_arn : null
-  initializer_lambda_function   = "${var.cur_report_name}-crawler-initializer"
+  initializer_lambda_function   = "${var.deploy_id}-${var.cur_report_name}-crawler-initializer"
+  notification_lambda_function  = "${var.deploy_id}-aws_s3_cur_notification-lambda"
+  cur_crawler                   = "${var.deploy_id}-AWSCURCrawler-domino-cur-crawler"
   report_status_table_name      = "cost_and_usage_data_status_tb"
   s3_server_side_encryption     = local.kms_info.enabled ? "aws:kms" : "AES256"
   cur_report_name               = "${var.deploy_id}-${var.cur_report_name}"

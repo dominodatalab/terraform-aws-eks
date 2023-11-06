@@ -32,7 +32,7 @@ resource "aws_glue_security_configuration" "lambda_config" {
 
 
 resource "aws_glue_crawler" "aws_cur_crawler" {
-  name          = "AWSCURCrawler-domino-cur-crawler"
+  name          = local.cur_crawler
   description   = "A recurring crawler that keeps your CUR table in Athena up-to-date."
   database_name = aws_glue_catalog_database.aws_cur_database.name
   role          = aws_iam_role.aws_cur_crawler_component_function_role.name
