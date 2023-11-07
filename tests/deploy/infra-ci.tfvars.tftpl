@@ -59,6 +59,11 @@ kms = {
   "enabled" = true
 }
 
+domino_cur = {
+  provision_resources = false
+  region = "us-east-1"
+}
+
 tags = {
   deploy_id             = "circleci-${CIRCLE_BUILD_NUM}"
   CIRCLE_BUILD_URL      = "${CIRCLE_BUILD_URL}"
