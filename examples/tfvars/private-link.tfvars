@@ -22,3 +22,7 @@ default_node_groups = {
 enable_private_link      = true
 route53_hosted_zone_name = "domino"
 
+domino_cur = {
+  provision_resources = false
+  region = "us-east-1"
+}
