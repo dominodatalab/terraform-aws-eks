@@ -175,7 +175,7 @@ aws sts get-caller-identity
 cd domino-deploy
 ```
 
-#### 3. Plan and Apply.
+#### 3. Plan and Apply.1
 :warning: It is recommended to become familiar with the `tf.sh` [usage](./examples/deploy/README.md#usage).
 
 At this point all requirements should be set to provision the infrastructure.
