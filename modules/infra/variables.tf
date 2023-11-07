@@ -361,12 +361,12 @@ variable "storage" {
     }), {})
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool, true)
-      costs_enabled             = optional(bool, false)
     }), {})
     ecr = optional(object({
       force_destroy_on_deletion = optional(bool, true)
     }), {}),
     enable_remote_backup = optional(bool, false)
+    costs_enabled        = optional(bool, false)
   })
 
   default = {}

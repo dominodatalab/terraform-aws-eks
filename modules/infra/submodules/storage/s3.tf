@@ -475,21 +475,21 @@ moved {
 }
 
 resource "aws_s3_bucket" "costs" {
-  count               = var.storage.s3.costs_enabled ? 1 : 0
+  count               = var.storage.costs_enabled ? 1 : 0
   bucket              = "${var.deploy_id}-costs"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "costs" {
-  count  = var.storage.s3.costs_enabled ? 1 : 0
+  count  = var.storage.costs_enabled ? 1 : 0
   bucket = aws_s3_bucket.costs[0].id
 
   rule {
     id = "expiration"
 
     expiration {
-      days = 90
+      days = 30
     }
 
     status = "Enabled"
@@ -502,7 +502,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "costs" {
 }
 
 data "aws_iam_policy_document" "costs" {
-  count = var.storage.s3.costs_enabled ? 1 : 0
+  count = var.storage.costs_enabled ? 1 : 0
 
   statement {
     effect = "Deny"
