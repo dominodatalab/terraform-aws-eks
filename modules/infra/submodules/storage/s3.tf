@@ -495,7 +495,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "costs" {
     status = "Enabled"
   }
 
-   rule {
+  rule {
     id = "incomplete_upload"
 
     abort_incomplete_multipart_upload {
