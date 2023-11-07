@@ -495,10 +495,19 @@ resource "aws_s3_bucket_lifecycle_configuration" "costs" {
     status = "Enabled"
   }
 
+   rule {
+    id = "incomplete_upload"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+
+    status = "Enabled"
+  }
+
   depends_on = [
     aws_s3_bucket.costs
   ]
-
 }
 
 data "aws_iam_policy_document" "costs" {
