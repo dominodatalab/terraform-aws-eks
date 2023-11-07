@@ -9,7 +9,6 @@ module "infra" {
   network                     = var.network
   eks                         = var.eks
   kms                         = var.kms
-  domino_cur                  = var.domino_cur
   storage                     = var.storage
   region                      = var.region
   route53_hosted_zone_name    = var.route53_hosted_zone_name
