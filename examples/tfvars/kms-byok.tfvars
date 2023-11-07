@@ -23,7 +23,3 @@ kms = {
   key_id = "your-own-kms-key-id"
 }
 
-domino_cur = {
-  provision_resources = true
-  region = "us-east-1"
-}

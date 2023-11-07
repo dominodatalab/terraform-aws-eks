@@ -30,7 +30,3 @@ network = {
   use_pod_cidr = false
 }
 
-domino_cur = {
-  provision_resources = true
-  region = "us-east-1"
-} d

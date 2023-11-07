@@ -36,7 +36,3 @@ additional_node_groups = {
   }
 }
 
-domino_cur = {
-  provision_resources = true
-  region = "us-east-1"
-}
