@@ -67,3 +67,8 @@ storage = {
   }
 }
 tags = null
+
+domino_cur = {
+  provision_resources = null
+  region = null
+}

@@ -349,3 +349,14 @@ variable "bastion" {
     install_binaries         = optional(bool)
   })
 }
+
+
+variable "domino_cur" {
+  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
+  type = object({
+    provision_resources = optional(bool, true)
+    region = optional(string)
+  })
+
+  default = {}
+}
