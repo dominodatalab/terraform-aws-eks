@@ -20,3 +20,8 @@ default_node_groups = {
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
 }
+
+domino_cur = {
+  provision_resources = true
+  region = "us-east-1"
+}
