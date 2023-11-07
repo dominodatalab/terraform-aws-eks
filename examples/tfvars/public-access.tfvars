@@ -21,3 +21,8 @@ default_node_groups = {
     }
   }
 }
+
+domino_cur = {
+  provision_resources = false
+  region = "us-east-1"
+}

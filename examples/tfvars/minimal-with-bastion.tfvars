@@ -12,9 +12,9 @@ default_node_groups = {
   platform = {
     "availability_zone_ids" = ["usw2-az1", "usw2-az2"]
   }
+}
 
-  ## bastion is enabled by default
-  bastion = {
-    enabled = true
-  }
+domino_cur = {
+  provision_resources = false
+  region = "us-east-1"
 }
