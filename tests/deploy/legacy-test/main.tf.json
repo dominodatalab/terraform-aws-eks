@@ -108,12 +108,6 @@
         "description": "EKS cluster k8s version.",
         "default": "1.27"
       }
-    },
-    {
-      "domino_cur": {
-        "type": "bool",
-        "default": "true"
-      }
     }
   ],
   "terraform": [
