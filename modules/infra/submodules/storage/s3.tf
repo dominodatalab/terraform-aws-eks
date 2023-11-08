@@ -489,7 +489,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "costs" {
     id = "expiration"
 
     expiration {
-      days = 30
+      days = 17
     }
 
     status = "Enabled"
