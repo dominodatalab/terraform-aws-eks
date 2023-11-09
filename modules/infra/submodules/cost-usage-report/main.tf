@@ -61,6 +61,9 @@ locals {
 }
 
 resource "aws_cur_report_definition" "aws_cur_report_definition" {
+  provider = aws.domino_cur_region
+  
+
   report_name                = local.cur_report_name
   time_unit                  = var.report_frequency
   format                     = var.report_format
@@ -76,4 +79,12 @@ resource "aws_cur_report_definition" "aws_cur_report_definition" {
   depends_on = [
     aws_s3_bucket_policy.cur_report,
   ]
+}
+
+provider "aws" {
+  region = "us-east-1"
+  alias  = "domino_cur_region"
+  default_tags {
+    tags = var.tags
+  }
 }
