@@ -32,7 +32,3 @@ single_node = {
     "dominodatalab.com/domino-node" = "true"
   },
 }
-
-storage = {
-  costs_enabled = false
-}
