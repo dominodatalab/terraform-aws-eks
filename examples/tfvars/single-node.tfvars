@@ -10,6 +10,7 @@ default_node_groups = {
   gpu = {
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
+
   platform = {
     "availability_zone_ids" = ["usw2-az1", "usw2-az2"]
   }
@@ -31,4 +32,11 @@ single_node = {
     "dominodatalab.com/node-pool"   = "default",
     "dominodatalab.com/domino-node" = "true"
   },
+}
+
+storage = {
+  s3 = {
+    force_destroy_on_deletion = true
+  },
+  costs_enabled = false
 }
