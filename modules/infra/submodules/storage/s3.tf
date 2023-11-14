@@ -486,10 +486,29 @@ resource "aws_s3_bucket_lifecycle_configuration" "costs" {
   bucket = aws_s3_bucket.costs[0].id
 
   rule {
-    id = "expiration"
+    id = "AssetsExpiration"
 
     expiration {
-      days = 17
+      days = 15
+    }
+
+    filter {
+      prefix = "federated/${var.deploy_id}/etl/bingen/assets/"
+    }
+
+    status = "Enabled"
+  }
+
+
+  rule {
+    id = "AllocationsExpiration"
+
+    expiration {
+      days = 15
+    }
+
+    filter {
+      prefix = "federated/${var.deploy_id}/etl/bingen/allocations/"
     }
 
     status = "Enabled"
