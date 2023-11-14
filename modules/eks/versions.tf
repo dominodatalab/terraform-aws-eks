@@ -33,6 +33,6 @@ provider "aws" {
   }
   assume_role {
     role_arn = var.create_eks_role_arn
-    duration = 7200
+    duration = "4h"
   }
 }
