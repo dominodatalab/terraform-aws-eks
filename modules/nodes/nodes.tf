@@ -119,6 +119,10 @@ resource "aws_eks_node_group" "node_groups" {
     ]
   }
 
+  timeouts {
+    update = "2h"
+  }
+
   update_config {
     max_unavailable = 1
   }
