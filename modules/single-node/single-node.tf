@@ -137,6 +137,6 @@ resource "aws_eip" "single_node" {
 }
 
 resource "aws_eip_association" "single_node" {
-  instance_id   = aws_instance.single_node.id
+  instance_id   = aws_instance.single_node.primary_network_interface_id
   allocation_id = aws_eip.single_node.id
 }
