@@ -90,7 +90,8 @@ resource "aws_iam_policy" "create_eks_role" {
 }
 
 resource "aws_iam_role" "create_eks_role" {
-  name = local.create_eks_role_name
+  name                 = local.create_eks_role_name
+  max_session_duration = 14400
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

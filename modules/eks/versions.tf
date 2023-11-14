@@ -32,7 +32,7 @@ provider "aws" {
     tags = var.tags
   }
   assume_role {
-    role_arn             = var.create_eks_role_arn
-    max_session_duration = "4h"
+    role_arn = var.create_eks_role_arn
+    duration = "4h"
   }
 }
