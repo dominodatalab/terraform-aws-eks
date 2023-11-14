@@ -493,7 +493,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "costs" {
     }
 
     filter {
-       prefix = "federated/${var.deploy_id}/etl/bingen/assets/"
+      prefix = "federated/${var.deploy_id}/etl/bingen/assets/"
     }
 
     status = "Enabled"
@@ -508,7 +508,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "costs" {
     }
 
     filter {
-       prefix = "federated/${var.deploy_id}/etl/bingen/allocations/"
+      prefix = "federated/${var.deploy_id}/etl/bingen/allocations/"
     }
 
     status = "Enabled"
