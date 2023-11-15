@@ -182,9 +182,9 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
+      - set_mod_source_current
       - set_tf_vars
       - set_tf_mods
-      - set_mod_source_current
       - tf_deploy
       - tf_deploy_single_node
       - tf_destroy_single_node
@@ -205,8 +205,8 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - set_tf_vars
       - set_tf_mods_latest_rel
+      - set_tf_vars
       - set_mod_source_latest_rel
       - tf_deploy
       - set_mod_source_current
