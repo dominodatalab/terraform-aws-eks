@@ -16,6 +16,7 @@ fi
 # remote module vars
 BASE_REMOTE_SRC="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 BASE_REMOTE_MOD_SRC="${BASE_REMOTE_SRC}//modules"
+LATEST_REL_TAG="$(curl -sSfL -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest | jq -r '.tag_name')"
 
 deploy() {
   component=${1:-all}
@@ -42,11 +43,23 @@ set_ci_branch_name() {
   export CI_BRANCH_NAME
 }
 
-setup_modules() {
-  mkdir -p "$DEPLOY_DIR"
+setup_module() {
+  local deploy_dir="$1"
+  local repo_ref="$2"
+
+  rm -rf "$deploy_dir"
+  mkdir -p "$deploy_dir"
+  echo "Running init from module: -from-module=${BASE_REMOTE_SRC}//examples/deploy?ref=${repo_ref} at: $deploy_dir"
+  terraform -chdir="$deploy_dir" init -backend=false -from-module="${BASE_REMOTE_SRC}//examples/deploy?ref=${repo_ref}"
+}
+
+setup_modules_ci_branch() {
   set_ci_branch_name
-  echo "Running init from module: -from-module=${BASE_REMOTE_SRC}//examples/deploy?ref=${CI_BRANCH_NAME} at: $DEPLOY_DIR"
-  terraform -chdir="$DEPLOY_DIR" init -backend=false -from-module="${BASE_REMOTE_SRC}//examples/deploy?ref=${CI_BRANCH_NAME}"
+  setup_module "$DEPLOY_DIR" "$CI_BRANCH_NAME"
+}
+
+setup_modules_latest_rel() {
+  setup_module "$DEPLOY_DIR" "$LATEST_REL_TAG"
 }
 
 install_helm() {
@@ -63,8 +76,8 @@ install_helm() {
 }
 
 install_hcledit() {
-  hcledit_version="${HCLEDIT_VERSION}"
-  hcledit_artifact=hcledit_${hcledit_version}_linux_amd64.tar.gz
+  local hcledit_version="${HCLEDIT_VERSION}"
+  local hcledit_artifact=hcledit_${hcledit_version}_linux_amd64.tar.gz
   curl -fsSL -o "${hcledit_artifact}" "https://github.com/minamijoyo/hcledit/releases/download/v${hcledit_version}/${hcledit_artifact}"
   tar xvzf "${hcledit_artifact}"
   sudo mv hcledit /usr/local/bin/ && rm "${hcledit_artifact}" && hcledit version
@@ -73,8 +86,8 @@ install_hcledit() {
 set_eks_worker_ami() {
   # We can potentially test AMI upgrades in CI.
   # 1 is latest.
-  precedence="$1"
-  k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
+  local precedence="$1"
+  local k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
   if ! aws sts get-caller-identity; then
     echo "Incorrect AWS credentials."
     exit 1
@@ -92,10 +105,9 @@ set_tf_vars() {
   fi
 
   [ -f "$PVT_KEY" ] || { ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$PVT_KEY" && chmod 600 "$PVT_KEY"; }
-  local default_nodes
 
   export CUSTOM_AMI PVT_KEY
-  default_nodes=$(envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
+  local default_nodes=$(envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
   echo "default_node_groups = $default_nodes" >"$NODES_VARS"
 
   echo "Infra vars:" && cat "$INFRA_VARS"
@@ -112,7 +124,7 @@ deploy_latest_ami_nodes() {
 }
 
 destroy() {
-  component=${1:-all}
+  local component=${1:-all}
   pushd "$DEPLOY_DIR" >/dev/null
   bash "./tf.sh" "$component" destroy
   popd >/dev/null 2>&1
@@ -186,17 +198,17 @@ set_mod_src_local() {
 
 set_mod_src_latest_rel() {
   echo "Updating module source to the latest published release."
-  latest_release_tag="$(curl -sSfL -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest | jq -r '.tag_name')"
-  echo "Latest published release tag is: ${latest_release_tag}"
-  local ROOT_MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git?ref=${latest_release_tag}"
-  MAJOR_MOD_VERSION=$(echo "${latest_release_tag}" | awk -F'.' '{print $1}' | sed 's/^v//')
+
+  echo "Latest published release tag is: ${LATEST_REL_TAG}"
+  local ROOT_MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git?ref=${LATEST_REL_TAG}"
+  local MAJOR_MOD_VERSION=$(echo "${LATEST_REL_TAG}" | awk -F'.' '{print $1}' | sed 's/^v//')
   echo "export MAJOR_MOD_VERSION=$MAJOR_MOD_VERSION" >>$BASH_ENV
 
   if (($MAJOR_MOD_VERSION < 3)); then
     echo "Legacy: Setting module source to: ${ROOT_MOD_SOURCE}"
     cat <<<$(jq --arg mod_source "${ROOT_MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' "$LEGACY_TF") >"$LEGACY_TF"
   else
-    set_all_mod_src "$latest_release_tag"
+    set_all_mod_src "$LATEST_REL_TAG"
   fi
 
 }
