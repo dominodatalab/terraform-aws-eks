@@ -194,7 +194,7 @@ kubectl_cmd() {
   fi
 }
 
-wait_for_node() {
+wait_for_single_node() {
   TIMEOUT=600
   ELAPSED_TIME=0
   SLEEP_INTERVAL=30
@@ -203,11 +203,11 @@ wait_for_node() {
     READY_NODES_COUNT=$(kubectl --kubeconfig "$kubeconfig" get nodes -l 'single-node' -o json | jq '[.items[] | .status.conditions[] | select(.type=="Ready" and .status=="True")] | length')
 
     if [[ "$READY_NODES_COUNT" -ge 1 ]]; then
-      echo "At least one node is in Ready status!"
-      kubectl --kubeconfig "$kubeconfig" get nodes
+      echo "At least one node with label 'single-node' is in Ready status!"
+      kubectl --kubeconfig "$kubeconfig" get nodes -l 'single-node'
       return 0
     else
-      echo "Waiting for a node to be in Ready status..."
+      echo "Waiting for node with label 'single-node' to be in Ready status..."
       sleep $SLEEP_INTERVAL
       ELAPSED_TIME=$((ELAPSED_TIME + SLEEP_INTERVAL))
       if [[ "$ELAPSED_TIME" -ge "$TIMEOUT" ]]; then

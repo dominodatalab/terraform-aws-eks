@@ -39,7 +39,7 @@ resource "terraform_data" "node_is_ready" {
   # Even though the node is ready coredns hangs or takes 15m, waiting a bit reduces it to 15s.
   # https://github.com/terraform-aws-modules/terraform-aws-eks/issues/1801
   provisioner "local-exec" {
-    command     = "bash ./${basename(var.eks_info.k8s_pre_setup_sh_file)} wait_for_node && sleep 60"
+    command     = "bash ./${basename(var.eks_info.k8s_pre_setup_sh_file)} wait_for_single_node && sleep 60"
     interpreter = ["bash", "-c"]
     working_dir = dirname(var.eks_info.k8s_pre_setup_sh_file)
   }
