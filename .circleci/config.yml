@@ -86,7 +86,7 @@ commands:
       - run:
           name: Bootstrap terraform module using the CI branch.
           working_directory: tests/deploy
-          command: ci-deploy.sh setup_modules_ci_branch
+          command: bash ci-deploy.sh setup_modules_ci_branch
   set_tf_mods_latest_rel:
     description: "Bootstrap modules using latest release"
     steps:
@@ -115,6 +115,7 @@ commands:
     steps:
       - run:
           name: Terraform init/validate/apply
+          working_directory: tests/deploy
           command: bash ci-deploy.sh deploy
   tf_deploy_single_node:
     description: "Terraform deploy single-node"
