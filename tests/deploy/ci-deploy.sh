@@ -197,20 +197,8 @@ set_mod_src_local() {
 }
 
 set_mod_src_latest_rel() {
-  echo "Updating module source to the latest published release."
-
-  echo "Latest published release tag is: ${LATEST_REL_TAG}"
-  local ROOT_MOD_SOURCE="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git?ref=${LATEST_REL_TAG}"
-  local MAJOR_MOD_VERSION=$(echo "${LATEST_REL_TAG}" | awk -F'.' '{print $1}' | sed 's/^v//')
-  echo "export MAJOR_MOD_VERSION=$MAJOR_MOD_VERSION" >>$BASH_ENV
-
-  if (($MAJOR_MOD_VERSION < 3)); then
-    echo "Legacy: Setting module source to: ${ROOT_MOD_SOURCE}"
-    cat <<<$(jq --arg mod_source "${ROOT_MOD_SOURCE}" '.module[0].domino_eks.source = $mod_source' "$LEGACY_TF") >"$LEGACY_TF"
-  else
-    set_all_mod_src "$LATEST_REL_TAG"
-  fi
-
+  echo "Updating module source to the latest published release: ${LATEST_REL_TAG}"
+  set_all_mod_src "$LATEST_REL_TAG"
 }
 
 for arg in "$@"; do
