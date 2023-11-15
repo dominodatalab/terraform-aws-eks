@@ -12,12 +12,12 @@ locals {
 }
 
 module "cost_usage_report" {
-  count                  = var.domino_cur.provision_resources ? 1 : 0
-  source                 = "./submodules/cost-usage-report"
-  deploy_id              = var.deploy_id
-  network_info           = module.network.info
-  kms_info               = local.kms_info
-  region                 = var.region
+  count        = var.domino_cur.provision_resources ? 1 : 0
+  source       = "./submodules/cost-usage-report"
+  deploy_id    = var.deploy_id
+  network_info = module.network.info
+  kms_info     = local.kms_info
+  region       = var.region
   providers = {
     aws.domino_cur_region = aws.domino_cur_region
   }
@@ -80,7 +80,7 @@ resource "aws_key_pair" "domino" {
 }
 
 module "bastion" {
-  count = var.bastion.enabled ? 1 : 0
+  count        = var.bastion.enabled ? 1 : 0
   source       = "./submodules/bastion"
   deploy_id    = var.deploy_id
   region       = var.region
@@ -105,4 +105,3 @@ provider "aws" {
     tags = var.tags
   }
 }
-

@@ -349,4 +349,3 @@ variable "bastion" {
     install_binaries         = optional(bool)
   })
 }
-
