@@ -335,14 +335,8 @@ resource "terraform_data" "set_monitoring_private_acl" {
       update_bucket() {
         ownership=$(aws s3api get-bucket-ownership-controls --bucket $bucket --output text --query "OwnershipControls.Rules[0]")
         if [[ "$ownership" == "BucketOwnerPreferred" ]] || [[ -z "$ownership" ]]; then
-          if ! aws s3api put-bucket-acl --bucket $bucket --acl private; then
-            return 1
-          fi
-
-
-          if ! aws s3api put-bucket-ownership-controls --bucket $bucket --ownership-controls "Rules=[{ObjectOwnership=BucketOwnerEnforced}]"; then
-            return 1
-          fi
+          aws s3api put-bucket-acl --bucket $bucket --acl private || return 1
+          aws s3api put-bucket-ownership-controls --bucket $bucket --ownership-controls "Rules=[{ObjectOwnership=BucketOwnerEnforced}]" || return 1
         fi
 
         return 0
