@@ -22,8 +22,3 @@ kms = {
   # If bringing your own replace with desired kms key_id
   key_id = "your-own-kms-key-id"
 }
-
-domino_cur = {
-  provision_resources = false
-  region              = "us-east-1"
-}

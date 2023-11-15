@@ -81,7 +81,7 @@ resource "aws_lambda_function" "cur_lambda_initializer" {
 resource "aws_security_group" "lambda" {
   name        = "${var.deploy_id}-lambda"
   description = "EFS security group"
-  vpc_id      = module.cur_network.info.vpc_id
+  vpc_id      = var.network_info.vpc_id
 
   lifecycle {
     create_before_destroy = true

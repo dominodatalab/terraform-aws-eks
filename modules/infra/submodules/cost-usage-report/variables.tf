@@ -78,216 +78,67 @@ variable "tags" {
   default     = {}
 }
 
-variable "kms" {
+variable "kms_info" {
   description = <<EOF
-    enabled             = "Toggle, if set use either the specified KMS key_id or a Domino-generated one"
-    key_id              = optional(string, null)
-    additional_policies = "Allows setting additional KMS key policies when using a Domino-generated key"
+    key_id  = KMS key id.
+    key_arn = KMS key arn.
+    enabled = KMS key is enabled
   EOF
-
   type = object({
-    enabled             = optional(bool, true)
-    key_id              = optional(string, null)
-    additional_policies = optional(list(string), [])
+    key_id  = string
+    key_arn = string
+    enabled = bool
   })
-
-  validation {
-    condition     = var.kms.enabled && var.kms.key_id != null ? length(var.kms.key_id) > 0 : true
-    error_message = "KMS key ID must be null or set to a non-empty string, when var.kms.enabled is."
-  }
-
-  validation {
-    condition     = var.kms.key_id != null ? var.kms.enabled : true
-    error_message = "var.kms.enabled must be true if var.kms.key_id is provided."
-  }
-
-  validation {
-    condition     = var.kms.key_id != null ? length(var.kms.additional_policies) == 0 : true
-    error_message = "var.kms.additional_policies cannot be provided if if var.kms.key_id is provided."
-  }
-
-  default = {}
 }
 
-
-variable "network" {
+variable "network_info" {
   description = <<EOF
-    vpc = {
-      id = Existing vpc id, it will bypass creation by this module.
-      subnets = {
-        private = Existing private subnets.
-        public  = Existing public subnets.
-        pod     = Existing pod subnets.
-      }), {})
-    }), {})
-    network_bits = {
-      public  = Number of network bits to allocate to the public subnet. i.e /27 -> 32 IPs.
-      private = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.
-      pod     = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.
+    id = VPC ID.
+    subnets = {
+      public = List of public Subnets.
+      [{
+        name = Subnet name.
+        subnet_id = Subnet ud
+        az = Subnet availability_zone
+        az_id = Subnet availability_zone_id
+      }]
+      private = List of private Subnets.
+      [{
+        name = Subnet name.
+        subnet_id = Subnet ud
+        az = Subnet availability_zone
+        az_id = Subnet availability_zone_id
+      }]
+      pod = List of pod Subnets.
+      [{
+        name = Subnet name.
+        subnet_id = Subnet ud
+        az = Subnet availability_zone
+        az_id = Subnet availability_zone_id
+      }]
     }
-    cidrs = {
-      vpc     = The IPv4 CIDR block for the VPC.
-      pod     = The IPv4 CIDR block for the Pod subnets.
-    }
-    use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
   EOF
-
   type = object({
-    vpc = optional(object({
-      id = optional(string, null)
-      subnets = optional(object({
-        private = optional(list(string), [])
-        public  = optional(list(string), [])
-        pod     = optional(list(string), [])
-      }), {})
-    }), {})
-    network_bits = optional(object({
-      public  = optional(number, 27)
-      private = optional(number, 19)
-      pod     = optional(number, 19)
-      }
-    ), {})
-    cidrs = optional(object({
-      vpc = optional(string, "10.0.0.0/16")
-      pod = optional(string, "100.64.0.0/16")
-    }), {})
-    use_pod_cidr = optional(bool, true)
-  })
-
-  default = {}
-}
-
-## This is an object in order to be used as a conditional in count, due to https://github.com/hashicorp/terraform/issues/26755
-variable "flow_log_bucket_arn" {
-  type        = object({ arn = string })
-  description = "Bucket for vpc flow logging"
-  default     = null
-}
-
-variable "default_node_groups" {
-  description = "EKS managed node groups definition."
-  type = object(
-    {
-      compute = object(
-        {
-          ami                   = optional(string, null)
-          bootstrap_extra_args  = optional(string, "")
-          instance_types        = optional(list(string), ["m5.2xlarge"])
-          spot                  = optional(bool, false)
-          min_per_az            = optional(number, 0)
-          max_per_az            = optional(number, 10)
-          desired_per_az        = optional(number, 0)
-          availability_zone_ids = list(string)
-          labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "default"
-          })
-          taints = optional(list(object({
-            key    = string
-            value  = optional(string)
-            effect = string
-          })), [])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
-          volume = optional(object({
-            size = optional(number, 1000)
-            type = optional(string, "gp3")
-            }), {
-            size = 1000
-            type = "gp3"
-            }
-          )
-      }),
-      platform = object(
-        {
-          ami                   = optional(string, null)
-          bootstrap_extra_args  = optional(string, "")
-          instance_types        = optional(list(string), ["m5.2xlarge"])
-          spot                  = optional(bool, false)
-          min_per_az            = optional(number, 1)
-          max_per_az            = optional(number, 10)
-          desired_per_az        = optional(number, 1)
-          availability_zone_ids = list(string)
-          labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "platform"
-          })
-          taints = optional(list(object({
-            key    = string
-            value  = optional(string)
-            effect = string
-          })), [])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
-          volume = optional(object({
-            size = optional(number, 100)
-            type = optional(string, "gp3")
-            }), {
-            size = 100
-            type = "gp3"
-            }
-          )
-      }),
-      gpu = object(
-        {
-          ami                   = optional(string, null)
-          bootstrap_extra_args  = optional(string, "")
-          instance_types        = optional(list(string), ["g4dn.xlarge"])
-          spot                  = optional(bool, false)
-          min_per_az            = optional(number, 0)
-          max_per_az            = optional(number, 10)
-          desired_per_az        = optional(number, 0)
-          availability_zone_ids = list(string)
-          labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "default-gpu"
-            "nvidia.com/gpu"              = true
-          })
-          taints = optional(list(object({
-            key    = string
-            value  = optional(string)
-            effect = string
-            })), [{
-            key    = "nvidia.com/gpu"
-            value  = "true"
-            effect = "NO_SCHEDULE"
-            }
-          ])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
-          volume = optional(object({
-            size = optional(number, 1000)
-            type = optional(string, "gp3")
-            }), {
-            size = 1000
-            type = "gp3"
-            }
-          )
-      })
-  })
-}
-
-variable "additional_node_groups" {
-  description = "Additional EKS managed node groups definition."
-  type = map(object({
-    ami                   = optional(string, null)
-    bootstrap_extra_args  = optional(string, "")
-    instance_types        = list(string)
-    spot                  = optional(bool, false)
-    min_per_az            = number
-    max_per_az            = number
-    desired_per_az        = number
-    availability_zone_ids = list(string)
-    labels                = map(string)
-    taints = optional(list(object({
-      key    = string
-      value  = optional(string)
-      effect = string
-    })), [])
-    tags = optional(map(string), {})
-    gpu  = optional(bool, null)
-    volume = object({
-      size = string
-      type = string
+    vpc_id = string
+    subnets = object({
+      public = list(object({
+        name      = string
+        subnet_id = string
+        az        = string
+        az_id     = string
+      }))
+      private = optional(list(object({
+        name      = string
+        subnet_id = string
+        az        = string
+        az_id     = string
+      })), [])
+      pod = optional(list(object({
+        name      = string
+        subnet_id = string
+        az        = string
+        az_id     = string
+      })), [])
     })
-  }))
-
-  default = {}
+  })
 }

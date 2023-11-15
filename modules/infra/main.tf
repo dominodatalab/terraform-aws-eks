@@ -9,31 +9,18 @@ locals {
     key_arn = local.kms_key.arn
     enabled = var.kms.enabled
   }
-
-  cur_default_node_groups = {
-    compute = {
-      availability_zone_ids = ["use1-az1", "use1-az2"]
-    }
-    gpu = {
-      availability_zone_ids = ["use1-az1", "use1-az2"]
-    }
-    platform = {
-      availability_zone_ids = ["use1-az1", "use1-az2"]
-    }
-  }
-  cur_additional_node_groups = {}
 }
 
 module "cost_usage_report" {
-  # count                  = var.domino_cur.provision_resources ? 1 : 0
+  count                  = var.domino_cur.provision_resources ? 1 : 0
   source                 = "./submodules/cost-usage-report"
   deploy_id              = var.deploy_id
-  kms                    = var.kms
-  network                = var.network
-  default_node_groups    = local.cur_default_node_groups
-  additional_node_groups = local.cur_additional_node_groups
-  flow_log_bucket_arn    = { arn = module.storage.info.s3.buckets.monitoring.arn }
+  network_info           = module.network.info
+  kms_info               = local.kms_info
   region                 = var.region
+  providers = {
+    aws.domino_cur_region = aws.domino_cur_region
+  }
 }
 
 module "storage" {
@@ -94,7 +81,6 @@ resource "aws_key_pair" "domino" {
 
 module "bastion" {
   count = var.bastion.enabled ? 1 : 0
-
   source       = "./submodules/bastion"
   deploy_id    = var.deploy_id
   region       = var.region
@@ -106,12 +92,18 @@ module "bastion" {
 }
 
 locals {
-  # cost_usage_report_info    = var.domino_cur.provision_resources && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
-  cost_usage_report_info    = module.cost_usage_report.info
+  cost_usage_report_info    = var.domino_cur.provision_resources && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
+  #cost_usage_report_info    = module.cost_usage_report.info
   bastion_info              = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
   node_iam_policies_storage = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
   node_iam_policies         = var.route53_hosted_zone_name != null ? concat(local.node_iam_policies_storage, [aws_iam_policy.route53[0].arn]) : local.node_iam_policies_storage
 }
 
-
+provider "aws" {
+  region = "us-east-1"
+  alias  = "domino_cur_region"
+  default_tags {
+    tags = var.tags
+  }
+}
 
