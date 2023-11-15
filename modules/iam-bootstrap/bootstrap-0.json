@@ -34,7 +34,8 @@
         "s3:PutBucketTagging",
         "s3:PutBucketVersioning",
         "s3:PutBucketPublicAccessBlock",
-        "s3:PutEncryptionConfiguration"
+        "s3:PutEncryptionConfiguration",
+        "s3:PutLifecycleConfiguration"
       ],
       "Resource": ["arn:${partition}:s3:::${deploy_id}-*"]
     },

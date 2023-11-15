@@ -67,7 +67,7 @@ variable "storage" {
       force_destroy_on_deletion = optional(bool)
     }))
     enable_remote_backup = optional(bool)
-    costs_enabled        = optional(bool, true)
+    costs_enabled        = optional(bool)
   })
 }
 

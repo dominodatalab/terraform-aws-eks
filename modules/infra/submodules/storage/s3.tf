@@ -481,6 +481,54 @@ resource "aws_s3_bucket" "costs" {
   object_lock_enabled = false
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "costs" {
+  count  = var.storage.costs_enabled ? 1 : 0
+  bucket = aws_s3_bucket.costs[0].id
+
+  rule {
+    id = "AssetsExpiration"
+
+    expiration {
+      days = 15
+    }
+
+    filter {
+      prefix = "federated/${var.deploy_id}/etl/bingen/assets/"
+    }
+
+    status = "Enabled"
+  }
+
+
+  rule {
+    id = "AllocationsExpiration"
+
+    expiration {
+      days = 15
+    }
+
+    filter {
+      prefix = "federated/${var.deploy_id}/etl/bingen/allocations/"
+    }
+
+    status = "Enabled"
+  }
+
+  rule {
+    id = "incomplete_upload"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+
+    status = "Enabled"
+  }
+
+  depends_on = [
+    aws_s3_bucket.costs
+  ]
+}
+
 data "aws_iam_policy_document" "costs" {
   count = var.storage.costs_enabled ? 1 : 0
 

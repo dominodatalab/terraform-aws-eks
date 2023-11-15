@@ -356,6 +356,7 @@ variable "storage" {
     ecr = optional(object({
       force_destroy_on_deletion = optional(bool, true)
     }), {})
+    costs_enabled = optional(bool, true)
   })
 
   default = {}
