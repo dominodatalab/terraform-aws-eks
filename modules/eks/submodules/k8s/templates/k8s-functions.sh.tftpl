@@ -204,7 +204,7 @@ wait_for_single_node() {
 
     if [[ "$READY_NODES_COUNT" -ge 1 ]]; then
       echo "At least one node with label 'single-node' is in Ready status!"
-      kubectl --kubeconfig "$kubeconfig" get nodes -l 'single-node'
+      kubectl --kubeconfig "$kubeconfig" get nodes -l 'single-node' -o wide
       return 0
     else
       echo "Waiting for node with label 'single-node' to be in Ready status..."
