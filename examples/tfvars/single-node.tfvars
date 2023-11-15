@@ -39,3 +39,8 @@ storage = {
   },
   costs_enabled = false
 }
+
+domino_cur = {
+  provision_resources = false
+  region              = "us-east-1"
+}
