@@ -51,14 +51,14 @@ commands:
     description: "Set up module source to current branch."
     steps:
       - run:
-          name: "Set module source to current branch"
+          name: Set module source to current branch
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_circle_branch
   set_mod_source_latest_rel:
-    description: "Set up module source to current branch."
+    description: "Set up module source to current branch"
     steps:
       - run:
-          name: "Set module source to latest published release"
+          name: Set module source to latest published release
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_latest_rel
   set_aws_creds:
@@ -74,27 +74,21 @@ commands:
       - install_hcledit
       - set_aws_creds
       - run:
-          name: Bootstrap terraform vars.
+          name: Bootstrap terraform vars
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_tf_vars
   set_tf_mods:
     description: "Bootstrap modules using the CI branch"
     steps:
-      - envsubst/install
-      - install_hcledit
-      - set_aws_creds
       - run:
-          name: Bootstrap terraform module using the CI branch.
+          name: Bootstrap terraform module using the CI branch
           working_directory: tests/deploy
           command: bash ci-deploy.sh setup_modules_ci_branch
   set_tf_mods_latest_rel:
     description: "Bootstrap modules using latest release"
     steps:
-      - envsubst/install
-      - install_hcledit
-      - set_aws_creds
       - run:
-          name: Bootstrap terraform module using latest release.
+          name: Bootstrap terraform module using latest release
           working_directory: tests/deploy
           command: bash ci-deploy.sh setup_modules_latest_rel
 
@@ -121,18 +115,18 @@ commands:
     description: "Terraform deploy single-node"
     steps:
       - run:
-          name: "Setup single-node module"
+          name: Setup single-node module
           working_directory: tests/deploy
           command: bash ci-deploy.sh setup_single_node_tf
       - run:
-          name: "Deploy single-node"
+          name: Deploy single-node
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy_single_node
   tf_destroy_single_node:
     description: "Terraform destroy single-node"
     steps:
       - run:
-          name: "Destroy single-node"
+          name: Destroy single-node
           working_directory: tests/deploy
           command: bash ci-deploy.sh destroy_single_node
   tf_deploy:
