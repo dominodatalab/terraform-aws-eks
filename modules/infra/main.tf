@@ -1,3 +1,4 @@
+data "aws_default_tags" "this" {}
 data "aws_partition" "current" {}
 data "aws_caller_identity" "aws_account" {}
 

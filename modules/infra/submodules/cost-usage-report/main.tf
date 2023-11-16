@@ -1,6 +1,5 @@
 data "aws_caller_identity" "aws_account" {}
 data "aws_partition" "current" {}
-data "aws_default_tags" "this" {}
 
 locals {
   private_subnet_ids = var.network_info.subnets.private[*].subnet_id
