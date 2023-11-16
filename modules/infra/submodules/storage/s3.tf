@@ -218,9 +218,8 @@ resource "aws_s3_bucket" "monitoring" {
 
 data "aws_iam_policy_document" "monitoring" {
   statement {
-
+    sid    = "DenyInsecureTransport"
     effect = "Deny"
-
     resources = [
       "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}",
       "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}/*",
@@ -241,7 +240,7 @@ data "aws_iam_policy_document" "monitoring" {
   }
 
   statement {
-    sid       = ""
+    sid       = "ELBLogDelivery"
     effect    = "Allow"
     resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}/*"]
 
@@ -289,6 +288,30 @@ data "aws_iam_policy_document" "monitoring" {
       identifiers = ["delivery.logs.amazonaws.com"]
     }
   }
+
+  statement {
+    sid       = "AWSAccessLogDeliveryWrite"
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}/*"]
+    actions   = ["s3:PutObject"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logging.s3.amazonaws.com"]
+    }
+  }
+
+  statement {
+    sid       = "AWSAccessLogDeliveryAclCheck"
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.monitoring.bucket}"]
+    actions   = ["s3:GetBucketAcl"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logging.s3.amazonaws.com"]
+    }
+  }
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "monitoring" {
@@ -301,55 +324,45 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "monitoring" {
   }
 }
 
-resource "aws_s3_bucket_ownership_controls" "monitoring" {
-  bucket = aws_s3_bucket.monitoring.id
-  rule {
-    object_ownership = "BucketOwnerPreferred"
+resource "terraform_data" "set_monitoring_private_acl" {
+  provisioner "local-exec" {
+    command     = <<-EOF
+      set -x -o pipefail
+
+      sleep_duration=10
+      bucket="${aws_s3_bucket.monitoring.bucket}"
+
+      update_bucket() {
+        ownership=$(aws s3api get-bucket-ownership-controls --bucket $bucket --output text --query "OwnershipControls.Rules[0]")
+        if [[ "$ownership" == "BucketOwnerPreferred" ]] || [[ -z "$ownership" ]]; then
+          aws s3api put-bucket-acl --bucket $bucket --acl private || return 1
+          aws s3api put-bucket-ownership-controls --bucket $bucket --ownership-controls "Rules=[{ObjectOwnership=BucketOwnerEnforced}]" || return 1
+        fi
+
+        return 0
+      }
+
+      for _ in {1..3}; do
+        if update_bucket; then
+          exit 0
+        fi
+
+        sleep "$sleep_duration"
+      done
+
+      echo "Could not set bucket ownership for $bucket"
+      exit 1
+    EOF
+    interpreter = ["bash", "-c"]
   }
-}
 
-resource "aws_s3_bucket_acl" "monitoring" {
-  depends_on = [aws_s3_bucket_ownership_controls.monitoring]
-
-  bucket = aws_s3_bucket.monitoring.id
-
-  access_control_policy {
-
-    owner {
-      id = data.aws_canonical_user_id.current.id
-    }
-
-    grant {
-      grantee {
-        type = "CanonicalUser"
-        id   = data.aws_canonical_user_id.current.id
-      }
-      permission = "FULL_CONTROL"
-    }
-
-    grant {
-      grantee {
-        type = "Group"
-        uri  = "http://acs.amazonaws.com/groups/s3/LogDelivery"
-      }
-      permission = "WRITE"
-    }
-
-    grant {
-      grantee {
-        type = "Group"
-        uri  = "http://acs.amazonaws.com/groups/s3/LogDelivery"
-      }
-      permission = "READ_ACP"
-    }
-  }
+  depends_on = [aws_s3_bucket.monitoring]
 }
 
 resource "aws_s3_bucket" "registry" {
   bucket              = "${var.deploy_id}-registry"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
-
 }
 
 data "aws_iam_policy_document" "registry" {
