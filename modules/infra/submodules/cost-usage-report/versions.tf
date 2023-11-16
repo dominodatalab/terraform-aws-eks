@@ -4,6 +4,7 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5"
+      configuration_aliases = [ aws.domino_cur_region ]
     }
     archive = {
       source  = "hashicorp/archive"
