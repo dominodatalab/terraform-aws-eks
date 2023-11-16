@@ -51,3 +51,5 @@ resource "aws_cur_report_definition" "aws_cur_report_definition" {
     aws_s3_bucket_policy.cur_report,
   ]
 }
+
+provider "aws" { alias = "domino_cur_region" }
