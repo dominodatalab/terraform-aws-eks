@@ -1,4 +1,3 @@
-data "aws_default_tags" "this" {}
 data "aws_partition" "current" {}
 data "aws_caller_identity" "aws_account" {}
 
@@ -19,7 +18,7 @@ module "cost_usage_report" {
   kms_info     = local.kms_info
   region       = var.region
   providers = {
-    aws.domino_cur_region = aws.domino_cur_region
+    aws.domino_cur_region = aws.us-east-1
   }
 }
 
@@ -100,7 +99,7 @@ locals {
 
 provider "aws" {
   region = "us-east-1"
-  alias  = "domino_cur_region"
+  alias  = "us-east-1"
   default_tags {
     tags = var.tags
   }
