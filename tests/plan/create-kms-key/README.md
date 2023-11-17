@@ -33,7 +33,6 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Deployment ID. | `string` | `"dominoeks003"` | no |
-| <a name="input_domino_cur"></a> [domino\_cur](#input\_domino\_cur) | Determines whether to provision domino cost related infrastructures, ie, long term storage | <pre>object({<br>    provision_resources = optional(bool, false)<br>    region              = optional(string, "us-east-1")<br>  })</pre> | `{}` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for deployment. | `string` | `"us-west-2"` | no |
 
 ## Outputs
