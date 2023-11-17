@@ -31,26 +31,26 @@ variable "cur" {
     s3_bucket_prefix = Prefix in the S3 bucket to put reports.
   EOF
   type = object({
-    athena_result_bucket_suffix  = string
-    report_bucket_name_suffix = string
-    aws_glue_database_suffix = string
-    report_name = string
-    report_frequency = string
-    report_versioning = string
-    report_format = string
-    report_compression = string
-    s3_bucket_prefix = string
+    athena_result_bucket_suffix = string
+    report_bucket_name_suffix   = string
+    aws_glue_database_suffix    = string
+    report_name                 = string
+    report_frequency            = string
+    report_versioning           = string
+    report_format               = string
+    report_compression          = string
+    s3_bucket_prefix            = string
   })
   default = {
     athena_result_bucket_suffix = "aws-athena-query-results-costs"
-    report_bucket_name_suffix = "cur-report"
-    aws_glue_database_suffix = "athena-cur-cost-db"
-    report_name = "cur-report"
-    report_frequency = "DAILY"
-    report_versioning = "OVERWRITE_REPORT"
-    report_format = "Parquet"
-    report_compression = "Parquet"
-    s3_bucket_prefix = "cur"
+    report_bucket_name_suffix   = "cur-report"
+    aws_glue_database_suffix    = "athena-cur-cost-db"
+    report_name                 = "cur-report"
+    report_frequency            = "DAILY"
+    report_versioning           = "OVERWRITE_REPORT"
+    report_format               = "Parquet"
+    report_compression          = "Parquet"
+    s3_bucket_prefix            = "cur"
   }
 }
 

@@ -11,7 +11,7 @@ locals {
   cur_crawler                   = "${var.deploy_id}-AWSCURCrawler-domino-cur-crawler"
   report_status_table_name      = "cost_and_usage_data_status_tb"
   s3_server_side_encryption     = var.kms_info.enabled ? "aws:kms" : "AES256"
-  report_name               = "${var.deploy_id}-${var.cur.report_name}"
+  report_name                   = "${var.deploy_id}-${var.cur.report_name}"
   cur_report_bucket             = "${var.deploy_id}-${var.cur.report_bucket_name_suffix}"
   athena_cur_result_bucket_name = "${var.deploy_id}-${var.cur.athena_result_bucket_suffix}"
   aws_glue_database             = "${var.deploy_id}-${var.cur.aws_glue_database_suffix}"
