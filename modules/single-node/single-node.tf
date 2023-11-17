@@ -1,15 +1,17 @@
 locals {
+  node_labels = merge({
+    "node-type"   = "single-node"
+    "single-node" = "true"
+  }, var.single_node.labels)
   instance_labels = merge({
     "kubernetes.io/cluster/${var.eks_info.cluster.specs.name}" = "owned"
     "k8s.io/cluster/${var.eks_info.cluster.specs.name}"        = "owned"
     "Name"                                                     = "${var.eks_info.cluster.specs.name}-${var.single_node.name}"
     # iam-bootstrap uses "ec2:ResourceTag/cluster" for ec2 perms
-    "cluster"     = var.eks_info.cluster.specs.name
-    "node-type"   = "single-node"
-    "single-node" = "true"
-  }, data.aws_default_tags.this.tags, var.single_node.labels)
+    "cluster" = var.eks_info.cluster.specs.name
+  }, data.aws_default_tags.this.tags, local.node_labels)
 
-  kubelet_extra_args = "--kubelet-extra-args '--node-labels=${join(",", [for k, v in var.single_node.labels : format("%s=%s", k, v)])}'"
+  kubelet_extra_args = "--kubelet-extra-args '--node-labels=${join(",", [for k, v in local.node_labels : format("%s=%s", k, v)])}'"
 
   bootstrap_extra_args = join(" ", [local.kubelet_extra_args, var.single_node.bootstrap_extra_args])
 }

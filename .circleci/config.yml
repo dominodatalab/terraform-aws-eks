@@ -51,14 +51,14 @@ commands:
     description: "Set up module source to current branch."
     steps:
       - run:
-          name: "Set module source to current branch"
+          name: Set module source to current branch
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_circle_branch
   set_mod_source_latest_rel:
-    description: "Set up module source to current branch."
+    description: "Set up module source to current branch"
     steps:
       - run:
-          name: "Set module source to latest published release"
+          name: Set module source to latest published release
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_latest_rel
   set_aws_creds:
@@ -74,11 +74,24 @@ commands:
       - install_hcledit
       - set_aws_creds
       - run:
-          name: Bootstrap terraform module/vars.
+          name: Bootstrap terraform vars
           working_directory: tests/deploy
-          command: |
-            bash ci-deploy.sh setup_modules
-            bash ci-deploy.sh set_tf_vars
+          command: bash ci-deploy.sh set_tf_vars
+  set_tf_mods:
+    description: "Bootstrap modules using the CI branch"
+    steps:
+      - run:
+          name: Bootstrap terraform module using the CI branch
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh setup_modules_ci_branch
+  set_tf_mods_latest_rel:
+    description: "Bootstrap modules using latest release"
+    steps:
+      - run:
+          name: Bootstrap terraform module using latest release
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh setup_modules_latest_rel
+
   install_helm:
     description: "Install Helm"
     parameters:
@@ -92,56 +105,28 @@ commands:
             HELM_VERSION: << parameters.helm_version >>
           command: bash ci-deploy.sh install_helm
   tf_init_apply:
-    description: "Terraform init"
+    description: "Terraform Init, Validate, Apply"
     steps:
       - run:
           name: Terraform init/validate/apply
           working_directory: tests/deploy
-          command: |
-            ## Most of this verbiage will go away after release.
-            set -e
-            echo "Current dir: $PWD"
-
-            if [ -f "migrated.txt" ]; then
-              echo "This legacy deployment has been migrated"
-              bash ci-deploy.sh deploy
-            elif [ -n "$MAJOR_MOD_VERSION" ] && (( $MAJOR_MOD_VERSION < 3 )) ; then
-
-              source "${PWD}/meta.sh"
-              echo "CI determined this is a legacy deploy."
-
-              echo "Generating Deployment pvt key."
-              export LEGACY_PVT_KEY="${LEGACY_DIR}/domino.pem"
-              envsubst < "${LEGACY_DIR}/ci.tfvars.tftpl" | tee "${LEGACY_DIR}/terraform.tfvars"
-              ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$LEGACY_PVT_KEY"
-
-              echo "Running legacy monolithic deploy"
-              terraform -chdir="$LEGACY_DIR" init
-              terraform -chdir="$LEGACY_DIR" validate
-              terraform -chdir="$LEGACY_DIR" apply --auto-approve --input=false
-
-              echo "Running state migration on CI."
-              bash -xp ../../bin/state-migration/migrate-states.sh
-            else
-              echo "Running ci-deploy.sh deploy"
-              bash ci-deploy.sh deploy
-            fi
+          command: bash ci-deploy.sh deploy
   tf_deploy_single_node:
     description: "Terraform deploy single-node"
     steps:
       - run:
-          name: "Setup single-node module"
+          name: Setup single-node module
           working_directory: tests/deploy
           command: bash ci-deploy.sh setup_single_node_tf
       - run:
-          name: "Deploy single-node"
+          name: Deploy single-node
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy_single_node
   tf_destroy_single_node:
     description: "Terraform destroy single-node"
     steps:
       - run:
-          name: "Destroy single-node"
+          name: Destroy single-node
           working_directory: tests/deploy
           command: bash ci-deploy.sh destroy_single_node
   tf_deploy:
@@ -192,6 +177,7 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
+      - set_tf_mods
       - set_tf_vars
       - set_mod_source_current
       - tf_deploy
@@ -214,6 +200,7 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
+      - set_tf_mods_latest_rel
       - set_tf_vars
       - set_mod_source_latest_rel
       - tf_deploy
