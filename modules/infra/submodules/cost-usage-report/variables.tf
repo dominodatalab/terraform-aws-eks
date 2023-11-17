@@ -18,58 +18,40 @@ variable "region" {
   }
 }
 
-variable "athena_cur_result_bucket_suffix" {
-  description = "Name of the S3 bucket into which CUR will put the cost data."
-  type        = string
-  default     = "aws-athena-query-results-costs"
-}
-
-variable "cur_report_bucket_name_suffix" {
-  description = "Name of the S3 bucket into which CUR will put the cost data."
-  type        = string
-  default     = "cur-report"
-}
-
-variable "aws_glue_database_suffix" {
-  description = "Name of the Cost and Usage Report which will be created."
-  type        = string
-  default     = "athena-cur-cost-db"
-}
-
-variable "cur_report_name" {
-  description = "Name of the Cost and Usage Report which will be created."
-  type        = string
-  default     = "cur-report"
-}
-
-variable "report_frequency" {
-  description = "How often the Cost and Usage Report will be generated. HOURLY or DAILY."
-  type        = string
-  default     = "DAILY"
-}
-
-variable "report_versioning" {
-  description = "Whether reports should be overwritten or new ones should be created."
-  type        = string
-  default     = "OVERWRITE_REPORT"
-}
-
-variable "report_format" {
-  description = "Format for report. Valid values are: textORcsv, Parquet. If Parquet is used, then Compression must also be Parquet."
-  type        = string
-  default     = "Parquet"
-}
-
-variable "report_compression" {
-  description = "Compression format for report. Valid values are: GZIP, ZIP, Parquet. If Parquet is used, then format must also be Parquet."
-  type        = string
-  default     = "Parquet"
-}
-
-variable "s3_bucket_prefix" {
-  description = "Prefix in the S3 bucket to put reports."
-  type        = string
-  default     = "cur"
+variable "cur" {
+  description = <<EOF
+    athena_result_bucket_suffix = Name of the S3 bucket into which Athena will put the cost data.
+    report_bucket_name_suffix = Suffix of the S3 bucket into which CUR will put the cost data.
+    aws_glue_database_suffix = Suffix of the Glue's DB.
+    report_name = Name of the Cost and Usage Report which will be created.
+    report_frequency = How often the Cost and Usage Report will be generated. HOURLY or DAILY.
+    report_versioning = Whether reports should be overwritten or new ones should be created.
+    report_format = Format for report. Valid values are: textORcsv, Parquet. If Parquet is used, then Compression must also be Parquet.
+    report_compression = Compression format for report. Valid values are: GZIP, ZIP, Parquet. If Parquet is used, then format must also be Parquet.
+    s3_bucket_prefix = Prefix in the S3 bucket to put reports.
+  EOF
+  type = object({
+    athena_result_bucket_suffix  = string
+    report_bucket_name_suffix = string
+    aws_glue_database_suffix = string
+    report_name = string
+    report_frequency = string
+    report_versioning = string
+    report_format = string
+    report_compression = string
+    s3_bucket_prefix = string
+  })
+  default = {
+    athena_result_bucket_suffix = "aws-athena-query-results-costs"
+    report_bucket_name_suffix = "cur-report"
+    aws_glue_database_suffix = "athena-cur-cost-db"
+    report_name = "cur-report"
+    report_frequency = "DAILY"
+    report_versioning = "OVERWRITE_REPORT"
+    report_format = "Parquet"
+    report_compression = "Parquet"
+    s3_bucket_prefix = "cur"
+  }
 }
 
 variable "tags" {

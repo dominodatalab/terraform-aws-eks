@@ -14,6 +14,6 @@ provider "aws" {
 
 
 provider "aws" {
-  region = var.domino_cur.region
-  alias  = "domino_cur_region"
+  region = "us-east-1"
+  alias  = "us-east-1"
 }
