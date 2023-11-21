@@ -3,40 +3,10 @@ data "archive_file" "cur_initializer_zip" {
   type        = "zip"
   output_path = "/tmp/aws_cur_initializer.zip"
   source {
-    content  = <<EOF
-      const AWS = require('aws-sdk');
-      const response = require('./cfn-response');
-      exports.handler = function(event, context, callback) {
-        if (event.RequestType === 'Delete') {
-          response.send(event, context, response.SUCCESS);
-        } else {
-          const glue = new AWS.Glue();
-          glue.startCrawler({ Name: '${local.cur_crawler}' }, function(err, data) {
-            if (err) {
-              const responseData = JSON.parse(this.httpResponse.body);
-              if (responseData['__type'] == 'CrawlerRunningException') {
-                callback(null, responseData.Message);
-              } else {
-                const responseString = JSON.stringify(responseData);
-                if (event.ResponseURL) {
-                  response.send(event, context, response.FAILED,{ msg: responseString });
-                } else {
-                  callback(responseString);
-                }
-              }
-            }
-            else {
-              if (event.ResponseURL) {
-                response.send(event, context, response.SUCCESS);
-              } else {
-                callback(null, response.SUCCESS);
-              }
-            }
-          });
-        }
-      };
-    EOF
-    filename = "aws_cur_initializer.js"
+    content = templatefile("${local.templates_dir}/${local.aws_cur_initializer_template}", {
+      cur_crawler = local.cur_crawler
+    })
+    filename = local.aws_cur_initializer_file
   }
 }
 
@@ -104,41 +74,10 @@ data "archive_file" "aws_s3_cur_notification_zip" {
   type        = "zip"
   output_path = "/tmp/aws_s3_cur_notification.zip"
   source {
-    content  = <<EOF
-      const AWS = require('aws-sdk');
-        const response = require('./cfn-response');
-        exports.handler = function(event, context, callback) {
-          const s3 = new AWS.S3();
-          const putConfigRequest = function(notificationConfiguration) {
-            return new Promise(function(resolve, reject) {
-              s3.putBucketNotificationConfiguration({
-                Bucket: event.ResourceProperties.BucketName,
-                NotificationConfiguration: notificationConfiguration
-              }, function(err, data) {
-                if (err) reject({ msg: this.httpResponse.body.toString(), error: err, data: data });
-                else resolve(data);
-              });
-            });
-          };
-          const newNotificationConfig = {};
-          if (event.RequestType !== 'Delete') {
-            newNotificationConfig.LambdaFunctionConfigurations = [{
-              Events: [ 's3:ObjectCreated:*' ],
-              LambdaFunctionArn: event.ResourceProperties.TargetLambdaArn || 'missing arn',
-              Filter: { Key: { FilterRules: [ { Name: 'prefix', Value: event.ResourceProperties.ReportKey } ] } }
-            }];
-          }
-          putConfigRequest(newNotificationConfig).then(function(result) {
-            response.send(event, context, response.SUCCESS, result);
-            callback(null, result);
-          }).catch(function(error) {
-            response.send(event, context, response.FAILED, error);
-            console.log(error);
-            callback(error);
-          });
-        };
-      EOF
-    filename = "aws_s3_cur_notification.js"
+    content = templatefile("${local.templates_dir}/${local.aws_s3_cur_notification_template}", {
+      cur_crawler = local.cur_crawler
+    })
+    filename = local.aws_s3_cur_notification_filename
   }
 }
 
@@ -177,7 +116,7 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
 
 resource "aws_signer_signing_profile" "signing_profile" {
   platform_id = "AWSLambda-SHA384-ECDSA"
-  name_prefix = "domino_sp_"
+  name_prefix = "cur_sp_"
 }
 
 resource "aws_signer_signing_profile_permission" "sp_permission_start" {
