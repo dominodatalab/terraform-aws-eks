@@ -18,7 +18,7 @@ variable "region" {
   }
 }
 
-variable "cur" {
+variable "cost_usage_report" {
   description = <<EOF
     athena_result_bucket_suffix = Name of the S3 bucket into which Athena will put the cost data.
     report_bucket_name_suffix = Suffix of the S3 bucket into which CUR will put the cost data.

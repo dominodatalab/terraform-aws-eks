@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
     ]
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/${var.cur.s3_bucket_prefix}/dominoCost/dominoCost*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/${var.cost_usage_report.s3_bucket_prefix}/dominoCost/dominoCost*",
     ]
   }
 
@@ -110,7 +110,7 @@ data "aws_iam_policy_document" "cur_lambda_initializer_assume" {
 }
 
 resource "aws_iam_role" "cur_lambda_initializer" {
-  name               = "${var.deploy_id}-${var.cur.report_name}-crawler-lambda-initializer"
+  name               = "${var.deploy_id}-${var.cost_usage_report.report_name}-crawler-lambda-initializer"
   assume_role_policy = data.aws_iam_policy_document.cur_lambda_initializer_assume.json
 }
 
@@ -176,7 +176,7 @@ data "aws_iam_policy_document" "cur_lambda_initializer_pd" {
 }
 
 resource "aws_iam_policy" "cur_lambda_initializer_p" {
-  name   = "${var.deploy_id}-${var.cur.report_name}-cur-lambda-initializer"
+  name   = "${var.deploy_id}-${var.cost_usage_report.report_name}-cur-lambda-initializer"
   policy = data.aws_iam_policy_document.cur_lambda_initializer_pd.json
 }
 
@@ -200,7 +200,7 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor_assume" {
 }
 
 resource "aws_iam_role" "aws_cur_lambda_executor" {
-  name               = "${var.deploy_id}-${var.cur.report_name}-lambda-executor"
+  name               = "${var.deploy_id}-${var.cost_usage_report.report_name}-lambda-executor"
   assume_role_policy = data.aws_iam_policy_document.aws_cur_lambda_executor_assume.json
 }
 
@@ -269,7 +269,7 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
 }
 
 resource "aws_iam_policy" "aws_cur_lambda_executor_p" {
-  name   = "${var.deploy_id}-${var.cur.report_name}-cur-lambda-executor"
+  name   = "${var.deploy_id}-${var.cost_usage_report.report_name}-cur-lambda-executor"
   policy = data.aws_iam_policy_document.aws_cur_lambda_executor.json
 }
 

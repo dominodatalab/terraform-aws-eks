@@ -9,4 +9,3 @@ variable "deploy_id" {
   type        = string
   default     = "dominoeks003"
 }
-

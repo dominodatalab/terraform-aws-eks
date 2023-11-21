@@ -38,7 +38,7 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
   role          = aws_iam_role.aws_cur_crawler_component_function_role.name
 
   s3_target {
-    path = "s3://${aws_s3_bucket.cur_report.bucket}/${var.cur.s3_bucket_prefix}/${var.cur.report_name}/${var.cur.report_name}"
+    path = "s3://${aws_s3_bucket.cur_report.bucket}/${var.cost_usage_report.s3_bucket_prefix}/${var.cost_usage_report.report_name}/${var.cost_usage_report.report_name}"
     exclusions = [
       "**.json",
       "**.yml",
@@ -77,7 +77,7 @@ resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
   }
 
   storage_descriptor {
-    location      = "s3://${aws_s3_bucket.cur_report.bucket}/${var.cur.s3_bucket_prefix}/${var.cur.report_name}/${local.report_status_table_name}/"
+    location      = "s3://${aws_s3_bucket.cur_report.bucket}/${var.cost_usage_report.s3_bucket_prefix}/${var.cost_usage_report.report_name}/${local.report_status_table_name}/"
     input_format  = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
 

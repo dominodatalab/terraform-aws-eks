@@ -19,7 +19,7 @@ module "cost_usage_report" {
   kms_info     = local.kms_info
   region       = var.region
   providers = {
-    aws.domino_cur_region = aws.us-east-1
+    aws.domino_cur_region = aws.domino_cur_region
   }
 }
 
@@ -100,7 +100,7 @@ locals {
 
 provider "aws" {
   region = "us-east-1"
-  alias  = "us-east-1"
+  alias  = "domino_cur_region"
   default_tags {
     tags = var.tags
   }
