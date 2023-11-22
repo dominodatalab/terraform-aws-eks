@@ -57,4 +57,4 @@ resource "aws_cur_report_definition" "aws_cur_report_definition" {
   ]
 }
 
-provider "aws" { alias = "domino_cur_region" }
+provider "aws" { alias = "us-east-1" }
