@@ -15,7 +15,7 @@
 |------|---------|
 | <a name="provider_archive"></a> [archive](#provider\_archive) | ~> 2 |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5 |
-| <a name="provider_aws.domino_cur_region"></a> [aws.domino\_cur\_region](#provider\_aws.domino\_cur\_region) | ~> 5 |
+| <a name="provider_aws.us-east-1"></a> [aws.us-east-1](#provider\_aws.us-east-1) | ~> 5 |
 
 ## Modules
 
