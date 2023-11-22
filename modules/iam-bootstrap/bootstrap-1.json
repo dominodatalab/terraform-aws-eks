@@ -140,6 +140,7 @@
         "kms:CreateKey",
         "kms:DescribeKey",
         "kms:EnableKeyRotation",
+        "kms:Encrypt",
         "kms:GenerateDataKey",
         "kms:GenerateDataKeyWithoutPlaintext",
         "kms:GetKeyRotationStatus",

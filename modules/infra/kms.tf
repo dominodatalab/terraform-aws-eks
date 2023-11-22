@@ -17,6 +17,7 @@ data "aws_iam_policy_document" "kms_key_global" {
       "kms:Update*",
       "kms:Revoke*",
       "kms:Decrypt",
+      "kms:Encrypt",
       "kms:ReEncrypt*",
       "kms:Disable*",
       "kms:Get*",
