@@ -38,7 +38,7 @@ locals {
 }
 
 resource "aws_cur_report_definition" "aws_cur_report_definition" {
-  provider = aws.domino_cur_region
+  provider = "us-east-1"
 
   report_name                = local.report_name
   time_unit                  = var.cost_usage_report.report_frequency
