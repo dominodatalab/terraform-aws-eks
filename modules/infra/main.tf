@@ -100,7 +100,7 @@ locals {
 
 provider "aws" {
   region = "us-east-1"
-  alias  = "domino_cur_region"
+  alias  = "us-east-1"
   default_tags {
     tags = var.tags
   }
