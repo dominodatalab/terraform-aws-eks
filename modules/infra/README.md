@@ -76,7 +76,7 @@
 |------|-------------|
 | <a name="output_additional_node_groups"></a> [additional\_node\_groups](#output\_additional\_node\_groups) | Additional EKS managed node groups definition. |
 | <a name="output_bastion"></a> [bastion](#output\_bastion) | Bastion details, if it was created. |
-| <a name="output_cost_reporting"></a> [cost\_reporting](#output\_cost\_reporting) | Cost Usage Report |
+| <a name="output_cost_usage_report"></a> [cost\_usage\_report](#output\_cost\_usage\_report) | Cost Usage Report |
 | <a name="output_create_eks_role_arn"></a> [create\_eks\_role\_arn](#output\_create\_eks\_role\_arn) | Role arn to assume during the EKS cluster creation. |
 | <a name="output_default_node_groups"></a> [default\_node\_groups](#output\_default\_node\_groups) | Default nodegroups. |
 | <a name="output_deploy_id"></a> [deploy\_id](#output\_deploy\_id) | Domino Deployment ID. |
