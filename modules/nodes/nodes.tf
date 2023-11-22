@@ -120,8 +120,8 @@ resource "aws_eks_node_group" "node_groups" {
   }
 
   update_config {
-    max_unavailable            = each.value.node_group.compute != null ? null : 1
-    max_unavailable_percentage = each.value.node_group.compute != null ? 30 : null
+    max_unavailable            = can(regex("^compute", each.key)) ? null : 1
+    max_unavailable_percentage = can(regex("^compute", each.key)) ? 30 : null
   }
 }
 
