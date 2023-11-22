@@ -81,7 +81,7 @@ output "monitoring_bucket" {
   value       = module.storage.info.s3.buckets.monitoring.bucket_name
 }
 
-output "cost_reporting" {
+output "cost_usage_report" {
   description = "Cost Usage Report"
   value       = local.cost_usage_report_info
 }
