@@ -199,6 +199,37 @@
         "elasticloadbalancing:DescribeTags"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "DominoCurUngated",
+      "Effect": "Allow",
+      "Action": [
+        "glue:CreateDatabase",
+        "glue:GetDatabase",
+        "glue:DeleteDatabase",
+        "glue:CreateSecurityConfiguration",
+        "glue:GetSecurityConfiguration",
+        "glue:DeleteSecurityConfiguration",
+        "glue:GetTags",
+        "glue:CreateCrawler",
+        "glue:CreateTable",
+        "athena:CreateWorkGroup",
+        "athena:GetWorkGroup",
+        "athena:DeleteWorkGroup",
+        "athena:TagResource",
+        "athena:ListTagsForResource",
+        "iam:CreateRole",
+        "iam:PutRolePolicy",
+        "sqs:createqueue",
+        "sqs:deletequeue",
+        "sqs:tagqueue",
+        "sqs:getqueueattributes",
+        "sqs:listqueuetags",
+        "cur:PutReportDefinition",
+        "cur:DescribeReportDefinitions",
+        "cur:DeleteReportDefinition"
+      ],
+      "Resource": "*"
     }
   ]
 }
