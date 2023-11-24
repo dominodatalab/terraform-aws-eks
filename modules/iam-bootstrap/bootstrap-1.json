@@ -104,7 +104,9 @@
         "ec2:RunInstances",
         "ssm:GetParameter"
       ],
-      "Resource": ["*"]
+      "Resource": [
+        "*"
+      ]
     },
     {
       "Sid": "ACMUngated",
@@ -117,7 +119,9 @@
         "acm:ListCertificates",
         "acm:DeleteCertificate"
       ],
-      "Resource": ["*"]
+      "Resource": [
+        "*"
+      ]
     },
     {
       "Sid": "ECRGated",
@@ -129,7 +133,9 @@
         "ecr:TagResource",
         "ecr:UntagResource"
       ],
-      "Resource": ["arn:${partition}:ecr:*:*:repository/${deploy_id}/*"]
+      "Resource": [
+        "arn:${partition}:ecr:*:*:repository/${deploy_id}/*"
+      ]
     },
     {
       "Sid": "KMSUngated",
@@ -213,6 +219,10 @@
         "glue:GetTags",
         "glue:CreateCrawler",
         "glue:CreateTable",
+        "glue:GetTable",
+        "glue:DeleteTable",
+        "glue:GetCrawler",
+        "glue:DeleteCrawler",
         "athena:CreateWorkGroup",
         "athena:GetWorkGroup",
         "athena:DeleteWorkGroup",
@@ -220,6 +230,7 @@
         "athena:ListTagsForResource",
         "iam:CreateRole",
         "iam:PutRolePolicy",
+        "iam:PassRole",
         "sqs:createqueue",
         "sqs:deletequeue",
         "sqs:tagqueue",
@@ -227,7 +238,10 @@
         "sqs:listqueuetags",
         "cur:PutReportDefinition",
         "cur:DescribeReportDefinitions",
-        "cur:DeleteReportDefinition"
+        "cur:DeleteReportDefinition",
+        "lambda:CreateCodeSigningConfig",
+        "lambda:UpdateCodeSigningConfig",
+        "lambda:GetCodeSigningConfig"
       ],
       "Resource": "*"
     }
