@@ -249,7 +249,12 @@
         "lambda:ListVersionsByFunction",
         "lambda:GetFunctionCodeSigningConfig",
         "lambda:DeleteFunction",
-        "lambda:PutFunctionConcurrency"
+        "lambda:PutFunctionConcurrency",
+        "lambda:AddPermission",
+        "lambda:RemovePermission",
+        "lambda:UpdateFunctionConfiguration",
+        "lambda:GetPolicy",
+        "s3:*"
       ],
       "Resource": "*"
     }
