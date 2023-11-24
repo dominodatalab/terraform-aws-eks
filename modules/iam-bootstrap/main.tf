@@ -24,6 +24,15 @@ resource "aws_iam_policy" "deployment" {
   )
 }
 
+data "aws_iam_policy" "additional" {
+  for_each = toset(var.additional_policy_names)
+  name     = each.key
+}
+
+locals {
+  additional_arns = [for k, v in data.aws_iam_policy.additional : v.arn]
+}
+
 resource "aws_iam_role" "deployment" {
   name = "${var.deploy_id}-deployment-role"
 
@@ -41,7 +50,7 @@ resource "aws_iam_role" "deployment" {
     ]
   })
 
-  managed_policy_arns = aws_iam_policy.deployment[*].arn
+  managed_policy_arns = flatten(concat(aws_iam_policy.deployment[*].arn, local.additional_arns))
 
   max_session_duration = var.max_session_duration
 }
