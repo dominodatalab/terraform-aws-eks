@@ -239,9 +239,17 @@
         "cur:PutReportDefinition",
         "cur:DescribeReportDefinitions",
         "cur:DeleteReportDefinition",
+        "signer:*",
         "lambda:CreateCodeSigningConfig",
         "lambda:UpdateCodeSigningConfig",
-        "lambda:GetCodeSigningConfig"
+        "lambda:GetCodeSigningConfig",
+        "lambda:CreateFunction",
+        "lambda:TagResource",
+        "lambda:GetFunction",
+        "lambda:ListVersionsByFunction",
+        "lambda:GetFunctionCodeSigningConfig",
+        "lambda:DeleteFunction",
+        "lambda:PutFunctionConcurrency"
       ],
       "Resource": "*"
     }
