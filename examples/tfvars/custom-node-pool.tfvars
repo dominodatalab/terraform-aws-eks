@@ -34,4 +34,68 @@ additional_node_groups = {
       type = "gp3"
     }
   }
+  custom-gpu-1 = {
+    gpu = true
+    ## Just for testing the `gpu` bool behavior
+    instance_types = [
+      "m5.2xlarge"
+    ],
+    min_per_az     = 0,
+    max_per_az     = 10,
+    desired_per_az = 0,
+    availability_zone_ids = [
+      "usw2-az1",
+      "usw2-az2"
+    ],
+    labels = {
+      "dominodatalab.com/node-pool" = "custom-gpu-1 "
+    },
+    volume = {
+      size = 100,
+      type = "gp3"
+    }
+  }
+  custom-gpu-2 = {
+    instance_types = [
+      "g4dn.xlarge"
+    ],
+    min_per_az     = 0,
+    max_per_az     = 10,
+    desired_per_az = 0,
+    availability_zone_ids = [
+      "usw2-az1",
+      "usw2-az2"
+    ],
+    labels = {
+      "dominodatalab.com/node-pool" = "custom-gpu-2 "
+    },
+    volume = {
+      size = 100,
+      type = "gp3"
+    }
+  }
+  custom-gpu-3 = {
+    instance_types = [
+      "g4dn.xlarge"
+    ],
+    min_per_az     = 0,
+    max_per_az     = 10,
+    desired_per_az = 0,
+    availability_zone_ids = [
+      "usw2-az1",
+      "usw2-az2"
+    ],
+    labels = {
+      "dominodatalab.com/node-pool" = "custom-gpu-3 "
+    },
+    volume = {
+      size = 100,
+      type = "gp3"
+    }
+    taints = [{
+      key    = "nvidia.com/gpu"
+      value  = "true"
+      effect = "NO_SCHEDULE"
+    }]
+  }
 }
