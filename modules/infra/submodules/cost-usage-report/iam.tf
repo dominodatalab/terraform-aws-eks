@@ -15,11 +15,20 @@ data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" {
   }
 }
 
+data "aws_iam_policy" "AWSGlueServiceRole" {
+  arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
 resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
   name_prefix        = "crawler_component_function_role"
   assume_role_policy = data.aws_iam_policy_document.cur_crawler_component_assume_role_policy.json
 
   tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "cur_crawler_glue_service_role_policy_attach" {
+  role       = "${aws_iam_role.aws_cur_crawler_component_function_role.name}"
+  policy_arn = "${data.aws_iam_policy.AWSGlueServiceRole.arn}"
 }
 
 data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
@@ -72,7 +81,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
     ]
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/${var.cost_usage_report.s3_bucket_prefix}/dominoCost/dominoCost*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/${var.cost_usage_report.s3_bucket_prefix}/*",
     ]
   }
 

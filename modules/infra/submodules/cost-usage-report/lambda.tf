@@ -6,7 +6,13 @@ data "archive_file" "cur_initializer_zip" {
     content = templatefile("${local.templates_dir}/${local.aws_cur_initializer_template}", {
       cur_crawler = local.cur_crawler
     })
-    filename = local.aws_cur_initializer_file
+    filename = local.index_filename
+  }
+  source {
+    content = templatefile("${local.templates_dir}/${local.cfn_response_template}", {
+      cur_crawler = local.cur_crawler
+    })
+    filename = local.cfn_response_filename
   }
 }
 
@@ -77,7 +83,13 @@ data "archive_file" "aws_s3_cur_notification_zip" {
     content = templatefile("${local.templates_dir}/${local.aws_s3_cur_notification_template}", {
       cur_crawler = local.cur_crawler
     })
-    filename = local.aws_s3_cur_notification_filename
+    filename = local.index_filename
+  }
+  source {
+    content = templatefile("${local.templates_dir}/${local.cfn_response_template}", {
+      cur_crawler = local.cur_crawler
+    })
+    filename = local.cfn_response_filename
   }
 }
 

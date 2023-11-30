@@ -6,20 +6,24 @@ locals {
 
   aws_account_id                   = data.aws_caller_identity.aws_account.account_id
   templates_dir                    = "${path.module}/templates"
+  index_filename                   = "index.js"
   aws_s3_cur_notification_filename = "aws_s3_cur_notification.js"
   aws_s3_cur_notification_template = "aws_s3_cur_notification.js.tftpl"
-  aws_cur_initializer_file         = "aws_cur_initializer.js"
+  aws_cur_initializer_filename     = "aws_cur_initializer.js"
   aws_cur_initializer_template     = "aws_cur_initializer.js.tftpl"
+  cfn_response_filename            = "cfn-response.js"
+  cfn_response_template            = "cfn-response.js.tftpl"
   kms_key_arn                      = var.kms_info.enabled ? var.kms_info.key_arn : null
   initializer_lambda_function      = "${var.deploy_id}-${var.cost_usage_report.report_name}-crawler-initializer"
   notification_lambda_function     = "${var.deploy_id}-aws_s3_cur_notification-lambda"
   cur_crawler                      = "${var.deploy_id}-AWSCURCrawler-cur-crawler"
-  report_status_table_name         = "cost_and_usage_data_status_tb"
+  report_status_table_name         = "${var.deploy_id}-cost_and_usage_data_status_tb"
   s3_server_side_encryption        = var.kms_info.enabled ? "aws:kms" : "AES256"
   report_name                      = "${var.deploy_id}-${var.cost_usage_report.report_name}"
   cur_report_bucket                = "${var.deploy_id}-${var.cost_usage_report.report_bucket_name_suffix}"
   athena_cur_result_bucket_name    = "${var.deploy_id}-${var.cost_usage_report.athena_result_bucket_suffix}"
   aws_glue_database                = "${var.deploy_id}-${var.cost_usage_report.aws_glue_database_suffix}"
+  cur_report_path                  = join("/", [var.cost_usage_report.s3_bucket_prefix, local.report_name, local.report_name])
 
   s3_buckets = {
     report = {
