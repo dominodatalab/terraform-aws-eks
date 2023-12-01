@@ -136,6 +136,7 @@ variable "default_node_groups" {
           min_per_az            = optional(number, 0)
           max_per_az            = optional(number, 10)
           desired_per_az        = optional(number, 0)
+          node_group_type       = optional(string, "compute")
           availability_zone_ids = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default"
@@ -165,6 +166,7 @@ variable "default_node_groups" {
           min_per_az            = optional(number, 1)
           max_per_az            = optional(number, 10)
           desired_per_az        = optional(number, 1)
+          node_group_type       = optional(string, "platform")
           availability_zone_ids = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "platform"
@@ -194,6 +196,7 @@ variable "default_node_groups" {
           min_per_az            = optional(number, 0)
           max_per_az            = optional(number, 10)
           desired_per_az        = optional(number, 0)
+          node_group_type       = optional(string, "gpu")
           availability_zone_ids = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default-gpu"

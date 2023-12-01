@@ -250,6 +250,7 @@ variable "default_node_groups" {
 variable "additional_node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
+    node_group_type       = optional(string, null)
     ami                   = optional(string, null)
     bootstrap_extra_args  = optional(string, "")
     instance_types        = list(string)
