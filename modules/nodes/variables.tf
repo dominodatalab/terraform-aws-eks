@@ -150,6 +150,7 @@ variable "default_node_groups" {
     {
       compute = object(
         {
+          node_group_type       = optional(string, "compute")
           ami                   = optional(string, null)
           bootstrap_extra_args  = optional(string, "")
           instance_types        = optional(list(string), ["m5.2xlarge"])
@@ -179,6 +180,7 @@ variable "default_node_groups" {
       }),
       platform = object(
         {
+          node_group_type       = optional(string, "platform")
           ami                   = optional(string, null)
           bootstrap_extra_args  = optional(string, "")
           instance_types        = optional(list(string), ["m5.2xlarge"])
@@ -208,6 +210,7 @@ variable "default_node_groups" {
       }),
       gpu = object(
         {
+          node_group_type       = optional(string, "gpu")
           ami                   = optional(string, null)
           bootstrap_extra_args  = optional(string, "")
           instance_types        = optional(list(string), ["g4dn.xlarge"])

@@ -119,9 +119,10 @@ resource "aws_eks_node_group" "node_groups" {
     ]
   }
 
+
   update_config {
-    max_unavailable            = can(regex("^compute", each.key)) ? null : 1
-    max_unavailable_percentage = can(regex("^compute", each.key)) ? 30 : null
+    max_unavailable_percentage = each.value.node_group.node_group_type != "platform" ? 50 : null
+    max_unavailable            = each.value.node_group.node_group_type == "platform" ? 1 : null
   }
 }
 
