@@ -11,6 +11,18 @@ locals {
   }
 }
 
+module "cost_usage_report" {
+  count        = var.domino_cur.provision_resources ? 1 : 0
+  source       = "./submodules/cost-usage-report"
+  deploy_id    = var.deploy_id
+  network_info = module.network.info
+  kms_info     = local.kms_info
+  region       = var.region
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+}
+
 module "storage" {
   source       = "./submodules/storage"
   deploy_id    = var.deploy_id
@@ -23,6 +35,7 @@ data "aws_ec2_instance_type" "all" {
   for_each      = toset(flatten([for ng in merge(var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
   instance_type = each.value
 }
+
 locals {
   node_groups = {
     for name, ng in
@@ -67,8 +80,7 @@ resource "aws_key_pair" "domino" {
 }
 
 module "bastion" {
-  count = var.bastion.enabled ? 1 : 0
-
+  count        = var.bastion.enabled ? 1 : 0
   source       = "./submodules/bastion"
   deploy_id    = var.deploy_id
   region       = var.region
@@ -80,7 +92,16 @@ module "bastion" {
 }
 
 locals {
+  cost_usage_report_info    = var.domino_cur.provision_resources && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
   bastion_info              = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
   node_iam_policies_storage = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
   node_iam_policies         = var.route53_hosted_zone_name != null ? concat(local.node_iam_policies_storage, [aws_iam_policy.route53[0].arn]) : local.node_iam_policies_storage
+}
+
+provider "aws" {
+  region = "us-east-1"
+  alias  = "us-east-1"
+  default_tags {
+    tags = var.tags
+  }
 }

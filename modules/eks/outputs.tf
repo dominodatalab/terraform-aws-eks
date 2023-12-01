@@ -6,8 +6,3 @@ output "info" {
     }
   )
 }
-
-output "privatelink" {
-  description = "Private Link Info"
-  value       = var.privatelink.enabled ? module.privatelink[0].info : null
-}

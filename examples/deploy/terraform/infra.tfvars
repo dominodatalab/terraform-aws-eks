@@ -67,3 +67,7 @@ storage = {
   }
 }
 tags = null
+
+domino_cur = {
+  provision_resources = false
+}
