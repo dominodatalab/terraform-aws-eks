@@ -6,9 +6,7 @@ locals {
   aws_account_id                   = data.aws_caller_identity.aws_account.account_id
   templates_dir                    = "${path.module}/templates"
   index_filename                   = "index.js"
-  aws_s3_cur_notification_filename = "aws_s3_cur_notification.js"
   aws_s3_cur_notification_template = "aws_s3_cur_notification.js.tftpl"
-  aws_cur_initializer_filename     = "aws_cur_initializer.js"
   aws_cur_initializer_template     = "aws_cur_initializer.js.tftpl"
   cfn_response_filename            = "cfn-response.js"
   cfn_response_template            = "cfn-response.js.tftpl"
