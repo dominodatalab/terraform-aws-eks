@@ -1,6 +1,7 @@
 # three IAM roles
 
 data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" {
+
   statement {
     effect = "Allow"
 
@@ -10,7 +11,7 @@ data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" {
     }
 
     actions = [
-      "sts:AssumeRole"
+      "sts:AssumeRole",
     ]
   }
 }
@@ -42,6 +43,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
       "logs:CreateLogStream",
       "logs:CreateLogGroup",
       "logs:PutLogEvents",
+      "logs:AssociateKmsKey",
     ]
 
     resources = [
