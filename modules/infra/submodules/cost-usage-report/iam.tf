@@ -28,8 +28,8 @@ resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "cur_crawler_glue_service_role_policy_attach" {
-  role       = "${aws_iam_role.aws_cur_crawler_component_function_role.name}"
-  policy_arn = "${data.aws_iam_policy.AWSGlueServiceRole.arn}"
+  role       = aws_iam_role.aws_cur_crawler_component_function_role.name
+  policy_arn = data.aws_iam_policy.AWSGlueServiceRole.arn
 }
 
 data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
@@ -303,7 +303,7 @@ resource "aws_vpc_endpoint_policy" "aws_cur_crawler_endpoint_policy" {
           "AWS" : "*"
         },
         "Action" : [
-				  "glue:StartCrawler"
+          "glue:StartCrawler"
         ],
         "Resource" : aws_lambda_function.cur_lambda_initializer.arn
       }

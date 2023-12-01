@@ -128,7 +128,7 @@ resource "aws_vpc_endpoint" "aws_glue_vpc_endpoint" {
   service_name      = "com.amazonaws.${var.region}.glue"
   vpc_endpoint_type = "Interface"
 
-  subnet_ids         = local.private_subnet_ids
+  subnet_ids = local.private_subnet_ids
   security_group_ids = [
     aws_security_group.lambda.id
   ]
@@ -139,4 +139,3 @@ resource "aws_vpc_endpoint" "aws_glue_vpc_endpoint" {
 
   private_dns_enabled = true
 }
-
