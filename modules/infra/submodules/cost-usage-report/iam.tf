@@ -305,7 +305,7 @@ resource "aws_vpc_endpoint_policy" "aws_cur_crawler_endpoint_policy" {
         "Action" : [
           "glue:StartCrawler"
         ],
-        "Resource" : aws_lambda_function.cur_lambda_initializer.arn
+        "Resource" : "*"
       }
     ]
   })
