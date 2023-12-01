@@ -16,8 +16,8 @@ data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" {
   }
 }
 
-data "aws_iam_policy" "AWSGlueServiceRole" {
-  arn = "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+data "aws_iam_policy" "aws_glue_service_role" {
+  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AWSGlueServiceRole"
 }
 
 resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
@@ -29,7 +29,7 @@ resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
 
 resource "aws_iam_role_policy_attachment" "cur_crawler_glue_service_role_policy_attach" {
   role       = aws_iam_role.aws_cur_crawler_component_function_role.name
-  policy_arn = data.aws_iam_policy.AWSGlueServiceRole.arn
+  policy_arn = data.aws_iam_policy.aws_glue_service_role.arn
 }
 
 data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {

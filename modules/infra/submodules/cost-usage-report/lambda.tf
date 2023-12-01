@@ -61,18 +61,18 @@ resource "aws_security_group" "lambda" {
 
   ingress {
     description = "Allow inbound TCP traffic exclusively from the crawler initializer lambda."
-    from_port = 0
-    to_port   = 65535
-    protocol  = "tcp"
-    self      = true
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    self        = true
   }
 
   egress {
     description = "Allow outbound TCP traffic exclusively from the crawler initializer lambda."
-    from_port = 0
-    to_port   = 65535
-    protocol  = "tcp"
-    self      = true
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    self        = true
   }
 
   lifecycle {
