@@ -2,8 +2,7 @@ data "aws_caller_identity" "aws_account" {}
 data "aws_partition" "current" {}
 
 locals {
-  private_subnet_ids = var.network_info.subnets.private[*].subnet_id
-
+  private_subnet_ids               = var.network_info.subnets.private[*].subnet_id
   aws_account_id                   = data.aws_caller_identity.aws_account.account_id
   templates_dir                    = "${path.module}/templates"
   index_filename                   = "index.js"

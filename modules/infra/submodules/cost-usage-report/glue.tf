@@ -1,6 +1,7 @@
 # An AWS Glue database
 # An AWS Glue crawler
 # Two Lambda functions
+# A VPC endpoint
 
 resource "aws_glue_catalog_database" "aws_cur_database" {
   description = "Contains CUR data based on contents from the S3 bucket '${aws_s3_bucket.cur_report.bucket}'"
@@ -121,3 +122,21 @@ resource "aws_athena_workgroup" "athena_work_group" {
     }
   }
 }
+
+resource "aws_vpc_endpoint" "aws_glue_vpc_endpoint" {
+  vpc_id            = var.network_info.vpc_id
+  service_name      = "com.amazonaws.${var.region}.glue"
+  vpc_endpoint_type = "Interface"
+
+  subnet_ids         = local.private_subnet_ids
+  security_group_ids = [
+    aws_security_group.lambda.id
+  ]
+
+  tags = {
+    "Name" = "${var.deploy_id}-glue"
+  }
+
+  private_dns_enabled = true
+}
+

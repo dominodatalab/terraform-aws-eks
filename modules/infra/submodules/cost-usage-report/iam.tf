@@ -67,6 +67,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
       "glue:UpdatePartition",
       "glue:BatchCreatePartition",
       "glue:GetSecurityConfiguration",
+      "glue:StartCrawler"
     ]
 
     resources = ["*"]
@@ -270,7 +271,8 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
     effect = "Allow"
 
     actions = [
-      "s3:PutBucketNotification"
+      "s3:PutBucketNotification",
+      "glue:StartCrawler",
     ]
 
     resources = [
@@ -287,4 +289,25 @@ resource "aws_iam_policy" "aws_cur_lambda_executor_p" {
 resource "aws_iam_role_policy_attachment" "aws_cur_lambda_executor_rpa" {
   role       = aws_iam_role.aws_cur_lambda_executor.name
   policy_arn = aws_iam_policy.aws_cur_lambda_executor_p.arn
+}
+
+resource "aws_vpc_endpoint_policy" "aws_cur_crawler_endpoint_policy" {
+  vpc_endpoint_id = aws_vpc_endpoint.aws_glue_vpc_endpoint.id
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "AllowAll",
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : "*"
+        },
+        "Action" : [
+				  "glue:StartCrawler"
+        ],
+        "Resource" : aws_lambda_function.cur_lambda_initializer.arn
+      }
+    ]
+  })
+
 }
