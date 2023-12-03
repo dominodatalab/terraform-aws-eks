@@ -222,6 +222,7 @@
         "athena:DeleteWorkGroup",
         "athena:TagResource",
         "athena:ListTagsForResource",
+        "iam:AttachRolePolicy",
         "iam:CreateRole",
         "iam:PutRolePolicy",
         "iam:PassRole",
