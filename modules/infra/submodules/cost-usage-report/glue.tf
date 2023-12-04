@@ -106,7 +106,7 @@ resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
 
 resource "aws_athena_workgroup" "athena_work_group" {
 
-  name = "${var.deploy_id}_athena_work_group"
+  name = "${var.deploy_id}-athena_work_group"
 
   configuration {
     enforce_workgroup_configuration    = true
