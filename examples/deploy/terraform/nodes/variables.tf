@@ -6,15 +6,17 @@ variable "default_node_groups" {
     {
       compute = object(
         {
-          ami                   = optional(string)
-          bootstrap_extra_args  = optional(string)
-          instance_types        = optional(list(string))
-          spot                  = optional(bool)
-          min_per_az            = optional(number)
-          max_per_az            = optional(number)
-          desired_per_az        = optional(number)
-          availability_zone_ids = list(string)
-          labels                = optional(map(string))
+          ami                        = optional(string)
+          bootstrap_extra_args       = optional(string)
+          instance_types             = optional(list(string))
+          spot                       = optional(bool)
+          min_per_az                 = optional(number)
+          max_per_az                 = optional(number)
+          max_unavailable_percentage = optional(number)
+          max_unavailable            = optional(number)
+          desired_per_az             = optional(number)
+          availability_zone_ids      = list(string)
+          labels                     = optional(map(string))
           taints = optional(list(object({
             key    = string
             value  = optional(string)
@@ -30,15 +32,17 @@ variable "default_node_groups" {
       }),
       platform = object(
         {
-          ami                   = optional(string)
-          bootstrap_extra_args  = optional(string)
-          instance_types        = optional(list(string))
-          spot                  = optional(bool)
-          min_per_az            = optional(number)
-          max_per_az            = optional(number)
-          desired_per_az        = optional(number)
-          availability_zone_ids = list(string)
-          labels                = optional(map(string))
+          ami                        = optional(string)
+          bootstrap_extra_args       = optional(string)
+          instance_types             = optional(list(string))
+          spot                       = optional(bool)
+          min_per_az                 = optional(number)
+          max_per_az                 = optional(number)
+          max_unavailable_percentage = optional(number)
+          max_unavailable            = optional(number)
+          desired_per_az             = optional(number)
+          availability_zone_ids      = list(string)
+          labels                     = optional(map(string))
           taints = optional(list(object({
             key    = string
             value  = optional(string)
@@ -53,15 +57,17 @@ variable "default_node_groups" {
       }),
       gpu = object(
         {
-          ami                   = optional(string)
-          bootstrap_extra_args  = optional(string)
-          instance_types        = optional(list(string))
-          spot                  = optional(bool)
-          min_per_az            = optional(number)
-          max_per_az            = optional(number)
-          desired_per_az        = optional(number)
-          availability_zone_ids = list(string)
-          labels                = optional(map(string))
+          ami                        = optional(string)
+          bootstrap_extra_args       = optional(string)
+          instance_types             = optional(list(string))
+          spot                       = optional(bool)
+          min_per_az                 = optional(number)
+          max_per_az                 = optional(number)
+          max_unavailable_percentage = optional(number)
+          max_unavailable            = optional(number)
+          desired_per_az             = optional(number)
+          availability_zone_ids      = list(string)
+          labels                     = optional(map(string))
           taints = optional(list(object({
             key    = string
             value  = optional(string)
@@ -81,15 +87,17 @@ variable "default_node_groups" {
 variable "additional_node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
-    ami                   = optional(string)
-    bootstrap_extra_args  = optional(string)
-    instance_types        = list(string)
-    spot                  = optional(bool)
-    min_per_az            = number
-    max_per_az            = number
-    desired_per_az        = number
-    availability_zone_ids = list(string)
-    labels                = map(string)
+    ami                        = optional(string)
+    bootstrap_extra_args       = optional(string)
+    instance_types             = list(string)
+    spot                       = optional(bool)
+    min_per_az                 = number
+    max_per_az                 = number
+    max_unavailable_percentage = optional(number)
+    max_unavailable            = optional(number)
+    desired_per_az             = number
+    availability_zone_ids      = list(string)
+    labels                     = map(string)
     taints = optional(list(object({
       key    = string
       value  = optional(string)

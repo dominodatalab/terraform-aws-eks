@@ -119,10 +119,9 @@ resource "aws_eks_node_group" "node_groups" {
     ]
   }
 
-
   update_config {
-    max_unavailable_percentage = each.value.node_group.node_group_type != "platform" ? 50 : null
-    max_unavailable            = each.value.node_group.node_group_type == "platform" ? 1 : null
+    max_unavailable_percentage = each.value.node_group.max_unavailable_percentage
+    max_unavailable            = each.value.node_group.max_unavailable
   }
 }
 

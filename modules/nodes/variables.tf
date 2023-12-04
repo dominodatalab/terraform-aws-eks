@@ -150,15 +150,16 @@ variable "default_node_groups" {
     {
       compute = object(
         {
-          node_group_type       = optional(string, "compute")
-          ami                   = optional(string, null)
-          bootstrap_extra_args  = optional(string, "")
-          instance_types        = optional(list(string), ["m5.2xlarge"])
-          spot                  = optional(bool, false)
-          min_per_az            = optional(number, 0)
-          max_per_az            = optional(number, 10)
-          desired_per_az        = optional(number, 0)
-          availability_zone_ids = list(string)
+          ami                        = optional(string, null)
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["m5.2xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 0)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
+          desired_per_az             = optional(number, 0)
+          availability_zone_ids      = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default"
           })
@@ -180,15 +181,16 @@ variable "default_node_groups" {
       }),
       platform = object(
         {
-          node_group_type       = optional(string, "platform")
-          ami                   = optional(string, null)
-          bootstrap_extra_args  = optional(string, "")
-          instance_types        = optional(list(string), ["m5.2xlarge"])
-          spot                  = optional(bool, false)
-          min_per_az            = optional(number, 1)
-          max_per_az            = optional(number, 10)
-          desired_per_az        = optional(number, 1)
-          availability_zone_ids = list(string)
+          ami                        = optional(string, null)
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["m5.2xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 1)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, null)
+          max_unavailable            = optional(number, 1)
+          desired_per_az             = optional(number, 1)
+          availability_zone_ids      = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "platform"
           })
@@ -210,15 +212,16 @@ variable "default_node_groups" {
       }),
       gpu = object(
         {
-          node_group_type       = optional(string, "gpu")
-          ami                   = optional(string, null)
-          bootstrap_extra_args  = optional(string, "")
-          instance_types        = optional(list(string), ["g4dn.xlarge"])
-          spot                  = optional(bool, false)
-          min_per_az            = optional(number, 0)
-          max_per_az            = optional(number, 10)
-          desired_per_az        = optional(number, 0)
-          availability_zone_ids = list(string)
+          ami                        = optional(string, null)
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["g4dn.xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 0)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
+          desired_per_az             = optional(number, 0)
+          availability_zone_ids      = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default-gpu"
             "nvidia.com/gpu"              = true
@@ -250,16 +253,17 @@ variable "default_node_groups" {
 variable "additional_node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
-    node_group_type       = optional(string, null)
-    ami                   = optional(string, null)
-    bootstrap_extra_args  = optional(string, "")
-    instance_types        = list(string)
-    spot                  = optional(bool, false)
-    min_per_az            = number
-    max_per_az            = number
-    desired_per_az        = number
-    availability_zone_ids = list(string)
-    labels                = map(string)
+    ami                        = optional(string, null)
+    bootstrap_extra_args       = optional(string, "")
+    instance_types             = list(string)
+    spot                       = optional(bool, false)
+    min_per_az                 = number
+    max_per_az                 = number
+    max_unavailable_percentage = optional(number)
+    max_unavailable            = optional(number)
+    desired_per_az             = number
+    availability_zone_ids      = list(string)
+    labels                     = map(string)
     taints = optional(list(object({
       key    = string
       value  = optional(string)
