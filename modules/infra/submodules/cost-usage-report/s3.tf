@@ -1,4 +1,11 @@
 
+locals {
+  costs_buckets = [
+    aws_s3_bucket.athena_result,
+    aws_s3_bucket.cur_report
+  ]
+}
+
 resource "aws_s3_bucket" "athena_result" {
   bucket        = local.athena_cur_result_bucket_name
   force_destroy = true
@@ -124,6 +131,34 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "buckets_encryptio
   lifecycle {
     ignore_changes = [
       rule,
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "s3" {
+  statement {
+    effect    = "Allow"
+    resources = [for b in local.costs_buckets : b.arn]
+
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation",
+      "s3:ListBucketMultipartUploads",
+    ]
+  }
+
+  statement {
+    sid    = ""
+    effect = "Allow"
+
+    resources = [for b in local.costs_buckets : "${b.arn}/*"]
+
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:ListMultipartUploadParts",
+      "s3:AbortMultipartUpload",
     ]
   }
 }
