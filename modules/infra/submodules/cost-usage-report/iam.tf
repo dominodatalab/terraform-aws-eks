@@ -311,3 +311,65 @@ resource "aws_vpc_endpoint_policy" "aws_cur_crawler_endpoint_policy" {
   })
 
 }
+
+data "aws_iam_policy_document" "query_cost_usage_report" {
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+    actions   = [
+      "athena:GetQueryExecution",
+      "athena:GetQueryResults",
+      "athena:GetQueryResultsStream",
+      "athena:ListQueryExecutions",
+      "athena:StartQueryExecution",
+      "athena:StopQueryExecution",
+      "athena:ListWorkGroups",
+      "athena:ListEngineVersions",
+      "athena:GetWorkGroup",
+      "athena:GetDataCatalog",
+      "athena:GetDatabase",
+      "athena:GetTableMetadata",
+      "athena:ListDataCatalogs",
+      "athena:ListDatabases",
+      "athena:ListTableMetadata"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}",
+    ]
+
+    actions = [
+      "s3:ListBucketMultipartUploads",
+      "s3:ListBucket",
+      "s3:GetBucketLocation"
+    ]
+  }
+
+    statement {
+    effect = "Allow"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}",
+    ]
+
+    actions = [
+      "s3:PutObject",
+      "s3:ListMultipartUploadParts",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:AbortMultipartUpload"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "query_cost_usage_report" {
+  name   = "${var.deploy_id}-query_cost_usage_report"
+  path   = "/"
+  policy = data.aws_iam_policy_document.query_cost_usage_report.json
+}
