@@ -134,8 +134,8 @@ variable "default_node_groups" {
           spot                       = optional(bool, false)
           min_per_az                 = optional(number, 0)
           max_per_az                 = optional(number, 10)
-          max_unavailable_percentage = optional(number, null)
-          max_unavailable            = optional(number, 1)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
           desired_per_az             = optional(number, 0)
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
@@ -171,7 +171,7 @@ variable "additional_node_groups" {
     spot                       = optional(bool)
     min_per_az                 = number
     max_per_az                 = number
-    max_unavailable_percentage = optional(number)
+    max_unavailable_percentage = optional(number, 50)
     max_unavailable            = optional(number)
     desired_per_az             = number
     availability_zone_ids      = list(string)
