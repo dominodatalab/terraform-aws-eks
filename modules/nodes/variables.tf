@@ -259,7 +259,7 @@ variable "additional_node_groups" {
     spot                       = optional(bool, false)
     min_per_az                 = number
     max_per_az                 = number
-    max_unavailable_percentage = optional(number)
+    max_unavailable_percentage = optional(number, 50)
     max_unavailable            = optional(number)
     desired_per_az             = number
     availability_zone_ids      = list(string)
