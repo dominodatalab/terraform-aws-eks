@@ -33,6 +33,7 @@ No modules.
 | [aws_glue_security_configuration.lambda_config](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/glue_security_configuration) | resource |
 | [aws_iam_policy.aws_cur_lambda_executor_p](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.cur_lambda_initializer_p](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.query_cost_usage_report](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.aws_cur_crawler_component_function_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.aws_cur_lambda_executor](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.cur_lambda_initializer](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
@@ -71,6 +72,7 @@ No modules.
 | [aws_iam_policy_document.cur_lambda_initializer_assume](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cur_lambda_initializer_pd](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.cur_report](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.query_cost_usage_report](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
 
 ## Inputs
@@ -88,5 +90,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_info"></a> [info](#output\_info) | athena\_info\_configs = "Athena based cost reporting config information for kubecost cost-analyzer"<br>   athena\_region"  = "athena region"<br>   athena\_query\_result\_s3 = "S3 location for athena query results"<br>   cur\_report\_bucket\_name = "Name of S3 bucket used for storing CUR data. This may be provisioned by this module or not."<br>   glue\_catalog\_database\_name = "Name of the Glue Catalog Database which is populated with CUR data."<br>   glue\_catalog\_table\_name = "Name of the Glue Catalog table which is populated with CUR data."<br>   s3\_bucket\_region  = "Region where the S3 bucket used for storing CUR data is provisioned. This may be provisioned by this module or not."<br>   report\_name = "Name of the provisioned Cost and Usage Report." |
+| <a name="output_info"></a> [info](#output\_info) | athena\_info\_configs = "Athena based cost reporting config information for kubecost cost-analyzer"<br>   athena\_region"  = "athena region"<br>   athena\_query\_result\_s3 = "S3 location for athena query results"<br>   cur\_report\_bucket\_name = "Name of S3 bucket used for storing CUR data. This may be provisioned by this module or not."<br>   glue\_catalog\_database\_name = "Name of the Glue Catalog Database which is populated with CUR data."<br>   glue\_catalog\_table\_name = "Name of the Glue Catalog table which is populated with CUR data."<br>   report\_name = "Name of the provisioned Cost and Usage Report."<br>   s3\_bucket\_region  = "Region where the S3 bucket used for storing CUR data is provisioned. This may be provisioned by this module or not."<br>   athena\_work\_group = "Athena workgroup to execute queries"<br>   cur\_iam\_policy\_arn = CUR IAM Policy ARN. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

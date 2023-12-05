@@ -316,7 +316,7 @@ data "aws_iam_policy_document" "query_cost_usage_report" {
   statement {
     effect    = "Allow"
     resources = ["*"]
-    actions   = [
+    actions = [
       "athena:GetQueryExecution",
       "athena:GetQueryResults",
       "athena:GetQueryResultsStream",
@@ -350,7 +350,7 @@ data "aws_iam_policy_document" "query_cost_usage_report" {
     ]
   }
 
-    statement {
+  statement {
     effect = "Allow"
 
     resources = [
