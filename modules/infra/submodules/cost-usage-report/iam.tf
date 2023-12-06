@@ -368,22 +368,22 @@ data "aws_iam_policy_document" "query_cost_usage_report" {
   }
 
   statement {
-      effect = "Allow"
+    effect = "Allow"
 
-      resources = [
-        "arn:${data.aws_partition.current.partition}:glue:*:*:catalog",
-        "arn:${data.aws_partition.current.partition}:glue:*:*:database/${var.deploy_id}-athena-cur-cost-db*",
-        "arn:${data.aws_partition.current.partition}:glue:*:*:table/${var.deploy_id}*/*",
-      ]
+    resources = [
+      "arn:${data.aws_partition.current.partition}:glue:*:*:catalog",
+      "arn:${data.aws_partition.current.partition}:glue:*:*:database/${var.deploy_id}-athena-cur-cost-db*",
+      "arn:${data.aws_partition.current.partition}:glue:*:*:table/${var.deploy_id}*/*",
+    ]
 
-      actions = [
-        "glue:GetDatabase*",
-        "glue:GetTable*",
-        "glue:GetPartition*",
-        "glue:GetUserDefinedFunction",
-        "glue:BatchGetPartition"
-      ]
-    }
+    actions = [
+      "glue:GetDatabase*",
+      "glue:GetTable*",
+      "glue:GetPartition*",
+      "glue:GetUserDefinedFunction",
+      "glue:BatchGetPartition"
+    ]
+  }
 }
 
 resource "aws_iam_policy" "query_cost_usage_report" {
