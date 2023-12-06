@@ -354,8 +354,8 @@ data "aws_iam_policy_document" "query_cost_usage_report" {
     effect = "Allow"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}/*",
     ]
 
     actions = [
@@ -366,6 +366,24 @@ data "aws_iam_policy_document" "query_cost_usage_report" {
       "s3:AbortMultipartUpload"
     ]
   }
+
+  statement {
+      effect = "Allow"
+
+      resources = [
+        "arn:${data.aws_partition.current.partition}:glue:*:*:catalog",
+        "arn:${data.aws_partition.current.partition}:glue:*:*:database/${var.deploy_id}-athena-cur-cost-db*",
+        "arn:${data.aws_partition.current.partition}:glue:*:*:table/${var.deploy_id}*/*",
+      ]
+
+      actions = [
+        "glue:GetDatabase*",
+        "glue:GetTable*",
+        "glue:GetPartition*",
+        "glue:GetUserDefinedFunction",
+        "glue:BatchGetPartition"
+      ]
+    }
 }
 
 resource "aws_iam_policy" "query_cost_usage_report" {

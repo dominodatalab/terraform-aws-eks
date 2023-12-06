@@ -66,8 +66,8 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
   ]
 }
 
-resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
-  name          = local.report_status_table_name
+resource "aws_glue_catalog_table" "aws_cur_report_table" {
+  name          = local.cur_report_table_name
   database_name = aws_glue_catalog_database.aws_cur_database.name
   table_type    = "EXTERNAL_TABLE"
   catalog_id    = local.aws_account_id
@@ -78,7 +78,7 @@ resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
   }
 
   storage_descriptor {
-    location      = "s3://${join("/", [aws_s3_bucket.cur_report.bucket, var.cost_usage_report.s3_bucket_prefix, var.cost_usage_report.report_name, local.report_status_table_name])}/"
+    location      = "s3://${join("/", [aws_s3_bucket.cur_report.bucket, var.cost_usage_report.s3_bucket_prefix, var.cost_usage_report.report_name, local.cur_report_table_name])}/"
     input_format  = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
 

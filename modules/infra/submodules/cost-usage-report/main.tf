@@ -14,7 +14,7 @@ locals {
   initializer_lambda_function      = "${var.deploy_id}-${var.cost_usage_report.report_name}-crawler-initializer"
   notification_lambda_function     = "${var.deploy_id}-aws_s3_cur_notification-lambda"
   cur_crawler                      = "${var.deploy_id}-AWSCURCrawler-cur-crawler"
-  report_status_table_name         = "${var.deploy_id}_cost_and_usage_data_status_tb"
+  cur_report_table_name            = "${var.deploy_id}_cur_report"
   s3_server_side_encryption        = var.kms_info.enabled ? "aws:kms" : "AES256"
   report_name                      = "${var.deploy_id}-${var.cost_usage_report.report_name}"
   cur_report_bucket                = "${var.deploy_id}-${var.cost_usage_report.report_bucket_name_suffix}"

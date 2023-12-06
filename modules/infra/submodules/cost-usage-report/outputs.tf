@@ -16,7 +16,7 @@ output "info" {
     athena_region              = aws_cur_report_definition.aws_cur_report_definition.s3_region
     cur_report_bucket_name     = aws_cur_report_definition.aws_cur_report_definition.s3_bucket
     glue_catalog_database_name = aws_glue_catalog_database.aws_cur_database.name
-    glue_catalog_table_name    = aws_glue_catalog_table.aws_cur_report_status_table.name
+    glue_catalog_table_name    = aws_glue_catalog_table.aws_cur_report_table.name
     report_name                = aws_cur_report_definition.aws_cur_report_definition.report_name
     s3_bucket_region           = aws_cur_report_definition.aws_cur_report_definition.s3_region
     athena_work_group          = aws_athena_workgroup.athena_work_group.name
