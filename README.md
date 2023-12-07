@@ -309,7 +309,7 @@ provider "aws" {
 ```
 module "backups" {
   count  = 1
-  source = "github.com/dominodatalab/terraform-aws-domino-backup.git?ref=v1.0.10"
+  source = "github.com/dominodatalab/terraform-aws-domino-backup.git?ref=v1.0.12"
   providers = {
     aws.dst = aws.domino-backup
   }
