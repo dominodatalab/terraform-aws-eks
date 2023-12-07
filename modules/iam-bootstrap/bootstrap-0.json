@@ -28,6 +28,7 @@
         "s3:PutAccountPublicAccessBlock",
         "s3:PutBucketAcl",
         "s3:PutBucketLogging",
+        "s3:PutBucketNotification",
         "s3:PutBucketOwnershipControls",
         "s3:PutBucketPolicy",
         "s3:PutBucketRequestPayment",
@@ -44,6 +45,7 @@
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
+        "s3:GetBucketNotification",
         "s3:ListAllMyBuckets",
         "s3:ListBucket",
         "s3:ListBucketVersions"
@@ -66,9 +68,6 @@
         "iam:DeleteOpenIDConnectProvider",
         "iam:DeletePolicy",
         "iam:DeletePolicyVersion",
-        "iam:DeleteRole",
-        "iam:DeleteRolePolicy",
-        "iam:DetachRolePolicy",
         "iam:GetInstanceProfile",
         "iam:GetOpenIDConnectProvider",
         "iam:PassRole",
@@ -91,15 +90,22 @@
       "Sid": "IAMUngated",
       "Effect": "Allow",
       "Action": [
+        "iam:AttachRolePolicy",
+        "iam:CreateRole",
         "iam:GetPolicy",
         "iam:GetPolicyVersion",
         "iam:GetRole",
         "iam:GetRolePolicy",
+        "iam:DeleteRole",
+        "iam:DeleteRolePolicy",
+        "iam:DetachRolePolicy",
         "iam:ListAttachedRolePolicies",
         "iam:ListInstanceProfilesForRole",
         "iam:ListPolicies",
         "iam:ListPolicyVersions",
         "iam:ListRolePolicies",
+        "iam:PassRole",
+        "iam:PutRolePolicy",
         "iam:TagRole"
       ],
       "Resource": "*"
@@ -150,26 +156,6 @@
         "route53:ListResourceRecordSets"
       ],
       "Resource": "*"
-    },
-    {
-      "Sid": "BackupGated",
-      "Effect": "Allow",
-      "Action": [
-        "backup:*BackupPlan",
-        "backup:*BackupVault*",
-        "backup:CreateBackupSelection",
-        "backup:DeleteBackupSelection",
-        "backup:GetBackupSelection",
-        "backup:ListTags",
-        "backup:TagResource",
-        "backup:UntagResource",
-        "backup:DeleteRecoveryPoint"
-      ],
-      "Resource": [
-        "arn:${partition}:backup:*:${account_id}:backup-vault:${deploy_id}-efs",
-        "arn:${partition}:backup:*:${account_id}:backup-plan:*",
-        "arn:${partition}:backup:*:${account_id}:recovery-point:*"
-      ]
     }
   ]
 }

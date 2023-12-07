@@ -2,6 +2,26 @@
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "BackupGated",
+      "Effect": "Allow",
+      "Action": [
+        "backup:*BackupPlan",
+        "backup:*BackupVault*",
+        "backup:CreateBackupSelection",
+        "backup:DeleteBackupSelection",
+        "backup:GetBackupSelection",
+        "backup:ListTags",
+        "backup:TagResource",
+        "backup:UntagResource",
+        "backup:DeleteRecoveryPoint"
+      ],
+      "Resource": [
+        "arn:${partition}:backup:*:${account_id}:backup-vault:${deploy_id}-efs",
+        "arn:${partition}:backup:*:${account_id}:backup-plan:*",
+        "arn:${partition}:backup:*:${account_id}:recovery-point:*"
+      ]
+    },
+    {
       "Sid": "EFSUngated",
       "Effect": "Allow",
       "Action": [
@@ -197,59 +217,6 @@
         "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:AddTags",
         "elasticloadbalancing:DescribeTags"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "DominoCurUngated",
-      "Effect": "Allow",
-      "Action": [
-        "glue:CreateDatabase",
-        "glue:GetDatabase",
-        "glue:DeleteDatabase",
-        "glue:CreateSecurityConfiguration",
-        "glue:GetSecurityConfiguration",
-        "glue:DeleteSecurityConfiguration",
-        "glue:GetTags",
-        "glue:CreateCrawler",
-        "glue:CreateTable",
-        "glue:GetTable",
-        "glue:DeleteTable",
-        "glue:GetCrawler",
-        "glue:DeleteCrawler",
-        "athena:CreateWorkGroup",
-        "athena:GetWorkGroup",
-        "athena:DeleteWorkGroup",
-        "athena:TagResource",
-        "athena:ListTagsForResource",
-        "iam:AttachRolePolicy",
-        "iam:CreateRole",
-        "iam:PutRolePolicy",
-        "iam:PassRole",
-        "sqs:createqueue",
-        "sqs:deletequeue",
-        "sqs:tagqueue",
-        "sqs:getqueueattributes",
-        "sqs:listqueuetags",
-        "cur:PutReportDefinition",
-        "cur:DescribeReportDefinitions",
-        "cur:DeleteReportDefinition",
-        "signer:*",
-        "lambda:CreateCodeSigningConfig",
-        "lambda:UpdateCodeSigningConfig",
-        "lambda:GetCodeSigningConfig",
-        "lambda:CreateFunction",
-        "lambda:TagResource",
-        "lambda:GetFunction",
-        "lambda:ListVersionsByFunction",
-        "lambda:GetFunctionCodeSigningConfig",
-        "lambda:DeleteFunction",
-        "lambda:PutFunctionConcurrency",
-        "lambda:AddPermission",
-        "lambda:RemovePermission",
-        "lambda:UpdateFunctionConfiguration",
-        "lambda:GetPolicy",
-        "s3:*"
       ],
       "Resource": "*"
     }
