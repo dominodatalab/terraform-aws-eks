@@ -25,9 +25,7 @@
       "Sid": "AthenaUngated",
       "Effect": "Allow",
       "Action": [
-        "athena:CreateWorkGroup",
-        "athena:GetWorkGroup",
-        "athena:DeleteWorkGroup",
+        "athena:*WorkGroup",
         "athena:TagResource",
         "athena:ListTagsForResource"
       ],
