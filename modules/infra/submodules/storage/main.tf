@@ -24,6 +24,12 @@ locals {
       policy_json = data.aws_iam_policy_document.costs[0].json
       arn         = aws_s3_bucket.costs[0].arn
     } : {}
+    flyte = var.storage.flyte_enabled ? {
+      bucket_name = aws_s3_bucket.flyte[0].bucket
+      id          = aws_s3_bucket.flyte[0].id
+      policy_json = data.aws_iam_policy_document.flyte[0].json
+      arn         = aws_s3_bucket.flyte[0].arn
+    } : {}
     logs = {
       bucket_name = aws_s3_bucket.logs.bucket
       id          = aws_s3_bucket.logs.id
