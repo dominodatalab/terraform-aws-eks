@@ -1,45 +1,25 @@
 {
   "Version": "2012-10-17",
   "Statement": [
+
     {
-      "Sid": "GlueUngated",
+      "Sid": "LambdaGated",
       "Effect": "Allow",
       "Action": [
-        "glue:CreateDatabase",
-        "glue:GetDatabase",
-        "glue:DeleteDatabase",
-        "glue:CreateSecurityConfiguration",
-        "glue:GetSecurityConfiguration",
-        "glue:DeleteSecurityConfiguration",
-        "glue:GetTags",
-        "glue:CreateCrawler",
-        "glue:CreateTable",
-        "glue:GetTable",
-        "glue:DeleteTable",
-        "glue:GetCrawler",
-        "glue:DeleteCrawler"
+        "lambda:CreateFunction",
+        "lambda:TagResource",
+        "lambda:GetFunction",
+        "lambda:ListVersionsByFunction",
+        "lambda:DeleteFunction",
+        "lambda:PutFunctionConcurrency",
+        "lambda:AddPermission",
+        "lambda:RemovePermission",
+        "lambda:UpdateFunctionConfiguration",
+        "lambda:GetPolicy"
       ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "AthenaUngated",
-      "Effect": "Allow",
-      "Action": [
-        "athena:*"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "SQSUngated",
-      "Effect": "Allow",
-      "Action": [
-        "sqs:createqueue",
-        "sqs:deletequeue",
-        "sqs:tagqueue",
-        "sqs:getqueueattributes",
-        "sqs:listqueuetags"
-      ],
-      "Resource": "*"
+      "Resource": [
+        "arn:${partition}:lambda:*:*:function:${deploy_id}*"
+      ]
     },
     {
       "Sid": "LambdaUngated",
@@ -48,31 +28,30 @@
         "lambda:CreateCodeSigningConfig",
         "lambda:UpdateCodeSigningConfig",
         "lambda:GetCodeSigningConfig",
-        "lambda:CreateFunction",
-        "lambda:TagResource",
-        "lambda:GetFunction",
-        "lambda:ListVersionsByFunction",
         "lambda:GetFunctionCodeSigningConfig",
-        "lambda:DeleteFunction",
-        "lambda:PutFunctionConcurrency",
-        "lambda:AddPermission",
-        "lambda:RemovePermission",
-        "lambda:UpdateFunctionConfiguration",
-        "lambda:GetPolicy",
         "lambda:DeleteCodeSigningConfig"
       ],
       "Resource": "*"
     },
     {
+      "Sid": "SignerGated",
+      "Effect": "Allow",
+      "Action": [
+        "signer:*"
+      ],
+      "Resource": "arn:${partition}:signer:*:${account_id}:/signing-profiles/cur_sp_*"
+    },
+    {
       "Sid": "DominoCurUngated",
       "Effect": "Allow",
       "Action": [
-        "signer:*",
         "cur:PutReportDefinition",
         "cur:DescribeReportDefinitions",
         "cur:DeleteReportDefinition"
       ],
-      "Resource": "*"
+      "Resource": [
+        "*"
+      ]
     }
   ]
 }
