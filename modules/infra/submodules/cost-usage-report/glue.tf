@@ -108,7 +108,7 @@ resource "aws_athena_workgroup" "athena_work_group" {
 
   name          = "${var.deploy_id}-athena_work_group"
   force_destroy = true
-  
+
   configuration {
     enforce_workgroup_configuration    = true
     publish_cloudwatch_metrics_enabled = true
