@@ -66,7 +66,7 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
   ]
 }
 
-resource "aws_glue_catalog_table" "aws_report_status_table" {
+resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
   name          = local.report_status_table_name
   database_name = aws_glue_catalog_database.aws_cur_database.name
   table_type    = "EXTERNAL_TABLE"
