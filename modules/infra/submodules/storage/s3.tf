@@ -606,7 +606,7 @@ data "aws_iam_policy_document" "costs" {
 
 resource "aws_s3_bucket" "flyte_metadata" {
   count               = var.storage.flyte_enabled ? 1 : 0
-  bucket              = "${var.deploy_id}-flyte_metadata"
+  bucket              = "${var.deploy_id}-flyte-metadata"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
@@ -675,7 +675,7 @@ data "aws_iam_policy_document" "flyte_metadata" {
 
 resource "aws_s3_bucket" "flyte_data" {
   count               = var.storage.flyte_enabled ? 1 : 0
-  bucket              = "${var.deploy_id}-flyte_data"
+  bucket              = "${var.deploy_id}-flyte-data"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
