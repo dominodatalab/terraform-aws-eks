@@ -604,22 +604,22 @@ data "aws_iam_policy_document" "costs" {
   }
 }
 
-resource "aws_s3_bucket" "flyte" {
+resource "aws_s3_bucket" "flyte_metadata" {
   count               = var.storage.flyte_enabled ? 1 : 0
-  bucket              = "${var.deploy_id}-flyte"
+  bucket              = "${var.deploy_id}-flyte_metadata"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
 
-data "aws_iam_policy_document" "flyte" {
+data "aws_iam_policy_document" "flyte_metadata" {
   count = var.storage.flyte_enabled ? 1 : 0
 
   statement {
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte[0].bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte[0].bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata[0].bucket}/*",
     ]
 
     actions = ["s3:*"]
@@ -639,7 +639,7 @@ data "aws_iam_policy_document" "flyte" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte[0].bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -657,7 +657,76 @@ data "aws_iam_policy_document" "flyte" {
   statement {
     sid       = "DenyUnEncryptedObjectUploads"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte[0].bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata[0].bucket}/*"]
+    actions   = ["s3:PutObject"]
+
+    condition {
+      test     = "Null"
+      variable = "s3:x-amz-server-side-encryption"
+      values   = ["true"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
+resource "aws_s3_bucket" "flyte_data" {
+  count               = var.storage.flyte_enabled ? 1 : 0
+  bucket              = "${var.deploy_id}-flyte_data"
+  force_destroy       = var.storage.s3.force_destroy_on_deletion
+  object_lock_enabled = false
+}
+
+data "aws_iam_policy_document" "flyte_data" {
+  count = var.storage.flyte_enabled ? 1 : 0
+
+  statement {
+    effect = "Deny"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_data[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_data[0].bucket}/*",
+    ]
+
+    actions = ["s3:*"]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+
+  statement {
+    sid       = "DenyIncorrectEncryptionHeader"
+    effect    = "Deny"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_data[0].bucket}/*"]
+    actions   = ["s3:PutObject"]
+
+    condition {
+      test     = "StringNotEquals"
+      variable = "s3:x-amz-server-side-encryption"
+      values   = [local.s3_server_side_encryption]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+
+  statement {
+    sid       = "DenyUnEncryptedObjectUploads"
+    effect    = "Deny"
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_data[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
