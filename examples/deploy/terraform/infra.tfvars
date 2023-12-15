@@ -69,5 +69,5 @@ storage = {
 tags = null
 
 domino_cur = {
-  provision_resources = false
+  provision_cost_usage_report = false
 }
