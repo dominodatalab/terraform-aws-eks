@@ -17,8 +17,8 @@
       ],
       "Resource": [
         "arn:${partition}:backup:*:${account_id}:backup-vault:${deploy_id}-efs",
-        "arn:${partition}:backup:*:${account_id}:backup-plan:*",
-        "arn:${partition}:backup:*:${account_id}:recovery-point:*"
+        "arn:${partition}:backup:*:${account_id}:backup-plan:${deploy_id}*",
+        "arn:${partition}:backup:*:${account_id}:recovery-point:${deploy_id}*"
       ]
     },
     {
