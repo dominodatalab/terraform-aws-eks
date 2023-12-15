@@ -55,6 +55,27 @@ data "aws_iam_policy_document" "kms_key_global" {
       identifiers = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"]
     }
   }
+
+  statement {
+    actions = [
+      "kms:Encrypt*",
+      "kms:Decrypt*",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:Describe*"
+    ]
+    condition {
+      test     = "ArnLike"
+      variable = "kms:EncryptionContext:aws:logs:arn"
+      values   = ["arn:${data.aws_partition.current.partition}:logs:${var.region}:${local.aws_account_id}:*"]
+    }
+    resources = ["*"]
+    effect    = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["logs.${var.region}.amazonaws.com"]
+    }
+  }
 }
 
 locals {

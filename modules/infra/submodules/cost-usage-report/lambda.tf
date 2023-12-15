@@ -6,7 +6,13 @@ data "archive_file" "cur_initializer_zip" {
     content = templatefile("${local.templates_dir}/${local.aws_cur_initializer_template}", {
       cur_crawler = local.cur_crawler
     })
-    filename = local.aws_cur_initializer_file
+    filename = local.index_filename
+  }
+  source {
+    content = templatefile("${local.templates_dir}/${local.cfn_response_template}", {
+      cur_crawler = local.cur_crawler
+    })
+    filename = local.cfn_response_filename
   }
 }
 
@@ -53,6 +59,22 @@ resource "aws_security_group" "lambda" {
   description = "EFS security group"
   vpc_id      = var.network_info.vpc_id
 
+  ingress {
+    description = "Allow inbound TCP traffic exclusively from the crawler initializer lambda."
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    self        = true
+  }
+
+  egress {
+    description = "Allow outbound TCP traffic exclusively from the crawler initializer lambda."
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    self        = true
+  }
+
   lifecycle {
     create_before_destroy = true
   }
@@ -77,7 +99,13 @@ data "archive_file" "aws_s3_cur_notification_zip" {
     content = templatefile("${local.templates_dir}/${local.aws_s3_cur_notification_template}", {
       cur_crawler = local.cur_crawler
     })
-    filename = local.aws_s3_cur_notification_filename
+    filename = local.index_filename
+  }
+  source {
+    content = templatefile("${local.templates_dir}/${local.cfn_response_template}", {
+      cur_crawler = local.cur_crawler
+    })
+    filename = local.cfn_response_filename
   }
 }
 

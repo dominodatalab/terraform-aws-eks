@@ -1,6 +1,7 @@
 # An AWS Glue database
 # An AWS Glue crawler
 # Two Lambda functions
+# A VPC endpoint
 
 resource "aws_glue_catalog_database" "aws_cur_database" {
   description = "Contains CUR data based on contents from the S3 bucket '${aws_s3_bucket.cur_report.bucket}'"
@@ -38,7 +39,7 @@ resource "aws_glue_crawler" "aws_cur_crawler" {
   role          = aws_iam_role.aws_cur_crawler_component_function_role.name
 
   s3_target {
-    path = "s3://${aws_s3_bucket.cur_report.bucket}/${var.cost_usage_report.s3_bucket_prefix}/${var.cost_usage_report.report_name}/${var.cost_usage_report.report_name}"
+    path = "s3://${aws_s3_bucket.cur_report.bucket}/${local.cur_report_path}"
     exclusions = [
       "**.json",
       "**.yml",
@@ -77,7 +78,7 @@ resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
   }
 
   storage_descriptor {
-    location      = "s3://${join("/", [aws_s3_bucket.cur_report.bucket, var.cost_usage_report.s3_bucket_prefix, var.cost_usage_report.report_name, local.report_status_table_name])}/"
+    location      = "s3://${join("/", [aws_s3_bucket.cur_report.bucket, var.cost_usage_report.s3_bucket_prefix, var.cost_usage_report.report_name, local.cur_report_table_name])}/"
     input_format  = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
 
@@ -105,7 +106,8 @@ resource "aws_glue_catalog_table" "aws_cur_report_status_table" {
 
 resource "aws_athena_workgroup" "athena_work_group" {
 
-  name = "${var.deploy_id}_athena_work_group"
+  name          = "${var.deploy_id}-athena_work_group"
+  force_destroy = true
 
   configuration {
     enforce_workgroup_configuration    = true
@@ -120,4 +122,21 @@ resource "aws_athena_workgroup" "athena_work_group" {
       }
     }
   }
+}
+
+resource "aws_vpc_endpoint" "aws_glue_vpc_endpoint" {
+  vpc_id            = var.network_info.vpc_id
+  service_name      = "com.amazonaws.${var.region}.glue"
+  vpc_endpoint_type = "Interface"
+
+  subnet_ids = local.private_subnet_ids
+  security_group_ids = [
+    aws_security_group.lambda.id
+  ]
+
+  tags = {
+    "Name" = "${var.deploy_id}-glue"
+  }
+
+  private_dns_enabled = true
 }

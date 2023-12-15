@@ -1,4 +1,3 @@
-
 resource "aws_s3_bucket" "athena_result" {
   bucket        = local.athena_cur_result_bucket_name
   force_destroy = true

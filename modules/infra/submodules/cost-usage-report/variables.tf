@@ -75,7 +75,7 @@ variable "kms_info" {
 
 variable "network_info" {
   description = <<EOF
-    id = VPC ID.
+    vpc_id = VPC ID.
     subnets = {
       public = List of public Subnets.
       [{

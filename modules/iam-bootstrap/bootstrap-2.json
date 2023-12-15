@@ -1,0 +1,57 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+
+    {
+      "Sid": "LambdaGated",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:CreateFunction",
+        "lambda:TagResource",
+        "lambda:GetFunction",
+        "lambda:ListVersionsByFunction",
+        "lambda:DeleteFunction",
+        "lambda:PutFunctionConcurrency",
+        "lambda:AddPermission",
+        "lambda:RemovePermission",
+        "lambda:UpdateFunctionConfiguration",
+        "lambda:GetPolicy"
+      ],
+      "Resource": [
+        "arn:${partition}:lambda:*:*:function:${deploy_id}*"
+      ]
+    },
+    {
+      "Sid": "LambdaUngated",
+      "Effect": "Allow",
+      "Action": [
+        "lambda:CreateCodeSigningConfig",
+        "lambda:UpdateCodeSigningConfig",
+        "lambda:GetCodeSigningConfig",
+        "lambda:GetFunctionCodeSigningConfig",
+        "lambda:DeleteCodeSigningConfig"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SignerGated",
+      "Effect": "Allow",
+      "Action": [
+        "signer:*"
+      ],
+      "Resource": "arn:${partition}:signer:*:${account_id}:/signing-profiles/cur_sp_*"
+    },
+    {
+      "Sid": "DominoCurUngated",
+      "Effect": "Allow",
+      "Action": [
+        "cur:PutReportDefinition",
+        "cur:DescribeReportDefinitions",
+        "cur:DeleteReportDefinition"
+      ],
+      "Resource": [
+        "*"
+      ]
+    }
+  ]
+}
