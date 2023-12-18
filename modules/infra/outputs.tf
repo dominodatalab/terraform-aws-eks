@@ -1,3 +1,8 @@
+output "rds_enabled" {
+    description = "fuck"
+    value = var.storage.rds.enabled
+}
+
 output "hostname" {
   description = "Domino instance URL."
   value       = try("${var.deploy_id}.${var.route53_hosted_zone_name}", null)

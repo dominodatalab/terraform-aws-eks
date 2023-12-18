@@ -235,6 +235,14 @@ variable "storage" {
     ecr = optional(object({
       force_destroy_on_deletion = optional(bool, true)
     }), {})
+    rds = optional(object({
+      enabled = optional(bool, false)
+      engine_version = optional(string, "15.4")
+      instance_class = optional(string, "db.m5.large")
+      multi_az = optional(bool, true)
+      allocated_storage = optional(number, 100)
+      deletion_protection = optional(bool, true)
+    }), {}),
   })
 
   default = {}

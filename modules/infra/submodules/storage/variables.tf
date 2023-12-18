@@ -42,6 +42,9 @@ variable "storage" {
       ecr = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories.
       }
+      rds = {
+        enabled = "Toggle to enable provisioning RDS server for hosted postgres"
+      }
       enable_remote_backup = Enable tagging required for cross-account backups
       costs_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage
     }
@@ -66,6 +69,14 @@ variable "storage" {
     ecr = optional(object({
       force_destroy_on_deletion = optional(bool)
     }))
+    rds = optional(object({
+      enabled = optional(bool, false)
+      engine_version = optional(string, "15.4")
+      instance_class = optional(string, "db.m5.large")
+      multi_az = optional(bool, true)
+      allocated_storage = optional(number, 100)
+      deletion_protection = optional(bool, true)
+    }), {}),
     enable_remote_backup = optional(bool)
     costs_enabled        = optional(bool)
   })
