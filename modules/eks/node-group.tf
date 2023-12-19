@@ -61,13 +61,13 @@ resource "aws_security_group_rule" "efs" {
   source_security_group_id = aws_security_group.eks_nodes.id
 }
 
-resource "aws_security_group_rule" "rds-postgres" {
+resource "aws_security_group_rule" "rds-postgresql" {
   count                    = var.rds_security_group != null ? 1 : 0
   security_group_id        = var.rds_security_group
   protocol                 = "tcp"
   from_port                = 5432
   to_port                  = 5432
   type                     = "ingress"
-  description              = "RDS postgres access"
+  description              = "RDS postgresql access"
   source_security_group_id = aws_security_group.eks_nodes.id
 }

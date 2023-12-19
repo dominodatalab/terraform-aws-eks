@@ -90,7 +90,7 @@ variable "efs_security_group" {
 }
 
 variable "rds_security_group" {
-  description = "Security Group ID for RDS postgres"
+  description = "Security Group ID for RDS postgresql"
   type        = string
 }
 

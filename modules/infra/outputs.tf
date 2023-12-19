@@ -72,7 +72,7 @@ output "efs_security_group" {
 }
 
 output "rds_security_group" {
-  description = "Security Group ID for RDS postgres"
+  description = "Security Group ID for RDS postgresql"
   value       = module.storage.info.rds.security_group_id
 }
 
