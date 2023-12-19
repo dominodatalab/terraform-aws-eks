@@ -71,6 +71,11 @@ output "efs_security_group" {
   value       = module.storage.info.efs.security_group_id
 }
 
+output "rds_security_group" {
+  description = "Security Group ID for RDS postgres"
+  value       = module.storage.info.rds.security_group_id
+}
+
 output "node_iam_policies" {
   description = "Policies attached to EKS nodes role"
   value       = local.node_iam_policies

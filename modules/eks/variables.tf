@@ -89,6 +89,11 @@ variable "efs_security_group" {
   type        = string
 }
 
+variable "rds_security_group" {
+  description = "Security Group ID for RDS postgres"
+  type        = string
+}
+
 variable "bastion_info" {
   description = <<EOF
     user                = Bastion username.
