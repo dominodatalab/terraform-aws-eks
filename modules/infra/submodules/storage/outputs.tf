@@ -42,7 +42,7 @@ output "info" {
       port = var.storage.rds.enabled ? aws_db_instance.postgresql[0].port : null
       username = var.storage.rds.enabled ? aws_db_instance.postgresql[0].username : null
       master_user_secret = var.storage.rds.enabled ? aws_db_instance.postgresql[0].master_user_secret : null
-      security_group_id = var.storage.rds.enabled ? aws_security_group.postgresql.id : null
+      security_group_id = var.storage.rds.enabled ? aws_security_group.postgresql[0].id : null
     }
   }
 }
