@@ -58,7 +58,7 @@ resource "aws_lb_listener" "listeners" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_groups[each.value.service].arn
+    target_group_arn = aws_lb_target_group.target_groups[each.key].arn
   }
 }
 
