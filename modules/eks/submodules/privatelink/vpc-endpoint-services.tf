@@ -37,10 +37,14 @@ resource "aws_lb" "nlbs" {
 resource "aws_lb_target_group" "target_groups" {
   for_each = { for entry in local.listeners : "${entry.service}.${entry.port}" => entry }
 
-  name     = "${var.deploy_id}-${each.value.service}-${each.value.port}"
+  name     = substr("${var.deploy_id}-${each.value.service}-${each.value.port}", -32, -1)
   port     = 80 # Not used but required
   protocol = "TCP"
   vpc_id   = var.network_info.vpc_id
+
+  tags = {
+    "Name" = "${var.deploy_id}-${each.value.service}-${each.value.port}"
+  }
 }
 
 resource "aws_lb_listener" "listeners" {
