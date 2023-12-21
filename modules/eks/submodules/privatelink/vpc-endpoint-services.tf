@@ -35,12 +35,16 @@ resource "aws_lb" "nlbs" {
 }
 
 resource "aws_lb_target_group" "target_groups" {
-  for_each = local.endpoint_services
+  for_each = { for entry in local.listeners : "${entry.service}.${entry.port}" => entry }
 
-  name     = "${var.deploy_id}-${each.key}"
+  name     = substr("${var.deploy_id}-${each.value.service}-${each.value.port}", -32, -1)
   port     = 80 # Not used but required
   protocol = "TCP"
   vpc_id   = var.network_info.vpc_id
+
+  tags = {
+    "Name" = "${var.deploy_id}-${each.value.service}-${each.value.port}"
+  }
 }
 
 resource "aws_lb_listener" "listeners" {
@@ -54,7 +58,7 @@ resource "aws_lb_listener" "listeners" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_groups[each.value.service].arn
+    target_group_arn = aws_lb_target_group.target_groups[each.key].arn
   }
 }
 
