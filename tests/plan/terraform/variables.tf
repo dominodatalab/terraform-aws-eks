@@ -365,7 +365,6 @@ variable "storage" {
       force_destroy_on_deletion = optional(bool, true)
     }), {})
     costs_enabled = optional(bool, true)
-    flyte_enabled = optional(bool, true)
   })
 
   default = {}

@@ -38,5 +38,6 @@ storage = {
     force_destroy_on_deletion = true
   },
   costs_enabled = false
-  flyte_enabled = true
 }
+
+flyte_enabled = true

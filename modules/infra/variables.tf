@@ -351,7 +351,6 @@ variable "storage" {
       }
       enable_remote_backup = Enable tagging required for cross-account backups
       costs_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage
-      flyte_enabled = Determines whether to provision flyte related infrastructures, ie, long term storage
     }
   }
   EOF
@@ -376,7 +375,6 @@ variable "storage" {
     }), {}),
     enable_remote_backup = optional(bool, false)
     costs_enabled        = optional(bool, true)
-    flyte_enabled        = optional(bool, true)
   })
 
   default = {}
@@ -420,4 +418,11 @@ variable "domino_cur" {
   })
 
   default = {}
+}
+
+variable "flyte_enabled" {
+  description = "Determines whether to provision flyte related infra, i.e. s3 buckets"
+  type        = bool
+  nullable    = true
+  default     = true
 }
