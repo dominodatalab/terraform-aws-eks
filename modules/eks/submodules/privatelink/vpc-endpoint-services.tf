@@ -12,7 +12,7 @@ locals {
   ]))
 }
 
-resource "random_string" "target_group_random_gen" {
+resource "random_string" "target_group_random_suffix" {
   length  = 8
   special = false
 }
@@ -42,7 +42,7 @@ resource "aws_lb" "nlbs" {
 resource "aws_lb_target_group" "target_groups" {
   for_each = { for entry in local.listeners : "${entry.service}.${entry.port}" => entry }
 
-  name     = "${var.deploy_id}-${random_string.target_group_random_gen.result}"
+  name     = "${var.deploy_id}-${random_string.target_group_random_suffix.result}"
   port     = 80 # Not used but required
   protocol = "TCP"
   vpc_id   = var.network_info.vpc_id
