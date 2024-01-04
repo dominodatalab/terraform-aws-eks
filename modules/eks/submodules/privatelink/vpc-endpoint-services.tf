@@ -13,8 +13,8 @@ locals {
 }
 
 resource "random_string" "target_group_random_gen" {
-  length           = 8
-  special          = false
+  length  = 8
+  special = false
 }
 
 data "aws_route53_zone" "hosted" {
