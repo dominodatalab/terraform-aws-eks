@@ -12,11 +12,6 @@ locals {
   ]))
 }
 
-resource "random_string" "target_group_random_suffix" {
-  length  = 8
-  special = false
-}
-
 data "aws_route53_zone" "hosted" {
   name         = var.privatelink.route53_hosted_zone_name
   private_zone = false
@@ -42,7 +37,7 @@ resource "aws_lb" "nlbs" {
 resource "aws_lb_target_group" "target_groups" {
   for_each = { for entry in local.listeners : "${entry.service}.${entry.port}" => entry }
 
-  name     = "${var.deploy_id}-${random_string.target_group_random_suffix.result}"
+  name     = "${var.deploy_id}-${substr(each.value.service,0,10)}-${each.value.port}"
   port     = 80 # Not used but required
   protocol = "TCP"
   vpc_id   = var.network_info.vpc_id
