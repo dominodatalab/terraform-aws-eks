@@ -48,8 +48,8 @@ resource "aws_lb_target_group" "target_groups" {
   vpc_id   = var.network_info.vpc_id
 
   tags = {
-    "service_name" = "${each.value.service}"
-    "service_port" = "${each.value.port}"
+    "service_name" = each.value.service
+    "service_port" = each.value.port
   }
 }
 
