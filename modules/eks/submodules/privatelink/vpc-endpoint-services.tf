@@ -37,7 +37,7 @@ resource "aws_lb" "nlbs" {
 resource "aws_lb_target_group" "target_groups" {
   for_each = { for entry in local.listeners : "${entry.service}.${entry.port}" => entry }
 
-  name     = "${var.deploy_id}-${substr(each.value.service,0,10)}-${each.value.port}"
+  name     = "${var.deploy_id}-${substr(each.value.service,0,9)}-${each.value.port}"
   port     = 80 # Not used but required
   protocol = "TCP"
   vpc_id   = var.network_info.vpc_id
