@@ -40,4 +40,6 @@ storage = {
   costs_enabled = false
 }
 
-flyte_enabled = true
+flyte {
+  enabled = true
+}

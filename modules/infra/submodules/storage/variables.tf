@@ -128,3 +128,14 @@ variable "flyte_enabled" {
   type        = bool
   default     = false
 }
+
+variable "flyte" {
+  description = <<EOF
+    enabled = Whether to provision any Flyte related resources
+  EOF
+  type = object({
+    enabled = optional(bool, false)
+  })
+
+  default = {}
+}

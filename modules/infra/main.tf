@@ -24,12 +24,12 @@ module "cost_usage_report" {
 }
 
 module "storage" {
-  source        = "./submodules/storage"
-  deploy_id     = var.deploy_id
-  network_info  = module.network.info
-  kms_info      = local.kms_info
-  storage       = var.storage
-  flyte_enabled = var.flyte_enabled
+  source       = "./submodules/storage"
+  deploy_id    = var.deploy_id
+  network_info = module.network.info
+  kms_info     = local.kms_info
+  storage      = var.storage
+  flyte        = var.flyte
 }
 
 data "aws_ec2_instance_type" "all" {
