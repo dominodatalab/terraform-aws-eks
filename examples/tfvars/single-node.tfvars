@@ -39,7 +39,3 @@ storage = {
   },
   costs_enabled = false
 }
-
-flyte {
-  enabled = true
-}
