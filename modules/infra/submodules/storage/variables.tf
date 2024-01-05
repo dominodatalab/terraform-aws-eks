@@ -126,6 +126,5 @@ variable "network_info" {
 variable "flyte_enabled" {
   description = "Determines whether to provision flyte related infra, i.e. s3 buckets"
   type        = bool
-  nullable    = true
-  default     = true
+  default     = false
 }
