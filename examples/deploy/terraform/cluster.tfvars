@@ -18,3 +18,7 @@ eks = {
   vpc_cni            = null
 }
 kms_info = null
+
+irsa = {
+  external_dns = false
+}

@@ -1,5 +1,8 @@
 #! /usr/bin/env bash
 
+test_file_name="${1:-none}"
+
+TFVARS_BASE_PATH="../../examples/tfvars/"
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 exclude=("bring-your-vpc.tfvars" "kms-byok.tfvars" "private-link.tfvars")
 
@@ -27,6 +30,7 @@ tf_plan() {
   local tfvars="$1"
   local test_pem="terraform/plan-test.pem"
 
+  printf "\n\033[0;33mRunning terraform plan for ${tfvars}\033[0m:\n"
   if [ ! -f "$test_pem" ]; then
     ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$test_pem" && chmod 400 "$test_pem"
   fi
@@ -44,23 +48,25 @@ tf_plan() {
 }
 
 run_terraform_plans() {
-  for tfvars in ../../examples/tfvars/*.tfvars; do
-    base_tfvars=$(basename "$tfvars")
-    skip=false
 
-    for excl in "${exclude[@]}"; do
-      if [[ "$base_tfvars" == *"$excl" ]]; then
-        skip=true
-        break
-      fi
+  if [ "$test_file_name" == "none" ]; then
+    for tfvars in "${TFVARS_BASE_PATH}"/*.tfvars; do
+      base_tfvars=$(basename "$tfvars")
+      skip=false
+
+      for excl in "${exclude[@]}"; do
+        if [[ "$base_tfvars" == *"$excl" ]]; then
+          skip=true
+          break
+        fi
+      done
+
+      $skip && continue
+      tf_plan "$(realpath $tfvars)"
     done
-
-    $skip && continue
-
-    printf "\n\033[0;33mRunning terraform plan for ${base_tfvars}\033[0m:\n"
-    tf_plan "$(realpath $tfvars)"
-  done
-
+  else
+    tf_plan "$(realpath "${TFVARS_BASE_PATH}/${test_file_name}.tfvars")"
+  fi
 }
 
 create_kms_key() {
@@ -119,4 +125,4 @@ trap finish EXIT ERR INT TERM
 verify_terraform
 verify_aws_creds
 run_terraform_plans
-test_byok_kms
+[ "$test_file_name" == "none" ] && test_byok_kms

@@ -100,7 +100,7 @@ locals {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = strcontains(var.region, "us-gov") ? "us-gov-east-1" : "us-east-1"
   alias  = "us-east-1"
   default_tags {
     tags = var.tags
