@@ -147,11 +147,11 @@ set_all_mod_src() {
   for dir in "${MOD_DIRS[@]}"; do
     IFS=' ' read -ra MODS <<<"${COMP_MODS[$(basename "$dir")]}"
     for mod in "${MODS[@]}"; do
-      mod_add=${MOD_ADD[$mod]}
+      mod_add=${MOD_ADD[$mod]-"$mod"}
       if [ "$ref" == "local" ]; then
-        MOD_SOURCE="${base_local_mod_src}/${mod_add:-$mod}"
+        MOD_SOURCE="${base_local_mod_src}/${mod_add}"
       else
-        MOD_SOURCE="${BASE_REMOTE_MOD_SRC}/${mod_add:-$mod}?ref=${ref}"
+        MOD_SOURCE="${BASE_REMOTE_MOD_SRC}/${mod_add}?ref=${ref}"
       fi
       echo "Setting module source to ref: ${MOD_SOURCE} on ${dir}"
       set_mod_src "$MOD_SOURCE" "${dir}/main.tf" "$mod"
