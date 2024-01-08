@@ -14,4 +14,5 @@ resource "aws_iam_openid_connect_provider" "this" {
   url             = var.eks_info.cluster.oidc.cert.url
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = var.eks_info.cluster.oidc.cert.thumbprint_list
+  depends_on      = [data.aws_caller_identity.aws_account]
 }
