@@ -157,6 +157,11 @@ set_all_mod_src() {
       MOD_SOURCE="${BASE_REMOTE_MOD_SRC}/${name}?ref=${ref}"
     fi
 
+    if [[ "$name" == "eks" ]]; then
+      set_mod_src "$MOD_SOURCE" "${dir}/main.tf" "irsa_external_dns"
+      set_mod_src "$MOD_SOURCE" "${dir}/main.tf" "irsa_policies"
+    fi
+
     echo "Setting module source to ref: ${MOD_SOURCE} on ${dir}"
     set_mod_src "$MOD_SOURCE" "${dir}/main.tf" "$name"
   done
