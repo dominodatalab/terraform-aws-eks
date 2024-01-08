@@ -82,3 +82,27 @@ variable "kms_info" {
   })
   default = null
 }
+
+variable "irsa_policies" {
+  description = "Mappings for custom IRSA configurations."
+  type = list(object({
+    name                = string
+    namespace           = string
+    serviceaccount_name = string
+    policy              = string #json
+  }))
+
+  default = []
+}
+
+variable "irsa_external_dns" {
+  description = "Mappings for custom IRSA configurations."
+  type = object({
+    enabled             = optional(bool, false)
+    hosted_zone_name    = optional(string, null)
+    namespace           = optional(string, null)
+    serviceaccount_name = optional(string, null)
+  })
+
+  default = {}
+}

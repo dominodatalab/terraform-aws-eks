@@ -38,6 +38,33 @@ module "eks" {
   }
 }
 
+module "irsa_external_dns" {
+  source   = "./../../../modules/eks/submodules/irsa"
+  eks_info = module.eks.info
+  external_dns = {
+    enabled          = true
+    hosted_zone_name = var.route53_hosted_zone_name
+  }
+}
+
+data "aws_iam_policy_document" "mypod_s3" {
+  statement {
+    actions   = ["s3:ListAllMyBuckets"]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+}
+
+module "irsa_policies" {
+  source   = "./../../../modules/eks/submodules/irsa"
+  eks_info = module.eks.info
+  additional_irsa_configs = [{
+    name                = "mypod-s3"
+    namespace           = "domino-config"
+    policy              = data.aws_iam_policy_document.mypod_s3.json
+    serviceaccount_name = "mypod-s3"
+  }]
+}
 
 module "nodes" {
   source = "./../../../modules/nodes"
@@ -51,8 +78,6 @@ module "nodes" {
   kms_info               = module.infra.kms
   tags                   = module.infra.tags
 }
-
-
 
 module "single_node" {
   count  = var.single_node != null ? 1 : 0

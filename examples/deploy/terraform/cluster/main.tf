@@ -25,11 +25,40 @@ module "eks" {
   bastion_info        = local.infra.bastion
   create_eks_role_arn = local.infra.create_eks_role_arn
   tags                = local.infra.tags
+}
 
+# If you are enabling the IRSA configuration for external-dns.
+# You will need to add the role created(module.irsa_external_dns.irsa_role) to
+# the following annotation to the `external-dns` service account:
+# `eks.amazonaws.com/role-arn: <<module.irsa_external_dns.irsa_role>>`
+module "irsa_external_dns" {
+  count        = var.irsa_external_dns != null && var.irsa_external_dns.enabled ? 1 : 0
+  source       = "./../../../../modules/eks/submodules/irsa"
+  eks_info     = module.eks.info
+  external_dns = var.irsa_external_dns
+
+  providers = {
+    aws = aws.global
+  }
+}
+
+module "irsa_policies" {
+  count                   = var.irsa_policies != null ? 1 : 0
+  source                  = "./../../../../modules/eks/submodules/irsa"
+  eks_info                = module.eks.info
+  additional_irsa_configs = var.irsa_policies
 }
 
 provider "aws" {
-  region = var.infra.region
+  region = local.infra.region
+}
+
+# Provider configuration for the account where the hosted zone is defined.
+# Useful in configurations where accounts do not have a public hosted zone(i.e us-gov regions) and internet routing(public DNS)
+# is instead defined in a different account. Note that there is additional configuration required.
+provider "aws" {
+  alias  = "global"
+  region = local.infra.region
 }
 
 terraform {

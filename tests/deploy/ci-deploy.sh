@@ -108,6 +108,7 @@ set_tf_vars() {
 
   export CUSTOM_AMI PVT_KEY
   local default_nodes=$(envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
+  envsubst <"$CLUSTER_VARS_TPL" | tee "$CLUSTER_VARS"
   echo "default_node_groups = $default_nodes" >"$NODES_VARS"
 
   echo "Infra vars:" && cat "$INFRA_VARS"

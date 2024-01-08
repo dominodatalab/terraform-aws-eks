@@ -13,7 +13,6 @@ resource "aws_iam_role" "this" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition : {
           StringEquals : {
-            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com"
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : "system:serviceaccount:${each.value.namespace}:${each.value.serviceaccount_name}"
           }
         }

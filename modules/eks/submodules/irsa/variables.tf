@@ -99,34 +99,21 @@ variable "external_dns" {
   })
 
   default = {}
-
-  validation {
-    condition     = var.external_dns.enabled && var.external_dns.hosted_zone_name != null && trimspace(var.external_dns.hosted_zone_name) != ""
-    error_message = "If external_dns is enabled then external_dns.hosted_zone_name must not be null nor an empty string."
-  }
-  validation {
-    condition     = var.external_dns.enabled && var.external_dns.namespace != null && trimspace(var.external_dns.namespace) != ""
-    error_message = "If external_dns is enabled then external_dns.namespace must not be null nor an empty string."
-  }
-  validation {
-    condition     = var.external_dns.enabled && var.external_dns.serviceaccount_name != null && trimspace(var.external_dns.serviceaccount_name) != ""
-    error_message = "If external_dns is enabled then external_dns.serviceaccount_name must not be null nor an empty string."
-  }
 }
-
 
 variable "additional_irsa_configs" {
   description = "Input for additional irsa configurations"
   type = list(object({
-    name = string
-    role = object({
-      name               = string
-      assume_role_policy = string #jsonencode()
-    })
+    name                = string
     namespace           = string
     serviceaccount_name = string
-    policy              = string #jsonencode()
+    policy              = string #json
   }))
 
   default = []
+
+  validation {
+    condition     = alltrue([for i in var.additional_irsa_configs : can(jsondecode(i.policy))])
+    error_message = "Invalid json found in policy"
+  }
 }
