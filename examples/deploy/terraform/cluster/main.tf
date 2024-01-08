@@ -32,16 +32,11 @@ module "eks" {
 # the following annotation to the `external-dns` service account:
 # `eks.amazonaws.com/role-arn: <<module.irsa_external_dns.irsa_role>>`
 
-data "aws_caller_identity" "global" {
-  provider = aws.global
-}
-
-data "aws_caller_identity" "this" {}
 
 module "irsa_external_dns" {
   count               = var.irsa_external_dns != null && var.irsa_external_dns.enabled ? 1 : 0
   source              = "./../../../../modules/eks/submodules/irsa"
-  use_cluster_odc_idp = strcontains(module.eks.info.cluster.oidc.arn, data.aws_caller_identity.global.account_id)
+  use_cluster_odc_idp = false
   eks_info            = module.eks.info
   external_dns        = var.irsa_external_dns
 
@@ -54,7 +49,7 @@ module "irsa_external_dns" {
 module "irsa_policies" {
   count                   = var.irsa_policies != null ? 1 : 0
   source                  = "./../../../../modules/eks/submodules/irsa"
-  use_cluster_odc_idp     = strcontains(module.eks.info.cluster.oidc.arn, data.aws_caller_identity.this.account_id)
+  use_cluster_odc_idp     = true
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
 }
