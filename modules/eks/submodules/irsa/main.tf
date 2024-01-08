@@ -10,7 +10,7 @@ locals {
 }
 
 resource "aws_iam_openid_connect_provider" "this" {
-  count           = local.is_eks_account_same ? 0 : 1
+  count           = strcontains(var.eks_info.cluster.oidc.arn, data.aws_caller_identity.aws_account.account_id) ? 0 : 1
   url             = var.eks_info.cluster.oidc.cert.url
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = var.eks_info.cluster.oidc.cert.thumbprint_list
