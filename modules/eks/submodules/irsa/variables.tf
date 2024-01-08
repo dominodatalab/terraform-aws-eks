@@ -88,6 +88,12 @@ variable "eks_info" {
   })
 }
 
+variable "use_cluster_odc_idp" {
+  description = "Toogle to uset the oidc idp connector in the trust policy. If false this module will create one."
+  type        = bool
+  default     = true
+}
+
 variable "external_dns" {
   description = "Config to enable irsa for external-dns"
 
