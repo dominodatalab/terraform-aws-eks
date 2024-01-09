@@ -4,6 +4,35 @@ resource "aws_s3_bucket" "athena_result" {
   tags          = var.tags
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "athena_result" {
+
+  bucket = aws_s3_bucket.athena_result.id
+
+  rule {
+    id = "AthenaResultsExpiration"
+
+    expiration {
+      days = 3
+    }
+
+    status = "Enabled"
+  }
+
+  rule {
+    id = "incomplete_upload"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 3
+    }
+
+    status = "Enabled"
+  }
+
+  depends_on = [
+    aws_s3_bucket.athena_result
+  ]
+}
+
 resource "aws_s3_bucket_public_access_block" "athena_result" {
   bucket = aws_s3_bucket.athena_result.id
 
@@ -49,6 +78,35 @@ resource "aws_s3_bucket" "cur_report" {
   bucket        = local.cur_report_bucket
   force_destroy = true
   tags          = var.tags
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "cur_report" {
+
+  bucket = aws_s3_bucket.cur_report.id
+
+  rule {
+    id = "CostUsageReportExpiration"
+
+    expiration {
+      days = 7
+    }
+
+    status = "Enabled"
+  }
+
+  rule {
+    id = "incomplete_upload"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+
+    status = "Enabled"
+  }
+
+  depends_on = [
+    aws_s3_bucket.cur_report
+  ]
 }
 
 resource "aws_s3_bucket_public_access_block" "cur_report" {
