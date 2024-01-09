@@ -39,6 +39,7 @@ module "eks" {
 }
 
 module "irsa_external_dns" {
+  count    = var.route53_hosted_zone_name != null ? 1 : 0
   source   = "./../../../modules/eks/submodules/irsa"
   eks_info = module.eks.info
   external_dns = {

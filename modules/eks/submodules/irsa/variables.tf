@@ -89,7 +89,10 @@ variable "eks_info" {
 }
 
 variable "use_cluster_odc_idp" {
-  description = "Toogle to uset the oidc idp connector in the trust policy. Set to `true` if the cluster and the hosted zone are in different aws accounts."
+  description = <<EOF
+    Toogle to uset the oidc idp connector in the trust policy.
+    Set to `true` if the cluster and the hosted zone are in different aws accounts.
+  EOF
   type        = bool
   default     = true
 }

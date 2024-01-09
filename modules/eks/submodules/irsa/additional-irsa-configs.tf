@@ -8,7 +8,7 @@ resource "aws_iam_role" "this" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = aws_iam_openid_connect_provider.this[0].arn
+          Federated = local.oidc_provider_arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition : {
@@ -30,6 +30,6 @@ resource "aws_iam_policy" "this" {
 
 resource "aws_iam_role_policy_attachment" "this" {
   for_each   = { for irsa in var.additional_irsa_configs : irsa.name => irsa }
-  role       = aws_iam_role.this[each.key]
-  policy_arn = aws_iam_policy.this[each.key]
+  role       = aws_iam_role.this[each.key].name
+  policy_arn = aws_iam_policy.this[each.key].arn
 }
