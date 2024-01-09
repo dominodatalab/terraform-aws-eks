@@ -32,11 +32,10 @@ module "eks" {
 # the following annotation to the `external-dns` service account:
 # `eks.amazonaws.com/role-arn: <<module.irsa_external_dns.irsa_role>>`
 
-
 module "irsa_external_dns" {
   count               = var.irsa_external_dns != null && var.irsa_external_dns.enabled ? 1 : 0
   source              = "./../../../../modules/eks/submodules/irsa"
-  use_cluster_odc_idp = false
+  use_cluster_odc_idp = true
   eks_info            = module.eks.info
   external_dns        = var.irsa_external_dns
 
