@@ -45,5 +45,3 @@ storage = {
     force_destroy_on_deletion = true
   }
 }
-
-
