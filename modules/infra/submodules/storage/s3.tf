@@ -674,14 +674,14 @@ data "aws_iam_policy_document" "flyte_metadata" {
 }
 
 resource "aws_s3_bucket" "flyte_data" {
-  count               = var.flyte_enabled ? 1 : 0
+  count               = var.flyte.enabled ? 1 : 0
   bucket              = "${var.deploy_id}-flyte-data"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
 
 data "aws_iam_policy_document" "flyte_data" {
-  count = var.flyte_enabled ? 1 : 0
+  count = var.flyte.enabled ? 1 : 0
 
   statement {
     effect = "Deny"

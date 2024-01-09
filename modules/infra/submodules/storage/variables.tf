@@ -123,12 +123,6 @@ variable "network_info" {
   })
 }
 
-variable "flyte_enabled" {
-  description = "Determines whether to provision flyte related infra, i.e. s3 buckets"
-  type        = bool
-  default     = false
-}
-
 variable "flyte" {
   description = <<EOF
     enabled = Whether to provision any Flyte related resources
