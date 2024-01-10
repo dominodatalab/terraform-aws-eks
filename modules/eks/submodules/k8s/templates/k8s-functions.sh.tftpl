@@ -37,6 +37,7 @@ check_kubeconfig() {
       kubeconfig=$KUBECONFIG_PROXY
     else
       kubeconfig=$KUBECONFIG
+      kubectl --kubeconfig $KUBECONFIG config set "clusters.${eks_cluster_arn}.proxy-url" "socks5://127.0.0.1:1055"
     fi
   else
     echo "$KUBECONFIG does not exist." && exit 1
