@@ -8,6 +8,7 @@ output "info" {
       private = local.private_subnets
       pod     = local.pod_subnets
     }
-    eips = [for k, eip in aws_eip.public : eip.public_ip]
+    eips      = [for k, eip in aws_eip.public : eip.public_ip]
+    vpc_cidrs = var.network.cidrs.vpc
   }
 }

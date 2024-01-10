@@ -51,19 +51,6 @@ resource "aws_security_group_rule" "node" {
   )
 }
 
-resource "aws_security_group_rule" "private_link" {
-  count = var.privatelink.enabled ? 1 : 0
-
-  # Required
-  security_group_id        = aws_security_group.eks_nodes.id
-  protocol                 = "tcp"
-  from_port                = 30000
-  to_port                  = 32767
-  type                     = "ingress"
-  description              = "NLB from private link to node ports"
-  source_security_group_id = try(module.privatelink[0].info.nlb_sg, null)
-}
-
 resource "aws_security_group_rule" "efs" {
   security_group_id        = var.efs_security_group
   protocol                 = "tcp"
