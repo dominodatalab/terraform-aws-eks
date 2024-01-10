@@ -21,6 +21,14 @@ resource "aws_security_group" "nlb_sg" {
   name        = "${var.deploy_id}-nlb-sg"
   description = "NLB Security Group"
   vpc_id      = var.network_info.vpc_id
+
+  egress {
+    description = "All traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_lb" "nlbs" {
