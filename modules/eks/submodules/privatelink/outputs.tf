@@ -7,5 +7,6 @@ output "info" {
       dns_name = nlb.dns_name
       zone_id  = nlb.zone_id
     } } }
+    nlb_sg = aws_security_group.nlb_sg.id
   }
 }
