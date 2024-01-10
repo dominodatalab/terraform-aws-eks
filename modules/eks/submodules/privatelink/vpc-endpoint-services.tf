@@ -17,11 +17,20 @@ data "aws_route53_zone" "hosted" {
   private_zone = false
 }
 
+resource "aws_security_group" "nlb_sg" {
+  name        = "${var.deploy_id}-nlb-sg"
+  description = "NLB Security Group"
+  vpc_id      = var.network_info.vpc_id
+}
+
 resource "aws_lb" "nlbs" {
   for_each = local.endpoint_services
 
   name               = "${var.deploy_id}-${each.key}"
+  internal           = true
   load_balancer_type = "network"
+
+  enforce_security_group_inbound_rules_on_private_link_traffic = "off"
 
   subnets = [for subnet in var.network_info.subnets.public : subnet.subnet_id]
 

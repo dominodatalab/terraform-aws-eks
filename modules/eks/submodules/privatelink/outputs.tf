@@ -7,5 +7,6 @@ output "info" {
       arn         = nlb.arn
       private_dns = nlb.dns_name
     }]
+    nlb_sg = aws_security_group.nlb_sg.id
   }
 }
