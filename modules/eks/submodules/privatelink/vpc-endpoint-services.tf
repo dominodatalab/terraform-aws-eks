@@ -33,7 +33,7 @@ resource "aws_lb" "nlbs" {
   enforce_security_group_inbound_rules_on_private_link_traffic = "off"
 
   security_groups = [aws_security_group.nlb_sg.id]
-  subnets = [for subnet in var.network_info.subnets.public : subnet.subnet_id]
+  subnets         = [for subnet in var.network_info.subnets.public : subnet.subnet_id]
 
   enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
