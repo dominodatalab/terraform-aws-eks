@@ -67,6 +67,7 @@ variable "network_info" {
         az_id     = string
       }))
     })
+    vpc_cidrs = string
   })
 
   validation {
