@@ -40,7 +40,7 @@ locals {
     }
   }
 
-  node_security_group_rules = {
+  node_security_group_rules = merge({
     egress_all = {
       description = "Allow all"
       protocol    = "all"
@@ -177,7 +177,16 @@ locals {
       type        = "egress"
       self        = true
     }
-  }
+    }, var.privatelink.enabled ? {
+    private_link = {
+      description              = "NLB from private link to node ports"
+      protocol                 = "tcp"
+      from_port                = 30000
+      to_port                  = 32767
+      type                     = "ingress"
+      source_security_group_id = module.privatelink[0].info.nlb_sg
+    }
+  } : {})
 
 
 
