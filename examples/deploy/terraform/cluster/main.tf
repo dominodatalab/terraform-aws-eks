@@ -43,7 +43,7 @@ locals {
 # `eks.amazonaws.com/role-arn: <<module.irsa_external_dns.irsa_role>>`
 module "irsa_external_dns" {
   count               = var.irsa_external_dns != null && var.irsa_external_dns.enabled ? 1 : 0
-  source              = "./../../../../modules/eks/submodules/irsa"
+  source              = "./../../../../modules/irsa"
   use_cluster_odc_idp = local.is_eks_account_same
   eks_info            = module.eks.info
   external_dns        = var.irsa_external_dns
@@ -55,7 +55,7 @@ module "irsa_external_dns" {
 
 module "irsa_policies" {
   count                   = var.irsa_policies != null ? 1 : 0
-  source                  = "./../../../../modules/eks/submodules/irsa"
+  source                  = "./../../../../modules/irsa"
   use_cluster_odc_idp     = true
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies

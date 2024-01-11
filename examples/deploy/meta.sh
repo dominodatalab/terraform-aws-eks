@@ -15,8 +15,8 @@ COMP_MODS["cluster"]="eks irsa_external_dns irsa_policies"
 COMP_MODS["nodes"]="nodes"
 
 declare -A MOD_ADD
-MOD_ADD["irsa_external_dns"]="eks/submodules/irsa"
-MOD_ADD["irsa_policies"]="eks/submodules/irsa"
+MOD_ADD["irsa_external_dns"]="irsa"
+MOD_ADD["irsa_policies"]="irsa"
 
 INFRA_DIR="${MOD_DIRS[0]}"
 CLUSTER_DIR="${MOD_DIRS[1]}"

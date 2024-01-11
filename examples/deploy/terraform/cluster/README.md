@@ -21,8 +21,8 @@
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_eks"></a> [eks](#module\_eks) | ./../../../../modules/eks | n/a |
-| <a name="module_irsa_external_dns"></a> [irsa\_external\_dns](#module\_irsa\_external\_dns) | ./../../../../modules/eks/submodules/irsa | n/a |
-| <a name="module_irsa_policies"></a> [irsa\_policies](#module\_irsa\_policies) | ./../../../../modules/eks/submodules/irsa | n/a |
+| <a name="module_irsa_external_dns"></a> [irsa\_external\_dns](#module\_irsa\_external\_dns) | ./../../../../modules/irsa | n/a |
+| <a name="module_irsa_policies"></a> [irsa\_policies](#module\_irsa\_policies) | ./../../../../modules/irsa | n/a |
 
 ## Resources
 

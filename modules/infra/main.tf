@@ -12,7 +12,9 @@ locals {
 }
 
 module "cost_usage_report" {
-  count        = var.domino_cur.provision_cost_usage_report ? 1 : 0
+  #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cur_report_definition.html
+  # is only available in us-east-1
+  count        = !strcontains(var.region, "us-gov") && var.domino_cur.provision_cost_usage_report ? 1 : 0
   source       = "./submodules/cost-usage-report"
   deploy_id    = var.deploy_id
   network_info = module.network.info
