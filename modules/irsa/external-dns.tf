@@ -1,7 +1,8 @@
 #External DNS IRSA configuration
 data "aws_route53_zone" "hosted" {
-  count = var.external_dns.enabled ? 1 : 0
-  name  = var.external_dns.hosted_zone_name
+  count        = var.external_dns.enabled ? 1 : 0
+  name         = var.external_dns.hosted_zone_name
+  private_zone = var.external_dns.hosted_zone_private
 }
 
 data "aws_iam_policy_document" "external_dns" {

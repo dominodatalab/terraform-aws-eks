@@ -45,6 +45,7 @@ variable "external_dns" {
   type = object({
     enabled             = optional(bool, false)
     hosted_zone_name    = optional(string, null)
+    hosted_zone_private = optional(string, false)
     namespace           = optional(string, "domino-platform")
     serviceaccount_name = optional(string, "external-dns")
   })
