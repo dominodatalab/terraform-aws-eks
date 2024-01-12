@@ -2,6 +2,26 @@
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "BackupGated",
+      "Effect": "Allow",
+      "Action": [
+        "backup:*BackupPlan",
+        "backup:*BackupVault*",
+        "backup:CreateBackupSelection",
+        "backup:DeleteBackupSelection",
+        "backup:GetBackupSelection",
+        "backup:ListTags",
+        "backup:TagResource",
+        "backup:UntagResource",
+        "backup:DeleteRecoveryPoint"
+      ],
+      "Resource": [
+        "arn:${partition}:backup:*:${account_id}:backup-vault:${deploy_id}-efs",
+        "arn:${partition}:backup:*:${account_id}:backup-plan:*",
+        "arn:${partition}:backup:*:${account_id}:recovery-point:*"
+      ]
+    },
+    {
       "Sid": "EFSUngated",
       "Effect": "Allow",
       "Action": [
@@ -199,6 +219,65 @@
         "elasticloadbalancing:DescribeTags"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "GlueGated",
+      "Effect": "Allow",
+      "Action": [
+        "glue:CreateDatabase",
+        "glue:GetDatabase",
+        "glue:DeleteDatabase",
+        "glue:GetTags",
+        "glue:CreateCrawler",
+        "glue:CreateTable",
+        "glue:GetTable",
+        "glue:DeleteTable",
+        "glue:GetCrawler",
+        "glue:DeleteCrawler"
+      ],
+      "Resource": [
+        "arn:${partition}:glue:*:*:catalog",
+        "arn:${partition}:glue:*:*:database/${deploy_id}*",
+        "arn:${partition}:glue:*:*:table/${deploy_id}*/*",
+        "arn:${partition}:glue:*:*:crawler/${deploy_id}*",
+        "arn:${partition}:glue:*:*:userDefinedFunction/${deploy_id}*/*"
+      ]
+    },
+    {
+      "Sid": "GlueUngated",
+      "Effect": "Allow",
+      "Action": [
+        "glue:CreateSecurityConfiguration",
+        "glue:GetSecurityConfiguration",
+        "glue:DeleteSecurityConfiguration"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AthenaGated",
+      "Effect": "Allow",
+      "Action": [
+        "athena:CreateWorkGroup",
+        "athena:GetWorkGroup",
+        "athena:DeleteWorkGroup",
+        "athena:TagResource",
+        "athena:ListTagsForResource"
+      ],
+      "Resource": ["arn:${partition}:athena:*:*:workgroup/${deploy_id}*"]
+    },
+    {
+      "Sid": "SQSGated",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:createqueue",
+        "sqs:deletequeue",
+        "sqs:tagqueue",
+        "sqs:getqueueattributes",
+        "sqs:listqueuetags"
+      ],
+      "Resource": [
+        "arn:${partition}:sqs:*:*:${deploy_id}*"
+      ]
     }
   ]
 }

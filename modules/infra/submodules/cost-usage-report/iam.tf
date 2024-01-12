@@ -1,6 +1,7 @@
 # three IAM roles
 
 data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" {
+
   statement {
     effect = "Allow"
 
@@ -10,16 +11,25 @@ data "aws_iam_policy_document" "cur_crawler_component_assume_role_policy" {
     }
 
     actions = [
-      "sts:AssumeRole"
+      "sts:AssumeRole",
     ]
   }
 }
 
+data "aws_iam_policy" "aws_glue_service_role" {
+  arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AWSGlueServiceRole"
+}
+
 resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
-  name_prefix        = "crawler_component_function_role"
+  name_prefix        = "${var.deploy_id}-crawler_comp_func_role"
   assume_role_policy = data.aws_iam_policy_document.cur_crawler_component_assume_role_policy.json
 
   tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "cur_crawler_glue_service_role_policy_attach" {
+  role       = aws_iam_role.aws_cur_crawler_component_function_role.name
+  policy_arn = data.aws_iam_policy.aws_glue_service_role.arn
 }
 
 data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
@@ -33,6 +43,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
       "logs:CreateLogStream",
       "logs:CreateLogGroup",
       "logs:PutLogEvents",
+      "logs:AssociateKmsKey",
     ]
 
     resources = [
@@ -56,6 +67,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
       "glue:UpdatePartition",
       "glue:BatchCreatePartition",
       "glue:GetSecurityConfiguration",
+      "glue:StartCrawler"
     ]
 
     resources = ["*"]
@@ -72,7 +84,7 @@ data "aws_iam_policy_document" "aws_cur_crawler_component_function_policy" {
     ]
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/${var.cost_usage_report.s3_bucket_prefix}/dominoCost/dominoCost*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/${var.cost_usage_report.s3_bucket_prefix}/*",
     ]
   }
 
@@ -259,7 +271,8 @@ data "aws_iam_policy_document" "aws_cur_lambda_executor" {
     effect = "Allow"
 
     actions = [
-      "s3:PutBucketNotification"
+      "s3:PutBucketNotification",
+      "glue:StartCrawler",
     ]
 
     resources = [
@@ -276,4 +289,105 @@ resource "aws_iam_policy" "aws_cur_lambda_executor_p" {
 resource "aws_iam_role_policy_attachment" "aws_cur_lambda_executor_rpa" {
   role       = aws_iam_role.aws_cur_lambda_executor.name
   policy_arn = aws_iam_policy.aws_cur_lambda_executor_p.arn
+}
+
+resource "aws_vpc_endpoint_policy" "aws_cur_crawler_endpoint_policy" {
+  vpc_endpoint_id = aws_vpc_endpoint.aws_glue_vpc_endpoint.id
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "AllowAll",
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : "*"
+        },
+        "Action" : [
+          "glue:StartCrawler"
+        ],
+        "Resource" : "*"
+      }
+    ]
+  })
+
+}
+
+data "aws_iam_policy_document" "query_cost_usage_report" {
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+    actions = [
+      "athena:GetQueryExecution",
+      "athena:GetQueryResults",
+      "athena:GetQueryResultsStream",
+      "athena:ListQueryExecutions",
+      "athena:StartQueryExecution",
+      "athena:StopQueryExecution",
+      "athena:ListWorkGroups",
+      "athena:ListEngineVersions",
+      "athena:GetWorkGroup",
+      "athena:GetDataCatalog",
+      "athena:GetDatabase",
+      "athena:GetTableMetadata",
+      "athena:ListDataCatalogs",
+      "athena:ListDatabases",
+      "athena:ListTableMetadata"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}",
+    ]
+
+    actions = [
+      "s3:ListBucketMultipartUploads",
+      "s3:ListBucket",
+      "s3:GetBucketLocation"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}/*",
+    ]
+
+    actions = [
+      "s3:PutObject",
+      "s3:ListMultipartUploadParts",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:AbortMultipartUpload"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:glue:*:*:catalog",
+      "arn:${data.aws_partition.current.partition}:glue:*:*:database/${var.deploy_id}-athena-cur-cost-db*",
+      "arn:${data.aws_partition.current.partition}:glue:*:*:table/${var.deploy_id}*/*",
+    ]
+
+    actions = [
+      "glue:GetDatabase*",
+      "glue:GetTable*",
+      "glue:GetPartition*",
+      "glue:GetUserDefinedFunction",
+      "glue:BatchGetPartition"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "query_cost_usage_report" {
+  name   = "${var.deploy_id}-query_cost_usage_report"
+  path   = "/"
+  policy = data.aws_iam_policy_document.query_cost_usage_report.json
 }

@@ -17,13 +17,31 @@ data "aws_route53_zone" "hosted" {
   private_zone = false
 }
 
+resource "aws_security_group" "nlb_sg" {
+  name        = "${var.deploy_id}-nlb-sg"
+  description = "NLB Security Group"
+  vpc_id      = var.network_info.vpc_id
+
+  egress {
+    description = "All traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.network_info.vpc_cidrs]
+  }
+}
+
 resource "aws_lb" "nlbs" {
   for_each = local.endpoint_services
 
   name               = "${var.deploy_id}-${each.key}"
+  internal           = true
   load_balancer_type = "network"
 
-  subnets = [for subnet in var.network_info.subnets.public : subnet.subnet_id]
+  enforce_security_group_inbound_rules_on_private_link_traffic = "off"
+
+  security_groups = [aws_security_group.nlb_sg.id]
+  subnets         = [for subnet in var.network_info.subnets.private : subnet.subnet_id]
 
   enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
@@ -35,12 +53,17 @@ resource "aws_lb" "nlbs" {
 }
 
 resource "aws_lb_target_group" "target_groups" {
-  for_each = local.endpoint_services
+  for_each = { for entry in local.listeners : "${entry.service}.${entry.port}" => entry }
 
-  name     = "${var.deploy_id}-${each.key}"
+  name     = "${var.deploy_id}-${substr(each.value.service, 0, 9)}-${each.value.port}"
   port     = 80 # Not used but required
   protocol = "TCP"
   vpc_id   = var.network_info.vpc_id
+
+  tags = {
+    "service_name" = each.value.service
+    "service_port" = each.value.port
+  }
 }
 
 resource "aws_lb_listener" "listeners" {
@@ -54,7 +77,7 @@ resource "aws_lb_listener" "listeners" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_groups[each.value.service].arn
+    target_group_arn = aws_lb_target_group.target_groups[each.key].arn
   }
 }
 

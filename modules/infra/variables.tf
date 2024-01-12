@@ -193,7 +193,7 @@ variable "default_node_groups" {
         {
           ami                        = optional(string, null)
           bootstrap_extra_args       = optional(string, "")
-          instance_types             = optional(list(string), ["g4dn.xlarge"])
+          instance_types             = optional(list(string), ["g5.xlarge"])
           spot                       = optional(bool, false)
           min_per_az                 = optional(number, 0)
           max_per_az                 = optional(number, 10)
@@ -414,7 +414,7 @@ variable "kms" {
 variable "domino_cur" {
   description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
   type = object({
-    provision_resources = optional(bool, false)
+    provision_cost_usage_report = optional(bool, false)
   })
 
   default = {}
