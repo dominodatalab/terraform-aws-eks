@@ -10,10 +10,16 @@ terraform {
 
 provider "aws" {
   region = var.region
+  ignore_tags {
+    keys = ["duration"]
+  }
 }
 
 
 provider "aws" {
   region = "us-east-1"
   alias  = "us-east-1"
+  ignore_tags {
+    keys = ["duration"]
+  }
 }

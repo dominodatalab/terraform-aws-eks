@@ -14,4 +14,7 @@ provider "aws" {
   default_tags {
     tags = local.infra.tags
   }
+  ignore_tags {
+    keys = ["duration"]
+  }
 }
