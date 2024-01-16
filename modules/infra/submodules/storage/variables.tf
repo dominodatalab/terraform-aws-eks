@@ -44,6 +44,9 @@ variable "storage" {
       }
       enable_remote_backup = Enable tagging required for cross-account backups
       costs_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage
+      flyte = {
+        enabled = Whether to provision Flyte related resources
+      }
     }
   }
   EOF
@@ -68,6 +71,9 @@ variable "storage" {
     }))
     enable_remote_backup = optional(bool)
     costs_enabled        = optional(bool)
+    flyte = optional(object({
+      enabled = optional(bool)
+    }))
   })
 }
 
