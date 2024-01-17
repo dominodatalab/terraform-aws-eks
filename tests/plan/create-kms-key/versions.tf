@@ -11,7 +11,7 @@ terraform {
 provider "aws" {
   region = var.region
   ignore_tags {
-    keys = ["duration"]
+    keys = var.ignore_tag_keys
   }
 }
 
@@ -20,6 +20,6 @@ provider "aws" {
   region = "us-east-1"
   alias  = "us-east-1"
   ignore_tags {
-    keys = ["duration"]
+    keys = var.ignore_tag_keys
   }
 }

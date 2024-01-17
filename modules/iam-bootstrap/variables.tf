@@ -35,3 +35,9 @@ variable "max_session_duration" {
   description = "Maximum session duration for role in seconds"
   default     = 43200
 }
+
+variable "ignore_tag_keys" {
+  type        = list(string)
+  description = "Tag keys to be ignored by the aws provider."
+  default     = []
+}

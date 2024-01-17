@@ -33,6 +33,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
 | <a name="input_iam_policy_paths"></a> [iam\_policy\_paths](#input\_iam\_policy\_paths) | IAM policies to provision and use for deployment role, can be terraform templates | `list(any)` | `[]` | no |
+| <a name="input_ignore_tag_keys"></a> [ignore\_tag\_keys](#input\_ignore\_tag\_keys) | Tag keys to be ignored by the aws provider. | `list(string)` | `[]` | no |
 | <a name="input_max_session_duration"></a> [max\_session\_duration](#input\_max\_session\_duration) | Maximum session duration for role in seconds | `number` | `43200` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 | <a name="input_template_config"></a> [template\_config](#input\_template\_config) | Variables to use for any templating in the IAM policies. AWS account ID (as 'account\_id'), deploy\_id, region and partition are automatically included. | `map(any)` | `{}` | no |

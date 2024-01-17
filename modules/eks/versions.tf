@@ -24,7 +24,7 @@ provider "aws" {
     tags = var.tags
   }
   ignore_tags {
-    keys = ["duration"]
+    keys = var.ignore_tag_keys
   }
 }
 
@@ -35,7 +35,7 @@ provider "aws" {
     tags = var.tags
   }
   ignore_tags {
-    keys = ["duration"]
+    keys = var.ignore_tag_keys
   }
   assume_role {
     role_arn = var.create_eks_role_arn

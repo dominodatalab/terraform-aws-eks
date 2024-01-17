@@ -1,7 +1,7 @@
 provider "aws" {
   region = var.region
   ignore_tags {
-    keys = ["duration"]
+    keys = var.ignore_tag_keys
   }
 }
 

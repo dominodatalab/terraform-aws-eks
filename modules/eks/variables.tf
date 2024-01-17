@@ -208,6 +208,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "ignore_tag_keys" {
+  type        = list(string)
+  description = "Tag keys to be ignored by the aws provider."
+  default     = []
+}
+
 variable "privatelink" {
   description = <<EOF
     {

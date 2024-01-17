@@ -109,6 +109,6 @@ provider "aws" {
     tags = var.tags
   }
   ignore_tags {
-    keys = ["duration"]
+    keys = var.ignore_tag_keys
   }
 }
