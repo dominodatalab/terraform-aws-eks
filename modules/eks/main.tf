@@ -177,6 +177,14 @@ locals {
       type        = "egress"
       self        = true
     }
+    ingress_cluster_8443 = {
+      description                   = "Cluster API to NewRelic webhook"
+      protocol                      = "tcp"
+      from_port                     = 8443
+      to_port                       = 8443
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }
     }, var.privatelink.enabled ? {
     private_link = {
       description              = "NLB from private link to node ports"
