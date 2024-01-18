@@ -33,6 +33,7 @@ module "nodes" {
   network_info           = local.infra.network
   kms_info               = local.infra.kms
   tags                   = local.infra.tags
+  ignore_tags            = local.infra.ignore_tags
 }
 
 terraform {

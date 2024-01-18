@@ -13,6 +13,12 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "ignore_tags" {
+  type        = list(string)
+  description = "Tag keys to be ignored by the aws provider."
+  default     = []
+}
+
 variable "network" {
   description = <<EOF
     vpc = {
