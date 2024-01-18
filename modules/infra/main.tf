@@ -31,6 +31,7 @@ module "storage" {
   network_info = module.network.info
   kms_info     = local.kms_info
   storage      = var.storage
+  flyte        = var.flyte
 }
 
 data "aws_ec2_instance_type" "all" {
