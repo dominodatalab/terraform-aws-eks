@@ -68,7 +68,8 @@ module "irsa_policies" {
 # is instead defined in a different account. Configure the `global` aws alias accordingly,
 # by specifying the profile belonging to the account pertaining to the hosted zone.
 provider "aws" {
-  region = var.infra.region
+  alias   = "global"
+  profile = "global"
   ignore_tags {
     keys = local.infra.ignore_tags
   }
@@ -76,6 +77,9 @@ provider "aws" {
 
 provider "aws" {
   region = local.infra.region
+  ignore_tags {
+    keys = local.infra.ignore_tags
+  }
 }
 terraform {
   required_version = ">= 1.4.0"
