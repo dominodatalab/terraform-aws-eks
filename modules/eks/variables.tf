@@ -208,7 +208,7 @@ variable "tags" {
   default     = {}
 }
 
-variable "ignore_tag_keys" {
+variable "ignore_tags" {
   type        = list(string)
   description = "Tag keys to be ignored by the aws provider."
   default     = []

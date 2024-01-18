@@ -33,7 +33,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Deployment ID. | `string` | `"dominoeks003"` | no |
-| <a name="input_ignore_tag_keys"></a> [ignore\_tag\_keys](#input\_ignore\_tag\_keys) | Tag keys to be ignored by the aws provider. | `list(string)` | `[]` | no |
+| <a name="input_ignore_tags"></a> [ignore\_tags](#input\_ignore\_tags) | Tag keys to be ignored by the aws provider. | `list(string)` | `[]` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for deployment. | `string` | `"us-west-2"` | no |
 
 ## Outputs
