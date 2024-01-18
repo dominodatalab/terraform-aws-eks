@@ -227,6 +227,11 @@ locals {
       oidc = {
         arn = aws_iam_openid_connect_provider.oidc_provider.arn
         url = aws_iam_openid_connect_provider.oidc_provider.url
+        cert = {
+          thumbprint_list = data.tls_certificate.cluster_tls_certificate.certificates[*].sha1_fingerprint
+          url             = data.tls_certificate.cluster_tls_certificate.url
+
+        }
       }
     }
     nodes = {
