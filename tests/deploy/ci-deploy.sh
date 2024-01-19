@@ -108,6 +108,7 @@ set_tf_vars() {
 
   export CUSTOM_AMI PVT_KEY
   local default_nodes=$(envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
+  envsubst <"$CLUSTER_VARS_TPL" | tee "$CLUSTER_VARS"
   echo "default_node_groups = $default_nodes" >"$NODES_VARS"
 
   echo "Infra vars:" && cat "$INFRA_VARS"
@@ -144,20 +145,17 @@ set_all_mod_src() {
   local base_local_mod_src="./../../../../../modules"
 
   for dir in "${MOD_DIRS[@]}"; do
-    local name
-    if [[ "$dir" == *"cluster"* ]]; then
-      name="eks"
-    else
-      name="$(basename $dir)"
-    fi
-    if [ "$ref" == "local" ]; then
-      MOD_SOURCE="${base_local_mod_src}/${name}"
-    else
-      MOD_SOURCE="${BASE_REMOTE_MOD_SRC}/${name}?ref=${ref}"
-    fi
-
-    echo "Setting module source to ref: ${MOD_SOURCE} on ${dir}"
-    set_mod_src "$MOD_SOURCE" "${dir}/main.tf" "$name"
+    IFS=' ' read -ra MODS <<<"${COMP_MODS[$(basename "$dir")]}"
+    for mod in "${MODS[@]}"; do
+      mod_add=${MOD_ADD[$mod]-"$mod"}
+      if [ "$ref" == "local" ]; then
+        MOD_SOURCE="${base_local_mod_src}/${mod_add}"
+      else
+        MOD_SOURCE="${BASE_REMOTE_MOD_SRC}/${mod_add}?ref=${ref}"
+      fi
+      echo "Setting module source to ref: ${MOD_SOURCE} on ${dir}"
+      set_mod_src "$MOD_SOURCE" "${dir}/main.tf" "$mod"
+    done
   done
 }
 

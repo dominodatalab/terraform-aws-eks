@@ -40,13 +40,15 @@ set_module_version() {
   for dir in "${MOD_DIRS[@]}"; do
     file="${dir}/main.tf"
     echo "Setting module source on: $file"
-    name=$(basename "$dir")
-    if [ $name == "cluster" ]; then
-      name="eks"
-    fi
-    hcledit attribute set "module.${name}.source" \"github.com/dominodatalab/terraform-aws-eks.git//modules/"${name}"?ref="${MOD_VERSION}"\" -f "$file" --update
-  done
 
+    IFS=' ' read -ra MODS <<<"${COMP_MODS[$(basename "$dir")]}"
+    for mod in "${MODS[@]}"; do
+      mod_add=${MOD_ADD[$mod]-"$mod"}
+      MOD_SOURCE=github.com/dominodatalab/terraform-aws-eks.git//modules/"${mod_add}"?ref="${MOD_VERSION}"
+      echo "Setting module source to ref: ${MOD_SOURCE} on ${dir}"
+      hcledit attribute set "module.${mod}.source" "\"${MOD_SOURCE}\"" -u -f "$file"
+    done
+  done
 }
 
 MOD_VERSION="$1"

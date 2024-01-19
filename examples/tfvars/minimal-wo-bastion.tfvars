@@ -18,3 +18,5 @@ default_node_groups = {
     enabled = false
   }
 }
+
+route53_hosted_zone_name = "deploys-delta.domino.tech"

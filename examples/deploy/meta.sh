@@ -9,6 +9,15 @@ declare -a MOD_DIRS=(
   "${BASE_TF_DIR}/nodes"
 )
 
+declare -A COMP_MODS
+COMP_MODS["infra"]="infra"
+COMP_MODS["cluster"]="eks irsa_external_dns irsa_policies"
+COMP_MODS["nodes"]="nodes"
+
+declare -A MOD_ADD
+MOD_ADD["irsa_external_dns"]="irsa"
+MOD_ADD["irsa_policies"]="irsa"
+
 INFRA_DIR="${MOD_DIRS[0]}"
 CLUSTER_DIR="${MOD_DIRS[1]}"
 NODES_DIR="${MOD_DIRS[2]}"
@@ -23,6 +32,8 @@ INFRA_VARS="${BASE_TF_DIR}/infra.tfvars"
 
 export BASE_TF_DIR \
   MOD_DIRS \
+  COMP_MODS \
+  MOD_ADD \
   INFRA_DIR \
   CLUSTER_DIR \
   NODES_DIR \
