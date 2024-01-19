@@ -68,8 +68,8 @@ module "irsa_policies" {
 # is instead defined in a different account. Configure the `global` aws alias accordingly,
 # by specifying the profile belonging to the account pertaining to the hosted zone.
 provider "aws" {
-  alias   = "global"
-  profile = "global"
+  alias = "global"
+  # profile = "global"
   ignore_tags {
     keys = local.infra.ignore_tags
   }
