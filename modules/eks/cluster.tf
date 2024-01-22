@@ -86,15 +86,15 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
 }
 
 
-data "aws_eks_addon_version" "default_vpc_cni" {
-  addon_name         = "vpc-cni"
-  kubernetes_version = aws_eks_cluster.this.version
-}
+# data "aws_eks_addon_version" "default_vpc_cni" {
+#   addon_name         = "vpc-cni"
+#   kubernetes_version = aws_eks_cluster.this.version
+# }
 
 resource "aws_eks_addon" "vpc_cni" {
   cluster_name                = aws_eks_cluster.this.name
   addon_name                  = "vpc-cni"
-  addon_version               = data.aws_eks_addon_version.default_vpc_cni.version
+  addon_version               = "v1.12.6-eksbuild.2"
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
   configuration_values = jsonencode({
