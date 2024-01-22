@@ -37,6 +37,11 @@ output "deploy_id" {
   value       = var.deploy_id
 }
 
+output "ignore_tags" {
+  description = "Tags to be ignored by the aws provider"
+  value       = var.ignore_tags
+}
+
 output "region" {
   description = "Deployment Region."
   value       = var.region

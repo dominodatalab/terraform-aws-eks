@@ -25,7 +25,9 @@ module "eks" {
   bastion_info        = local.infra.bastion
   create_eks_role_arn = local.infra.create_eks_role_arn
   tags                = local.infra.tags
+  ignore_tags         = local.infra.ignore_tags
 }
+
 data "aws_caller_identity" "global" {
   provider = aws.global
 }
@@ -67,11 +69,17 @@ module "irsa_policies" {
 # by specifying the profile belonging to the account pertaining to the hosted zone.
 provider "aws" {
   alias = "global"
-  # profile = << profile with credentials to account where the hosted zone resides>>
+  # profile = "global"
+  ignore_tags {
+    keys = local.infra.ignore_tags
+  }
 }
 
 provider "aws" {
   region = local.infra.region
+  ignore_tags {
+    keys = local.infra.ignore_tags
+  }
 }
 terraform {
   required_version = ">= 1.4.0"

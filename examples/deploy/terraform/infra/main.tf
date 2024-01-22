@@ -15,11 +15,16 @@ module "infra" {
   route53_hosted_zone_private = var.route53_hosted_zone_private
   ssh_pvt_key_path            = var.ssh_pvt_key_path
   tags                        = var.tags
+  ignore_tags                 = var.ignore_tags
 }
 
 
 provider "aws" {
   region = var.region
+
+  ignore_tags {
+    keys = var.ignore_tags
+  }
 }
 
 terraform {

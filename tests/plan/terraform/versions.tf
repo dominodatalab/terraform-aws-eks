@@ -1,5 +1,8 @@
 provider "aws" {
   region = var.region
+  ignore_tags {
+    keys = var.ignore_tags
+  }
 }
 
 terraform {

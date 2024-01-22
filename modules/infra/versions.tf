@@ -25,4 +25,7 @@ provider "aws" {
   default_tags {
     tags = var.tags
   }
+  ignore_tags {
+    keys = var.ignore_tags
+  }
 }

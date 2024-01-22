@@ -9,3 +9,9 @@ variable "deploy_id" {
   type        = string
   default     = "dominoeks003"
 }
+
+variable "ignore_tags" {
+  type        = list(string)
+  description = "Tag keys to be ignored by the aws provider."
+  default     = []
+}

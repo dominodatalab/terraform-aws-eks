@@ -23,6 +23,9 @@ provider "aws" {
   default_tags {
     tags = var.tags
   }
+  ignore_tags {
+    keys = var.ignore_tags
+  }
 }
 
 provider "aws" {
@@ -30,6 +33,9 @@ provider "aws" {
   region = var.region
   default_tags {
     tags = var.tags
+  }
+  ignore_tags {
+    keys = var.ignore_tags
   }
   assume_role {
     role_arn = var.create_eks_role_arn
