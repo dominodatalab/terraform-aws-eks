@@ -35,8 +35,8 @@ resource "aws_iam_policy" "route53" {
 
 
 locals {
-  create_eks_role_name = coalesce(var.eks.creation_role_name, "${var.deploy_id}-create-eks")
-  flyte_control_plane_role_name = "{var.deploy_id}-flyte-controlplane-role
+  create_eks_role_name          = coalesce(var.eks.creation_role_name, "${var.deploy_id}-create-eks")
+  flyte_control_plane_role_name = "${var.deploy_id}-flyte-controlplane-role"
 }
 
 data "aws_iam_policy_document" "create_eks_role" {
@@ -129,15 +129,15 @@ resource "aws_iam_role" "create_flyte_role" {
         Action = "sts:AssumeRoleWithWebIdentity"
         Principal = {
           Federated = [
-            "arn:aws:iam::{local.aws_account_id}:oidc-provider/${var.eks.identity_providers.issuer_url}"
+            "arn:aws:iam::${local.aws_account_id}:oidc-provider/${var.eks.identity_providers.issuer_url}"
           ]
         }
         Condition = {
-          "StringEquals": {
-            "${var.eks.identity_providers.issuer_url}:aud": "sts.amazonaws.com",
-            "${var.eks.identity_providers.issuer_url}:sub": [
-                "system:serviceaccount:flyte:flyteadmin",
-                "system:serviceaccount:flyte:datacatalog"
+          "StringEquals" : {
+            "${var.eks.identity_providers.issuer_url}:aud" : "sts.amazonaws.com",
+            "${var.eks.identity_providers.issuer_url}:sub" : [
+              "system:serviceaccount:flyte:flyteadmin",
+              "system:serviceaccount:flyte:datacatalog"
             ]
           }
         }
