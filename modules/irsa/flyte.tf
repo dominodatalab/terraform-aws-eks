@@ -9,7 +9,6 @@ resource "aws_iam_role" "create_flyte_role" {
         Effect = "Allow"
         Principal = {
           Federated = local.oidc_provider_arn
-          # "arn:aws:iam::${local.aws_account_id}:oidc-provider/${var.eks.identity_providers.issuer_url}"
         }
         Condition : {
           StringEquals : {
