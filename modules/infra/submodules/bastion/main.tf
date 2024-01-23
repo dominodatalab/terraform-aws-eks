@@ -104,20 +104,26 @@ resource "terraform_data" "check_bastion_instance_profile" {
     command     = <<-EOF
       set -x -o pipefail
 
-      end_time=$(( $(date +%s) + 300 ))
+      sleep_duration=10
+      iam_profile="${aws_iam_instance_profile.bastion.name}"
 
-      while true; do
-        echo "Checking for test-profile-${aws_iam_instance_profile.bastion.name}..."
-        if aws iam --region ${var.region} get-instance-profile --instance-profile-name ${aws_iam_instance_profile.bastion.name}; then
+      check_iam_profile() {
+        echo "Checking for $iam_profile ..."
+        aws iam get-instance-profile --instance-profile-name $iam_profile || return 1
+
+        return 0
+      }
+
+      for _ in {1..30}; do
+        if check_iam_profile; then
           exit 0
         fi
-        if [[ $(date +%s) -ge $end_time ]]; then
-          echo "Timeout reached waiting for ${aws_iam_instance_profile.bastion.name}...Exiting"
-          exit 1
-        fi
-        echo "Waiting for ${aws_iam_instance_profile.bastion.name}...Sleeping 10s"
-        sleep 10
+
+        sleep "$sleep_duration"
       done
+
+      echo "Timeout reached waiting for $iam_profile ...Exiting"
+      exit 1
     EOF
     interpreter = ["bash", "-c"]
   }

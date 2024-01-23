@@ -67,19 +67,26 @@ resource "terraform_data" "check_backup_role" {
     command     = <<-EOF
       set -x -o pipefail
 
-      end_time=$(( $(date +%s) + 300 ))
+      sleep_duration=10
+      iam_role="${aws_iam_role.efs_backup_role[0].arn}"
 
-      while true; do
-        if aws sts assume-role --role-arn ${aws_iam_role.efs_backup_role[0].arn}--role-session-name tf-check-role-session >/dev/null 2>&1; then
-          echo "Role assumption successful."
+      check_assume_iam_role(){
+        echo "Checking assume on $iam_role ..."
+        aws sts assume-role --role-arn $iam_role --role-session-name tf-check-role-session || return 1
+
+        return 0
+      }
+
+      for _ in {1..30}; do
+        if check_assume_iam_role; then
           exit 0
         fi
-        if [[ $(date +%s) -ge $end_time ]]; then
-          echo "Timeout reached. Role assumption failed."
-          exit 1
-        fi
-        sleep 10
+
+        sleep "$sleep_duration"
       done
+
+      echo "Timeout reached. $iam_role role assumption failed ...Exiting"
+      exit 1
     EOF
     interpreter = ["bash", "-c"]
   }
