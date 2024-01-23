@@ -72,9 +72,7 @@ resource "terraform_data" "check_backup_role" {
 
       check_iam_role(){
         echo "Checking assume on $iam_role ..."
-        aws iam get-role --role-name $iam_role > /dev/null 2>&1 || return 1
-
-        return 0
+        aws iam get-role --role-name $iam_role > /dev/null 2>&1
       }
 
       for _ in {1..30}; do
