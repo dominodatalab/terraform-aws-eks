@@ -60,6 +60,44 @@ resource "aws_iam_role_policy_attachment" "efs_backup_role_attach" {
   policy_arn = data.aws_iam_policy.aws_backup_role_policy[0].arn
 }
 
+resource "terraform_data" "check_backup_role" {
+  count = var.storage.efs.backup_vault.create ? 1 : 0
+
+  provisioner "local-exec" {
+    command     = <<-EOF
+      set -x -o pipefail
+
+      sleep_duration=10
+      iam_role="${aws_iam_role.efs_backup_role[0].name}"
+
+      check_iam_role(){
+        echo "Checking assume on $iam_role ..."
+        aws iam get-role --role-name $iam_role > /dev/null 2>&1
+      }
+
+      for _ in {1..30}; do
+        if check_iam_role; then
+          exit 0
+        fi
+
+        sleep "$sleep_duration"
+      done
+
+      echo "Timeout reached waiting for $iam_role ...Exiting"
+      exit 1
+    EOF
+    interpreter = ["bash", "-c"]
+  }
+
+  triggers_replace = [
+    aws_iam_role.efs_backup_role[0].id,
+  ]
+  depends_on = [
+    aws_iam_role.efs_backup_role,
+    aws_iam_role_policy_attachment.efs_backup_role_attach
+  ]
+}
+
 resource "aws_backup_selection" "efs" {
   count = var.storage.efs.backup_vault.create ? 1 : 0
   name  = "${var.deploy_id}-efs"
@@ -67,5 +105,6 @@ resource "aws_backup_selection" "efs" {
   plan_id      = aws_backup_plan.efs[0].id
   iam_role_arn = aws_iam_role.efs_backup_role[0].arn
 
-  resources = [aws_efs_file_system.eks.arn]
+  resources  = [aws_efs_file_system.eks.arn]
+  depends_on = [terraform_data.check_backup_role]
 }

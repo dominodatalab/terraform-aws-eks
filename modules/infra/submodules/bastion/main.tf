@@ -99,6 +99,35 @@ resource "aws_iam_instance_profile" "bastion" {
   role = aws_iam_role.bastion.name
 }
 
+resource "terraform_data" "check_bastion_instance_profile" {
+  provisioner "local-exec" {
+    command     = <<-EOF
+      set -x -o pipefail
+
+      sleep_duration=10
+      iam_profile="${aws_iam_instance_profile.bastion.name}"
+
+      check_iam_profile() {
+        echo "Checking for $iam_profile ..."
+        aws iam get-instance-profile --instance-profile-name $iam_profile > /dev/null 2>&1
+      }
+
+      for _ in {1..30}; do
+        if check_iam_profile; then
+          exit 0
+        fi
+
+        sleep "$sleep_duration"
+      done
+
+      echo "Timeout reached waiting for $iam_profile ...Exiting"
+      exit 1
+    EOF
+    interpreter = ["bash", "-c"]
+  }
+  depends_on = [aws_iam_instance_profile.bastion]
+}
+
 data "aws_ami" "amazon_linux_2" {
   count       = var.bastion.ami_id == null ? 1 : 0
   most_recent = true
@@ -176,6 +205,7 @@ resource "aws_instance" "bastion" {
       root_block_device[0].kms_key_id,
     ]
   }
+  depends_on = [terraform_data.check_bastion_instance_profile]
 }
 
 resource "aws_eip" "bastion" {
