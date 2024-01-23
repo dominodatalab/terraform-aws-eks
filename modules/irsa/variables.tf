@@ -69,3 +69,14 @@ variable "additional_irsa_configs" {
     error_message = "Invalid json found in policy"
   }
 }
+
+variable "flyte" {
+  description = <<EOF
+    enabled = Whether to provision any Flyte related resources
+  EOF
+  type = object({
+    enabled = optional(bool, false)
+  })
+
+  default = {}
+}
