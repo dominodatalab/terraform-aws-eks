@@ -109,7 +109,7 @@ resource "terraform_data" "check_bastion_instance_profile" {
 
       check_iam_profile() {
         echo "Checking for $iam_profile ..."
-        aws iam get-instance-profile --instance-profile-name $iam_profile || return 1
+        aws iam get-instance-profile --instance-profile-name $iam_profile > /dev/null 2>&1 || return 1
 
         return 0
       }
