@@ -221,6 +221,7 @@ locals {
             arn  = data.aws_iam_session_context.create_eks_role.issuer_arn
             name = data.aws_iam_session_context.create_eks_role.issuer_name
           }
+          # TODO: Do I need to add something here to pick up my new role?
         ]
       )
       custom_roles = var.eks.custom_role_maps
