@@ -176,6 +176,18 @@ setup_single_node_tf() {
   set_mod_src "$MOD_SOURCE" "${node_deploy_mod_dir}/main.tf" "single_node"
 }
 
+deploy_infra() {
+  deploy "infra"
+}
+
+deploy_cluster() {
+  deploy "cluster"
+}
+
+deploy_nodes() {
+  deploy "nodes"
+}
+
 deploy_single_node() {
   deploy "single-node"
 }
