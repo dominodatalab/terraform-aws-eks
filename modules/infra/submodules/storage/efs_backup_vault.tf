@@ -64,8 +64,11 @@ resource "terraform_data" "check_backup_role" {
   count = var.storage.efs.backup_vault.create ? 1 : 0
 
   provisioner "local-exec" {
-    command = <<EOT
+    command     = <<-EOF
+      set -x -o pipefail
+
       end_time=$(( $(date +%s) + 300 ))
+
       while true; do
         if aws sts assume-role --role-arn ${aws_iam_role.efs_backup_role[0].arn}--role-session-name tf-check-role-session >/dev/null 2>&1; then
           echo "Role assumption successful."
@@ -77,7 +80,8 @@ resource "terraform_data" "check_backup_role" {
         fi
         sleep 10
       done
-    EOT
+    EOF
+    interpreter = ["bash", "-c"]
   }
 
   triggers_replace = [

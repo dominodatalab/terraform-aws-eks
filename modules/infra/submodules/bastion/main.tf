@@ -101,8 +101,11 @@ resource "aws_iam_instance_profile" "bastion" {
 
 resource "terraform_data" "check_bastion_instance_profile" {
   provisioner "local-exec" {
-    command = <<-EOT
+    command     = <<-EOF
+      set -x -o pipefail
+
       end_time=$(( $(date +%s) + 300 ))
+
       while true; do
         echo "Checking for test-profile-${aws_iam_instance_profile.bastion.name}..."
         if aws iam --region ${var.region} get-instance-profile --instance-profile-name ${aws_iam_instance_profile.bastion.name}; then
@@ -115,7 +118,8 @@ resource "terraform_data" "check_bastion_instance_profile" {
         echo "Waiting for ${aws_iam_instance_profile.bastion.name}...Sleeping 10s"
         sleep 10
       done
-    EOT
+    EOF
+    interpreter = ["bash", "-c"]
   }
   depends_on = [aws_iam_instance_profile.bastion]
 }
