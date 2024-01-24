@@ -85,4 +85,6 @@ variable "flyte" {
       dataplane_role    = optional(string, "flyte-dataplane-role")
     }))
   })
+
+  default = {}
 }
