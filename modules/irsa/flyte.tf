@@ -1,6 +1,6 @@
 resource "aws_iam_role" "flyte_controlplane_role" {
   count = var.flyte.enabled ? 1 : 0
-  name  = "${local.name_prefix}-flyte-controlplane-role"
+  name  = "${local.name_prefix}-${var.flyte.eks.controlplane_role}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -26,7 +26,7 @@ resource "aws_iam_role" "flyte_controlplane_role" {
 
 resource "aws_iam_role" "flyte_dataplane_role" {
   count = var.flyte.enabled ? 1 : 0
-  name  = "${local.name_prefix}-flyte-dataplane-role"
+  name  = "${local.name_prefix}-${var.flyte.eks.dataplane_role}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
