@@ -5,11 +5,6 @@ data "aws_eks_addon_version" "default_vpc_cni" {
   most_recent        = true
 }
 
-data "aws_eks_addon" "vpc_cni" {
-  addon_name   = "vpc-cni"
-  cluster_name = aws_eks_cluster.this.name
-}
-
 locals {
   vpc_cni_config_values = jsonencode({
     env = {
@@ -45,7 +40,6 @@ resource "terraform_data" "upgrade_vpc_cni" {
 
   triggers_replace = [
     local_file.upgrade_vpc_cni.content_md5,
-    data.aws_eks_addon.vpc_cni.addon_version,
     aws_eks_cluster.this.id
   ]
   depends_on = [local_file.upgrade_vpc_cni, aws_eks_cluster.this]
