@@ -18,7 +18,7 @@ output "flyte" {
   value = var.flyte.enabled ? {
     eks = {
       controlplane_role = aws_iam_role.flyte_controlplane_role[0].name
-      dataplane_role    = aws_iam_role.dataplane_role[0].name
+      dataplane_role    = aws_iam_role.flyte_dataplane_role[0].name
     }
   } : null
 }
