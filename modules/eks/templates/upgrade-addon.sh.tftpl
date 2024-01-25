@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+eks_cluster_name=${eks_cluster_name}
+k8s_version=${k8s_version}
+aws_region=${aws_region}
+configuration_values='${configuration_values}'
+addon_name=${addon_name}
+addon_version=${addon_version}
+
+YELLOW='\033[1;33m'
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+NC='\033[0m'
+
+eks="aws eks --region $aws_region"
+
+log_info() {
+  printf "$${YELLOW}[INFO] %s$${NC}\n" "$1"
+}
+
+log_error() {
+  printf "$${RED}[ERROR] %s$${NC}\n" "$1"
+}
+
+log_success() {
+  printf "$${GREEN}[SUCCESS] %s$${NC}\n" "$1"
+}
+
+is_addon_installed() {
+  local -a installed_addons
+  mapfile -t installed_addons <<<$($eks list-addons --cluster-name "$eks_cluster_name" --query 'addons' --output json | jq '.[]')
+  for addon in "$${installed_addons[@]}"; do
+    if [ "$addon" == "$addon_name" ]; then
+      log_info "$addon_name is installed."
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+wait_for_update() {
+  local update_version="$1"
+
+  local sleep_duration=10
+
+  for _ in {1..60}; do
+
+    local current_version=$($eks describe-addon --cluster-name "$eks_cluster_name" --addon-name "$addon_name" --query 'addon.addonVersion' --output text)
+    local status=$($eks describe-addon --cluster-name "$eks_cluster_name" --addon-name "$addon_name" --query 'addon.status' --output text)
+
+    log_info "current_version: $current_version | status: $status"
+
+    if [ "$current_version" == "$update_version" ] && [ "$status" == "ACTIVE" ]; then
+      log_success "$addon_name addon upgrade to version: $update_version was successful."
+      return 0
+    fi
+
+    sleep "$sleep_duration"
+  done
+
+  log_error "Timeout reached(10m). Upgrade to version $update_version Failed. Exiting..."
+  return 1
+}
+
+upgrade_addon() {
+  local current_version=$($eks describe-addon --cluster-name "$eks_cluster_name" --addon-name "$addon_name" --query 'addon.addonVersion' --output text)
+
+  local current_major_version=$(echo $current_version | cut -d'.' -f1)
+  local current_minor_version=$(echo $current_version | cut -d'.' -f2)
+
+  local major_version=$(echo $addon_version | cut -d'.' -f1)
+  local minor_version=$(echo $addon_version | cut -d'.' -f2)
+
+  local current_major_minor_version="$(echo $current_version | cut -d'.' -f1,2)"
+  local major_minor_version="$(echo $addon_version | cut -d'.' -f1,2)"
+
+  log_info "current_version: $current_version | addon_version: $addon_version"
+
+  if [ "$current_version" == "$addon_version" ]; then
+    log_success "$addon_name addon version: $current_version is up to date."
+    return 0
+  fi
+
+  if [ "$current_major_minor_version" == "$major_minor_version" ]; then
+    log_success "major.minor versions are the same, Terraform can handle the upgrade."
+    return 0
+  fi
+
+  if [ "$current_major_version" == "$major_version" ] && [ $((minor_version - current_minor_version)) -eq 1 ]; then
+    log_success "major versions are the same, and minor version differs by 1, Terraform can handle the upgrade."
+    return 0
+  fi
+
+  local versions=$($eks describe-addon-versions --kubernetes-version "$k8s_version" --addon-name "$addon_name" --query 'addons[0].addonVersions[].addonVersion' --output text)
+
+  local -a upgrade_versions
+  mapfile -t upgrade_versions < <(echo "$versions" | grep -o 'v1\.[0-9]*\.[0-9]*-eksbuild\.[0-9]*' | sort -V | awk -F '.' -v start="$current_version" -v end="$addon_version" '
+        $0 >= start && $0 <= end {
+            minor_version = $1 "." $2
+            latest_minor[minor_version] = $0
+        }
+        END {
+            for (version in latest_minor) {
+                print latest_minor[version]
+            }
+        }' | grep -v -E "$current_major_minor_version|$major_minor_version")
+
+  if [ -z "$${upgrade_versions[*]}" ]; then
+    log_error "There are no versions to upgrade, but were expected... Exiting."
+    return 1
+  fi
+
+  for version in "$${upgrade_versions[@]}"; do
+    log_info "Upgrading $addon_name to: $version"
+
+    $eks update-addon \
+      --cluster-name "$eks_cluster_name" \
+      --addon-name "$addon_name" \
+      --addon-version "$version" \
+      --resolve-conflicts "OVERWRITE" \
+      --configuration-values $configuration_values
+
+    wait_for_update "$version" || return 1
+  done
+
+  log_info "Terraform(module.eks.aws_eks_addon.vpc_cni) will perform the final version upgrade to: $addon_version"
+
+}
+
+if is_addon_installed; then
+  log_success "$addon_name is not installed.Terraform can handle the installation."
+else
+  upgrade_addon || exit 1
+fi
