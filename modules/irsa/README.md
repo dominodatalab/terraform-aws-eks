@@ -55,5 +55,6 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_external_dns"></a> [external\_dns](#output\_external\_dns) | External\_dns info |
+| <a name="output_flyte"></a> [flyte](#output\_flyte) | Flyte info |
 | <a name="output_roles"></a> [roles](#output\_roles) | Roles mapping info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

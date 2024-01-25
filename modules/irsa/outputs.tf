@@ -12,3 +12,13 @@ output "external_dns" {
     external_dns_use_eks_idp = var.use_cluster_odc_idp
   } : null
 }
+
+output "flyte" {
+  description = "Flyte info"
+  value = var.flyte.enabled ? {
+    eks = {
+      controlplane_role = aws_iam_role.flyte_controlplane_role[0].name
+      dataplane_role    = aws_iam_role.dataplane_role[0].name
+    }
+  } : null
+}
