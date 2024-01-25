@@ -17,8 +17,9 @@ output "flyte" {
   description = "Flyte info"
   value = var.flyte.enabled ? {
     eks = {
-      controlplane_role = aws_iam_role.flyte_controlplane_role[0].name
-      dataplane_role    = aws_iam_role.flyte_dataplane_role[0].name
+      account_id            = regex("arn:aws:iam::(.*).*", local.oidc_provider_arn)[0]
+      controlplane_role_arn = aws_iam_role.flyte_controlplane_role[0].arn
+      dataplane_role_arn    = aws_iam_role.flyte_dataplane_role[0].arn
     }
   } : null
 }
