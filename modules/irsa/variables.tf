@@ -3,6 +3,7 @@ variable "eks_info" {
     cluster = {
       specs {
         name            = Cluster name.
+        account_id      = AWS account id where the cluster resides.
       }
       oidc = {
         arn = OIDC provider ARN.
@@ -16,7 +17,8 @@ variable "eks_info" {
   type = object({
     cluster = object({
       specs = object({
-        name = string
+        name       = string
+        account_id = string
       })
       oidc = object({
         arn = string

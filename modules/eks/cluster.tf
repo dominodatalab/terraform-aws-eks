@@ -31,6 +31,10 @@ resource "aws_cloudwatch_log_group" "eks_cluster" {
   retention_in_days = 365
 }
 
+data "aws_caller_identity" "cluster_aws_account" {
+  provider = aws.eks
+}
+
 resource "aws_eks_cluster" "this" {
   provider = aws.eks
 
