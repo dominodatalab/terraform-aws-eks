@@ -111,6 +111,27 @@ commands:
           name: Terraform init/validate/apply
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy
+  tf_deploy_infra:
+    description: "Terraform deploy Infra"
+    steps:
+      - run:
+          name: Terraform deploy Infra
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh deploy_infra
+  tf_deploy_cluster:
+    description: "Terraform deploy Cluster"
+    steps:
+      - run:
+          name: Terraform deploy Cluster
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh deploy_cluster
+  tf_deploy_nodes:
+    description: "Terraform deploy Nodes"
+    steps:
+      - run:
+          name: Terraform deploy Nodes
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh deploy_nodes
   tf_deploy_single_node:
     description: "Terraform deploy single-node"
     steps:
@@ -135,7 +156,9 @@ commands:
       - aws-cli/setup:
           role-arn: "${AWS_IAM_ROLE}"
           session-duration: "43200"
-      - tf_init_apply
+      - tf_deploy_infra
+      - tf_deploy_cluster
+      - tf_deploy_nodes
   tf_destroy:
     description: "Terraform destroy"
     steps:
@@ -205,7 +228,7 @@ jobs:
       - set_mod_source_latest_rel
       - tf_deploy
       - set_mod_source_current
-      - tf_init_apply
+      - tf_deploy
       - tf_destroy
 
 workflows:

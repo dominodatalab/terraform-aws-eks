@@ -91,6 +91,16 @@ data "aws_eks_addon_version" "default_vpc_cni" {
   kubernetes_version = aws_eks_cluster.this.version
 }
 
+locals {
+  is_pod_sb = length(var.network_info.subnets.pod) > 0
+  vpc_cni_env = merge({
+    ENABLE_PREFIX_DELEGATION = tostring(try(var.eks.vpc_cni.prefix_delegation, false))
+    ANNOTATE_POD_IP          = tostring(try(var.eks.vpc_cni.annotate_pod_ip, true))
+    }, local.is_pod_sb ? {
+    AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = "true"
+  ENI_CONFIG_LABEL_DEF = "topology.kubernetes.io/zone" } : {})
+}
+
 resource "aws_eks_addon" "vpc_cni" {
   cluster_name                = aws_eks_cluster.this.name
   addon_name                  = "vpc-cni"
@@ -98,10 +108,7 @@ resource "aws_eks_addon" "vpc_cni" {
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
   configuration_values = jsonencode({
-    env = {
-      ENABLE_PREFIX_DELEGATION = tostring(try(var.eks.vpc_cni.prefix_delegation, false))
-      ANNOTATE_POD_IP          = tostring(try(var.eks.vpc_cni.annotate_pod_ip, true))
-    }
+    env = local.vpc_cni_env
   })
 }
 
