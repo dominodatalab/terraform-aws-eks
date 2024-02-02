@@ -82,10 +82,6 @@ variable "flyte" {
   EOF
   type = object({
     enabled = optional(bool, false)
-    eks = optional(object({
-      controlplane_role = optional(string, "flyte-controlplane-role")
-      dataplane_role    = optional(string, "flyte-dataplane-role")
-    }))
   })
 
   default = {}
