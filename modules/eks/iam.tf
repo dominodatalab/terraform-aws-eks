@@ -284,3 +284,55 @@ resource "aws_eks_identity_provider_config" "this" {
     username_prefix               = lookup(each.value, "username_prefix", null)
   }
 }
+
+resource "aws_iam_role" "flyte_controlplane_role" {
+  count = var.flyte.enabled ? 1 : 0
+  name  = "${local.eks_info.cluster.specs.name}-${var.flyte.eks.controlplane_role}"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = local.eks_info.cluster.oidc.arn
+        }
+        Condition : {
+          StringEquals : {
+            "${trimprefix(local.eks_info.cluster.oidc.url, "https://")}:aud" : "sts.amazonaws.com",
+            "${trimprefix(local.eks_info.cluster.oidc.url, "https://")}:sub" : [
+              "system:serviceaccount:flyte:flyteadmin",
+              "system:serviceaccount:flyte:datacatalog"
+            ]
+          }
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role" "flyte_dataplane_role" {
+  count = var.flyte.enabled ? 1 : 0
+  name  = "${local.eks_info.cluster.specs.name}-${var.flyte.eks.dataplane_role}"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = local.eks_info.cluster.oidc.arn
+        }
+        Condition : {
+          StringEquals : {
+            "${trimprefix(local.eks_info.cluster.oidc.url, "https://")}:aud" : "sts.amazonaws.com",
+            "${trimprefix(local.eks_info.cluster.oidc.url, "https://")}:sub" : [
+              "system:serviceaccount:flyte:flytepropeller",
+              "system:serviceaccount:*:default"
+            ]
+          }
+        }
+      },
+    ]
+  })
+}
