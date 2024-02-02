@@ -31,7 +31,9 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_eks_info"></a> [eks\_info](#input\_eks\_info) | cluster = {<br>      specs {<br>        name            = Cluster name.<br>      }<br>      oidc = {<br>        arn = OIDC provider ARN.<br>        url = OIDC provider url.<br>        cert = {<br>          thumbprint\_list = OIDC cert thumbprints.<br>          url             = OIDC cert URL.<br>      }<br>    } | <pre>object({<br>    cluster = object({<br>      specs = object({<br>        name = string<br>      })<br>      oidc = object({<br>        arn = string<br>        url = string<br>        cert = object({<br>          thumbprint_list = list(string)<br>          url             = string<br>        })<br>      })<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_flyte"></a> [flyte](#input\_flyte) | enabled = Whether to provision any Flyte related resources<br>    eks = {<br>      controlplane\_role = Name of control plane role to create for Flyte<br>      dataplane\_role = Name of data plane role to create for Flyte<br>    } | <pre>object({<br>    enabled = optional(bool, false)<br>    eks = optional(object({<br>      controlplane_role = optional(string, "flyte-controlplane-role")<br>      dataplane_role    = optional(string, "flyte-dataplane-role")<br>    }))<br>  })</pre> | `{}` | no |
+| <a name="input_use_cluster_odc_idp"></a> [use\_cluster\_odc\_idp](#input\_use\_cluster\_odc\_idp) | Toogle to uset the oidc idp connector in the trust policy.<br>    Set to `true` if the cluster and the hosted zone are in different aws accounts. | `bool` | `true` | no |
 
 ## Outputs
 
