@@ -205,6 +205,7 @@ locals {
         endpoint                  = aws_eks_cluster.this.endpoint
         certificate_authority     = aws_eks_cluster.this.certificate_authority
         kubernetes_network_config = aws_eks_cluster.this.kubernetes_network_config
+        account_id                = data.aws_caller_identity.cluster_aws_account.account_id
       }
       addons            = var.eks.cluster_addons
       version           = aws_eks_cluster.this.version

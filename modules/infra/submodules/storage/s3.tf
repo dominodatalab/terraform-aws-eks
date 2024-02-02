@@ -635,42 +635,6 @@ data "aws_iam_policy_document" "flyte_metadata" {
       identifiers = ["*"]
     }
   }
-
-  statement {
-    sid       = "DenyIncorrectEncryptionHeader"
-    effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata[0].bucket}/*"]
-    actions   = ["s3:PutObject"]
-
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-server-side-encryption"
-      values   = [local.s3_server_side_encryption]
-    }
-
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-  }
-
-  statement {
-    sid       = "DenyUnEncryptedObjectUploads"
-    effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata[0].bucket}/*"]
-    actions   = ["s3:PutObject"]
-
-    condition {
-      test     = "Null"
-      variable = "s3:x-amz-server-side-encryption"
-      values   = ["true"]
-    }
-
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-  }
 }
 
 resource "aws_s3_bucket" "flyte_data" {
@@ -697,42 +661,6 @@ data "aws_iam_policy_document" "flyte_data" {
       test     = "Bool"
       variable = "aws:SecureTransport"
       values   = ["false"]
-    }
-
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-  }
-
-  statement {
-    sid       = "DenyIncorrectEncryptionHeader"
-    effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_data[0].bucket}/*"]
-    actions   = ["s3:PutObject"]
-
-    condition {
-      test     = "StringNotEquals"
-      variable = "s3:x-amz-server-side-encryption"
-      values   = [local.s3_server_side_encryption]
-    }
-
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-  }
-
-  statement {
-    sid       = "DenyUnEncryptedObjectUploads"
-    effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_data[0].bucket}/*"]
-    actions   = ["s3:PutObject"]
-
-    condition {
-      test     = "Null"
-      variable = "s3:x-amz-server-side-encryption"
-      values   = ["true"]
     }
 
     principals {
