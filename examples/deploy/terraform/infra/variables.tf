@@ -355,11 +355,21 @@ variable "bastion" {
   EOF
 
   type = object({
-    enabled                  = optional(bool)
+    enabled                  = optional(bool, true)
     ami_id                   = optional(string)
     instance_type            = optional(string)
     authorized_ssh_ip_ranges = optional(list(string))
     username                 = optional(string)
     install_binaries         = optional(bool)
   })
+}
+
+
+variable "domino_cur" {
+  description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
+  type = object({
+    provision_cost_usage_report = optional(bool, false)
+  })
+
+  default = {}
 }

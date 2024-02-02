@@ -21,3 +21,7 @@ default_node_groups = {
     }
   }
 }
+
+bastion = {
+  enabled = false
+}
