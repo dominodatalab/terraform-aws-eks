@@ -6,3 +6,10 @@ locals {
   name_prefix       = var.eks_info.cluster.specs.name
   aws_account_id    = data.aws_caller_identity.aws_account.account_id
 }
+
+resource "aws_iam_openid_connect_provider" "this" {
+  count           = var.use_cluster_odc_idp ? 0 : 1
+  url             = var.eks_info.cluster.oidc.cert.url
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = var.eks_info.cluster.oidc.cert.thumbprint_list
+}
