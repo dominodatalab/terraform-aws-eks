@@ -12,11 +12,10 @@ default_node_groups = {
   platform = {
     "availability_zone_ids" = ["usw2-az1", "usw2-az2"]
   }
-
-  ## bastion is enabled by default
-  bastion = {
-    enabled = false
-  }
 }
 
 route53_hosted_zone_name = "deploys-delta.domino.tech"
+
+bastion = {
+  enabled = false
+}

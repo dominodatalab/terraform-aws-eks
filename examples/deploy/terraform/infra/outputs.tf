@@ -5,7 +5,7 @@ output "infra" {
 
 output "ssh_bastion_command" {
   description = "Command used in order to ssh to bastion."
-  value       = module.infra.bastion.ssh_bastion_command
+  value       = var.bastion.enabled ? module.infra.bastion.ssh_bastion_command : null
 }
 
 output "domino_config_values" {
