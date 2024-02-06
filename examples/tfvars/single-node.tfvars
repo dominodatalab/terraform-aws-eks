@@ -42,5 +42,5 @@ storage = {
 
 route53_hosted_zone_name = "deploys-delta.domino.tech"
 eks = {
-  k8s_version = "1.28"
+  k8s_version = "1.27"
 }
