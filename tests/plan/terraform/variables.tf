@@ -84,7 +84,7 @@ variable "eks" {
   EOF
 
   type = object({
-    k8s_version  = optional(string, "1.28")
+    k8s_version  = optional(string, "1.27")
     nodes_master = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
