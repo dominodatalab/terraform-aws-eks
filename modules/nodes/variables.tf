@@ -105,7 +105,8 @@ variable "eks_info" {
   type = object({
     k8s_pre_setup_sh_file = string
     cluster = object({
-      addons = list(string)
+      addons              = list(string)
+      post_compute_addons = optional(list(string), ["coredns"])
       specs = object({
         name                      = string
         endpoint                  = string

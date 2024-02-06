@@ -196,6 +196,8 @@ locals {
     }
   } : {})
 
+  post_compute_addons   = ["coredns"]
+  before_compute_addons = setsubtract(var.eks.cluster_addons, local.post_compute_addons)
 
 
   eks_info = {
@@ -214,6 +216,7 @@ locals {
       arn                          = aws_eks_cluster.this.arn
       security_group_id            = aws_security_group.eks_cluster.id
       endpoint                     = aws_eks_cluster.this.endpoint
+      post_compute_addons          = local.post_compute_addons
       roles = concat(
         [
           for role in data.aws_iam_role.master_roles :

@@ -63,13 +63,25 @@ locals {
 
 
 data "aws_eks_addon_version" "default" {
-  for_each           = toset(var.eks_info.cluster.addons)
+  for_each           = toset(var.eks_info.cluster.post_compute_addons)
   addon_name         = each.key
   kubernetes_version = var.eks_info.cluster.version
 }
 
-resource "aws_eks_addon" "this" {
-  for_each                    = toset(var.eks_info.cluster.addons)
+removed {
+  from = aws_eks_addon.this
+  lifecycle {
+    destroy = false
+  }
+}
+
+moved {
+  from = aws_eks_addon.this["coredns"]
+  to   = aws_eks_addon.post_compute_addons["coredns"]
+}
+
+resource "aws_eks_addon" "post_compute_addons" {
+  for_each                    = toset(var.eks_info.cluster.post_compute_addons)
   cluster_name                = var.eks_info.cluster.specs.name
   addon_name                  = each.key
   addon_version               = data.aws_eks_addon_version.default[each.key].version

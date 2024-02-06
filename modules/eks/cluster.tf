@@ -89,12 +89,6 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
   url             = data.tls_certificate.cluster_tls_certificate.url
 }
 
-
-data "aws_eks_addon_version" "default_vpc_cni" {
-  addon_name         = "vpc-cni"
-  kubernetes_version = aws_eks_cluster.this.version
-}
-
 locals {
   is_pod_sb = length(var.network_info.subnets.pod) > 0
 
@@ -117,15 +111,33 @@ locals {
     env       = local.vpc_cni_env
     eniConfig = local.vpc_cni_eni_config
   }
+
+  addons_config_values = {
+    vpc-cni    = local.vpc_cni_configuration_values
+    kube-proxy = {}
+  }
 }
 
-resource "aws_eks_addon" "vpc_cni" {
+
+data "aws_eks_addon_version" "default" {
+  for_each           = toset(local.before_compute_addons)
+  addon_name         = each.key
+  kubernetes_version = aws_eks_cluster.this.version
+}
+
+moved {
+  from = aws_eks_addon.vpc_cni
+  to   = aws_eks_addon.this["vpc-cni"]
+}
+
+resource "aws_eks_addon" "this" {
+  for_each                    = local.before_compute_addons
   cluster_name                = aws_eks_cluster.this.name
-  addon_name                  = "vpc-cni"
-  addon_version               = data.aws_eks_addon_version.default_vpc_cni.version
+  addon_name                  = each.key
+  addon_version               = data.aws_eks_addon_version.default[each.key].version
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
-  configuration_values        = jsonencode(local.vpc_cni_configuration_values)
+  configuration_values        = jsonencode(lookup(local.addons_config_values, each.key, {}))
 }
 
 resource "null_resource" "kubeconfig" {

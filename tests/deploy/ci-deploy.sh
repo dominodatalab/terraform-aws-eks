@@ -124,6 +124,16 @@ deploy_latest_ami_nodes() {
   deploy 'nodes'
 }
 
+set_cluster_imports() {
+  cat <<-EOF >"${CLUSTER_DIR}/imports.tf"
+import {
+  to = module.eks.aws_eks_addon.this["kube-proxy"]
+  id = "\${var.deploy_id}:kube-proxy"
+}
+EOF
+
+}
+
 destroy() {
   local component=${1:-all}
   pushd "$DEPLOY_DIR" >/dev/null
