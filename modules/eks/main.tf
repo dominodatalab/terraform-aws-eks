@@ -197,7 +197,6 @@ locals {
   } : {})
 
 
-
   eks_info = {
     cluster = {
       specs = {
@@ -207,13 +206,13 @@ locals {
         kubernetes_network_config = aws_eks_cluster.this.kubernetes_network_config
         account_id                = data.aws_caller_identity.cluster_aws_account.account_id
       }
-      addons                       = var.eks.cluster_addons
-      vpc_cni_configuration_values = local.vpc_cni_configuration_values
-      version                      = aws_eks_cluster.this.version
-      public_access                = var.eks.public_access
-      arn                          = aws_eks_cluster.this.arn
-      security_group_id            = aws_security_group.eks_cluster.id
-      endpoint                     = aws_eks_cluster.this.endpoint
+      addons            = var.eks.cluster_addons
+      vpc_cni           = var.eks.vpc_cni
+      version           = aws_eks_cluster.this.version
+      public_access     = var.eks.public_access
+      arn               = aws_eks_cluster.this.arn
+      security_group_id = aws_security_group.eks_cluster.id
+      endpoint          = aws_eks_cluster.this.endpoint
       roles = concat(
         [
           for role in data.aws_iam_role.master_roles :
