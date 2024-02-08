@@ -128,7 +128,7 @@ set_cluster_imports() {
   cat <<-EOF >"${CLUSTER_DIR}/imports.tf"
 import {
   to = module.eks.aws_eks_addon.this["kube-proxy"]
-  id = "\${var.deploy_id}:kube-proxy"
+  id = "\${local.infra.deploy_id}:kube-proxy"
 }
 EOF
 
