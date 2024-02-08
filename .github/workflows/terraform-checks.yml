@@ -26,23 +26,28 @@ jobs:
       - uses: pre-commit/action@v3.0.0
         with:
           extra_args: terraform_tflint --all-files
-  terraform_tfsec:
-    name: Run tfsec
+  terraform_trivy:
+    name: Run trivy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Install tfsec
+      - name: Install trivy
         uses: nick-fields/retry@v2.8.3
         with:
           timeout_seconds: 60
           max_attempts: 5
           retry_wait_seconds: 20
           retry_on: error
-          command: >-
-            curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+          command: |
+            apt-get install wget apt-transport-https gnupg lsb-release
+            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+            echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+            sudo apt-get update
+            sudo apt-get install trivy
+            trivy version
       - uses: pre-commit/action@v3.0.0
         with:
-          extra_args: terraform_tfsec --all-files
+          extra_args: terraform_trivy --all-files
   terraform_validate:
     name: Run terraform validate
     runs-on: ubuntu-latest
