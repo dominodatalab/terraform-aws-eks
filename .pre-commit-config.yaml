@@ -65,11 +65,6 @@ repos:
       - id: terraform_tfsec
         args:
           - "--args=-e aws-s3-specify-public-access-block,aws-cloudwatch-log-group-customer-key,aws-s3-enable-bucket-logging,aws-s3-enable-versioning,aws-s3-no-public-buckets,aws-ec2-require-vpc-flow-logs-for-all-vpcs,aws-s3-encryption-customer-key,aws-ec2-no-public-egress-sgr,aws-iam-no-policy-wildcards,aws-s3-block-public-acls,aws-s3-block-public-policy,aws-s3-enable-bucket-encryption,aws-s3-ignore-public-acls,aws-ec2-no-public-ingress-sgr,aws-ecr-repository-customer-key,aws-ecr-enable-image-scans,aws-eks-no-public-cluster-access,aws-eks-no-public-cluster-access-to-cidr"
-      # - id: terrascan # Skipping until they update lifecycle block; Data resources do not have lifecycle settings, so a lifecycle block is not allowed.
-      # args:
-      #   - '--args=--non-recursive'
-      #   - '--args=--policy-type=aws'
-      #   - '--args=--skip-rules=AC_AWS_0369' #Flow logs are enabled, terrascan does not follow the logical path of the resource
   - repo: local
     hooks:
       - id: check_aws_partition
