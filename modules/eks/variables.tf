@@ -164,8 +164,32 @@ variable "eks" {
       username = string
       groups   = list(string)
     })), [])
-    master_role_names  = optional(list(string), [])
-    cluster_addons     = optional(list(string), ["kube-proxy", "coredns", "vpc-cni"])
+    master_role_names = optional(list(string), [])
+    default_addons = optional(object({
+      vpc-cni = optional(object({
+        name           = optional(string, "vpc-cni")
+        before_compute = optional(bool, true)
+        version        = optional(string, "default")
+        config_values = optional(object({
+          env = optional(object({
+            ENABLE_PREFIX_DELEGATION = optional(bool, false)
+            ANNOTATE_POD_IP          = optional(bool, true)
+          }), {})
+        }), {})
+      }), {}),
+      kube-proxy = optional(object({
+        name           = optional(string, "kube-proxy")
+        before_compute = optional(bool, true)
+        version        = optional(string, "default")
+        config_values  = optional(map(any), {})
+      }), {}),
+      coredns = optional(object({
+        name           = optional(string, "coredns")
+        before_compute = optional(bool, false)
+        version        = optional(string, "default")
+        config_values  = optional(map(any), {})
+      }), {})
+    }), {})
     ssm_log_group_name = optional(string, "session-manager")
     vpc_cni = optional(object({
       prefix_delegation = optional(bool, false)
@@ -184,6 +208,14 @@ variable "eks" {
   })
 
   default = {}
+  validation {
+    condition = alltrue([for k, v in var.eks.default_addons :
+      v.version == "default" ||
+      v.version == "latest" ||
+      can(regex("^v\\d+\\.\\d+\\.\\d+-eksbuild\\.\\d+$", v.version)
+    )])
+    error_message = "Addon version must be 'default', 'latest', or match the pattern v<major>.<minor>.<patch>-eksbuild.<build>."
+  }
 }
 
 variable "ssh_key" {

@@ -92,10 +92,7 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
 locals {
   is_pod_sb = length(var.network_info.subnets.pod) > 0
 
-  vpc_cni_env = merge({
-    ENABLE_PREFIX_DELEGATION = tostring(try(var.eks.vpc_cni.prefix_delegation, false))
-    ANNOTATE_POD_IP          = tostring(try(var.eks.vpc_cni.annotate_pod_ip, true))
-    }, local.is_pod_sb ? {
+  vpc_cni_env = merge(var.eks.default_addons.vpc-cni.config_values["env"], local.is_pod_sb ? {
     AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = "true"
   ENI_CONFIG_LABEL_DEF = "topology.kubernetes.io/zone" } : {})
 
@@ -116,13 +113,21 @@ locals {
     vpc-cni    = local.vpc_cni_configuration_values
     kube-proxy = {}
   }
+
+  addons = { for k, v in var.eks.default_addons : k => merge(v, {
+    version       = contains(["latest", "default"], v.version) ? data.aws_eks_addon_version.this[v.name].version : v.version
+    config_values = lookup(local.addons_config_values, k, {})
+  }) }
+
+  post_compute_addons   = { for k, v in local.addons : k => v if !v.before_compute }
+  before_compute_addons = { for k, v in local.addons : k => v if try(v.before_compute, true) }
 }
 
-
-data "aws_eks_addon_version" "default" {
-  for_each           = toset(local.before_compute_addons)
-  addon_name         = each.key
+data "aws_eks_addon_version" "this" {
+  for_each           = local.before_compute_addons
+  addon_name         = each.value.name
   kubernetes_version = aws_eks_cluster.this.version
+  most_recent        = try(each.value.version, "noversion") == "latest"
 }
 
 moved {
@@ -133,11 +138,11 @@ moved {
 resource "aws_eks_addon" "this" {
   for_each                    = local.before_compute_addons
   cluster_name                = aws_eks_cluster.this.name
-  addon_name                  = each.key
-  addon_version               = data.aws_eks_addon_version.default[each.key].version
+  addon_name                  = each.value.name
+  addon_version               = each.value.version
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
-  configuration_values        = jsonencode(lookup(local.addons_config_values, each.key, {}))
+  configuration_values        = jsonencode(each.value.config_values)
 }
 
 resource "null_resource" "kubeconfig" {

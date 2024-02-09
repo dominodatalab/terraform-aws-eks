@@ -196,8 +196,6 @@ locals {
     }
   } : {})
 
-  post_compute_addons   = ["coredns"]
-  before_compute_addons = setsubtract(var.eks.cluster_addons, local.post_compute_addons)
 
 
   eks_info = {
@@ -209,7 +207,7 @@ locals {
         kubernetes_network_config = aws_eks_cluster.this.kubernetes_network_config
         account_id                = data.aws_caller_identity.cluster_aws_account.account_id
       }
-      addons                       = var.eks.cluster_addons
+      addons                       = var.eks.default_addons
       vpc_cni_configuration_values = local.vpc_cni_configuration_values
       version                      = aws_eks_cluster.this.version
       public_access                = var.eks.public_access
