@@ -549,8 +549,8 @@ data "aws_iam_policy_document" "costs" {
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${local.bucket_names["costs"]}",
+      "arn:${data.aws_partition.current.partition}:s3:::${local.bucket_names["costs"]}/*",
     ]
 
     actions = ["s3:*"]
@@ -570,7 +570,7 @@ data "aws_iam_policy_document" "costs" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${local.bucket_names["costs"]}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -588,7 +588,7 @@ data "aws_iam_policy_document" "costs" {
   statement {
     sid       = "DenyUnEncryptedObjectUploads"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.costs[0].bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${local.bucket_names["costs"]}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -618,8 +618,8 @@ data "aws_iam_policy_document" "flyte_metadata" {
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata[0].bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata[0].bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${local.bucket_names["flyte_metadata"]}",
+      "arn:${data.aws_partition.current.partition}:s3:::${local.bucket_names["flyte_metadata"]}/*",
     ]
 
     actions = ["s3:*"]
@@ -651,8 +651,8 @@ data "aws_iam_policy_document" "flyte_data" {
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_data[0].bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_data[0].bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${local.bucket_names["flyte_data"]}",
+      "arn:${data.aws_partition.current.partition}:s3:::${local.bucket_names["flyte_data"]}/*",
     ]
 
     actions = ["s3:*"]

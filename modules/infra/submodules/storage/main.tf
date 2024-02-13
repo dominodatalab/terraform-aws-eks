@@ -5,6 +5,12 @@ locals {
   private_subnet_ids = var.network_info.subnets.private[*].subnet_id
   kms_key_arn        = var.kms_info.enabled ? var.kms_info.key_arn : null
 
+  bucket_names = {
+    costs          = "${var.deploy_id}-costs"
+    flyte_metadata = "${var.deploy_id}-flyte-metadata"
+    flyte_data     = "${var.deploy_id}-flyte-data"
+  }
+
   s3_buckets = { for k, v in {
     backups = {
       bucket_name = aws_s3_bucket.backups.bucket
@@ -19,19 +25,19 @@ locals {
       arn         = aws_s3_bucket.blobs.arn
     }
     costs = var.storage.costs_enabled ? {
-      bucket_name = aws_s3_bucket.costs[0].bucket
+      bucket_name = local.bucket_names["costs"]
       id          = aws_s3_bucket.costs[0].id
       policy_json = data.aws_iam_policy_document.costs[0].json
       arn         = aws_s3_bucket.costs[0].arn
     } : {}
     flyte_metadata = var.flyte.enabled ? {
-      bucket_name = aws_s3_bucket.flyte_metadata[0].bucket
+      bucket_name = local.bucket_names["flyte_metadata"]
       id          = aws_s3_bucket.flyte_metadata[0].id
       policy_json = data.aws_iam_policy_document.flyte_metadata[0].json
       arn         = aws_s3_bucket.flyte_metadata[0].arn
     } : {}
     flyte_data = var.flyte.enabled ? {
-      bucket_name = aws_s3_bucket.flyte_data[0].bucket
+      bucket_name = local.bucket_names["flyte_data"]
       id          = aws_s3_bucket.flyte_data[0].id
       policy_json = data.aws_iam_policy_document.flyte_data[0].json
       arn         = aws_s3_bucket.flyte_data[0].arn
