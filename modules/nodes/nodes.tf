@@ -122,6 +122,8 @@ resource "aws_eks_node_group" "node_groups" {
   update_config {
     max_unavailable = 1
   }
+
+  depends_on = [aws_eks_addon.pre_compute_addons]
 }
 
 locals {

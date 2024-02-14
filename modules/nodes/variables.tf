@@ -1,5 +1,3 @@
-
-
 variable "ssh_key" {
   description = <<EOF
     path          = SSH private key filepath.
@@ -106,6 +104,10 @@ variable "eks_info" {
     k8s_pre_setup_sh_file = string
     cluster = object({
       addons = list(string)
+      vpc_cni = optional(object({
+        prefix_delegation = optional(bool, false)
+        annotate_pod_ip   = optional(bool, true)
+      }))
       specs = object({
         name                      = string
         endpoint                  = string

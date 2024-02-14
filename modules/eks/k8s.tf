@@ -12,7 +12,7 @@ module "k8s_setup" {
   network_info = var.network_info
   eks_info     = local.eks_info
 
-  depends_on = [aws_eks_addon.vpc_cni, null_resource.kubeconfig]
+  depends_on = [null_resource.kubeconfig]
 }
 
 resource "terraform_data" "run_k8s_pre_setup" {

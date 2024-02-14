@@ -189,7 +189,6 @@ locals {
   } : {})
 
 
-
   eks_info = {
     cluster = {
       specs = {
@@ -199,6 +198,7 @@ locals {
         kubernetes_network_config = aws_eks_cluster.this.kubernetes_network_config
       }
       addons            = var.eks.cluster_addons
+      vpc_cni           = var.eks.vpc_cni
       version           = aws_eks_cluster.this.version
       public_access     = var.eks.public_access
       arn               = aws_eks_cluster.this.arn

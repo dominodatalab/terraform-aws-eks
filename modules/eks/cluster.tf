@@ -85,24 +85,15 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
   url             = data.tls_certificate.cluster_tls_certificate.url
 }
 
+locals {
 
-data "aws_eks_addon_version" "default_vpc_cni" {
-  addon_name         = "vpc-cni"
-  kubernetes_version = aws_eks_cluster.this.version
 }
 
-resource "aws_eks_addon" "vpc_cni" {
-  cluster_name                = aws_eks_cluster.this.name
-  addon_name                  = "vpc-cni"
-  addon_version               = data.aws_eks_addon_version.default_vpc_cni.version
-  resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "OVERWRITE"
-  configuration_values = jsonencode({
-    env = {
-      ENABLE_PREFIX_DELEGATION = tostring(try(var.eks.vpc_cni.prefix_delegation, false))
-      ANNOTATE_POD_IP          = tostring(try(var.eks.vpc_cni.annotate_pod_ip, true))
-    }
-  })
+removed {
+  from = aws_eks_addon.vpc_cni
+  lifecycle {
+    destroy = false
+  }
 }
 
 resource "null_resource" "kubeconfig" {

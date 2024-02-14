@@ -6,7 +6,7 @@ parameters:
     default: "v3.11.2"
   terraform_version:
     type: string
-    default: "1.4.4"
+    default: "1.7.3"
   hcledit_version:
     type: string
     default: "0.2.9"
@@ -54,6 +54,27 @@ commands:
           name: Set module source to current branch
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_circle_branch
+  set_infra_imports:
+    description: "Set up root infra module imports."
+    steps:
+      - run:
+          name: Set root infra module imports
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh set_infra_imports
+  set_cluster_imports:
+    description: "Set up root cluster module imports."
+    steps:
+      - run:
+          name: Set root cluster module imports
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh set_cluster_imports
+  set_nodes_imports:
+    description: "Set up root nodes module imports."
+    steps:
+      - run:
+          name: Set root nodes module imports
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh set_nodes_imports
   set_mod_source_latest_rel:
     description: "Set up module source to current branch"
     steps:
@@ -205,7 +226,10 @@ jobs:
       - set_mod_source_latest_rel
       - tf_deploy
       - set_mod_source_current
-      - tf_init_apply
+      - set_infra_imports
+      - set_cluster_imports
+      - set_nodes_imports
+      - tf_deploy
       - tf_destroy
 
 workflows:
