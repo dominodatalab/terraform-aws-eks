@@ -31,7 +31,6 @@ module "storage" {
   network_info = module.network.info
   kms_info     = local.kms_info
   storage      = var.storage
-  flyte        = var.flyte
 }
 
 data "aws_ec2_instance_type" "all" {
@@ -111,4 +110,12 @@ provider "aws" {
   ignore_tags {
     keys = var.ignore_tags
   }
+}
+
+module "flyte" {
+  count                     = var.flyte.enabled ? 1 : 0
+  source                    = "./submodules/flyte"
+  eks_info                  = var.eks_info
+  region                    = var.region
+  force_destroy_on_deletion = var.storage.s3.force_destroy_on_deletion
 }
