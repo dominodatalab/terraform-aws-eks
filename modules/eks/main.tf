@@ -39,6 +39,8 @@ locals {
       source_security_group_id = aws_security_group.eks_nodes.id
     }
   }
+  oidc_provider_url = var.eks_info.cluster.oidc.cert.url
+  oidc_provider_arn = var.eks_info.cluster.oidc.arn
 
   node_security_group_rules = merge({
     egress_all = {
