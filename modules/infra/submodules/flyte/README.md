@@ -51,5 +51,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_flyte"></a> [flyte](#output\_flyte) | Flyte info |
+| <a name="output_info"></a> [info](#output\_info) | Flyte info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

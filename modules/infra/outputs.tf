@@ -90,3 +90,8 @@ output "cost_usage_report" {
   description = "Cost Usage Report"
   value       = local.cost_usage_report_info
 }
+
+output "flyte" {
+  description = "Created flyte resources"
+  value       = var.flyte.enabled ? module.flyte[0].info : {}
+}
