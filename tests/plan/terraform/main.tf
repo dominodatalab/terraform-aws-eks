@@ -14,7 +14,6 @@ module "infra" {
   ssh_pvt_key_path         = var.ssh_pvt_key_path
   tags                     = var.tags
   domino_cur               = var.domino_cur
-  eks_info                 = module.eks.info
 }
 
 

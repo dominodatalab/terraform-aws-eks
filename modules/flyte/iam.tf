@@ -25,10 +25,10 @@ resource "aws_iam_role" "flyte_controlplane" {
 
 data "aws_iam_policy_document" "flyte_controlplane" {
   statement {
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
-        "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata.bucket}/*",
-        "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata.bucket}"
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata.bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.flyte_metadata.bucket}"
     ]
     actions = [
       "s3:PutObject",
@@ -72,8 +72,8 @@ resource "aws_iam_role" "flyte_dataplane" {
           StringEquals : {
             "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
-                "system:serviceaccount:domino-platform:datacatalog",
-                "system:serviceaccount:domino-compute:*"
+              "system:serviceaccount:domino-platform:datacatalog",
+              "system:serviceaccount:domino-compute:*"
             ]
           }
         }

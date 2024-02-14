@@ -111,11 +111,3 @@ provider "aws" {
     keys = var.ignore_tags
   }
 }
-
-module "flyte" {
-  count                     = var.flyte.enabled ? 1 : 0
-  source                    = "./submodules/flyte"
-  eks_info                  = var.eks_info
-  region                    = var.region
-  force_destroy_on_deletion = var.storage.s3.force_destroy_on_deletion
-}

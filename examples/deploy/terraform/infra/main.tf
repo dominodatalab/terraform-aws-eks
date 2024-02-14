@@ -17,7 +17,6 @@ module "infra" {
   tags                        = var.tags
   ignore_tags                 = var.ignore_tags
   domino_cur                  = var.domino_cur
-  eks_info                    = var.eks_info
 }
 
 
