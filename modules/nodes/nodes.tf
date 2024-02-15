@@ -123,6 +123,8 @@ resource "aws_eks_node_group" "node_groups" {
     max_unavailable_percentage = each.value.node_group.max_unavailable_percentage
     max_unavailable            = each.value.node_group.max_unavailable
   }
+
+  depends_on = [aws_eks_addon.pre_compute_addons]
 }
 
 locals {

@@ -89,43 +89,15 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
   url             = data.tls_certificate.cluster_tls_certificate.url
 }
 
-
-data "aws_eks_addon_version" "default_vpc_cni" {
-  addon_name         = "vpc-cni"
-  kubernetes_version = aws_eks_cluster.this.version
-}
-
 locals {
-  is_pod_sb = length(var.network_info.subnets.pod) > 0
 
-  vpc_cni_env = merge({
-    ENABLE_PREFIX_DELEGATION = tostring(try(var.eks.vpc_cni.prefix_delegation, false))
-    ANNOTATE_POD_IP          = tostring(try(var.eks.vpc_cni.annotate_pod_ip, true))
-    }, local.is_pod_sb ? {
-    AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = "true"
-  ENI_CONFIG_LABEL_DEF = "topology.kubernetes.io/zone" } : {})
-
-  vpc_cni_eni_config = local.is_pod_sb ? {
-    create = true
-    region = var.region
-    subnets = { for sb in var.network_info.subnets.pod : sb.az => { id = sb.subnet_id
-    securityGroups = [aws_security_group.eks_nodes.id] } }
-    } : { create = false,
-  region = var.region, subnets = {} }
-
-  vpc_cni_configuration_values = {
-    env       = local.vpc_cni_env
-    eniConfig = local.vpc_cni_eni_config
-  }
 }
 
-resource "aws_eks_addon" "vpc_cni" {
-  cluster_name                = aws_eks_cluster.this.name
-  addon_name                  = "vpc-cni"
-  addon_version               = data.aws_eks_addon_version.default_vpc_cni.version
-  resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "OVERWRITE"
-  configuration_values        = jsonencode(local.vpc_cni_configuration_values)
+removed {
+  from = aws_eks_addon.vpc_cni
+  lifecycle {
+    destroy = false
+  }
 }
 
 resource "null_resource" "kubeconfig" {
