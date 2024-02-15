@@ -55,6 +55,8 @@ locals {
   addons_config_values = {
     vpc-cni = local.vpc_cni_configuration_values
   }
+
+  addons_config_values_json = { for k, v in local.addons_config_values : k => jsonencode(v) }
 }
 
 resource "aws_eks_addon" "pre_compute_addons" {
@@ -64,7 +66,7 @@ resource "aws_eks_addon" "pre_compute_addons" {
   addon_version               = data.aws_eks_addon_version.default[each.key].version
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
-  configuration_values        = jsonencode(lookup(local.addons_config_values, each.key, {}))
+  configuration_values        = lookup(local.addons_config_values_json, each.key, null)
 }
 
 

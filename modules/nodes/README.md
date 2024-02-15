@@ -57,5 +57,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_info"></a> [info](#output\_info) | Nodes details. |
+| <a name="output_info"></a> [info](#output\_info) | Node and EKS addons details. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
