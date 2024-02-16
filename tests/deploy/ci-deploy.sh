@@ -124,6 +124,53 @@ deploy_latest_ami_nodes() {
   deploy 'nodes'
 }
 
+# Not used atm, scaffold for seamless future use.
+set_infra_imports() {
+  printf "Nothing to import into the infra module.\n"
+  local import_file="${INFRA_DIR}/imports.tf.tmp"
+  local import_file_tmp="${import_file}.tmp"
+  return 0 # Remove return if used.
+  set_import "$import_file" "$import_file_tmp"
+}
+
+# Not used atm, scaffold for seamless future use.
+set_cluster_imports() {
+  printf "Nothing to import into the cluster module.\n"
+  local import_file="${CLUSTER_DIR}/imports.tf.tmp"
+  local import_file_tmp="${import_file}.tmp"
+  return 0 # Remove return if used.
+  set_import "$import_file" "$import_file_tmp"
+}
+
+set_nodes_imports() {
+  local import_file_tmp="${NODES_DIR}/nodes-imports.tf.tmp"
+  cat <<-EOF >"$import_file_tmp"
+import {
+  to = module.nodes.aws_eks_addon.pre_compute_addons["vpc-cni"]
+  id = "\${local.eks.cluster.specs.name}:vpc-cni"
+}
+EOF
+
+  set_import "$NODES_DIR" "$import_file_tmp"
+}
+
+set_import() {
+  local mod_dir="$1"
+  local import_file_tmp="$2"
+
+  local import_file="${mod_dir}/imports.tf"
+
+  if [[ ! -f "$import_file" ]] || ! grep -Fqx -f "$import_file_tmp" "$import_file"; then
+    printf "Adding import from %s to %s.\n\n" "$import_file_tmp" "$import_file"
+    cat "$import_file_tmp" >>"$import_file"
+    printf "Import file:\n" && cat "$import_file"
+  else
+    printf "Import on %s already present on %s.\n" "$import_file" "$import_file_tmp"
+  fi
+
+  rm -f "$import_file_tmp"
+}
+
 destroy() {
   local component=${1:-all}
   pushd "$DEPLOY_DIR" >/dev/null
