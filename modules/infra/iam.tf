@@ -1,38 +1,9 @@
-data "aws_route53_zone" "hosted" {
-  count        = var.route53_hosted_zone_name != null ? 1 : 0
-  name         = var.route53_hosted_zone_name
-  private_zone = var.route53_hosted_zone_private
-}
-
-data "aws_iam_policy_document" "route53" {
-  count = var.route53_hosted_zone_name != null ? 1 : 0
-  statement {
-
-    effect    = "Allow"
-    resources = ["*"]
-    actions   = ["route53:ListHostedZones"]
-  }
-
-  statement {
-
-    effect    = "Allow"
-    resources = data.aws_route53_zone.hosted[*].arn
-
-    actions = [
-      "route53:ChangeResourceRecordSets",
-      "route53:ListResourceRecordSets",
-    ]
+removed {
+  from = aws_iam_policy.route53
+  lifecycle {
+    destroy = false
   }
 }
-
-resource "aws_iam_policy" "route53" {
-  count  = var.route53_hosted_zone_name != null ? 1 : 0
-  name   = "${var.deploy_id}-route53"
-  path   = "/"
-  policy = data.aws_iam_policy_document.route53[0].json
-}
-
-
 
 locals {
   create_eks_role_name = coalesce(var.eks.creation_role_name, "${var.deploy_id}-create-eks")

@@ -19,5 +19,4 @@ default_node_groups = {
   }
 }
 
-enable_private_link      = true
-route53_hosted_zone_name = "domino"
+enable_private_link = true

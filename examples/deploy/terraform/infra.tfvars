@@ -42,10 +42,8 @@ network = {
     }
   }
 }
-region                      = null
-route53_hosted_zone_name    = null
-route53_hosted_zone_private = false
-ssh_pvt_key_path            = null
+region           = null
+ssh_pvt_key_path = null
 storage = {
   ecr = {
     force_destroy_on_deletion = true
