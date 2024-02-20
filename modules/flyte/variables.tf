@@ -4,11 +4,6 @@ variable "force_destroy_on_deletion" {
   default     = true
 }
 
-variable "region" {
-  description = "AWS region for the deployment"
-  type        = string
-}
-
 variable "eks_info" {
   description = <<EOF
     cluster = {
