@@ -37,3 +37,13 @@ variable "eks_info" {
     })
   })
 }
+
+variable "platform_namespace" {
+  description = "Name of Domino platform namespace for this deploy"
+  type        = string
+}
+
+variable "compute_namespace" {
+  description = "Name of Domino compute namespace for this deploy"
+  type        = string
+}

@@ -13,8 +13,8 @@ resource "aws_iam_role" "flyte_controlplane" {
           StringEquals : {
             "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
-              "system:serviceaccount:domino-platform:flyteadmin",
-              "system:serviceaccount:domino-platform:flytepropeller",
+              "system:serviceaccount:${var.platform_namespace}:flyteadmin",
+              "system:serviceaccount:${var.platform_namespace}:flytepropeller",
             ]
           }
         }
@@ -63,8 +63,8 @@ resource "aws_iam_role" "flyte_dataplane" {
           StringEquals : {
             "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
-              "system:serviceaccount:domino-platform:datacatalog",
-              "system:serviceaccount:domino-compute:*"
+              "system:serviceaccount:${var.platform_namespace}:datacatalog",
+              "system:serviceaccount:${var.compute_namespace}:*"
             ]
           }
         }
