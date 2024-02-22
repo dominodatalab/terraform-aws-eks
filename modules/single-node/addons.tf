@@ -21,7 +21,7 @@ moved {
 }
 
 data "aws_eks_addon_version" "default" {
-  for_each           = toset(var.eks_info.cluster.addons)
+  for_each           = var.run_post_node_setup ? toset(var.eks_info.cluster.addons) : []
   addon_name         = each.key
   kubernetes_version = var.eks_info.cluster.version
 }
@@ -60,7 +60,7 @@ locals {
 }
 
 resource "aws_eks_addon" "pre_compute_addons" {
-  for_each                    = local.pre_compute_addons
+  for_each                    = var.run_post_node_setup ? local.pre_compute_addons : []
   cluster_name                = var.eks_info.cluster.specs.name
   addon_name                  = each.key
   addon_version               = data.aws_eks_addon_version.default[each.key].version
@@ -71,7 +71,7 @@ resource "aws_eks_addon" "pre_compute_addons" {
 
 
 resource "aws_eks_addon" "post_compute_addons" {
-  for_each                    = local.post_compute_addons
+  for_each                    = var.run_post_node_setup ? local.post_compute_addons : []
   cluster_name                = var.eks_info.cluster.specs.name
   addon_name                  = each.key
   addon_version               = data.aws_eks_addon_version.default[each.key].version
