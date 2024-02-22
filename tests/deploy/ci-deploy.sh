@@ -178,6 +178,24 @@ destroy() {
   popd >/dev/null 2>&1
 }
 
+rm_hosted_zone_var_from_infra_module() {
+  printf "Removing route53_hosted_zone_private var.\n"
+
+  hcledit block rm variable.route53_hosted_zone_name -u -f "${INFRA_DIR}/variables.tf"
+  hcledit block rm variable.route53_hosted_zone_private -u -f "${INFRA_DIR}/variables.tf"
+
+  hcledit attribute rm module.infra.route53_hosted_zone_name -u -f "${INFRA_DIR}/main.tf"
+  hcledit attribute rm module.infra.route53_hosted_zone_private -u -f "${INFRA_DIR}/main.tf"
+
+  cat "${INFRA_DIR}/main.tf"
+  cat "${INFRA_DIR}/variables.tf"
+}
+
+pre_upgrade_updates() {
+  printf "Running pre-upgrade updates.\n"
+  rm_hosted_zone_var_from_infra_module
+}
+
 set_mod_src() {
   local mod_source="$1"
   local tf_file="$2"

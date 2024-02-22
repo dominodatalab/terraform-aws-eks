@@ -61,6 +61,13 @@ commands:
           name: Set root infra module imports
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_infra_imports
+  pre_upgrade_updates:
+    description: "Updates necessary for upgrade."
+    steps:
+      - run:
+          name: Manual updates
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh pre_upgrade_updates
   set_cluster_imports:
     description: "Set up root cluster module imports."
     steps:
@@ -249,6 +256,7 @@ jobs:
       - set_mod_source_latest_rel
       - tf_deploy
       - set_mod_source_current
+      - pre_upgrade_updates
       - set_infra_imports
       - set_cluster_imports
       - set_nodes_imports

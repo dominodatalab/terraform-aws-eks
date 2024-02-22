@@ -61,3 +61,38 @@ resource "aws_iam_role_policy_attachment" "external_dns" {
   role       = aws_iam_role.external_dns[0].name
   policy_arn = aws_iam_policy.external_dns[0].arn
 }
+
+## Delete pre-existing route53 policy attached to nodes.
+resource "terraform_data" "delete_route53_policy" {
+  count = var.external_dns.enabled && var.external_dns.rm_role_policy.remove ? 1 : 0
+
+  triggers_replace = [
+    var.external_dns.rm_role_policy.policy_name
+  ]
+  provisioner "local-exec" {
+    command     = <<-EOF
+      set -x -o pipefail
+
+      policy_arn="arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.aws_account.account_id}:policy/${var.external_dns.rm_role_policy.policy_name}"
+
+      if aws iam get-policy --policy-arn "$policy_arn" &>/dev/null; then
+
+        if [[ "${tostring(var.external_dns.rm_role_policy.detach_from_role)}" == "true" ]]; then
+          for role in $(aws iam list-entities-for-policy --policy-arn "$policy_arn" --query 'PolicyRoles[*].RoleName' --output text || exit 1); do
+              printf "Detaching IAM policy: $policy_arn from role: $role.\n"
+              aws iam detach-role-policy --role-name "$role" --policy-arn "$policy_arn" || exit 1
+          done
+        fi
+
+        printf "Deleting IAM policy: $policy_arn.\n"
+        aws iam delete-policy --policy-arn "$policy_arn"
+
+      else
+        printf "IAM policy $policy_arn does not exist. Nothing to do.\n"
+      fi
+
+    EOF
+    interpreter = ["bash", "-c"]
+  }
+  depends_on = [aws_iam_role_policy_attachment.external_dns]
+}

@@ -76,6 +76,7 @@
         "iam:Tag*",
         "iam:Untag*",
         "iam:UpdateAssumeRolePolicy",
+        "iam:ListEntitiesForPolicy",
         "sts:AssumeRole"
       ],
       "Resource": [
