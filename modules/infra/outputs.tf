@@ -1,3 +1,8 @@
+output "rds_enabled" {
+    description = "fuck"
+    value = var.storage.rds.enabled
+}
+
 output "hostname" {
   description = "Domino instance URL."
   value       = try("${var.deploy_id}.${var.route53_hosted_zone_name}", null)
@@ -69,6 +74,11 @@ output "default_node_groups" {
 output "efs_security_group" {
   description = "Security Group ID for EFS"
   value       = module.storage.info.efs.security_group_id
+}
+
+output "rds_security_group" {
+  description = "Security Group ID for RDS postgresql"
+  value       = module.storage.info.rds.security_group_id
 }
 
 output "node_iam_policies" {

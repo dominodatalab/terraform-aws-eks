@@ -50,6 +50,10 @@ storage = {
   ecr = {
     force_destroy_on_deletion = true
   }
+  rds = {
+    enabled = false
+    deletion_protection = false
+  }
   efs = {
     access_point_path = "/domino"
     backup_vault = {

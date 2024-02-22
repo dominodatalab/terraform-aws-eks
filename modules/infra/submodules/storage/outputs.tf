@@ -13,6 +13,12 @@ output "info" {
       container_registry = ECR base registry URL. Grab the base AWS account ECR URL and add the deploy_id. Domino will append /environment and /model.
       iam_policy_arn     = ECR IAM Policy ARN.
     }
+    rds = {
+      address = "Hostname of RDS Postgres instance"
+      port = "Port of RDS postgres instance"
+      username = "Master username for RDS postgres instance
+      master_user_secret = "Secret information for RDS postgres instance"
+    }
   EOF
   value = {
     efs = {
@@ -30,6 +36,13 @@ output "info" {
     ecr = {
       container_registry = join("/", concat(slice(split("/", aws_ecr_repository.this["environment"].repository_url), 0, 1), [var.deploy_id]))
       iam_policy_arn     = aws_iam_policy.ecr.arn
+    }
+    rds = {
+      address = var.storage.rds.enabled ? aws_db_instance.postgresql[0].address: null
+      port = var.storage.rds.enabled ? aws_db_instance.postgresql[0].port : null
+      username = var.storage.rds.enabled ? aws_db_instance.postgresql[0].username : null
+      master_user_secret = var.storage.rds.enabled ? aws_db_instance.postgresql[0].master_user_secret : null
+      security_group_id = var.storage.rds.enabled ? aws_security_group.postgresql[0].id : null
     }
   }
 }

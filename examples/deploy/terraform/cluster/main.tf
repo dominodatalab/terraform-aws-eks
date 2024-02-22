@@ -19,6 +19,7 @@ module "eks" {
   ssh_key             = local.infra.ssh_key
   node_iam_policies   = local.infra.node_iam_policies
   efs_security_group  = local.infra.efs_security_group
+  rds_security_group  = local.infra.rds_security_group
   eks                 = var.eks
   network_info        = local.infra.network
   kms_info            = local.kms
