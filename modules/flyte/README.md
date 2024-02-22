@@ -45,8 +45,10 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_compute_namespace"></a> [compute\_namespace](#input\_compute\_namespace) | Name of Domino compute namespace for this deploy | `string` | n/a | yes |
 | <a name="input_eks_info"></a> [eks\_info](#input\_eks\_info) | cluster = {<br>      specs {<br>        name            = Cluster name.<br>        account\_id      = AWS account id where the cluster resides.<br>      }<br>      oidc = {<br>        arn = OIDC provider ARN.<br>        url = OIDC provider url.<br>        cert = {<br>          thumbprint\_list = OIDC cert thumbprints.<br>          url             = OIDC cert URL.<br>      }<br>    } | <pre>object({<br>    cluster = object({<br>      specs = object({<br>        name       = string<br>        account_id = string<br>      })<br>      oidc = object({<br>        arn = string<br>        url = string<br>        cert = object({<br>          thumbprint_list = list(string)<br>          url             = string<br>        })<br>      })<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_force_destroy_on_deletion"></a> [force\_destroy\_on\_deletion](#input\_force\_destroy\_on\_deletion) | Whether to force destroy flyte s3 buckets on deletion | `bool` | `true` | no |
+| <a name="input_platform_namespace"></a> [platform\_namespace](#input\_platform\_namespace) | Name of Domino platform namespace for this deploy | `string` | n/a | yes |
 
 ## Outputs
 
