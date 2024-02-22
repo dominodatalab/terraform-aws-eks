@@ -5,7 +5,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.4.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.1.0 |
 | <a name="requirement_tls"></a> [tls](#requirement\_tls) | >= 4.0 |
@@ -27,7 +27,8 @@ No modules.
 |------|------|
 | [aws_eip.single_node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip) | resource |
 | [aws_eip_association.single_node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip_association) | resource |
-| [aws_eks_addon.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_addon) | resource |
+| [aws_eks_addon.post_compute_addons](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_addon) | resource |
+| [aws_eks_addon.pre_compute_addons](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_addon) | resource |
 | [aws_iam_instance_profile.single_node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_instance.single_node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [aws_launch_template.single_node](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template) | resource |
