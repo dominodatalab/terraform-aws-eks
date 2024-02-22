@@ -14,8 +14,6 @@ default_node_groups = {
   }
 }
 
-route53_hosted_zone_name = "deploys-delta.domino.tech"
-
 bastion = {
   enabled = false
 }

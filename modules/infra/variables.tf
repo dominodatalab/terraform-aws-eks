@@ -26,22 +26,6 @@ variable "deploy_id" {
   }
 }
 
-variable "route53_hosted_zone_name" {
-  type        = string
-  description = "Optional hosted zone for External DNS zone."
-  default     = null
-  validation {
-    condition     = var.route53_hosted_zone_name != null ? trimspace(var.route53_hosted_zone_name) != "" : true
-    error_message = "route53_hosted_zone_name must be null or a non empty string."
-  }
-}
-
-variable "route53_hosted_zone_private" {
-  type        = bool
-  description = "Is the hosted zone private"
-  default     = false
-}
-
 variable "tags" {
   type        = map(string)
   description = "Deployment tags."

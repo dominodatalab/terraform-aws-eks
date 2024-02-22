@@ -1,19 +1,18 @@
 module "infra" {
   source = "./../../../modules/infra/"
 
-  deploy_id                = var.deploy_id
-  additional_node_groups   = var.additional_node_groups
-  bastion                  = var.bastion
-  default_node_groups      = var.default_node_groups
-  network                  = var.network
-  storage                  = var.storage
-  eks                      = var.eks
-  kms                      = var.kms
-  region                   = var.region
-  route53_hosted_zone_name = var.route53_hosted_zone_name
-  ssh_pvt_key_path         = var.ssh_pvt_key_path
-  tags                     = var.tags
-  domino_cur               = var.domino_cur
+  deploy_id              = var.deploy_id
+  additional_node_groups = var.additional_node_groups
+  bastion                = var.bastion
+  default_node_groups    = var.default_node_groups
+  network                = var.network
+  storage                = var.storage
+  eks                    = var.eks
+  kms                    = var.kms
+  region                 = var.region
+  ssh_pvt_key_path       = var.ssh_pvt_key_path
+  tags                   = var.tags
+  domino_cur             = var.domino_cur
 }
 
 

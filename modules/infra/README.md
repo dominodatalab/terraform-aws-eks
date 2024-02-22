@@ -5,7 +5,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.7.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5 |
 | <a name="requirement_local"></a> [local](#requirement\_local) | >= 2.2.0 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.9.1 |
@@ -33,7 +33,6 @@
 | Name | Type |
 |------|------|
 | [aws_iam_policy.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
-| [aws_iam_policy.route53](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_key_pair.domino](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair) | resource |
@@ -45,10 +44,8 @@
 | [aws_ec2_instance_type.all](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_type) | data source |
 | [aws_iam_policy_document.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.kms_key_global](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.route53](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_kms_key.key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
 | [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
-| [aws_route53_zone.hosted](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 | [tls_public_key.domino](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/public_key) | data source |
 
 ## Inputs
@@ -66,8 +63,6 @@
 | <a name="input_kms"></a> [kms](#input\_kms) | enabled             = "Toggle, if set use either the specified KMS key\_id or a Domino-generated one"<br>    key\_id              = optional(string, null)<br>    additional\_policies = "Allows setting additional KMS key policies when using a Domino-generated key" | <pre>object({<br>    enabled             = optional(bool, true)<br>    key_id              = optional(string, null)<br>    additional_policies = optional(list(string), [])<br>  })</pre> | `{}` | no |
 | <a name="input_network"></a> [network](#input\_network) | vpc = {<br>      id = Existing vpc id, it will bypass creation by this module.<br>      subnets = {<br>        private = Existing private subnets.<br>        public  = Existing public subnets.<br>        pod     = Existing pod subnets.<br>      }), {})<br>    }), {})<br>    network\_bits = {<br>      public  = Number of network bits to allocate to the public subnet. i.e /27 -> 32 IPs.<br>      private = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.<br>      pod     = Number of network bits to allocate to the private subnet. i.e /19 -> 8,192 IPs.<br>    }<br>    cidrs = {<br>      vpc     = The IPv4 CIDR block for the VPC.<br>      pod     = The IPv4 CIDR block for the Pod subnets.<br>    }<br>    use\_pod\_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking. | <pre>object({<br>    vpc = optional(object({<br>      id = optional(string, null)<br>      subnets = optional(object({<br>        private = optional(list(string), [])<br>        public  = optional(list(string), [])<br>        pod     = optional(list(string), [])<br>      }), {})<br>    }), {})<br>    network_bits = optional(object({<br>      public  = optional(number, 27)<br>      private = optional(number, 19)<br>      pod     = optional(number, 19)<br>      }<br>    ), {})<br>    cidrs = optional(object({<br>      vpc = optional(string, "10.0.0.0/16")<br>      pod = optional(string, "100.64.0.0/16")<br>    }), {})<br>    use_pod_cidr = optional(bool, true)<br>  })</pre> | `{}` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
-| <a name="input_route53_hosted_zone_name"></a> [route53\_hosted\_zone\_name](#input\_route53\_hosted\_zone\_name) | Optional hosted zone for External DNS zone. | `string` | `null` | no |
-| <a name="input_route53_hosted_zone_private"></a> [route53\_hosted\_zone\_private](#input\_route53\_hosted\_zone\_private) | Is the hosted zone private | `bool` | `false` | no |
 | <a name="input_ssh_pvt_key_path"></a> [ssh\_pvt\_key\_path](#input\_ssh\_pvt\_key\_path) | SSH private key filepath. | `string` | n/a | yes |
 | <a name="input_storage"></a> [storage](#input\_storage) | storage = {<br>      efs = {<br>        access\_point\_path = Filesystem path for efs.<br>        backup\_vault = {<br>          create        = Create backup vault for EFS toggle.<br>          force\_destroy = Toggle to allow automatic destruction of all backups when destroying.<br>          backup = {<br>            schedule           = Cron-style schedule for EFS backup vault (default: once a day at 12pm).<br>            cold\_storage\_after = Move backup data to cold storage after this many days.<br>            delete\_after       = Delete backup data after this many days.<br>          }<br>        }<br>      }<br>      s3 = {<br>        force\_destroy\_on\_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.<br>      }<br>      ecr = {<br>        force\_destroy\_on\_deletion = Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories.<br>      }<br>      enable\_remote\_backup = Enable tagging required for cross-account backups<br>      costs\_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage<br>    }<br>  } | <pre>object({<br>    efs = optional(object({<br>      access_point_path = optional(string, "/domino")<br>      backup_vault = optional(object({<br>        create        = optional(bool, true)<br>        force_destroy = optional(bool, true)<br>        backup = optional(object({<br>          schedule           = optional(string, "0 12 * * ? *")<br>          cold_storage_after = optional(number, 35)<br>          delete_after       = optional(number, 125)<br>        }), {})<br>      }), {})<br>    }), {})<br>    s3 = optional(object({<br>      force_destroy_on_deletion = optional(bool, true)<br>    }), {})<br>    ecr = optional(object({<br>      force_destroy_on_deletion = optional(bool, true)<br>    }), {}),<br>    enable_remote_backup = optional(bool, false)<br>    costs_enabled        = optional(bool, true)<br>  })</pre> | `{}` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Deployment tags. | `map(string)` | `{}` | no |
@@ -85,7 +80,6 @@
 | <a name="output_domino_key_pair"></a> [domino\_key\_pair](#output\_domino\_key\_pair) | Domino key pair |
 | <a name="output_efs_security_group"></a> [efs\_security\_group](#output\_efs\_security\_group) | Security Group ID for EFS |
 | <a name="output_eks"></a> [eks](#output\_eks) | EKS variables. |
-| <a name="output_hostname"></a> [hostname](#output\_hostname) | Domino instance URL. |
 | <a name="output_ignore_tags"></a> [ignore\_tags](#output\_ignore\_tags) | Tags to be ignored by the aws provider |
 | <a name="output_kms"></a> [kms](#output\_kms) | KMS key details, if enabled. |
 | <a name="output_monitoring_bucket"></a> [monitoring\_bucket](#output\_monitoring\_bucket) | Monitoring Bucket |

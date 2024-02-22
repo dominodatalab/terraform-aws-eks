@@ -332,18 +332,6 @@ variable "ssh_pvt_key_path" {
   type        = string
 }
 
-variable "route53_hosted_zone_name" {
-  description = "Optional hosted zone for External DNS zone."
-  type        = string
-  default     = null
-}
-
-variable "route53_hosted_zone_private" {
-  type        = bool
-  description = "Is the hosted zone private"
-  default     = false
-}
-
 variable "bastion" {
   description = <<EOF
     enabled                  = Create bastion host.
