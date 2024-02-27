@@ -47,3 +47,14 @@ variable "compute_namespace" {
   description = "Name of Domino compute namespace for this deploy"
   type        = string
 }
+
+variable "serviceaccount_names" {
+  description = "Service account names for Flyte"
+  type = object({
+    datacatalog    = optional(string, "datacatalog")
+    flyteadmin     = optional(string, "flyteadmin")
+    flytepropeller = optional(string, "flytepropeller")
+  })
+
+  default = {}
+}
