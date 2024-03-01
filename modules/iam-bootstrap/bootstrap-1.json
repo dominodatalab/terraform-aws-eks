@@ -13,7 +13,8 @@
         "backup:ListTags",
         "backup:TagResource",
         "backup:UntagResource",
-        "backup:DeleteRecoveryPoint"
+        "backup:DeleteRecoveryPoint",
+        "backup:DescribeRecoveryPoint"
       ],
       "Resource": [
         "arn:${partition}:backup:*:${account_id}:backup-vault:${deploy_id}-efs",
