@@ -122,14 +122,3 @@ variable "network_info" {
     })
   })
 }
-
-variable "flyte" {
-  description = <<EOF
-    enabled = Whether to provision any Flyte related resources
-  EOF
-  type = object({
-    enabled = optional(bool, false)
-  })
-
-  default = {}
-}

@@ -26,22 +26,6 @@ variable "deploy_id" {
   }
 }
 
-variable "route53_hosted_zone_name" {
-  type        = string
-  description = "Optional hosted zone for External DNS zone."
-  default     = null
-  validation {
-    condition     = var.route53_hosted_zone_name != null ? trimspace(var.route53_hosted_zone_name) != "" : true
-    error_message = "route53_hosted_zone_name must be null or a non empty string."
-  }
-}
-
-variable "route53_hosted_zone_private" {
-  type        = bool
-  description = "Is the hosted zone private"
-  default     = false
-}
-
 variable "tags" {
   type        = map(string)
   description = "Deployment tags."
@@ -108,7 +92,7 @@ variable "eks" {
       groups   = list(string)
     })), [])
     master_role_names  = optional(list(string), [])
-    cluster_addons     = optional(list(string), ["kube-proxy", "coredns"])
+    cluster_addons     = optional(list(string), ["kube-proxy", "coredns", "vpc-cni"])
     ssm_log_group_name = optional(string, "session-manager")
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
@@ -421,17 +405,6 @@ variable "domino_cur" {
   description = "Determines whether to provision domino cost related infrastructures, ie, long term storage"
   type = object({
     provision_cost_usage_report = optional(bool, false)
-  })
-
-  default = {}
-}
-
-variable "flyte" {
-  description = <<EOF
-    enabled = Whether to provision any Flyte related resources
-  EOF
-  type = object({
-    enabled = optional(bool, false)
   })
 
   default = {}

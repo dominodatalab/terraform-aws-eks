@@ -10,8 +10,6 @@ locals {
   k8s_pre_setup_sh_template = "k8s-pre-setup.sh.tftpl"
   aws_auth_filename         = "aws-auth.yaml"
   aws_auth_template         = "aws-auth.yaml.tftpl"
-  eniconfig_filename        = length(var.network_info.subnets.pod) != 0 ? "eniconfig.yaml" : ""
-  eniconfig_template        = "eniconfig.yaml.tftpl"
   resources_directory       = path.cwd
   templates_dir             = "${path.module}/templates"
 
@@ -22,7 +20,6 @@ locals {
         kubeconfig_path   = var.eks_info.kubeconfig.path
         k8s_tunnel_port   = random_integer.port.result
         aws_auth_yaml     = basename(local.aws_auth_filename)
-        eniconfig_yaml    = local.eniconfig_filename != "" ? basename(local.eniconfig_filename) : ""
         ssh_pvt_key_path  = var.ssh_key.path
         eks_cluster_arn   = var.eks_info.cluster.arn
         calico_version    = var.calico_version
@@ -48,15 +45,6 @@ locals {
           eks_custom_role_maps = var.eks_info.cluster.custom_roles
       })
 
-    }
-
-    eni_config = {
-      filename = local.eniconfig_filename
-      content = templatefile("${local.templates_dir}/${local.eniconfig_template}",
-        {
-          security_group_id = var.eks_info.nodes.security_group_id
-          subnets           = var.network_info.subnets.pod
-      })
     }
   }
 }

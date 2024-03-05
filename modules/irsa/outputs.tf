@@ -12,3 +12,4 @@ output "external_dns" {
     external_dns_use_eks_idp = var.use_cluster_odc_idp
   } : null
 }
+

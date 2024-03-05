@@ -56,21 +56,6 @@ set_k8s_auth() {
   echo
 }
 
-set_eniconfig() {
-  local ENICONFIG_YAML="${eniconfig_yaml}"
-  if [ -z "$ENICONFIG_YAML" ]; then
-    return
-  fi
-  if test -f "$ENICONFIG_YAML"; then
-    printf "$GREEN Updating $ENICONFIG_YAML... $EC \n"
-    kubectl_apply "$ENICONFIG_YAML"
-  else
-    printf "$RED $ENICONFIG_YAML does not exist. $EC \n" && exit 1
-  fi
-  echo
-  kubectl_cmd -n kube-system set env daemonset aws-node AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG=true ENI_CONFIG_LABEL_DEF=topology.kubernetes.io/zone
-}
-
 remove_calico_cr() {
   local WAIT_TIME=300
   local SLEEP_TIME=5
