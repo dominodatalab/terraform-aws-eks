@@ -63,7 +63,7 @@ resource "aws_iam_role" "flyte_dataplane" {
           StringLike : {
             "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
-              "system:serviceaccount:${var.compute_namespace}:*"
+              "system:serviceaccount:${var.compute_namespace}:run-*"
             ]
           }
         }
