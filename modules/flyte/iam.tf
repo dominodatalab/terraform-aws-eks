@@ -13,7 +13,7 @@ resource "aws_iam_role" "flyte_controlplane" {
           StringEquals : {
             "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
-              "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flyteadmin}",
+              "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.datacatalog}",
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flytepropeller}",
             ]
           }
@@ -60,15 +60,29 @@ resource "aws_iam_role" "flyte_dataplane" {
           Federated = local.oidc_provider_arn
         }
         Condition : {
-          StringEquals : {
+          StringLike : {
             "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
-              "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.datacatalog}",
               "system:serviceaccount:${var.compute_namespace}:*"
             ]
           }
         }
       },
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = local.oidc_provider_arn
+        }
+        Condition : {
+          StringEquals : {
+            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
+            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
+              "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flyteadmin}",
+            ]
+          }
+        }
+      }
     ]
   })
 }
