@@ -36,6 +36,14 @@ data "aws_iam_policy_document" "flyte_controlplane" {
       "s3:ListBucket",
     ]
   }
+  statement {
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:kms:${var.region}:${data.aws_caller_identity.aws_account.account_id}:key/*"]
+    actions = [
+      "kms:GenerateDataKey",
+      "kms:Decrypt",
+    ]
+  }
 }
 
 resource "aws_iam_policy" "flyte_controlplane" {
@@ -87,6 +95,14 @@ data "aws_iam_policy_document" "flyte_dataplane" {
       "s3:PutObject",
       "s3:GetObject",
       "s3:ListBucket"
+    ]
+  }
+  statement {
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:kms:${var.region}:${data.aws_caller_identity.aws_account.account_id}:key/*"]
+    actions = [
+      "kms:GenerateDataKey",
+      "kms:Decrypt",
     ]
   }
 }
