@@ -77,5 +77,6 @@ resource "aws_eks_addon" "post_compute_addons" {
   addon_version               = data.aws_eks_addon_version.default[each.key].version
   resolve_conflicts_on_create = "OVERWRITE"
   resolve_conflicts_on_update = "OVERWRITE"
+  configuration_values        = lookup(local.addons_config_values_json, each.key, null)
   depends_on                  = [aws_eks_node_group.node_groups]
 }

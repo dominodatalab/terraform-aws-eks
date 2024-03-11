@@ -169,7 +169,13 @@ variable "default_node_groups" {
             key    = string
             value  = optional(string)
             effect = string
-          })), [])
+            })), [
+            {
+              key    = "ebs.csi.aws.com/agent-not-ready",
+              value  = "true",
+              effect = "NO_EXECUTE"
+            }
+          ])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
           volume = optional(object({
@@ -200,7 +206,8 @@ variable "default_node_groups" {
             key    = string
             value  = optional(string)
             effect = string
-          })), [])
+            })), []
+          )
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
           volume = optional(object({
@@ -236,7 +243,13 @@ variable "default_node_groups" {
             key    = "nvidia.com/gpu"
             value  = "true"
             effect = "NO_SCHEDULE"
+            },
+            {
+              key    = "ebs.csi.aws.com/agent-not-ready",
+              value  = "true",
+              effect = "NO_EXECUTE"
             }
+
           ])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
@@ -270,7 +283,13 @@ variable "additional_node_groups" {
       key    = string
       value  = optional(string)
       effect = string
-    })), [])
+      })), [
+      {
+        key    = "ebs.csi.aws.com/agent-not-ready",
+        value  = "true",
+        effect = "NO_EXECUTE"
+      }
+    ])
     tags = optional(map(string), {})
     gpu  = optional(bool, null)
     volume = object({
