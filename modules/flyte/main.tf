@@ -1,4 +1,5 @@
 data "aws_partition" "current" {}
+data "aws_caller_identity" "aws_account" {}
 
 locals {
   deploy_id         = var.eks_info.cluster.specs.name

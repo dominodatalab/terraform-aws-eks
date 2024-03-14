@@ -1,3 +1,8 @@
+locals {
+  s3_server_side_encryption = var.kms_info.enabled ? "aws:kms" : "AES256"
+  kms_key_arn               = var.kms_info.enabled ? var.kms_info.key_arn : null
+}
+
 resource "aws_s3_bucket" "flyte_metadata" {
   bucket              = "${local.deploy_id}-flyte-metadata"
   force_destroy       = var.force_destroy_on_deletion
@@ -37,7 +42,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "flye_metadata_enc
   bucket = aws_s3_bucket.flyte_metadata.bucket
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      sse_algorithm     = local.s3_server_side_encryption
+      kms_master_key_id = local.kms_key_arn
     }
     bucket_key_enabled = false
   }
@@ -88,7 +94,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "flyte_data_encryp
   bucket = aws_s3_bucket.flyte_data.bucket
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      sse_algorithm     = local.s3_server_side_encryption
+      kms_master_key_id = local.kms_key_arn
     }
     bucket_key_enabled = false
   }
