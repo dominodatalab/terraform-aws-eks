@@ -30,6 +30,8 @@ resource "aws_launch_template" "node_groups" {
       volume_size           = each.value.volume.size
       volume_type           = each.value.volume.type
       kms_key_id            = var.kms_info.enabled ? var.kms_info.key_arn : null
+      iops                  = each.value.volume.iops
+      throughput            = each.value.volume.throughput
     }
 
   }
