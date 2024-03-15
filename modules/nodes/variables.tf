@@ -350,3 +350,9 @@ variable "kms_info" {
     enabled = bool
   })
 }
+
+variable "use_fips_endpoints" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
+}

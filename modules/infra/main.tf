@@ -26,11 +26,13 @@ module "cost_usage_report" {
 }
 
 module "storage" {
-  source       = "./submodules/storage"
-  deploy_id    = var.deploy_id
-  network_info = module.network.info
-  kms_info     = local.kms_info
-  storage      = var.storage
+  source             = "./submodules/storage"
+  deploy_id          = var.deploy_id
+  network_info       = module.network.info
+  kms_info           = local.kms_info
+  storage            = var.storage
+  use_fips_endpoints = var.use_fips_endpoints
+
 }
 
 data "aws_ec2_instance_type" "all" {
@@ -98,15 +100,4 @@ locals {
   bastion_info              = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
   node_iam_policies_storage = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
   node_iam_policies         = local.cost_usage_report_info != null ? concat(local.node_iam_policies_storage, [local.cost_usage_report_info.cur_iam_policy_arn]) : local.node_iam_policies_storage
-}
-
-provider "aws" {
-  region = strcontains(var.region, "us-gov") ? "us-gov-east-1" : "us-east-1"
-  alias  = "us-east-1"
-  default_tags {
-    tags = var.tags
-  }
-  ignore_tags {
-    keys = var.ignore_tags
-  }
 }

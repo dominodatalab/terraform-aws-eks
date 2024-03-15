@@ -83,3 +83,9 @@ variable "additional_irsa_configs" {
     error_message = "Invalid json found in policy"
   }
 }
+
+variable "use_fips_endpoints" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
+}
