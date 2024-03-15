@@ -39,18 +39,18 @@ locals {
     AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = "true"
   ENI_CONFIG_LABEL_DEF = "topology.kubernetes.io/zone" } : {})
 
-  vpc_cni_eni_config = local.is_pod_sb ? {
+  vpc_cni_eni_config = {
     create = true
     region = var.region
-    subnets = { for sb in var.network_info.subnets.pod : sb.az => { id = sb.subnet_id
-    securityGroups = [var.eks_info.nodes.security_group_id] } }
-    } : { create = false,
-  region = var.region, subnets = {} }
-
-  vpc_cni_configuration_values = {
-    env       = local.vpc_cni_env
-    eniConfig = local.vpc_cni_eni_config
+    subnets = {
+      for sb in var.network_info.subnets.pod : sb.az => {
+        id             = sb.subnet_id
+        securityGroups = [var.eks_info.nodes.security_group_id]
+      }
+    }
   }
+
+  vpc_cni_configuration_values = merge({ env = local.vpc_cni_env }, local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {})
 
   addons_config_values = {
     vpc-cni = local.vpc_cni_configuration_values
