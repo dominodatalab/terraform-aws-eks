@@ -123,8 +123,10 @@ variable "node_groups" {
     instance_tags = map(string)
     gpu           = bool
     volume = object({
-      size = string
-      type = string
+      size       = string
+      type       = string
+      iops       = optional(number)
+      throughput = optional(number)
     })
   }))
 }
