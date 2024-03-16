@@ -103,7 +103,11 @@ variable "eks_info" {
   type = object({
     k8s_pre_setup_sh_file = string
     cluster = object({
-      addons = list(string)
+      addons = optional(list(string), ["kube-proxy", "coredns", "vpc-cni"])
+      vpc_cni = optional(object({
+        prefix_delegation = optional(bool, false)
+        annotate_pod_ip   = optional(bool, true)
+      }))
       specs = object({
         name                      = string
         endpoint                  = string
