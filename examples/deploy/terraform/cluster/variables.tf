@@ -96,12 +96,19 @@ variable "irsa_policies" {
 }
 
 variable "irsa_external_dns" {
-  description = "Mappings for custom IRSA configurations."
+  description = "Config to enable irsa for external-dns"
+
   type = object({
     enabled             = optional(bool, false)
     hosted_zone_name    = optional(string, null)
-    namespace           = optional(string, null)
-    serviceaccount_name = optional(string, null)
+    hosted_zone_private = optional(string, false)
+    namespace           = optional(string, "domino-platform")
+    serviceaccount_name = optional(string, "external-dns")
+    rm_role_policy = optional(object({
+      remove           = optional(bool, false)
+      detach_from_role = optional(bool, false)
+      policy_name      = optional(string, "")
+    }), {})
   })
 
   default = {}
