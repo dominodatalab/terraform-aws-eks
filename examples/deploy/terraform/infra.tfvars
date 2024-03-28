@@ -69,3 +69,5 @@ tags = null
 domino_cur = {
   provision_cost_usage_report = false
 }
+
+use_fips_endpoint = false

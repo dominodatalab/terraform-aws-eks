@@ -34,8 +34,20 @@ module "nodes" {
   kms_info               = local.infra.kms
   tags                   = local.infra.tags
   ignore_tags            = local.infra.ignore_tags
+  use_fips_endpoint      = var.use_fips_endpoint
+}
+
+provider "aws" {
+  region            = local.infra.region
+  use_fips_endpoint = var.use_fips_endpoint
 }
 
 terraform {
   required_version = ">= 1.4.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
 }

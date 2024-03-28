@@ -25,7 +25,7 @@ provider "aws" {
   ignore_tags {
     keys = var.ignore_tags
   }
-  use_fips_endpoint = var.use_fips_endpoints
+  use_fips_endpoint = var.use_fips_endpoint
 }
 
 provider "aws" {
@@ -41,5 +41,5 @@ provider "aws" {
     role_arn = var.create_eks_role_arn
   }
 
-  use_fips_endpoint = var.use_fips_endpoints
+  use_fips_endpoint = var.use_fips_endpoint
 }

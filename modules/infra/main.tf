@@ -26,12 +26,12 @@ module "cost_usage_report" {
 }
 
 module "storage" {
-  source             = "./submodules/storage"
-  deploy_id          = var.deploy_id
-  network_info       = module.network.info
-  kms_info           = local.kms_info
-  storage            = var.storage
-  use_fips_endpoints = var.use_fips_endpoints
+  source            = "./submodules/storage"
+  deploy_id         = var.deploy_id
+  network_info      = module.network.info
+  kms_info          = local.kms_info
+  storage           = var.storage
+  use_fips_endpoint = var.use_fips_endpoint
 
 }
 

@@ -102,7 +102,18 @@ variable "irsa_external_dns" {
     hosted_zone_name    = optional(string, null)
     namespace           = optional(string, null)
     serviceaccount_name = optional(string, null)
+    rm_role_policy = optional(object({
+      remove           = optional(bool, false)
+      detach_from_role = optional(bool, false)
+      policy_name      = optional(string, "")
+    }), {})
   })
 
   default = {}
+}
+
+variable "use_fips_endpoint" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
 }

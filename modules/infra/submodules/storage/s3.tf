@@ -329,7 +329,7 @@ resource "terraform_data" "set_monitoring_private_acl" {
     command     = <<-EOF
       set -x -o pipefail
 
-      export AWS_USE_FIPS_ENDPOINT=${tostring(var.use_fips_endpoints)}
+      export AWS_USE_FIPS_ENDPOINT=${tostring(var.use_fips_endpoint)}
 
       sleep_duration=10
       bucket="${aws_s3_bucket.monitoring.bucket}"

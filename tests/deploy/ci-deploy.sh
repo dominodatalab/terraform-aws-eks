@@ -107,13 +107,17 @@ set_tf_vars() {
   [ -f "$PVT_KEY" ] || { ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$PVT_KEY" && chmod 600 "$PVT_KEY"; }
 
   export CUSTOM_AMI PVT_KEY
-  local default_nodes=$(envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
-  envsubst <"$CLUSTER_VARS_TPL" | tee "$CLUSTER_VARS"
-  echo "default_node_groups = $default_nodes" >"$NODES_VARS"
 
-  echo "Infra vars:" && cat "$INFRA_VARS"
-  echo "Cluster vars:" && cat "$CLUSTER_VARS"
-  echo "Nodes vars:" && cat "$NODES_VARS"
+  printf "\nInfra vars:\n"
+  envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS"
+
+  export DEFAULT_NODES=$(hcledit attribute get default_node_groups -f "$INFRA_VARS")
+
+  printf "\nCluster vars:\n"
+  envsubst <"$CLUSTER_VARS_TPL" | tee "$CLUSTER_VARS"
+
+  printf "\nNodes vars:\n"
+  envsubst <"$NODES_VARS_TPL" | tee "$NODES_VARS"
 }
 
 # Not used atm, but we could test nodes upgrades(OS-patches).
