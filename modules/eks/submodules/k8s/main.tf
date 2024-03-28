@@ -32,6 +32,7 @@ locals {
       filename = local.k8s_pre_setup_sh_file
       content = templatefile("${local.templates_dir}/${local.k8s_pre_setup_sh_template}", {
         k8s_functions_sh_filename = local.k8s_functions_sh_filename
+        use_fips_endpoints        = tostring(var.use_fips_endpoints)
       })
     }
 

@@ -104,6 +104,9 @@ resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
     when    = create
     command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name} ${local.kubeconfig.extra_args}"
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoints)
+    }
   }
   provisioner "local-exec" {
     when    = destroy

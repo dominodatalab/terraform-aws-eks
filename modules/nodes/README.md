@@ -52,6 +52,7 @@ No modules.
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 | <a name="input_ssh_key"></a> [ssh\_key](#input\_ssh\_key) | path          = SSH private key filepath.<br>    key\_pair\_name = AWS key\_pair name. | <pre>object({<br>    path          = string<br>    key_pair_name = string<br>  })</pre> | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Deployment tags. | `map(string)` | `{}` | no |
+| <a name="input_use_fips_endpoints"></a> [use\_fips\_endpoints](#input\_use\_fips\_endpoints) | Use aws FIPS endpoints | `bool` | `false` | no |
 
 ## Outputs
 

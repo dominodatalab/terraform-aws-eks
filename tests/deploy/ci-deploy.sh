@@ -107,9 +107,11 @@ set_tf_vars() {
   [ -f "$PVT_KEY" ] || { ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$PVT_KEY" && chmod 600 "$PVT_KEY"; }
 
   export CUSTOM_AMI PVT_KEY
-  local default_nodes=$(envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
+  local DEFAULT_NODES=$(envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS" | hcledit attribute get default_node_groups)
+
+  export DEFAULT_NODES
   envsubst <"$CLUSTER_VARS_TPL" | tee "$CLUSTER_VARS"
-  echo "default_node_groups = $default_nodes" >"$NODES_VARS"
+  envsubst <"$NODES_VARS_TPL" | tee "$NODES_VARS"
 
   echo "Infra vars:" && cat "$INFRA_VARS"
   echo "Cluster vars:" && cat "$CLUSTER_VARS"
