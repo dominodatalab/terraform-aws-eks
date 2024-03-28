@@ -361,3 +361,9 @@ variable "domino_cur" {
 
   default = {}
 }
+
+variable "use_fips_endpoints" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
+}

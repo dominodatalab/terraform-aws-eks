@@ -1,6 +1,7 @@
 deploy_id                = "circleci-${CIRCLE_BUILD_NUM}"
 region                   = "us-west-2"
 ssh_pvt_key_path         = "${PVT_KEY}"
+use_fips_endpoint = true
 
 default_node_groups = {
   compute = {

@@ -112,3 +112,10 @@ variable "additional_node_groups" {
   }))
   default = null
 }
+
+
+variable "use_fips_endpoints" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
+}

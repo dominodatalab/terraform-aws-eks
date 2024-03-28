@@ -26,6 +26,7 @@ module "eks" {
   create_eks_role_arn = local.infra.create_eks_role_arn
   tags                = local.infra.tags
   ignore_tags         = local.infra.ignore_tags
+  use_fips_endpoints  = var.use_fips_endpoints
 }
 
 data "aws_caller_identity" "global" {
@@ -48,7 +49,6 @@ module "irsa_external_dns" {
   source              = "./../../../../modules/irsa"
   use_cluster_odc_idp = local.is_eks_account_same
   eks_info            = module.eks.info
-  external_dns        = var.irsa_external_dns
 
   providers = {
     aws = aws.global
@@ -73,6 +73,7 @@ provider "aws" {
   ignore_tags {
     keys = local.infra.ignore_tags
   }
+  use_fips_endpoint = var.use_fips_endpoints
 }
 
 provider "aws" {
@@ -80,6 +81,7 @@ provider "aws" {
   ignore_tags {
     keys = local.infra.ignore_tags
   }
+  use_fips_endpoint = var.use_fips_endpoints
 }
 terraform {
   required_version = ">= 1.4.0"
