@@ -19,58 +19,58 @@ repos:
       - id: check-dependabot
       - id: check-github-actions
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.86.0
+    rev: v1.88.4
     hooks:
       - id: terraform_validate
         # See #4 on https://github.com/antonbabenko/pre-commit-terraform#terraform_validate
         exclude: (modules/eks/[^/]+$|modules/infra/submodules/cost-usage-report)
         args:
-          - "--hook-config=--retry-once-with-cleanup=true"
+          - '--hook-config=--retry-once-with-cleanup=true'
       - id: terraform_providers_lock
         args:
           - --tf-init-args=-upgrade
       - id: terraform_docs
         args:
-          - "--args=--lockfile=false"
-          - "--hook-config=--path-to-file=README.md"
-          - "--hook-config=--add-to-existing-file=true"
-          - "--hook-config=--create-file-if-not-exist=true"
-          - "--hook-config=--recursive.enabled=true"
-          - "--hook-config=--recursive.path=submodules"
+          - '--args=--lockfile=false'
+          - '--hook-config=--path-to-file=README.md'
+          - '--hook-config=--add-to-existing-file=true'
+          - '--hook-config=--create-file-if-not-exist=true'
+          - '--hook-config=--recursive.enabled=true'
+          - '--hook-config=--recursive.path=submodules'
       - id: terraform_fmt
       - id: terraform_tflint
         args:
-          - "--args=--config=__GIT_WORKING_DIR__/.tflint.hcl"
-          - "--args=--only=terraform_deprecated_interpolation"
-          - "--args=--only=terraform_deprecated_index"
-          - "--args=--only=terraform_unused_declarations"
-          - "--args=--only=terraform_comment_syntax"
-          - "--args=--only=terraform_documented_outputs"
-          - "--args=--only=terraform_documented_variables"
-          - "--args=--only=terraform_typed_variables"
-          - "--args=--only=terraform_module_pinned_source"
-          - "--args=--only=terraform_naming_convention"
-          - "--args=--only=terraform_required_version"
-          - "--args=--only=terraform_required_providers"
-          - "--args=--only=terraform_standard_module_structure"
-          - "--args=--only=terraform_workspace_remote"
-          - "--args=--enable-rule=aws_iam_policy_document_gov_friendly_arns"
-          - "--args=--enable-rule=aws_iam_policy_gov_friendly_arns"
-          - "--args=--enable-rule=aws_iam_role_policy_gov_friendly_arns"
+          - '--args=--config=__GIT_WORKING_DIR__/.tflint.hcl'
+          - '--args=--only=terraform_deprecated_interpolation'
+          - '--args=--only=terraform_deprecated_index'
+          - '--args=--only=terraform_unused_declarations'
+          - '--args=--only=terraform_comment_syntax'
+          - '--args=--only=terraform_documented_outputs'
+          - '--args=--only=terraform_documented_variables'
+          - '--args=--only=terraform_typed_variables'
+          - '--args=--only=terraform_module_pinned_source'
+          - '--args=--only=terraform_naming_convention'
+          - '--args=--only=terraform_required_version'
+          - '--args=--only=terraform_required_providers'
+          - '--args=--only=terraform_standard_module_structure'
+          - '--args=--only=terraform_workspace_remote'
+          - '--args=--enable-rule=aws_iam_policy_document_gov_friendly_arns'
+          - '--args=--enable-rule=aws_iam_policy_gov_friendly_arns'
+          - '--args=--enable-rule=aws_iam_role_policy_gov_friendly_arns'
       - id: terraform_checkov
         args:
-          - "--args=--compact"
-          - "--args=--quiet"
-          - "--args=--skip-check CKV_CIRCLECIPIPELINES_2,CKV_CIRCLECIPIPELINES_6,CKV2_AWS_11,CKV2_AWS_12,CKV2_AWS_6,CKV_AWS_109,CKV_AWS_111,CKV_AWS_135,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_18,CKV_AWS_184,CKV_AWS_19,CKV_AWS_21,CKV_AWS_66,CKV_AWS_88,CKV2_GHA_1,CKV_AWS_163,CKV_AWS_39,CKV_AWS_38,CKV2_AWS_61,CKV2_AWS_62,CKV_AWS_136,CKV_AWS_329,CKV_AWS_338,CKV_AWS_339,CKV_AWS_341,CKV_AWS_356,CKV2_AWS_19,CKV2_AWS_5,CKV_AWS_150,CKV_AWS_123,CKV2_AWS_65"
+          - '--args=--compact'
+          - '--args=--quiet'
+          - '--args=--skip-check CKV_CIRCLECIPIPELINES_2,CKV_CIRCLECIPIPELINES_6,CKV2_AWS_11,CKV2_AWS_12,CKV2_AWS_6,CKV_AWS_109,CKV_AWS_111,CKV_AWS_135,CKV_AWS_144,CKV_AWS_145,CKV_AWS_158,CKV_AWS_18,CKV_AWS_184,CKV_AWS_19,CKV_AWS_21,CKV_AWS_66,CKV_AWS_88,CKV2_GHA_1,CKV_AWS_163,CKV_AWS_39,CKV_AWS_38,CKV2_AWS_61,CKV2_AWS_62,CKV_AWS_136,CKV_AWS_329,CKV_AWS_338,CKV_AWS_339,CKV_AWS_341,CKV_AWS_356,CKV2_AWS_19,CKV2_AWS_5,CKV_AWS_150,CKV_AWS_123,CKV2_AWS_65'
       - id: terraform_trivy
         args:
-          - "--args=--severity=HIGH,CRITICAL"
-          - "--args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore"
-          - "--args=--exit-code=1"
+          - '--args=--severity=HIGH,CRITICAL'
+          - '--args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore'
+          - '--args=--exit-code=1'
   - repo: local
     hooks:
       - id: check_aws_partition
         name: Check for hard coded AWS partition
         entry: ./bin/pre-commit/check-aws-partition.sh
         language: script
-        exclude: "^(bin|examples)"
+        exclude: '^(bin|examples)'

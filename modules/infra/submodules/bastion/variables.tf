@@ -113,3 +113,9 @@ variable "ssh_key" {
     key_pair_name = string
   })
 }
+
+variable "use_fips_endpoint" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
+}

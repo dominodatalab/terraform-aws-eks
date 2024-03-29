@@ -70,10 +70,8 @@ resource "terraform_data" "delete_route53_policy" {
     var.external_dns.rm_role_policy.policy_name
   ]
   provisioner "local-exec" {
-    command     = <<-EOF
+    command = <<-EOF
       set -x -o pipefail
-
-      export AWS_USE_FIPS_ENDPOINT=${tostring(var.use_fips_endpoint)}
 
       policy_arn="arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.aws_account.account_id}:policy/${var.external_dns.rm_role_policy.policy_name}"
 
@@ -94,6 +92,9 @@ resource "terraform_data" "delete_route53_policy" {
       fi
 
     EOF
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
+    }
     interpreter = ["bash", "-c"]
   }
   depends_on = [aws_iam_role_policy_attachment.external_dns]

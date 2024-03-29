@@ -66,7 +66,7 @@ variable "external_dns" {
 
   default = {}
   validation {
-    condition     = var.external_dns.enabled ? alltrue(var.external_dns.hosted_zone_name != null, var.external_dns.hosted_zone_name != "") : true
+    condition     = var.external_dns.enabled ? (var.external_dns.hosted_zone_name != null && length(var.external_dns.hosted_zone_name) > 0) : true
     error_message = "Must provide a non-empty `external_dns.hosted_zone_name` if `external_dns.enabled` == true"
   }
 }
