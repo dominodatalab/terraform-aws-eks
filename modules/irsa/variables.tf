@@ -65,6 +65,10 @@ variable "external_dns" {
   })
 
   default = {}
+  validation {
+    condition     = var.external_dns.enabled ? alltrue(var.external_dns.hosted_zone_name != null, var.external_dns.hosted_zone_name != "") : true
+    error_message = "Must provide a non-empty `external_dns.hosted_zone_name` if `external_dns.enabled` == true"
+  }
 }
 
 variable "additional_irsa_configs" {

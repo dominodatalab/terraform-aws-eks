@@ -43,7 +43,7 @@ module "irsa_external_dns" {
   source   = "./../../../modules/irsa"
   eks_info = module.eks.info
   external_dns = {
-    enabled          = true
+    enabled          = var.route53_hosted_zone_name != null
     hosted_zone_name = var.route53_hosted_zone_name
   }
   use_fips_endpoint = var.use_fips_endpoint
