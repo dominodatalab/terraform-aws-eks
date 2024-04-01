@@ -14,7 +14,6 @@ resource "aws_iam_role" "flyte_controlplane" {
             "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.datacatalog}",
-              "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flyteadmin}",
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flytepropeller}",
             ]
           }
@@ -76,7 +75,22 @@ resource "aws_iam_role" "flyte_dataplane" {
             ]
           }
         }
-      }
+      },
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = local.oidc_provider_arn
+        }
+        Condition : {
+          StringEquals : {
+            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
+            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
+              "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flyteadmin}",
+            ]
+          }
+        }
+      },
     ]
   })
 }
