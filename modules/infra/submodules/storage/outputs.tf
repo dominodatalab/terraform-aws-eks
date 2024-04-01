@@ -22,10 +22,11 @@ output "info" {
     }
     s3 = {
       buckets = { for k, b in local.s3_buckets : k => {
-        "bucket_name"          = b.bucket_name,
-        "arn"                  = b.arn
-        "domain_name"          = b.domain_name
-        "regional_domain_name" = b.regional_domain_name
+        "bucket_name"               = b.bucket_name,
+        "arn"                       = b.arn
+        "domain_name"               = b.domain_name
+        "regional_domain_name"      = b.regional_domain_name
+        "fips_regional_domain_name" = b.fips_regional_domain_name
         }
       }
       iam_policy_arn = aws_iam_policy.s3.arn
