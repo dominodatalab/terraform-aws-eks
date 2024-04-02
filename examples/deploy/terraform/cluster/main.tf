@@ -40,6 +40,11 @@ locals {
   is_eks_account_same = data.aws_caller_identity.this.account_id == data.aws_caller_identity.global.account_id
 }
 
+moved {
+  from = module.irsa_external_dns[0]
+  to   = module.irsa_external_dns
+}
+
 # If you are enabling the IRSA configuration for external-dns.
 # You will need to add the role created(module.irsa_external_dns.irsa_role) to
 # the following annotation to the `external-dns` service account:
@@ -53,6 +58,11 @@ module "irsa_external_dns" {
   providers = {
     aws = aws.global
   }
+}
+
+moved {
+  from = module.irsa_policies[0]
+  to   = module.irsa_policies
 }
 
 module "irsa_policies" {
