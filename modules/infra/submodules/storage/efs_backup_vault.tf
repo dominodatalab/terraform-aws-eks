@@ -87,7 +87,11 @@ resource "terraform_data" "check_backup_role" {
       exit 1
     EOF
     interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
+    }
   }
+
 
   triggers_replace = [
     aws_iam_role.efs_backup_role[0].id,

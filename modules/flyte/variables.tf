@@ -81,3 +81,10 @@ variable "region" {
     error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2, us-gov-west-1."
   }
 }
+
+
+variable "use_fips_endpoint" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
+}

@@ -97,3 +97,9 @@ variable "eks_info" {
     })
   })
 }
+
+variable "use_fips_endpoint" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
+}

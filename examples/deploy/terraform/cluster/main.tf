@@ -26,6 +26,7 @@ module "eks" {
   create_eks_role_arn = local.infra.create_eks_role_arn
   tags                = local.infra.tags
   ignore_tags         = local.infra.ignore_tags
+  use_fips_endpoint   = var.use_fips_endpoint
 }
 
 data "aws_caller_identity" "global" {
@@ -39,12 +40,16 @@ locals {
   is_eks_account_same = data.aws_caller_identity.this.account_id == data.aws_caller_identity.global.account_id
 }
 
+moved {
+  from = module.irsa_external_dns[0]
+  to   = module.irsa_external_dns
+}
+
 # If you are enabling the IRSA configuration for external-dns.
 # You will need to add the role created(module.irsa_external_dns.irsa_role) to
 # the following annotation to the `external-dns` service account:
 # `eks.amazonaws.com/role-arn: <<module.irsa_external_dns.irsa_role>>`
 module "irsa_external_dns" {
-  count               = var.irsa_external_dns != null && var.irsa_external_dns.enabled ? 1 : 0
   source              = "./../../../../modules/irsa"
   use_cluster_odc_idp = local.is_eks_account_same
   eks_info            = module.eks.info
@@ -55,8 +60,12 @@ module "irsa_external_dns" {
   }
 }
 
+moved {
+  from = module.irsa_policies[0]
+  to   = module.irsa_policies
+}
+
 module "irsa_policies" {
-  count                   = var.irsa_policies != null ? 1 : 0
   source                  = "./../../../../modules/irsa"
   use_cluster_odc_idp     = true
   eks_info                = module.eks.info
@@ -73,6 +82,7 @@ provider "aws" {
   ignore_tags {
     keys = local.infra.ignore_tags
   }
+  use_fips_endpoint = var.use_fips_endpoint
 }
 
 provider "aws" {
@@ -80,6 +90,7 @@ provider "aws" {
   ignore_tags {
     keys = local.infra.ignore_tags
   }
+  use_fips_endpoint = var.use_fips_endpoint
 }
 terraform {
   required_version = ">= 1.4.0"

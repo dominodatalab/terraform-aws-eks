@@ -8,6 +8,7 @@ PVT_KEY="${DEPLOY_DIR}/domino.pem"
 
 INFRA_VARS_TPL="${SH_DIR}/infra-ci.tfvars.tftpl"
 CLUSTER_VARS_TPL="${SH_DIR}/cluster-ci.tfvars.tftpl"
+NODES_VARS_TPL="${SH_DIR}/nodes-ci.tfvars.tftpl"
 
 declare -A COMP_MODS
 COMP_MODS["infra"]="infra"
@@ -24,5 +25,6 @@ export SH_DIR \
   PVT_KEY \
   INFRA_VARS_TPL \
   CLUSTER_VARS_TPL \
+  NODES_VARS_TPL \
   COMP_MODS \
   MOD_ADD

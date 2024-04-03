@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ${k8s_functions_sh_filename}
+export AWS_USE_FIPS_ENDPOINT=${use_fips_endpoint}
 
 open_ssh_tunnel() {
   local max_retries=5

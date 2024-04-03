@@ -11,3 +11,8 @@ terraform {
     }
   }
 }
+
+provider "aws" {
+  region            = var.region
+  use_fips_endpoint = var.use_fips_endpoint
+}

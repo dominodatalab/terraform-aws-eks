@@ -213,7 +213,6 @@ resource "aws_s3_bucket" "monitoring" {
   bucket              = "${var.deploy_id}-monitoring"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
-
 }
 
 data "aws_iam_policy_document" "monitoring" {
@@ -354,6 +353,9 @@ resource "terraform_data" "set_monitoring_private_acl" {
       exit 1
     EOF
     interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
+    }
   }
 
   depends_on = [aws_s3_bucket.monitoring]

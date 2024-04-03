@@ -65,6 +65,10 @@ variable "external_dns" {
   })
 
   default = {}
+  validation {
+    condition     = var.external_dns.enabled ? (var.external_dns.hosted_zone_name != null && length(var.external_dns.hosted_zone_name) > 0) : true
+    error_message = "Must provide a non-empty `external_dns.hosted_zone_name` if `external_dns.enabled` == true"
+  }
 }
 
 variable "additional_irsa_configs" {
@@ -82,4 +86,10 @@ variable "additional_irsa_configs" {
     condition     = alltrue([for i in var.additional_irsa_configs : can(jsondecode(i.policy))])
     error_message = "Invalid json found in policy"
   }
+}
+
+variable "use_fips_endpoint" {
+  description = "Use aws FIPS endpoints"
+  type        = bool
+  default     = false
 }

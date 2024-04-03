@@ -123,6 +123,9 @@ resource "terraform_data" "check_bastion_instance_profile" {
       exit 1
     EOF
     interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
+    }
   }
   depends_on = [aws_iam_instance_profile.bastion]
 }

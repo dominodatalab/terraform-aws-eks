@@ -13,6 +13,7 @@ module "infra" {
   ssh_pvt_key_path       = var.ssh_pvt_key_path
   tags                   = var.tags
   domino_cur             = var.domino_cur
+  use_fips_endpoint      = var.use_fips_endpoint
 }
 
 
@@ -35,16 +36,17 @@ module "eks" {
     monitoring_bucket        = module.infra.monitoring_bucket
     route53_hosted_zone_name = var.route53_hosted_zone_name
   }
+  use_fips_endpoint = var.use_fips_endpoint
 }
 
 module "irsa_external_dns" {
-  count    = var.route53_hosted_zone_name != null ? 1 : 0
   source   = "./../../../modules/irsa"
   eks_info = module.eks.info
   external_dns = {
-    enabled          = true
+    enabled          = var.route53_hosted_zone_name != null
     hosted_zone_name = var.route53_hosted_zone_name
   }
+  use_fips_endpoint = var.use_fips_endpoint
 }
 
 data "aws_iam_policy_document" "mypod_s3" {
@@ -64,6 +66,7 @@ module "irsa_policies" {
     policy              = data.aws_iam_policy_document.mypod_s3.json
     serviceaccount_name = "mypod-s3"
   }]
+  use_fips_endpoint = var.use_fips_endpoint
 }
 
 module "nodes" {
@@ -77,6 +80,7 @@ module "nodes" {
   network_info           = module.infra.network
   kms_info               = module.infra.kms
   tags                   = module.infra.tags
+  use_fips_endpoint      = var.use_fips_endpoint
 }
 
 module "single_node" {
