@@ -182,12 +182,12 @@ variable "default_node_groups" {
             size       = optional(number, 1000)
             type       = optional(string, "gp3")
             iops       = optional(number)
-            throughput = optional(number)
+            throughput = optional(number, 500)
             }), {
             size       = 1000
             type       = "gp3"
             iops       = null
-            throughput = null
+            throughput = 500
             }
           )
       }),
@@ -265,12 +265,12 @@ variable "default_node_groups" {
             size       = optional(number, 1000)
             type       = optional(string, "gp3")
             iops       = optional(number)
-            throughput = optional(number)
+            throughput = optional(number, 500)
             }), {
             size       = 1000
             type       = "gp3"
             iops       = null
-            throughput = null
+            throughput = 500
             }
           )
       })
@@ -308,7 +308,7 @@ variable "additional_node_groups" {
       size       = string
       type       = string
       iops       = optional(number)
-      throughput = optional(number)
+      throughput = optional(number, 500)
     })
   }))
   default = {}

@@ -126,7 +126,7 @@ variable "node_groups" {
       size       = string
       type       = string
       iops       = optional(number)
-      throughput = optional(number)
+      throughput = optional(number, 500)
     })
   }))
 }
