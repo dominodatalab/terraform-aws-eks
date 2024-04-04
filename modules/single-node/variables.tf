@@ -179,7 +179,7 @@ variable "single_node" {
       owner       = optional(string, null)
 
     }))
-    instance_type            = optional(string, "m5.2xlarge")
+    instance_type            = optional(string, "m6i.2xlarge")
     authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
     labels                   = optional(map(string))
     taints = optional(list(object({
