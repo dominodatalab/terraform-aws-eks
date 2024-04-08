@@ -20,7 +20,7 @@ default_node_groups = {
 }
 
 single_node = {
-  instance_type = "m5.2xlarge"
+  instance_type = "m6i.2xlarge"
   name          = "dev-v2"
   ami = {
     name_prefix = "dev-v2_"

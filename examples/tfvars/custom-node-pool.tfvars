@@ -17,7 +17,7 @@ default_node_groups = {
 additional_node_groups = {
   custom-0 = {
     instance_types = [
-      "m5.2xlarge"
+      "m6i.2xlarge"
     ],
     min_per_az     = 0,
     max_per_az     = 10,
@@ -38,7 +38,7 @@ additional_node_groups = {
     gpu = true
     ## Just for testing the `gpu` bool behavior
     instance_types = [
-      "m5.2xlarge"
+      "m6i.2xlarge"
     ],
     min_per_az     = 0,
     max_per_az     = 10,
@@ -57,7 +57,7 @@ additional_node_groups = {
   }
   custom-gpu-2 = {
     instance_types = [
-      "g4dn.xlarge"
+      "g5.xlarge"
     ],
     min_per_az     = 0,
     max_per_az     = 10,
@@ -76,7 +76,7 @@ additional_node_groups = {
   }
   custom-gpu-3 = {
     instance_types = [
-      "g4dn.xlarge"
+      "g5.xlarge"
     ],
     min_per_az     = 0,
     max_per_az     = 10,
