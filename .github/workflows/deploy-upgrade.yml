@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: Test-Deploy
         id: test-deploy-workflow
-        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.1.0
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
         env:
           CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}
           TARGET_BRANCH: ${{ github.event.pull_request.head.ref }}
@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Test-Module-Upgrade
         id: test-upgrade-workflow
-        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.1.0
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
         env:
           CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}
           TARGET_BRANCH: ${{ github.event.pull_request.head.ref }}
