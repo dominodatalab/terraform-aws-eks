@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Terraform fmt
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_fmt --all-files
   terraform_lint:
@@ -23,7 +23,7 @@ jobs:
           retry_on: error
           command: >-
             curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-      - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_tflint --all-files
   terraform_trivy:
@@ -45,7 +45,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install trivy
             trivy version
-      - uses: pre-commit/action@v3.0.0
+      - uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_trivy --all-files
   terraform_validate:
@@ -57,7 +57,7 @@ jobs:
         run: >-
           ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
       - name: Terraform validate
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_validate --all-files
   terraform_providers_lock:
@@ -68,7 +68,7 @@ jobs:
       - name: Generate pvt key
         run: ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
       - name: Terraform providers_lock
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_providers_lock --all-files
   terraform_docs:
@@ -86,7 +86,7 @@ jobs:
           command: >-
             curl -L https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz | tar -C /tmp -xzf - && chmod +x /tmp/terraform-docs && sudo mv /tmp/terraform-docs /usr/local/bin
       - name: Terraform docs
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_docs --all-files
   checkov:
@@ -98,7 +98,7 @@ jobs:
       - name: Install checkov
         run: pip3 install checkov
       - name: Run Checkov scan
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_checkov --all-files
   check_aws_partition:
@@ -107,7 +107,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Check for hardcoded aws partition
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: check_aws_partition --all-files
   test-examples:
