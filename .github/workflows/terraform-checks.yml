@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install tflint
-        uses: nick-fields/retry@v2.8.3
+        uses: nick-fields/retry@v3.0.0
         with:
           timeout_seconds: 30
           max_attempts: 5
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install trivy
-        uses: nick-fields/retry@v2.8.3
+        uses: nick-fields/retry@v3.0.0
         with:
           timeout_seconds: 60
           max_attempts: 5
@@ -77,7 +77,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Install terraform docs
-        uses: nick-fields/retry@v2.8.3
+        uses: nick-fields/retry@v3.0.0
         with:
           timeout_seconds: 60
           max_attempts: 5
