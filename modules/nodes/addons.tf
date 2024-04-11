@@ -51,10 +51,10 @@ locals {
   }
 
   vpc_cni_configuration_values = merge({ env = local.vpc_cni_env }, local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {}, {
-    enableNetworkPolicy = true
+    enableNetworkPolicy = "true"
     nodeAgent = {
-      enablePolicyEventLogs = true
-      enableCloudWatchLogs  = true
+      enablePolicyEventLogs = "true"
+      enableCloudWatchLogs  = "true"
     }
   })
 
