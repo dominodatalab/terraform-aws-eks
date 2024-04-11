@@ -50,7 +50,13 @@ locals {
     }
   }
 
-  vpc_cni_configuration_values = merge({ env = local.vpc_cni_env }, local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {})
+  vpc_cni_configuration_values = merge({ env = local.vpc_cni_env }, local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {}, {
+    enableNetworkPolicy = true
+    nodeAgent = {
+      enablePolicyEventLogs = true
+      enableCloudWatchLogs  = true
+    }
+  })
 
   addons_config_values = {
     vpc-cni = local.vpc_cni_configuration_values
