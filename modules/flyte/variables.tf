@@ -82,9 +82,13 @@ variable "region" {
   }
 }
 
-
 variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
+}
+
+variable "user_host" {
+  description = "Hostname for the deployment"
+  type        = string
 }
