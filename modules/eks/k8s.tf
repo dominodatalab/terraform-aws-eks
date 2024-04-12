@@ -11,6 +11,8 @@ module "k8s_setup" {
   bastion_info      = var.bastion_info
   eks_info          = local.eks_info
   use_fips_endpoint = var.use_fips_endpoint
+  # FIPS isn't supported on pull through cache URLs yet - https://docs.aws.amazon.com/AmazonECR/latest/userguide/pull-through-cache.html#pull-through-cache-considerations
+  calico_image_registry = "${data.aws_caller_identity.aws_account.id}.dkr.ecr.${var.region}.amazonaws.com/${var.deploy_id}-quay"
 
   depends_on = [null_resource.kubeconfig]
 }

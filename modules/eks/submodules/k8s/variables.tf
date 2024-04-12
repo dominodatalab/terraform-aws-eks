@@ -1,7 +1,7 @@
 variable "calico_version" {
   type        = string
   description = "Calico operator version."
-  default     = "v3.25.2"
+  default     = "v3.27.3"
 }
 
 variable "bastion_info" {
@@ -102,4 +102,10 @@ variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
+}
+
+variable "calico_image_registry" {
+  description = "Calico image registry"
+  type        = string
+  default     = "quay.io"
 }

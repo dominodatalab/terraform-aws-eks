@@ -20,5 +20,9 @@ resource "aws_ecr_repository" "this" {
       encryption_configuration,
     ]
   }
+}
 
+resource "aws_ecr_pull_through_cache_rule" "quay" {
+  ecr_repository_prefix = "${var.deploy_id}-quay"
+  upstream_registry_url = "quay.io"
 }

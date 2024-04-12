@@ -119,7 +119,7 @@ install_calico() {
       --namespace "tigera-operator" \
       --set installation.kubernetesProvider=EKS \
       --set installation.cni.type=AmazonVPC \
-      --set installation.registry="quay.io/" \
+      --set installation.registry="${calico_image_registry}/" \
       --set installation.fipsMode="${calico_fips_mode}" \
       --timeout 10m \
       --create-namespace \

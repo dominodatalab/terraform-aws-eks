@@ -56,6 +56,21 @@ data "aws_iam_policy_document" "ecr" {
       "ecr:PutImage"
     ]
   }
+
+  statement {
+    effect = "Allow"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${data.aws_caller_identity.this.account_id}:repository/${var.deploy_id}-quay/*"
+    ]
+
+    actions = [
+      "ecr:BatchGetImage",
+      "ecr:BatchImportUpstreamImage",
+      "ecr:CreateRepository",
+      "ecr:GetDownloadUrlForLayer"
+    ]
+  }
 }
 
 resource "aws_iam_policy" "ecr" {
