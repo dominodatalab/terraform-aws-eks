@@ -120,6 +120,7 @@ install_calico() {
       --set installation.kubernetesProvider=EKS \
       --set installation.cni.type=AmazonVPC \
       --set installation.registry="quay.io/" \
+      --set installation.fipsMode="${calico_fips_mode}" \
       --timeout 10m \
       --create-namespace \
       --install

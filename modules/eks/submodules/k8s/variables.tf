@@ -1,7 +1,7 @@
 variable "calico_version" {
   type        = string
   description = "Calico operator version."
-  default     = "v3.25.0"
+  default     = "v3.25.2"
 }
 
 variable "bastion_info" {
