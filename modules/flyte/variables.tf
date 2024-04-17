@@ -87,8 +87,3 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
-
-variable "user_host" {
-  description = "Hostname for the deployment"
-  type        = string
-}

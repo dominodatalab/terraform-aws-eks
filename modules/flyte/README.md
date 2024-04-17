@@ -55,7 +55,6 @@ No modules.
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 | <a name="input_serviceaccount_names"></a> [serviceaccount\_names](#input\_serviceaccount\_names) | Service account names for Flyte | <pre>object({<br>    datacatalog    = optional(string, "datacatalog")<br>    flyteadmin     = optional(string, "flyteadmin")<br>    flytepropeller = optional(string, "flytepropeller")<br>  })</pre> | `{}` | no |
 | <a name="input_use_fips_endpoint"></a> [use\_fips\_endpoint](#input\_use\_fips\_endpoint) | Use aws FIPS endpoints | `bool` | `false` | no |
-| <a name="input_user_host"></a> [user\_host](#input\_user\_host) | Hostname for the deployment | `string` | n/a | yes |
 
 ## Outputs
 
