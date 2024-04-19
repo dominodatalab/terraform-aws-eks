@@ -57,11 +57,17 @@ data "aws_iam_policy_document" "ecr" {
     ]
   }
 
+  override_policy_documents = local.supports_pull_through_cache ? [data.aws_iam_policy_document.ecr_pull_through_cache[0].json] : []
+}
+
+data "aws_iam_policy_document" "ecr_pull_through_cache" {
+  count = local.supports_pull_through_cache ? 1 : 0
+
   statement {
     effect = "Allow"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${data.aws_caller_identity.this.account_id}:repository/${aws_ecr_pull_through_cache_rule.quay.ecr_repository_prefix}/*"
+      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${data.aws_caller_identity.this.account_id}:repository/${aws_ecr_pull_through_cache_rule.quay[0].ecr_repository_prefix}/*"
     ]
 
     actions = [
