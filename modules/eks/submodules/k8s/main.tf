@@ -22,11 +22,11 @@ locals {
         aws_auth_yaml         = basename(local.aws_auth_filename)
         ssh_pvt_key_path      = var.ssh_key.path
         eks_cluster_arn       = var.eks_info.cluster.arn
-        calico_version        = var.calico_version
         bastion_user          = var.bastion_info != null ? var.bastion_info.user : ""
         bastion_public_ip     = var.bastion_info != null ? var.bastion_info.public_ip : ""
+        calico_version        = var.eks_info.calico.version
         calico_fips_mode      = var.use_fips_endpoint ? "Enabled" : "Disabled"
-        calico_image_registry = var.calico_image_registry
+        calico_image_registry = var.eks_info.calico.image_registry
       })
     }
 

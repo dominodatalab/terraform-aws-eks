@@ -1,9 +1,3 @@
-variable "calico_version" {
-  type        = string
-  description = "Calico operator version."
-  default     = "v3.27.3"
-}
-
 variable "bastion_info" {
   description = <<EOF
     user                = Bastion username.
@@ -62,6 +56,10 @@ variable "eks_info" {
       path       = string
       extra_args = string
     }
+    calico = {
+      version = Configuration the version for Calico
+      image_registry = Configure the image registry for Calico
+    }
   EOF
   type = object({
     cluster = object({
@@ -95,6 +93,10 @@ variable "eks_info" {
       path       = string
       extra_args = string
     })
+    calico = object({
+      version        = string
+      image_registry = string
+    })
   })
 }
 
@@ -102,10 +104,4 @@ variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
-}
-
-variable "calico_image_registry" {
-  description = "Calico image registry"
-  type        = string
-  default     = "quay.io"
 }
