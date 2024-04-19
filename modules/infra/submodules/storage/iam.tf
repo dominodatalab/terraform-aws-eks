@@ -61,7 +61,7 @@ data "aws_iam_policy_document" "ecr" {
     effect = "Allow"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${data.aws_caller_identity.this.account_id}:repository/${var.deploy_id}-quay/*"
+      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${data.aws_caller_identity.this.account_id}:repository/${aws_ecr_pull_through_cache_rule.quay.ecr_repository_prefix}/*"
     ]
 
     actions = [

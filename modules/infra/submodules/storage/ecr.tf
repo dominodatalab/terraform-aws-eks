@@ -1,6 +1,7 @@
 locals {
-  encryption_type = var.kms_info.enabled ? "KMS" : "AES256"
-  ecr_repos       = toset(["model", "environment"])
+  encryption_type             = var.kms_info.enabled ? "KMS" : "AES256"
+  ecr_repos                   = toset(["model", "environment"])
+  supports_pull_through_cache = data.aws_partition.current.partition == "aws" && !var.use_fips_endpoint
 }
 
 resource "aws_ecr_repository" "this" {
@@ -23,6 +24,7 @@ resource "aws_ecr_repository" "this" {
 }
 
 resource "aws_ecr_pull_through_cache_rule" "quay" {
-  ecr_repository_prefix = "${var.deploy_id}-quay"
+  count                 = local.supports_pull_through_cache ? 1 : 0
+  ecr_repository_prefix = "${var.deploy_id}/quay"
   upstream_registry_url = "quay.io"
 }

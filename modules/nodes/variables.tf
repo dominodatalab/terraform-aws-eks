@@ -101,7 +101,8 @@ variable "eks_info" {
     }
   EOF
   type = object({
-    k8s_pre_setup_sh_file = string
+    k8s_pre_setup_change_hash = string
+    k8s_pre_setup_sh_file     = string
     cluster = object({
       addons = optional(list(string), ["kube-proxy", "coredns", "vpc-cni"])
       vpc_cni = optional(object({
