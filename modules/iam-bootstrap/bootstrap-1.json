@@ -142,6 +142,15 @@
       "Resource": ["*"]
     },
     {
+      "Sid": "ECRUngated",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:CreatePullThroughCacheRule",
+        "ecr:DescribePullThroughCacheRules"
+      ],
+      "Resource": ["*"]
+    },
+    {
       "Sid": "ECRGated",
       "Effect": "Allow",
       "Action": [
@@ -186,6 +195,7 @@
         "ec2:DeleteFlowLogs",
         "ec2:DeleteLaunchTemplate",
         "ec2:DeleteSecurityGroup",
+        "ecr:DeletePullThroughCacheRule",
         "ecr:DeleteRepository",
         "eks:DeleteCluster",
         "eks:DeleteNodegroup",

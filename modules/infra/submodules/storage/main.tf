@@ -1,5 +1,6 @@
 data "aws_elb_service_account" "this" {}
 data "aws_partition" "current" {}
+data "aws_caller_identity" "this" {}
 
 locals {
   private_subnet_ids = var.network_info.subnets.private[*].subnet_id

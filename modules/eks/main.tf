@@ -252,5 +252,6 @@ locals {
       }]
     }
     kubeconfig = local.kubeconfig
+    calico     = var.calico
   }
 }

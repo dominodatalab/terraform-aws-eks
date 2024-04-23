@@ -42,6 +42,7 @@ output "region" {
   description = "Deployment Region."
   value       = var.region
 }
+
 output "eks" {
   description = "EKS variables."
   value       = var.eks

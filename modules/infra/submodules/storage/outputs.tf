@@ -12,6 +12,7 @@ output "info" {
     ecr = {
       container_registry = ECR base registry URL. Grab the base AWS account ECR URL and add the deploy_id. Domino will append /environment and /model.
       iam_policy_arn     = ECR IAM Policy ARN.
+      calico_image_registry = Image registry for Calico. Will be a pull through cache for Quay.io unless in GovCloud, China, or have FIPS enabled.
     }
   EOF
   value = {
@@ -32,8 +33,9 @@ output "info" {
       iam_policy_arn = aws_iam_policy.s3.arn
     }
     ecr = {
-      container_registry = join("/", concat(slice(split("/", aws_ecr_repository.this["environment"].repository_url), 0, 1), [var.deploy_id]))
-      iam_policy_arn     = aws_iam_policy.ecr.arn
+      container_registry    = join("/", concat(slice(split("/", aws_ecr_repository.this["environment"].repository_url), 0, 1), [var.deploy_id]))
+      iam_policy_arn        = aws_iam_policy.ecr.arn
+      calico_image_registry = local.supports_pull_through_cache ? "${data.aws_caller_identity.this.id}.dkr.ecr.${var.region}.amazonaws.com/${var.deploy_id}/quay" : "quay.io"
     }
   }
 }
