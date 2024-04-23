@@ -49,7 +49,7 @@ resource "terraform_data" "calico_setup" {
   count = try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) && var.run_post_node_setup ? 1 : 0
 
   triggers_replace = [
-    var.eks_info.k8s_pre_setup_change_hash
+    filemd5(var.eks_info.k8s_pre_setup_sh_file)
   ]
 
   provisioner "local-exec" {

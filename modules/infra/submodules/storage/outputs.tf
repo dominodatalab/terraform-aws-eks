@@ -12,7 +12,7 @@ output "info" {
     ecr = {
       container_registry = ECR base registry URL. Grab the base AWS account ECR URL and add the deploy_id. Domino will append /environment and /model.
       iam_policy_arn     = ECR IAM Policy ARN.
-      calico_image_registry = Image registry for Calico. Will be a pull through cache for Quay.io unless in GovCloud, China, or have FIPS enabled. 
+      calico_image_registry = Image registry for Calico. Will be a pull through cache for Quay.io unless in GovCloud, China, or have FIPS enabled.
     }
   EOF
   value = {

@@ -1,7 +1,6 @@
 locals {
-  run_setup                 = var.bastion_info != null || var.eks.public_access.enabled ? 1 : 0
-  k8s_pre_setup_sh_file     = local.run_setup != 0 ? module.k8s_setup[0].filepath : null
-  k8s_pre_setup_change_hash = local.run_setup != 0 ? module.k8s_setup[0].change_hash : null
+  run_setup             = var.bastion_info != null || var.eks.public_access.enabled ? 1 : 0
+  k8s_pre_setup_sh_file = local.run_setup != 0 ? module.k8s_setup[0].filepath : null
 }
 
 module "k8s_setup" {
