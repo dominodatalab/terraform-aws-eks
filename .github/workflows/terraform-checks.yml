@@ -118,3 +118,9 @@ jobs:
         uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
         env:
           CCI_TOKEN: ${{ secrets.CIRCLE_PERSONAL_TOKEN }}
+  validate-iam-bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Validate IAM bootstrap
+        run: bin/pre-commit/validate-iam-bootstrap.py
