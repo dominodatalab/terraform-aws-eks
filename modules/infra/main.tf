@@ -32,7 +32,7 @@ module "storage" {
   kms_info          = local.kms_info
   storage           = var.storage
   use_fips_endpoint = var.use_fips_endpoint
-
+  region            = var.region
 }
 
 data "aws_ec2_instance_type" "all" {

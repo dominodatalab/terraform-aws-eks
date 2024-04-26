@@ -74,3 +74,8 @@ repos:
         entry: ./bin/pre-commit/check-aws-partition.sh
         language: script
         exclude: '^(bin|examples)'
+      - id: validate_iam_bootstrap
+        name: Validate IAM bootstrap
+        entry: ./bin/pre-commit/validate-iam-bootstrap.py
+        language: python
+        pass_filenames: false

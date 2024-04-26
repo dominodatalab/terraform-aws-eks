@@ -110,6 +110,7 @@
         "ec2:Describe*",
         "ec2:DescribeAccountAttributes",
         "ec2:DescribeAddresses",
+        "ec2:DescribeAddressesAttribute",
         "ec2:DescribeAvailabilityZones",
         "ec2:DescribeImages",
         "ec2:DescribeInstances",
@@ -139,18 +140,6 @@
         "acm:DeleteCertificate"
       ],
       "Resource": ["*"]
-    },
-    {
-      "Sid": "ECRGated",
-      "Effect": "Allow",
-      "Action": [
-        "ecr:CreateRepository",
-        "ecr:DescribeRepositories",
-        "ecr:ListTagsForResource",
-        "ecr:TagResource",
-        "ecr:UntagResource"
-      ],
-      "Resource": ["arn:${partition}:ecr:*:*:repository/${deploy_id}/*"]
     },
     {
       "Sid": "KMSUngated",
@@ -185,6 +174,7 @@
         "ec2:DeleteFlowLogs",
         "ec2:DeleteLaunchTemplate",
         "ec2:DeleteSecurityGroup",
+        "ecr:DeletePullThroughCacheRule",
         "ecr:DeleteRepository",
         "eks:DeleteCluster",
         "eks:DeleteNodegroup",

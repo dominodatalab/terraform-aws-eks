@@ -180,7 +180,7 @@ variable "eks" {
       required_claims               = optional(string, null)
       username_claim                = optional(string, null)
       username_prefix               = optional(string, null)
-    })), [])
+    })), []),
   })
 
   default = {}
@@ -256,4 +256,20 @@ variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
+}
+
+variable "calico" {
+  description = <<EOF
+    calico = {
+      version = Configure the version for Calico
+      image_registry = Configure the image registry for Calico
+    }
+  EOF
+
+  type = object({
+    image_registry = optional(string, "quay.io")
+    version        = optional(string, "v3.27.3")
+  })
+
+  default = {}
 }

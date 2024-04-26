@@ -52,6 +52,27 @@
       "Resource": [
         "*"
       ]
+    },
+    {
+      "Sid": "ECRGated",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:CreateRepository",
+        "ecr:DescribeRepositories",
+        "ecr:ListTagsForResource",
+        "ecr:TagResource",
+        "ecr:UntagResource"
+      ],
+      "Resource": ["arn:${partition}:ecr:*:*:repository/${deploy_id}/*"]
+    },
+    {
+      "Sid": "ECRUngated",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:CreatePullThroughCacheRule",
+        "ecr:DescribePullThroughCacheRules"
+      ],
+      "Resource": ["*"]
     }
   ]
 }

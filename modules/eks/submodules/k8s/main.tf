@@ -13,39 +13,44 @@ locals {
   resources_directory       = path.cwd
   templates_dir             = "${path.module}/templates"
 
+  k8s_functions_sh = {
+    filename = local.k8s_functions_sh_filename
+    content = templatefile("${local.templates_dir}/${local.k8s_functions_sh_template}", {
+      kubeconfig_path       = var.eks_info.kubeconfig.path
+      k8s_tunnel_port       = random_integer.port.result
+      aws_auth_yaml         = basename(local.aws_auth_filename)
+      ssh_pvt_key_path      = var.ssh_key.path
+      eks_cluster_arn       = var.eks_info.cluster.arn
+      bastion_user          = var.bastion_info != null ? var.bastion_info.user : ""
+      bastion_public_ip     = var.bastion_info != null ? var.bastion_info.public_ip : ""
+      calico_version        = var.eks_info.calico.version
+      calico_fips_mode      = var.use_fips_endpoint ? "Enabled" : "Disabled"
+      calico_image_registry = var.eks_info.calico.image_registry
+    })
+  }
+
+  aws_auth = {
+    filename = local.aws_auth_filename
+    content = templatefile("${local.templates_dir}/${local.aws_auth_template}",
+      {
+        nodes_master         = try(var.eks_info.nodes.nodes_master, false)
+        eks_node_role_arns   = toset(var.eks_info.nodes.roles[*].arn)
+        eks_master_role_arns = toset(var.eks_info.cluster.roles[*].arn)
+        eks_custom_role_maps = var.eks_info.cluster.custom_roles
+    })
+  }
+
   templates = {
-    k8s_functions_sh = {
-      filename = local.k8s_functions_sh_filename
-      content = templatefile("${local.templates_dir}/${local.k8s_functions_sh_template}", {
-        kubeconfig_path   = var.eks_info.kubeconfig.path
-        k8s_tunnel_port   = random_integer.port.result
-        aws_auth_yaml     = basename(local.aws_auth_filename)
-        ssh_pvt_key_path  = var.ssh_key.path
-        eks_cluster_arn   = var.eks_info.cluster.arn
-        calico_version    = var.calico_version
-        bastion_user      = var.bastion_info != null ? var.bastion_info.user : ""
-        bastion_public_ip = var.bastion_info != null ? var.bastion_info.public_ip : ""
-      })
-    }
+    k8s_functions_sh = local.k8s_functions_sh
+    aws_auth         = local.aws_auth
 
     k8s_presetup = {
       filename = local.k8s_pre_setup_sh_file
       content = templatefile("${local.templates_dir}/${local.k8s_pre_setup_sh_template}", {
-        k8s_functions_sh_filename = local.k8s_functions_sh_filename
+        k8s_functions_sh_filename = local.k8s_functions_sh.filename
+        hash                      = join("-", [md5(local.k8s_functions_sh.content), md5(local.aws_auth.content)])
         use_fips_endpoint         = tostring(var.use_fips_endpoint)
       })
-    }
-
-    aws_auth = {
-      filename = local.aws_auth_filename
-      content = templatefile("${local.templates_dir}/${local.aws_auth_template}",
-        {
-          nodes_master         = try(var.eks_info.nodes.nodes_master, false)
-          eks_node_role_arns   = toset(var.eks_info.nodes.roles[*].arn)
-          eks_master_role_arns = toset(var.eks_info.cluster.roles[*].arn)
-          eks_custom_role_maps = var.eks_info.cluster.custom_roles
-      })
-
     }
   }
 }
