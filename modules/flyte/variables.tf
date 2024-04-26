@@ -82,7 +82,6 @@ variable "region" {
   }
 }
 
-
 variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
