@@ -175,3 +175,14 @@ If the next minor version is not supported, it may require deleting the VPC CNI 
 ```
 aws eks delete-addon --cluster-name <cluster name> --addon-name vpc-cni --preserve
 ```
+
+## FIPS 140-2 Compliance
+Provision FIPS-compliant resources by utilizing the `use_fips_endpoint` variable in the modules.
+
+:warning: To ensure FIPS 140-2 Compliance, the Kubernetes nodes' image (AMI) must have FIPS enabled.
+
+By setting `use_fips_endpoint: true` , the modules will:
+
+* Set the Terraform AWS provider [use_fips_endpoint](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#use_fips_endpoint) attribute, ensuring API calls to AWS are made via the FIPS endpoints.
+* Set the shell environment variable `AWS_USE_FIPS_ENDPOINT=true` on `local-exec` resources.
+* Enable FIPS mode (fipsMode: enabled) during the installation of Calico (see [documentation](https://docs.tigera.io/calico/latest/operations/fips)).
