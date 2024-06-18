@@ -125,7 +125,10 @@
         "logs:ListTagsLogGroup",
         "logs:ListTagsForResource",
         "logs:PutRetentionPolicy",
-        "logs:TagLogGroup"
+        "logs:TagLogGroup",
+        "logs:UntagLogGroup",
+        "logs:TagResource",
+        "logs:UntagResource"
       ],
       "Resource": "*"
     },
