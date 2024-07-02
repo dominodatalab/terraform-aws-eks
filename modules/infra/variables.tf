@@ -275,6 +275,7 @@ variable "network" {
       pod     = The IPv4 CIDR block for the Pod subnets.
     }
     use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
+    use_nat_gateway = Use a managed NAT gateway. When disabled, user is responsible for routing to the internet.
   EOF
 
   type = object({
@@ -296,7 +297,8 @@ variable "network" {
       vpc = optional(string, "10.0.0.0/16")
       pod = optional(string, "100.64.0.0/16")
     }), {})
-    use_pod_cidr = optional(bool, true)
+    use_pod_cidr    = optional(bool, true)
+    use_nat_gateway = optional(bool, true)
   })
 
   default = {}
