@@ -193,7 +193,7 @@ resource "aws_instance" "bastion" {
     }
   }
 
-  source_dest_check = true
+  source_dest_check = false # TODO
   subnet_id         = var.network_info.subnets.public[0].subnet_id
 
   vpc_security_group_ids = [aws_security_group.bastion.id]
@@ -222,7 +222,6 @@ resource "aws_eip_association" "bastion" {
 
 data "aws_iam_policy_document" "bastion_assume_role" {
   statement {
-
     effect    = "Allow"
     resources = [aws_iam_role.bastion.arn]
     actions   = ["sts:AssumeRole"]

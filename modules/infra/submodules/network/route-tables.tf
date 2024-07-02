@@ -21,7 +21,7 @@ locals {
 }
 
 resource "aws_route_table" "private" {
-  for_each = local.private_cidrs
+  for_each = var.network.use_nat_gateway ? local.private_cidrs : {}
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.ngw[local.private_public_map[each.key]].id
@@ -33,7 +33,7 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table_association" "private" {
-  for_each       = local.private_cidrs
+  for_each       = var.network.use_nat_gateway ? local.private_cidrs : {}
   subnet_id      = aws_subnet.private[each.key].id
   route_table_id = aws_route_table.private[each.key].id
 }
@@ -43,7 +43,7 @@ locals {
 }
 
 resource "aws_route_table" "pod" {
-  for_each = local.pod_cidrs
+  for_each = var.network.use_nat_gateway ? local.pod_cidrs : {}
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.ngw[local.pod_public_map[each.key]].id
@@ -55,7 +55,7 @@ resource "aws_route_table" "pod" {
 }
 
 resource "aws_route_table_association" "pod" {
-  for_each       = local.pod_cidrs
+  for_each       = var.network.use_nat_gateway ? local.pod_cidrs : {}
   subnet_id      = aws_subnet.pod[each.key].id
   route_table_id = aws_route_table.pod[each.key].id
 }
