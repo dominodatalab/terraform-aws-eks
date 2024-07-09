@@ -13,6 +13,14 @@ terraform {
 }
 
 provider "aws" {
-  region            = var.region
+  region = var.region
+
+  default_tags {
+    tags = var.tags
+  }
+  ignore_tags {
+    keys = var.ignore_tags
+  }
+
   use_fips_endpoint = var.use_fips_endpoint
 }

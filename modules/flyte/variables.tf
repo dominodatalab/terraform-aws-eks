@@ -82,6 +82,18 @@ variable "region" {
   }
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "Deployment tags."
+  default     = {}
+}
+
+variable "ignore_tags" {
+  type        = list(string)
+  description = "Tag keys to be ignored by the aws provider."
+  default     = []
+}
+
 variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
