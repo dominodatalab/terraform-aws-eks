@@ -174,6 +174,11 @@ variable "default_node_groups" {
               key    = "ebs.csi.aws.com/agent-not-ready",
               value  = "true",
               effect = "NO_EXECUTE"
+            },
+            {
+              key    = "efs.csi.aws.com/agent-not-ready",
+              value  = "true",
+              effect = "NO_EXECUTE"
             }
           ])
           tags = optional(map(string), {})
@@ -256,8 +261,12 @@ variable "default_node_groups" {
               key    = "ebs.csi.aws.com/agent-not-ready",
               value  = "true",
               effect = "NO_EXECUTE"
+            },
+            {
+              key    = "efs.csi.aws.com/agent-not-ready",
+              value  = "true",
+              effect = "NO_EXECUTE"
             }
-
           ])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
@@ -300,7 +309,13 @@ variable "additional_node_groups" {
         key    = "ebs.csi.aws.com/agent-not-ready",
         value  = "true",
         effect = "NO_EXECUTE"
+      },
+      {
+        key    = "efs.csi.aws.com/agent-not-ready",
+        value  = "true",
+        effect = "NO_EXECUTE"
       }
+
     ])
     tags = optional(map(string), {})
     gpu  = optional(bool, null)
