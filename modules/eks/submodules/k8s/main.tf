@@ -26,6 +26,7 @@ locals {
       calico_version        = var.eks_info.calico.version
       calico_fips_mode      = var.use_fips_endpoint ? "Enabled" : "Disabled"
       calico_image_registry = var.eks_info.calico.image_registry
+      fsx                   = var.fsx
     })
   }
 

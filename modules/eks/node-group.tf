@@ -51,12 +51,36 @@ resource "aws_security_group_rule" "node" {
   )
 }
 
-resource "aws_security_group_rule" "efs" {
-  security_group_id        = var.efs_security_group
-  protocol                 = "tcp"
-  from_port                = 2049
-  to_port                  = 2049
-  type                     = "ingress"
-  description              = "EFS access"
+moved {
+  from = aws_security_group_rule.efs
+  to   = aws_security_group_rule.shared_storage["efs_2049_2049"]
+}
+
+### FSX
+locals {
+  shared_storage_type = var.fsx != null ? "fsx" : "efs"
+  inbound_rules = {
+    fsx = {
+      rules = [
+        { protocol = "all", from_port = 0, to_port = 65535, description = "All traffic from EKS nodes." },
+      ]
+      security_group_id = var.fsx.filesystem.security_group_id
+    }
+    efs = {
+      security_group_id = var.efs_security_group
+    rules = [{ protocol = "tcp", from_port = 2049, to_port = 2049, description = "EFS access" }] }
+  }
+
+}
+
+resource "aws_security_group_rule" "shared_storage" {
+  for_each = { for r in local.inbound_rules[local.shared_storage_type].rules : "${local.shared_storage_type}_${r.from_port}_${r.to_port}" => r }
+
+  security_group_id        = local.inbound_rules[local.shared_storage_type].security_group_id
   source_security_group_id = aws_security_group.eks_nodes.id
+  protocol                 = each.value.protocol
+  from_port                = each.value.from_port
+  to_port                  = each.value.to_port
+  type                     = "ingress"
+  description              = each.value.description
 }
