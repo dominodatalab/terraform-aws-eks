@@ -64,10 +64,10 @@ locals {
       rules = [
         { protocol = "all", from_port = 0, to_port = 65535, description = "All traffic from EKS nodes." },
       ]
-      security_group_id = var.fsx.filesystem.security_group_id
+      security_group_id = try(var.fsx.filesystem.security_group_id)
     }
     efs = {
-      security_group_id = var.efs_security_group
+      security_group_id = try(var.efs_security_group)
     rules = [{ protocol = "tcp", from_port = 2049, to_port = 2049, description = "EFS access" }] }
   }
 
