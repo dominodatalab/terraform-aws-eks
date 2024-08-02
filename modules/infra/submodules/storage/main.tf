@@ -5,6 +5,8 @@ data "aws_caller_identity" "this" {}
 locals {
   private_subnet_ids = var.network_info.subnets.private[*].subnet_id
   kms_key_arn        = var.kms_info.enabled ? var.kms_info.key_arn : null
+  deploy_efs         = var.storage.filesystem_type == "efs"
+  deploy_fsx         = var.storage.filesystem_type == "fsx"
 
   s3_buckets = { for k, v in {
     backups = {

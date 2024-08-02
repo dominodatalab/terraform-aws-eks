@@ -124,6 +124,7 @@
         "ec2:RevokeSecurityGroupEgress",
         "ec2:RevokeSecurityGroupIngress",
         "ec2:RunInstances",
+        "ec2:UpdateSecurityGroupRuleDescriptions*",
         "ssm:GetParameter"
       ],
       "Resource": ["*"]
@@ -146,6 +147,8 @@
       "Effect": "Allow",
       "Action": [
         "kms:CreateGrant",
+        "kms:ListGrants",
+        "kms:RevokeGrant",
         "kms:CreateAlias",
         "kms:CreateKey",
         "kms:DescribeKey",

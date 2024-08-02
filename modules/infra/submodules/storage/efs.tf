@@ -1,4 +1,5 @@
 resource "aws_efs_file_system" "eks" {
+  count                           = local.deploy_efs ? 1 : 0
   encrypted                       = true
   performance_mode                = "generalPurpose"
   provisioned_throughput_in_mibps = "0"
@@ -14,10 +15,10 @@ resource "aws_efs_file_system" "eks" {
       kms_key_id,
     ]
   }
-
 }
 
 resource "aws_security_group" "efs" {
+  count       = local.deploy_efs ? 1 : 0
   name        = "${var.deploy_id}-efs"
   description = "EFS security group"
   vpc_id      = var.network_info.vpc_id
@@ -31,14 +32,15 @@ resource "aws_security_group" "efs" {
 }
 
 resource "aws_efs_mount_target" "eks" {
-  count           = length(local.private_subnet_ids)
-  file_system_id  = aws_efs_file_system.eks.id
-  security_groups = [aws_security_group.efs.id]
+  count           = local.deploy_efs ? length(local.private_subnet_ids) : 0
+  file_system_id  = aws_efs_file_system.eks[0].id
+  security_groups = [aws_security_group.efs[0].id]
   subnet_id       = element(local.private_subnet_ids, count.index)
 }
 
 resource "aws_efs_access_point" "eks" {
-  file_system_id = aws_efs_file_system.eks.id
+  count          = local.deploy_efs ? 1 : 0
+  file_system_id = aws_efs_file_system.eks[0].id
 
   posix_user {
     gid = "0"
@@ -54,4 +56,24 @@ resource "aws_efs_access_point" "eks" {
 
     path = var.storage.efs.access_point_path
   }
+}
+
+moved {
+  from = aws_efs_file_system.eks
+  to   = aws_efs_file_system.eks[0]
+}
+
+moved {
+  from = aws_security_group.efs
+  to   = aws_security_group.efs[0]
+}
+
+moved {
+  from = aws_efs_mount_target.eks
+  to   = aws_efs_mount_target.eks[0]
+}
+
+moved {
+  from = aws_efs_access_point.eks
+  to   = aws_efs_access_point.eks[0]
 }

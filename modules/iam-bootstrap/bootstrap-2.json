@@ -73,6 +73,22 @@
         "ecr:DescribePullThroughCacheRules"
       ],
       "Resource": ["*"]
+    },
+    {
+      "Sid": "FSXUngated",
+      "Effect": "Allow",
+      "Action": [
+        "fsx:*"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Sid": "SecretsManagerUngated",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:*"
+      ],
+      "Resource": ["*"]
     }
   ]
 }
