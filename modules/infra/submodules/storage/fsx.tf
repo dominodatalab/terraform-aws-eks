@@ -29,14 +29,14 @@ resource "aws_security_group_rule" "fsx_outbound" {
 }
 
 locals {
-  fsx_ontap_components_user = {
+  fsx_ontap_components_user = local.deploy_fsx ? {
     filesystem = "fsxadmin"
     svm        = "vsadmin"
-  }
+  } : {}
 }
 
 resource "random_password" "fsx" {
-  for_each    = local.deploy_fsx ? local.fsx_ontap_components_user : null
+  for_each    = local.fsx_ontap_components_user
   length      = 16
   special     = false
   min_numeric = 1
@@ -45,14 +45,14 @@ resource "random_password" "fsx" {
 }
 
 resource "aws_secretsmanager_secret" "fsx" {
-  for_each = local.deploy_fsx ? local.fsx_ontap_components_user : null
+  for_each = local.fsx_ontap_components_user
   name     = "${var.deploy_id}-fsx-ontap-${each.key}"
   # kms_key_id  = local.kms_key_arn ## TODO: api error AccessDeniedException: Access to KMS is not allowed
   description = "Credentials for ONTAP ${each.key}"
 }
 
 resource "aws_secretsmanager_secret_version" "fsx" {
-  for_each  = local.deploy_fsx ? local.fsx_ontap_components_user : null
+  for_each  = local.fsx_ontap_components_user
   secret_id = aws_secretsmanager_secret.fsx[each.key].id
   secret_string = jsonencode({
     username = each.value
@@ -62,7 +62,7 @@ resource "aws_secretsmanager_secret_version" "fsx" {
 
 
 data "aws_secretsmanager_secret_version" "fsx_creds" {
-  for_each   = local.deploy_fsx ? local.fsx_ontap_components_user : null
+  for_each   = local.fsx_ontap_components_user
   secret_id  = aws_secretsmanager_secret.fsx[each.key].id
   depends_on = [aws_secretsmanager_secret_version.fsx]
 }
