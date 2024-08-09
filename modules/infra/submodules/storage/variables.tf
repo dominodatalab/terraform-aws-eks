@@ -49,6 +49,8 @@ variable "storage" {
       }
       fsx = {
         deployment_type = fsx ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
+        automatic_backup_retention_days = How many days to keep backups
+        daily_automatic_backup_start_time = Start time in 'HH:MM' format to initiate backups
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
@@ -76,7 +78,9 @@ variable "storage" {
       }))
     }))
     fsx = optional(object({
-      deployment_type = optional(string)
+      deployment_type                   = optional(string)
+      automatic_backup_retention_days   = optional(number)
+      daily_automatic_backup_start_time = optional(string)
     }))
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool)
