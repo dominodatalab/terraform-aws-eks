@@ -70,14 +70,14 @@ data "aws_secretsmanager_secret_version" "fsx_creds" {
 
 resource "aws_fsx_ontap_file_system" "eks" {
   count               = local.deploy_fsx ? 1 : 0
-  storage_capacity    = 1024
+  storage_capacity    = var.storage.fsx.storage_capacity
   subnet_ids          = local.fsx_subnet_ids
   deployment_type     = var.storage.fsx.deployment_type
   preferred_subnet_id = local.fsx_subnet_ids[0]
   security_group_ids  = [aws_security_group.fsx[0].id]
   kms_key_id          = local.kms_key_arn
   fsx_admin_password  = jsondecode(data.aws_secretsmanager_secret_version.fsx_creds["filesystem"].secret_string)["password"]
-  throughput_capacity = 1536
+  throughput_capacity = var.storage.fsx.throughput_capacity
 
 
 

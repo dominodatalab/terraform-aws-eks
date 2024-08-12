@@ -369,8 +369,10 @@ variable "storage" {
       }), {})
     }), {})
     fsx = optional(object({
-      deployment_type = optional(string, "SINGLE_AZ_2")
-    }), { deployment_type = "SINGLE_AZ_2" })
+      deployment_type     = optional(string, "SINGLE_AZ_2")
+      storage_capacity    = optional(number, 1024)
+      throughput_capacity = optional(number, 1536)
+    }), {})
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool, true)
     }), {})
