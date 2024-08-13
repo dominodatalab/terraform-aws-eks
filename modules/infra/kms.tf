@@ -83,9 +83,13 @@ data "aws_iam_policy_document" "kms_key_global" {
     }
   }
   statement {
+    sid = "Allow access through AWS Secrets Manager for all principals in the account that are authorized to use AWS Secrets Manager"
     actions = [
-      "kms:Decrypt*",
-      "kms:Describe*"
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:CreateGrant",
+      "kms:DescribeKey"
     ]
     resources = ["*"]
     effect    = "Allow"
@@ -94,9 +98,14 @@ data "aws_iam_policy_document" "kms_key_global" {
       identifiers = ["*"]
     }
     condition {
-      test     = "ArnLike"
-      variable = "kms:CallerArn"
-      values   = ["arn:${data.aws_partition.current.partition}:sts::${local.aws_account_id}:assumed-role/${var.deploy_id}*"]
+      test     = "StringEquals"
+      variable = "kms:CallerAccount"
+      values   = [local.aws_account_id]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["secretsmanager.${var.region}.amazonaws.com"]
     }
   }
 }
