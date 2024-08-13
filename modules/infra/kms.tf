@@ -2,6 +2,10 @@ locals {
   aws_account_id = data.aws_caller_identity.aws_account.account_id
 }
 
+data "aws_iam_session_context" "current" {
+  arn = data.aws_caller_identity.aws_account.arn
+}
+
 data "aws_iam_policy_document" "kms_key_global" {
   count = local.create_kms_key
 
@@ -32,11 +36,11 @@ data "aws_iam_policy_document" "kms_key_global" {
     effect    = "Allow"
     principals {
       type = "AWS"
-      identifiers = [
+      identifiers = distinct([
         "arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:root",
         "arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling",
-        "arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/${var.deploy_id}-deployment-role"
-      ]
+        data.aws_iam_session_context.current.issuer_arn
+      ])
     }
   }
 
