@@ -59,6 +59,7 @@ data "aws_iam_policy_document" "kms_key_global" {
       type        = "AWS"
       identifiers = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"]
     }
+
   }
 
   statement {
@@ -79,6 +80,23 @@ data "aws_iam_policy_document" "kms_key_global" {
     principals {
       type        = "Service"
       identifiers = ["logs.${var.region}.amazonaws.com"]
+    }
+  }
+  statement {
+    actions = [
+      "kms:Decrypt*",
+      "kms:Describe*"
+    ]
+    resources = ["*"]
+    effect    = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+    condition {
+      test     = "ArnLike"
+      variable = "kms:CallerArn"
+      values   = ["arn:${data.aws_partition.current.partition}:sts::${local.aws_account_id}:assumed-role/${var.deploy_id}*"]
     }
   }
 }

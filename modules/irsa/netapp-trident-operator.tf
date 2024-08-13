@@ -32,8 +32,8 @@ data "aws_iam_policy_document" "trident_operator" {
     effect    = "Allow"
     resources = ["arn:${data.aws_partition.current.partition}:kms:${var.netapp_trident_operator.region}:${data.aws_caller_identity.aws_account.account_id}:key/${local.name_prefix}*"]
     actions = [
-      "kms:Decrypt",
-      "kms:DescribeKey"
+      "kms:Decrypt*",
+      "kms:Describe*"
     ]
   }
 }
