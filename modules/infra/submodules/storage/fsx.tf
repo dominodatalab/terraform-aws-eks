@@ -47,7 +47,6 @@ resource "random_password" "fsx" {
 resource "aws_secretsmanager_secret" "fsx" {
   for_each                = local.fsx_ontap_components_user
   name                    = "${var.deploy_id}-fsx-ontap-${each.key}"
-  kms_key_id              = local.kms_key_arn
   description             = "Credentials for ONTAP ${each.key}"
   recovery_window_in_days = 0
 }
