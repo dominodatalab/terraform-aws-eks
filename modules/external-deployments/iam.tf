@@ -1,4 +1,4 @@
-resource "aws_iam_role" "external_deployments_operator" {
+resource "aws_iam_role" "operator" {
   name = "${local.deploy_id}-external-deployments-operator"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

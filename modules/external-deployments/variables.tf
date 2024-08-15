@@ -38,9 +38,9 @@ variable "compute_namespace" {
 }
 
 variable "serviceaccount_names" {
-  description = "Service account names for Model Deployments"
+  description = "Service account names for External Deployments"
   type = object({
-    operator = optional(string, "model-deployment-operator")
+    operator = optional(string, "external-deployments-operator")
   })
 
   default = {}
