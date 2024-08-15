@@ -1,4 +1,4 @@
-# model-deployment
+# external-deployments
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

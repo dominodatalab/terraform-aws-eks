@@ -1,5 +1,5 @@
-resource "aws_iam_role" "model_deployment_operator" {
-  name = "${local.deploy_id}-model-deployment-operator"
+resource "aws_iam_role" "external_deployments_operator" {
+  name = "${local.deploy_id}-external-deployments-operator"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
