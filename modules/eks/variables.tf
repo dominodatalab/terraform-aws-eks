@@ -88,6 +88,7 @@ variable "node_iam_policies" {
 variable "efs_security_group" {
   description = "Security Group ID for EFS"
   type        = string
+  default     = null
 }
 
 variable "bastion_info" {
@@ -272,4 +273,22 @@ variable "calico" {
   })
 
   default = {}
+}
+
+
+variable "fsx" {
+  description = "Configuration for FSX"
+  type = object({
+    astra_trident_operator_role = optional(string, null)
+    svm = optional(object({
+      id            = optional(string, null)
+      management_ip = optional(string, null)
+      nfs_ip        = optional(string, null)
+    }), null)
+    filesystem = optional(object({
+      id                = optional(string, null)
+      security_group_id = optional(string, null)
+    }), null)
+  })
+  default = null
 }
