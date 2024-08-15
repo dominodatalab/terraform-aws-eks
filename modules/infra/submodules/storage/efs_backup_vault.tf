@@ -1,5 +1,9 @@
+locals {
+  efs_backup_count = local.deploy_efs && var.storage.efs.backup_vault.create ? 1 : 0
+}
+
 resource "aws_backup_vault" "efs" {
-  count = var.storage.efs.backup_vault.create ? 1 : 0
+  count = local.efs_backup_count
   name  = "${var.deploy_id}-efs"
 
   force_destroy = var.storage.efs.backup_vault.force_destroy
@@ -15,7 +19,7 @@ resource "aws_backup_vault" "efs" {
 }
 
 resource "aws_backup_plan" "efs" {
-  count = var.storage.efs.backup_vault.create ? 1 : 0
+  count = local.efs_backup_count
   name  = "${var.deploy_id}-efs"
   rule {
     rule_name           = "efs-rule"
@@ -32,12 +36,12 @@ resource "aws_backup_plan" "efs" {
 }
 
 data "aws_iam_policy" "aws_backup_role_policy" {
-  count = var.storage.efs.backup_vault.create ? 1 : 0
+  count = local.efs_backup_count
   name  = "AWSBackupServiceRolePolicyForBackup"
 }
 
 resource "aws_iam_role" "efs_backup_role" {
-  count = var.storage.efs.backup_vault.create ? 1 : 0
+  count = local.efs_backup_count
   name  = "${var.deploy_id}-efs-backup"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -55,13 +59,13 @@ resource "aws_iam_role" "efs_backup_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "efs_backup_role_attach" {
-  count      = var.storage.efs.backup_vault.create ? 1 : 0
+  count      = local.efs_backup_count
   role       = aws_iam_role.efs_backup_role[0].name
   policy_arn = data.aws_iam_policy.aws_backup_role_policy[0].arn
 }
 
 resource "terraform_data" "check_backup_role" {
-  count = var.storage.efs.backup_vault.create ? 1 : 0
+  count = local.efs_backup_count
 
   provisioner "local-exec" {
     command     = <<-EOF
@@ -103,12 +107,12 @@ resource "terraform_data" "check_backup_role" {
 }
 
 resource "aws_backup_selection" "efs" {
-  count = var.storage.efs.backup_vault.create ? 1 : 0
+  count = local.efs_backup_count
   name  = "${var.deploy_id}-efs"
 
   plan_id      = aws_backup_plan.efs[0].id
   iam_role_arn = aws_iam_role.efs_backup_role[0].arn
 
-  resources  = [aws_efs_file_system.eks.arn]
+  resources  = [aws_efs_file_system.eks[0].arn]
   depends_on = [terraform_data.check_backup_role]
 }

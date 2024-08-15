@@ -93,3 +93,17 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+
+
+variable "netapp_trident_operator" {
+  description = "Config to create IRSA role for the netapp-trident-operator."
+
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string, "trident")
+    serviceaccount_name = optional(string, "trident-controller")
+    region              = optional(string)
+  })
+
+  default = {}
+}
