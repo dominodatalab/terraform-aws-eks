@@ -67,6 +67,7 @@ repos:
           - "--args=--severity=HIGH,CRITICAL"
           - "--args=--ignorefile=__GIT_WORKING_DIR__/.trivyignore"
           - "--args=--exit-code=1"
+          - "--hook-config=--parallelism-limit=1"
   - repo: local
     hooks:
       - id: check_aws_partition
