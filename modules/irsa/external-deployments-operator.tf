@@ -14,7 +14,7 @@ resource "aws_iam_role" "external_deployments_operator" {
         Condition : {
           StringEquals : {
             "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
-            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : "system:serviceaccount:${var.external_deployments_operator.namespace}:${var.external_deployments_operator.serviceaccount_name}"
+            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : "system:serviceaccount:${var.external_deployments_operator.namespace}:${var.external_deployments_operator.service_account_name}"
           }
         }
       },
