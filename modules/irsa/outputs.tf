@@ -24,6 +24,6 @@ output "external_deployments_operator" {
   description = "External deployments operator role info"
   value = var.external_deployments_operator.enabled ? {
     irsa_role            = aws_iam_role.external_deployments_operator[0].arn
-    service_account_name = var.external_deployments_operator.serviceaccount_name
+    service_account_name = var.external_deployments_operator.service_account_name
   } : null
 }
