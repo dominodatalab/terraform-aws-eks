@@ -111,9 +111,9 @@ variable "external_deployments_operator" {
   description = "Config to create IRSA role for the external deployments operator."
 
   type = object({
-    enabled             = optional(bool, false)
-    namespace           = optional(string, "domino-compute")
-    serviceaccount_name = optional(string, "pham-juno-operator")
+    enabled              = optional(bool, false)
+    namespace            = optional(string, "domino-compute")
+    service_account_name = optional(string, "pham-juno-operator")
   })
 
   default = {}
