@@ -373,9 +373,9 @@ variable "storage" {
       }), {})
     }), {})
     fsx = optional(object({
-      deployment_type                   = optional(string, "SINGLE_AZ_2")
+      deployment_type                   = optional(string, "SINGLE_AZ_1")
       storage_capacity                  = optional(number, 1024)
-      throughput_capacity               = optional(number, 1536)
+      throughput_capacity               = optional(number, 128)
       automatic_backup_retention_days   = optional(number, 90)
       daily_automatic_backup_start_time = optional(string, "00:00")
     }), {})
