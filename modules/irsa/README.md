@@ -62,6 +62,6 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_external_dns"></a> [external\_dns](#output\_external\_dns) | External\_dns info |
-| <a name="output_netapp_trident_operator"></a> [netapp\_trident\_operator](#output\_netapp\_trident\_operator) | NetApp Astra Trident FSX Operator role info |
+| <a name="output_netapp_trident_operator"></a> [netapp\_trident\_operator](#output\_netapp\_trident\_operator) | NetApp Astra Trident NETAPP Operator role info |
 | <a name="output_roles"></a> [roles](#output\_roles) | Roles mapping info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

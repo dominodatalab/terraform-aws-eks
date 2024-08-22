@@ -34,7 +34,7 @@ variable "kms_info" {
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(fsx|efs)
+      filesystem_type = File system type(netapp|efs)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -47,8 +47,8 @@ variable "storage" {
           }
         }
       }
-      fsx = {
-        deployment_type = fsx ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
+      netapp = {
+        deployment_type = netapp ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
         storage_capacity = Filesystem Storage capacity
         throughput_capacity = Filesystem throughput capacity
         automatic_backup_retention_days = How many days to keep backups
@@ -79,7 +79,7 @@ variable "storage" {
         }))
       }))
     }))
-    fsx = optional(object({
+    netapp = optional(object({
       deployment_type                   = optional(string)
       storage_capacity                  = optional(number)
       throughput_capacity               = optional(number)
@@ -96,13 +96,13 @@ variable "storage" {
     costs_enabled        = optional(bool)
   })
   validation {
-    condition     = contains(["efs", "fsx"], var.storage.filesystem_type)
-    error_message = "Invalid filesystem type: only 'efs' and 'fsx' are supported for Filesystem storage."
+    condition     = contains(["efs", "netapp"], var.storage.filesystem_type)
+    error_message = "Invalid filesystem type: only 'efs' and 'netapp' are supported for Filesystem storage."
   }
 
   validation {
-    condition     = var.storage.filesystem_type != "fsx" || (var.storage.filesystem_type == "fsx" && contains(["MULTI_AZ_1", "MULTI_AZ_2", "SINGLE_AZ_1", "SINGLE_AZ_2"], var.storage.fsx.deployment_type))
-    error_message = "Invalid 'deployment_type' for fsx filesystem, supported deployment types are 'MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', and 'SINGLE_AZ_2'."
+    condition     = var.storage.filesystem_type != "netapp" || (var.storage.filesystem_type == "netapp" && contains(["MULTI_AZ_1", "MULTI_AZ_2", "SINGLE_AZ_1", "SINGLE_AZ_2"], var.storage.netapp.deployment_type))
+    error_message = "Invalid 'deployment_type' for netapp filesystem, supported deployment types are 'MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', and 'SINGLE_AZ_2'."
   }
 }
 

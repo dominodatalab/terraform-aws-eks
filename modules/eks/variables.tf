@@ -276,8 +276,8 @@ variable "calico" {
 }
 
 
-variable "fsx" {
-  description = "Configuration for FSX"
+variable "netapp" {
+  description = "Configuration for NETAPP"
   type = object({
     astra_trident_operator_role = optional(string, null)
     svm = optional(object({

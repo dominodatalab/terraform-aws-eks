@@ -106,8 +106,8 @@ variable "use_fips_endpoint" {
   default     = false
 }
 
-variable "fsx" {
-  description = "Configuration for FSx"
+variable "netapp" {
+  description = "Configuration for NetApp"
   type = object({
     astra_trident_operator_role = optional(string, null)
     svm = optional(object({
