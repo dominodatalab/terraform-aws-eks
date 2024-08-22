@@ -85,7 +85,7 @@ resource "aws_fsx_ontap_file_system" "eks" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes        = [throughput_capacity] ## TODO: will keep trying to update ~ throughput_capacity = 0 -> 1536
+    ignore_changes        = [throughput_capacity]
   }
 
   tags = {
