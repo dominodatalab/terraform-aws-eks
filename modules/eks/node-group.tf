@@ -56,15 +56,15 @@ moved {
   to   = aws_security_group_rule.shared_storage["efs_2049_2049"]
 }
 
-### FSX
+### NETAPP
 
 locals {
-  shared_storage_type = var.fsx != null ? "fsx" : "efs"
-  inbound_rules = local.shared_storage_type == "fsx" ? {
+  shared_storage_type = var.netapp != null ? "netapp" : "efs"
+  inbound_rules = local.shared_storage_type == "netapp" ? {
     rules = [
       { protocol = "all", from_port = 0, to_port = 65535, description = "All traffic from EKS nodes." },
     ]
-    security_group_id = var.fsx.filesystem.security_group_id
+    security_group_id = var.netapp.filesystem.security_group_id
     } : {
     rules = [
       { protocol = "tcp", from_port = 2049, to_port = 2049, description = "EFS access" }

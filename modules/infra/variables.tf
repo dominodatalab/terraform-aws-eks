@@ -327,7 +327,7 @@ variable "bastion" {
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(fsx|efs)
+      filesystem_type = File system type(netapp|efs)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -340,8 +340,8 @@ variable "storage" {
           }
         }
       }
-      fsx = {
-        deployment_type = fsx ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
+      netapp = {
+        deployment_type = netapp ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
         storage_capacity = Filesystem Storage capacity
         throughput_capacity = Filesystem throughput capacity
         automatic_backup_retention_days = How many days to keep backups
@@ -372,7 +372,7 @@ variable "storage" {
         }), {})
       }), {})
     }), {})
-    fsx = optional(object({
+    netapp = optional(object({
       deployment_type                   = optional(string, "SINGLE_AZ_1")
       storage_capacity                  = optional(number, 1024)
       throughput_capacity               = optional(number, 128)

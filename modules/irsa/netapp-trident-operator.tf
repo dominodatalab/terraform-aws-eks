@@ -3,7 +3,7 @@ data "aws_iam_policy_document" "trident_operator" {
 
   statement {
     effect    = "Allow"
-    resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:${var.netapp_trident_operator.region}:${data.aws_caller_identity.aws_account.account_id}:secret:${local.name_prefix}-fsx-ontap-*"]
+    resources = ["arn:${data.aws_partition.current.partition}:secretsmanager:${var.netapp_trident_operator.region}:${data.aws_caller_identity.aws_account.account_id}:secret:${local.name_prefix}-netapp-ontap-*"]
 
     actions = [
       "secretsmanager:GetSecretValue"
@@ -31,8 +31,8 @@ data "aws_iam_policy_document" "trident_operator" {
 
 resource "aws_iam_policy" "trident_operator" {
   count       = var.netapp_trident_operator.enabled ? 1 : 0
-  name        = "${local.name_prefix}-fsx-policy"
-  description = "Policy for FSx operations and Secrets Manager access"
+  name        = "${local.name_prefix}-netapp-policy"
+  description = "Policy for NetApp operations and Secrets Manager access"
 
   policy = data.aws_iam_policy_document.trident_operator[0].json
 }

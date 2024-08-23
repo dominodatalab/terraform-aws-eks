@@ -21,14 +21,14 @@ output "info" {
       file_system       = aws_efs_file_system.eks[0]
       security_group_id = aws_security_group.efs[0].id
     } : null
-    fsx = local.deploy_fsx ? {
+    netapp = local.deploy_netapp ? {
       svm = {
         name             = aws_fsx_ontap_storage_virtual_machine.eks[0].name
         management_ip    = one(aws_fsx_ontap_storage_virtual_machine.eks[0].endpoints[0].management[0].ip_addresses)
         nfs_ip           = one(aws_fsx_ontap_storage_virtual_machine.eks[0].endpoints[0].nfs[0].ip_addresses)
-        creds_secret_arn = aws_secretsmanager_secret.fsx["svm"].arn
+        creds_secret_arn = aws_secretsmanager_secret.netapp["svm"].arn
       }
-      filesystem = { id = aws_fsx_ontap_file_system.eks[0].id, security_group_id = aws_security_group.fsx[0].id }
+      filesystem = { id = aws_fsx_ontap_file_system.eks[0].id, security_group_id = aws_security_group.netapp[0].id }
     } : null
     s3 = {
       buckets = { for k, b in local.s3_buckets : k => {
