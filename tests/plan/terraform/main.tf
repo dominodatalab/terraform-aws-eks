@@ -69,6 +69,17 @@ module "irsa_policies" {
   use_fips_endpoint = var.use_fips_endpoint
 }
 
+module "irsa_external_deployments_operator" {
+  source   = "./../../../modules/irsa"
+  eks_info = module.eks.info
+  external_deployments_operator = [{
+    enabled              = true
+    namespace            = "domino-config"
+    service_account_name = "test-operator-account"
+  }]
+  use_fips_endpoint = var.use_fips_endpoint
+}
+
 module "nodes" {
   source = "./../../../modules/nodes"
   region = module.infra.region
