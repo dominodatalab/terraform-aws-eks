@@ -20,8 +20,8 @@ bastion = {
 
 irsa = {
   external_deployments_operator = {
-    enabled = "true",
-    namespace = "domino-compute",
+    enabled              = "true",
+    namespace            = "domino-compute",
     service_account_name = "test-operator-acount"
   }
 }
