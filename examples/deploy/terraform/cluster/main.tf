@@ -73,12 +73,6 @@ module "irsa_policies" {
   additional_irsa_configs = var.irsa_policies
 }
 
-moved {
-  from = module.irsa_external_deployments_operator[0]
-  to   = module.irsa_external_deployments_operator
-}
-
-
 # If you are enabling the IRSA configuration for external-deployments-operator
 module "irsa_external_deployments_operator" {
   source                        = "./../../../../modules/irsa"
