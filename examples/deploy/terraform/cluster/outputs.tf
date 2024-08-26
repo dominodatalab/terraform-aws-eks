@@ -22,11 +22,10 @@ output "external_dns_irsa_role_arn" {
 
 output "external_deployments_operator" {
   description = <<EOF
-  "External_dns info"
+  "External_deployments_operator info"
   {
-    irsa_role = irsa role arn.
-    zone_id   = hosted zone id for external_dns Iam policy
-    zone_name = hosted zone name for external_dns Iam policy
+    irsa_role = irsa role arn
+    service_account_name = service account name
   }
   EOF
   value       = module.irsa_external_deployments_operator

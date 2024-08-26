@@ -12,12 +12,13 @@ NODES_VARS_TPL="${SH_DIR}/nodes-ci.tfvars.tftpl"
 
 declare -A COMP_MODS
 COMP_MODS["infra"]="infra"
-COMP_MODS["cluster"]="eks irsa_external_dns irsa_policies"
+COMP_MODS["cluster"]="eks irsa_external_dns irsa_policies irsa_external_deployments_operator"
 COMP_MODS["nodes"]="nodes"
 
 declare -A MOD_ADD
 MOD_ADD["irsa_external_dns"]="irsa"
 MOD_ADD["irsa_policies"]="irsa"
+MOD_ADD["irsa_external_deployments_operator"]="irsa"
 
 export SH_DIR \
   CI_DEPLOY \
