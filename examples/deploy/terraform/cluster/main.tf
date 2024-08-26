@@ -76,9 +76,9 @@ module "irsa_policies" {
 
 # If you are enabling the IRSA configuration for external-deployments-operator
 module "irsa_external_deployments_operator" {
-  source              = "./../../../../modules/irsa"
-  use_cluster_odc_idp = local.is_eks_account_same
-  eks_info            = module.eks.info
+  source                        = "./../../../../modules/irsa"
+  use_cluster_odc_idp           = local.is_eks_account_same
+  eks_info                      = module.eks.info
   external_deployments_operator = var.irsa_external_deployments_operator
 
   providers = {
