@@ -14,7 +14,7 @@ output "external_dns" {
 }
 
 output "netapp_trident_operator" {
-  description = "NetApp Astra Trident FSX Operator role info"
+  description = "NetApp Astra Trident NETAPP Operator role info"
   value = var.netapp_trident_operator.enabled ? {
     irsa_role = aws_iam_role.trident_operator[0].arn
   } : null
