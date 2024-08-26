@@ -38,7 +38,7 @@ No modules.
 | [aws_security_group_rule.bastion_outbound](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [null_resource.install_binaries](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [terraform_data.check_bastion_instance_profile](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/resources/data) | resource |
-| [aws_ami.amazon_linux_2](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
+| [aws_ami.al2023](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_caller_identity.aws_account](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_iam_policy_document.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.bastion_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -48,7 +48,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_bastion"></a> [bastion](#input\_bastion) | enabled                  = Create bastion host.<br>    ami                      = Ami id. Defaults to latest 'amazon\_linux\_2' ami.<br>    instance\_type            = Instance type.<br>    authorized\_ssh\_ip\_ranges = List of CIDR ranges permitted for the bastion ssh access.<br>    username                 = Bastion user.<br>    install\_binaries         = Toggle to install required Domino binaries in the bastion. | <pre>object({<br>    enabled                  = bool<br>    ami_id                   = optional(string) # default will use the latest 'amazon_linux_2' ami<br>    instance_type            = optional(string)<br>    authorized_ssh_ip_ranges = optional(list(string))<br>    username                 = optional(string)<br>    install_binaries         = optional(bool)<br>  })</pre> | n/a | yes |
+| <a name="input_bastion"></a> [bastion](#input\_bastion) | enabled                  = Create bastion host.<br>    ami                      = Ami id. Defaults to latest 'al2023' ami.<br>    instance\_type            = Instance type.<br>    authorized\_ssh\_ip\_ranges = List of CIDR ranges permitted for the bastion ssh access.<br>    username                 = Bastion user.<br>    install\_binaries         = Toggle to install required Domino binaries in the bastion. | <pre>object({<br>    enabled                  = bool<br>    ami_id                   = optional(string) # default will use the latest 'al2023' ami<br>    instance_type            = optional(string)<br>    authorized_ssh_ip_ranges = optional(list(string))<br>    username                 = optional(string)<br>    install_binaries         = optional(bool)<br>  })</pre> | n/a | yes |
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
 | <a name="input_k8s_version"></a> [k8s\_version](#input\_k8s\_version) | K8s version used to download/install the kubectl binary | `string` | n/a | yes |
 | <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | key\_id  = KMS key id.<br>    key\_arn = KMS key arn.<br>    enabled = KMS key is enabled | <pre>object({<br>    key_id  = string<br>    key_arn = string<br>    enabled = bool<br>  })</pre> | n/a | yes |
