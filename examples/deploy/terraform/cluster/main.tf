@@ -73,6 +73,19 @@ module "irsa_policies" {
   additional_irsa_configs = var.irsa_policies
 }
 
+
+# If you are enabling the IRSA configuration for external-deployments-operator
+module "irsa_external_deployments_operator" {
+  source              = "./../../../../modules/irsa"
+  use_cluster_odc_idp = local.is_eks_account_same
+  eks_info            = module.eks.info
+  external_deployments_operator = var.irsa_external_deployments_operator
+
+  providers = {
+    aws = aws.global
+  }
+}
+
 # Provider configuration for the account where the hosted zone is defined.
 # Useful in configurations where accounts do not have a public hosted zone(i.e us-gov regions) and internet routing(public DNS)
 # is instead defined in a different account. Configure the `global` aws alias accordingly,
