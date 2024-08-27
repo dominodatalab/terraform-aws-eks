@@ -70,10 +70,10 @@ module "irsa_policies" {
 }
 
 module "irsa_external_deployments_operator" {
-  source   = "./../../../modules/irsa"
-  eks_info = module.eks.info
+  source                        = "./../../../modules/irsa"
+  eks_info                      = module.eks.info
   external_deployments_operator = var.irsa_external_deployments_operator
-  use_fips_endpoint = var.use_fips_endpoint
+  use_fips_endpoint             = var.use_fips_endpoint
 }
 
 module "nodes" {
