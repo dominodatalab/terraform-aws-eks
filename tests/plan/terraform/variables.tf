@@ -449,3 +449,15 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+
+variable "irsa_external_deployments_operator" {
+  description = "Config to create IRSA role for the external deployments operator."
+
+  type = object({
+    enabled              = optional(bool, false)
+    namespace            = optional(string, "domino-compute")
+    service_account_name = optional(string, "pham-juno-operator")
+  })
+
+  default = {}
+}
