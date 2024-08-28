@@ -130,14 +130,14 @@ resource "terraform_data" "check_bastion_instance_profile" {
   depends_on = [aws_iam_instance_profile.bastion]
 }
 
-data "aws_ami" "amazon_linux_2" {
+data "aws_ami" "al2023" {
   count       = var.bastion.ami_id == null ? 1 : 0
   most_recent = true
   owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm*"]
+    values = ["al2023-ami*"]
   }
 
   filter {
@@ -147,7 +147,7 @@ data "aws_ami" "amazon_linux_2" {
 }
 
 locals {
-  ami_id = var.bastion.ami_id != null ? var.bastion.ami_id : data.aws_ami.amazon_linux_2[0].id
+  ami_id = var.bastion.ami_id != null ? var.bastion.ami_id : data.aws_ami.al2023[0].id
 }
 
 resource "aws_instance" "bastion" {
