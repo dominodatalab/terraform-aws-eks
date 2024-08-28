@@ -305,7 +305,7 @@ variable "network" {
 variable "bastion" {
   description = <<EOF
     enabled                  = Create bastion host.
-    ami                      = Ami id. Defaults to latest 'amazon_linux_2' ami.
+    ami                      = Ami id. Defaults to latest 'AL2023' ami.
     instance_type            = Instance type.
     authorized_ssh_ip_ranges = List of CIDR ranges permitted for the bastion ssh access.
     username                 = Bastion user.
@@ -314,7 +314,7 @@ variable "bastion" {
 
   type = object({
     enabled                  = optional(bool, true)
-    ami_id                   = optional(string, null) # default will use the latest 'amazon_linux_2' ami
+    ami_id                   = optional(string, null) # default will use the latest 'al2023' ami
     instance_type            = optional(string, "t3.micro")
     authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
     username                 = optional(string, "ec2-user")
