@@ -19,3 +19,14 @@ output "external_dns_irsa_role_arn" {
   EOF
   value       = module.irsa_external_dns
 }
+
+output "external_deployments_operator" {
+  description = <<EOF
+  "External_deployments_operator info"
+  {
+    irsa_role = irsa role arn
+    service_account_name = service account name
+  }
+  EOF
+  value       = module.irsa_external_deployments_operator
+}
