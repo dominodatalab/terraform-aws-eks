@@ -145,6 +145,22 @@ locals {
       type        = "ingress"
       self        = true
     }
+    ingress_self_coredns_tcp = {
+      description = "Node to node vcluster CoreDNS"
+      protocol    = "tcp"
+      from_port   = 1053
+      to_port     = 1053
+      type        = "ingress"
+      self        = true
+    }
+    ingress_self_coredns_udp = {
+      description = "Node to node vcluster CoreDNS"
+      protocol    = "udp"
+      from_port   = 1053
+      to_port     = 1053
+      type        = "ingress"
+      self        = true
+    }
     inter_node_traffic_in_80 = {
       description = "Node to node http traffic"
       protocol    = "tcp"
