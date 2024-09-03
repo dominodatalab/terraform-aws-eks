@@ -7,12 +7,3 @@ terraform {
     }
   }
 }
-
-provider "aws" {
-  region = var.region
-
-  ignore_tags {
-    keys = var.ignore_tags
-  }
-  use_fips_endpoint = var.use_fips_endpoint
-}

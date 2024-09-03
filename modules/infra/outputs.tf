@@ -87,3 +87,8 @@ output "cost_usage_report" {
   description = "Cost Usage Report"
   value       = local.cost_usage_report_info
 }
+
+output "vpn_connection" {
+  description = "VPN connection information"
+  value       = var.vpn_connection.create ? module.vpn[0].vpn_connection : null
+}

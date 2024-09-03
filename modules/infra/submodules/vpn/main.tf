@@ -1,8 +1,9 @@
 
 
 resource "aws_customer_gateway" "customer_gateway" {
-  ip_address = var.customer_info.shared_ip
+  ip_address = var.vpn_connection.shared_ip
   type       = "ipsec.1"
+  bgp_asn    = "65000"
 }
 
 resource "aws_vpn_gateway" "this" {
@@ -30,14 +31,12 @@ resource "aws_vpn_connection" "this" {
 }
 
 resource "aws_vpn_connection_route" "this" {
-  destination_cidr_block = var.customer_info.cidr_block
+  destination_cidr_block = var.vpn_connection.cidr_block
   vpn_connection_id      = aws_vpn_connection.this.id
 }
 
 resource "aws_vpn_gateway_route_propagation" "route_propagation" {
-  for_each = {
-    for subnet in concat(var.network_info.subnets.private, var.network_info.subnets.pod) : subnet.name => subnet.subnet_id
-  }
+  for_each = toset(concat(var.network_info.route_tables.private, var.network_info.route_tables.pod))
 
   vpn_gateway_id = aws_vpn_gateway.this.id
   route_table_id = each.value

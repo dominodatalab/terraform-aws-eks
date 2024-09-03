@@ -8,6 +8,11 @@ output "info" {
       private = local.private_subnets
       pod     = local.pod_subnets
     }
+    route_tables = {
+      public  = [for rt in aws_route_table.public : rt.id]
+      private = [for rt in aws_route_table.private : rt.id]
+      pod     = [for rt in aws_route_table.pod : rt.id]
+    }
     eips      = [for k, eip in aws_eip.public : eip.public_ip]
     vpc_cidrs = var.network.cidrs.vpc
   }

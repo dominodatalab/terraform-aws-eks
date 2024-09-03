@@ -8,22 +8,24 @@ variable "deploy_id" {
   }
 }
 
-variable "region" {
-  type        = string
-  description = "AWS region for the deployment"
-  nullable    = false
-  validation {
-    condition     = can(regex("(us(-gov)?|ap|ca|cn|eu|sa|me|af|il)-(central|(north|south)?(east|west)?)-[0-9]", var.region))
-    error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2, us-gov-west-1."
-  }
-}
-
-variable "customer_info" {
-  description = "Information regarding the remote VPN connection, including the shared IP address and the CIDR block for the customer's network."
+variable "vpn_connection" {
+  description = <<EOF
+    shared_ip = Customer's shared IP Address.
+    cidr_block = CIDR block for the customer's network.
+  EOF
   type = object({
     shared_ip  = string
     cidr_block = string
   })
+
+  validation {
+    condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}$", var.vpn_connection.shared_ip))
+    error_message = "The 'shared_ip' must be a valid IP address."
+  }
+  validation {
+    condition     = can(cidrhost(var.vpn_connection.cidr_block, 0))
+    error_message = "The 'cidr_block' must be a valid CIDR block."
+  }
 }
 
 variable "network_info" {
@@ -55,6 +57,11 @@ variable "network_info" {
   EOF
   type = object({
     vpc_id = string
+    route_tables = object({
+      public  = optional(list(string))
+      private = optional(list(string))
+      pod     = optional(list(string))
+    })
     subnets = object({
       public = list(object({
         name      = string
@@ -77,16 +84,4 @@ variable "network_info" {
     })
     vpc_cidrs = string
   })
-}
-
-variable "use_fips_endpoint" {
-  description = "Use aws FIPS endpoints"
-  type        = bool
-  default     = false
-}
-
-variable "ignore_tags" {
-  type        = list(string)
-  description = "Tag keys to be ignored by the aws provider."
-  default     = []
 }

@@ -437,3 +437,24 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+
+variable "vpn_connection" {
+  description = <<EOF
+    create = Create a VPN connection.
+    shared_ip = Customer's shared IP Address.
+    cidr_block = CIDR block for the customer's network.
+  EOF
+
+  type = object({
+    create     = optional(bool, false)
+    shared_ip  = optional(string, "")
+    cidr_block = optional(string, "")
+  })
+
+  default = {}
+
+  validation {
+    condition     = !(var.vpn_connection.create) || (length(var.vpn_connection.shared_ip) > 0 && length(var.vpn_connection.cidr_block) > 0)
+    error_message = "When 'create' is true, both 'shared_ip' and 'cidr_block' must be provided"
+  }
+}
