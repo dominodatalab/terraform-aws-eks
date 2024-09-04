@@ -34,9 +34,12 @@ resource "aws_vpn_connection_route" "this" {
   vpn_connection_id      = aws_vpn_connection.this.id
 }
 
-resource "aws_vpn_gateway_route_propagation" "route_propagation" {
-  for_each = toset(concat(var.network_info.route_tables.private, var.network_info.route_tables.pod))
+locals {
+  route_table_ids = concat(var.network_info.route_tables.private, var.network_info.route_tables.pod)
+}
 
+resource "aws_vpn_gateway_route_propagation" "route_propagation" {
+  count          = length(local.route_table_ids)
   vpn_gateway_id = aws_vpn_gateway.this.id
-  route_table_id = each.value
+  route_table_id = local.route_table_ids[count.index]
 }
