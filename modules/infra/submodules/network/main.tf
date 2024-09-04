@@ -64,4 +64,8 @@ locals {
     for subnet in data.aws_subnet.pod :
     { name = subnet.tags.Name, subnet_id = subnet.id, az = subnet.availability_zone, az_id = subnet.availability_zone_id }
   ]
+
+  public_route_table_ids  = [for rt in aws_route_table.public : rt.id]
+  private_route_table_ids = [for rt in aws_route_table.private : rt.id]
+  pod_route_table_ids     = [for rt in aws_route_table.pod : rt.id]
 }

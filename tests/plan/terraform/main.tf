@@ -14,6 +14,7 @@ module "infra" {
   tags                   = var.tags
   domino_cur             = var.domino_cur
   use_fips_endpoint      = var.use_fips_endpoint
+  vpn_connection         = var.vpn_connection
 }
 
 
