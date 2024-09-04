@@ -3,7 +3,6 @@
 resource "aws_customer_gateway" "customer_gateway" {
   ip_address = var.vpn_connection.shared_ip
   type       = "ipsec.1"
-  bgp_asn    = "65000"
 }
 
 resource "aws_vpn_gateway" "this" {

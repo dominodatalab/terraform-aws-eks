@@ -454,7 +454,7 @@ variable "vpn_connection" {
   default = {}
 
   validation {
-    condition     = !(var.vpn_connection.create) || (length(var.vpn_connection.shared_ip) > 0 && length(var.vpn_connection.cidr_block) > 0)
-    error_message = "When 'create' is true, both 'shared_ip' and 'cidr_block' must be provided"
+    condition     = !(var.vpn_connection.create) || (length(var.vpn_connection.shared_ip) >= 7 && length(var.vpn_connection.cidr_block) >= 7)
+    error_message = "When 'create' is true, both 'shared_ip' and 'cidr_block' must be a valid IPv4 IP."
   }
 }

@@ -461,3 +461,20 @@ variable "irsa_external_deployments_operator" {
 
   default = {}
 }
+
+
+variable "vpn_connection" {
+  description = <<EOF
+    create = Create a VPN connection.
+    shared_ip = Customer's shared IP Address.
+    cidr_block = CIDR block for the customer's network.
+  EOF
+
+  type = object({
+    create     = optional(bool, false)
+    shared_ip  = optional(string, "")
+    cidr_block = optional(string, "")
+  })
+
+  default = {}
+}
