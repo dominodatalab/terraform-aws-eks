@@ -89,6 +89,38 @@
         "secretsmanager:*"
       ],
       "Resource": ["*"]
+    },
+    {
+      "Sid": "CloudformationUngated",
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:*"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Sid": "SNSUngated",
+      "Effect": "Allow",
+      "Action": [
+        "sns:*"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Sid": "CloudwatchUngated",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:*"
+      ],
+      "Resource": ["*"]
+    },
+    {
+      "Sid": "S3fsxAutoSizing",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": "arn:${partition}:s3:::solution-references-*"
     }
   ]
 }

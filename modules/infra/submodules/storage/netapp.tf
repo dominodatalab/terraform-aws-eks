@@ -107,3 +107,21 @@ resource "aws_fsx_ontap_storage_virtual_machine" "eks" {
     "Name" = "${var.deploy_id}-svm"
   }
 }
+
+
+resource "aws_cloudformation_stack" "fsx_ontap_scaling" {
+  count         = var.storage.netapp.storage_capacity_autosizing.enabled ? 1 : 0
+  name          = "${var.deploy_id}-fxn-storage-scaler"
+  template_body = file("${path.module}/files/FSxOntapDynamicStorageScalingCLoudFormationTemplate.yaml")
+
+  parameters = {
+    FileSystemId                        = aws_fsx_ontap_file_system.eks[0].id
+    LowFreeDataStorageCapacityThreshold = var.storage.netapp.storage_capacity_autosizing.threshold
+    PercentIncrease                     = var.storage.netapp.storage_capacity_autosizing.percent_capacity_increase
+    EmailAddress                        = var.storage.netapp.storage_capacity_autosizing.notification_email_address
+  }
+
+  on_failure = "DELETE"
+
+  capabilities = ["CAPABILITY_NAMED_IAM"]
+}

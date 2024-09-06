@@ -1,0 +1,245 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Description: Dynamically scale an Amazon FSx for NetApp ONTAP file system based on CloudWatch Alarm
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Dynamic Storage Scaling Parameters
+        Parameters:
+          - FileSystemId
+          - LowFreeDataStorageCapacityThreshold
+          - PercentIncrease
+          - EmailAddress
+          - MaxFSxSizeinGiB
+
+    ParameterLabels:
+      EmailAddress:
+        default: Email address
+      FileSystemId:
+        default: File system ID
+      MaxFSxSizeinGiB:
+        default: Maximum supported file system storage capacity (DO NOT MODIFY)
+      PercentIncrease:
+        default: Percentage Capacity increase
+      LowFreeDataStorageCapacityThreshold:
+        default: Threshold
+
+Parameters:
+  EmailAddress:
+    Description: The email address for alarm notification.
+    Type: String
+  FileSystemId:
+    AllowedPattern: ^(fs-)([a-z0-9]{17})$
+    Description: Amazon FSx file system ID
+    Type: String
+  LowFreeDataStorageCapacityThreshold:
+    ConstraintDescription: Must be an integer.
+    Description: Used storage capacity threshold (%)
+    Type: Number
+  PercentIncrease:
+    Description: The percentage increase in storage capacity when used storage exceeds LowFreeDataStorageCapacityThreshold. Minimum increase is 10 %
+    Type: Number
+    Default: 20
+    MaxValue: 100
+    MinValue: 10
+  MaxFSxSizeinGiB:
+    Description: Maximum size supported for the primary SSD storage tier.
+    Default: 196608
+    Type: Number
+    MaxValue: 196608
+    MinValue: 196608
+
+Resources:
+  FSxOntapStorageScaler:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}
+      Description: Amazon FSx for NetApp ONTAP dynamic storage scaling function
+      Environment:
+        Variables:
+          fileSystemId: !Ref FileSystemId
+          snsTopicArn: !Sub ${SNSTopic}
+          maxFSxOntapSizeinGiB: !Ref MaxFSxSizeinGiB
+          percentIncrease: !Ref PercentIncrease
+      Handler: lambda_function.lambda_handler
+      Role: !Sub ${FSxOntapStorageScalerRole.Arn}
+      Code:
+        S3Bucket: !Sub solution-references-${AWS::Region}
+        S3Key: "fsx/DynamicScaling/Ontapstoragescaling.zip"
+      Runtime: python3.12
+      Timeout: 300
+
+  FSxOntapStorageScalerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub ${FSxOntapStorageScaler}
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}
+
+  FSxOntapStorageScalerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-${AWS::Region}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
+      Path: /
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}-${AWS::Region}
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+              - Effect: Allow
+                Action:
+                  - fsx:UpdateFileSystem
+                  - fsx:DescribeFileSystems
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${FileSystemId}-storage-capacity-alarm-notification
+  SnsKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+          - Effect: Allow
+            Principal:
+              Service: !Sub "sns.amazonaws.com"
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:CreateGrant"
+              - "kms:ListGrants"
+              - "kms:DescribeKey"
+            Resource: "*"
+
+          - Effect: Allow
+            Principal:
+              Service: !Sub "cloudwatch.amazonaws.com"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey*"
+            Resource: "*"
+
+          - Effect: Allow
+            Principal:
+              Service: !Sub "lambda.amazonaws.com"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey*"
+            Resource: "*"
+
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${FSxOntapStorageScalerRole}"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey*"
+            Resource: "*"
+
+  SNSTopic:
+    DependsOn: SnsKey
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName:
+        !Join ["", [!Ref FileSystemId, "-storage-capacity-alarm-notification"]]
+      Subscription:
+        - Endpoint: !Ref EmailAddress
+          Protocol: "email"
+        - Endpoint: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}
+          Protocol: lambda
+      TopicName:
+        !Join ["", [!Ref FileSystemId, "-storage-capacity-alarm-notification"]]
+      KmsMasterKeyId: !Ref SnsKey
+
+  LowFreeDataStorageCapacityAlarm:
+    DependsOn: SNSTopic
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub ${SNSTopic}
+      AlarmDescription:
+        !Join ["", ["Low free storage capacity alarm - ", !Ref FileSystemId]]
+      AlarmName:
+        !Join ["", ["Low free storage capacity alarm - ", !Ref FileSystemId]]
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: "(m2*100)/m1"
+          Id: "e1"
+          Label: PercentageStorageUsed
+          ReturnData: true
+        - Id: "m1"
+          Label: StorageCapacity
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: FileSystemId
+                  Value: !Ref FileSystemId
+                - Name: StorageTier
+                  Value: SSD
+                - Name: DataType
+                  Value: All
+              MetricName: StorageCapacity
+              Namespace: AWS/FSx
+            Period: 60
+            Stat: Maximum
+          ReturnData: false
+        - Id: "m2"
+          Label: StorageUsed
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: FileSystemId
+                  Value: !Ref FileSystemId
+                - Name: StorageTier
+                  Value: SSD
+                - Name: DataType
+                  Value: All
+              MetricName: StorageUsed
+              Namespace: AWS/FSx
+            Period: 60
+            Stat: Average
+          ReturnData: false
+      Threshold: !Ref LowFreeDataStorageCapacityThreshold
+      TreatMissingData: missing
