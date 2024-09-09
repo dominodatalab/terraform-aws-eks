@@ -8,23 +8,27 @@ variable "deploy_id" {
   }
 }
 
-variable "vpn_connection" {
+variable "vpn_connections" {
   description = <<EOF
-    shared_ip = Customer's shared IP Address.
-    cidr_block = CIDR block for the customer's network.
+    List of VPN connections, each with:
+    - name: Name for identification
+    - shared_ip: Customer's shared IP Address.
+    - cidr_block: List of CIDR blocks for the customer's network.
   EOF
-  type = object({
-    shared_ip  = string
-    cidr_block = string
-  })
+  type = list(object({
+    name        = string
+    shared_ip   = string
+    cidr_blocks = list(string)
+  }))
 
   validation {
-    condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}$", var.vpn_connection.shared_ip))
-    error_message = "The 'shared_ip' must be a valid IP address."
+    condition     = alltrue([for vpn in var.vpn_connections : can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}$", vpn.shared_ip))])
+    error_message = "Each 'shared_ip' must be a valid IP address."
   }
+
   validation {
-    condition     = can(cidrhost(var.vpn_connection.cidr_block, 0))
-    error_message = "The 'cidr_block' must be a valid CIDR block."
+    condition     = alltrue([for vpn in var.vpn_connections : alltrue([for cidr in vpn.cidr_blocks : can(cidrhost(cidr, 0))])])
+    error_message = "Each 'cidr_block' must be a valid CIDR block."
   }
 }
 
