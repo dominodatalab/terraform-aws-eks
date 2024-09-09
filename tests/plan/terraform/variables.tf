@@ -330,6 +330,7 @@ variable "bastion" {
 variable "storage" {
   description = <<EOF
     storage = {
+      filesystem_type = File system type(netapp|efs)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -342,16 +343,34 @@ variable "storage" {
           }
         }
       }
+      netapp = {
+        deployment_type = netapp ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
+        storage_capacity = Filesystem Storage capacity
+        throughput_capacity = Filesystem throughput capacity
+        automatic_backup_retention_days = How many days to keep backups
+        daily_automatic_backup_start_time = Start time in 'HH:MM' format to initiate backups
+
+        storage_capacity_autosizing = Options for the FXN automatic storage capacity increase, cloudformation template
+          enabled                     = Enable automatic storage capacity increase.
+          threshold                  = Used storage capacity threshold.
+          percent_capacity_increase  = The percentage increase in storage capacity when used storage exceeds
+                                       LowFreeDataStorageCapacityThreshold. Minimum increase is 10 %.
+          notification_email_address = The email address for alarm notification.
+        }))
+      }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
       }
       ecr = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the ECR repositories. if 'false' terraform will NOT be able to delete non-empty repositories.
       }
+      enable_remote_backup = Enable tagging required for cross-account backups
+      costs_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage
     }
   }
   EOF
   type = object({
+    filesystem_type = optional(string, "efs")
     efs = optional(object({
       access_point_path = optional(string, "/domino")
       backup_vault = optional(object({
@@ -364,13 +383,27 @@ variable "storage" {
         }), {})
       }), {})
     }), {})
+    netapp = optional(object({
+      deployment_type                   = optional(string, "SINGLE_AZ_1")
+      storage_capacity                  = optional(number, 1024)
+      throughput_capacity               = optional(number, 128)
+      automatic_backup_retention_days   = optional(number, 90)
+      daily_automatic_backup_start_time = optional(string, "00:00")
+      storage_capacity_autosizing = optional(object({
+        enabled                    = optional(bool, false)
+        threshold                  = optional(number, 70)
+        percent_capacity_increase  = optional(number, 30)
+        notification_email_address = optional(string, "")
+      }), {})
+    }), {})
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool, true)
     }), {})
     ecr = optional(object({
       force_destroy_on_deletion = optional(bool, true)
-    }), {})
-    costs_enabled = optional(bool, true)
+    }), {}),
+    enable_remote_backup = optional(bool, false)
+    costs_enabled        = optional(bool, true)
   })
 
   default = {}

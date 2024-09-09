@@ -45,6 +45,7 @@ Parameters:
   EmailAddress:
     Description: The email address for alarm notification.
     Type: String
+    Default: ""
   FileSystemId:
     AllowedPattern: ^(fs-)([a-z0-9]{17})$
     Description: Amazon FSx file system ID
@@ -65,6 +66,9 @@ Parameters:
     Type: Number
     MaxValue: 196608
     MinValue: 196608
+
+Conditions:
+  EmailProvided: !Not [!Equals [!Ref EmailAddress, ""]]
 
 Resources:
   FSxOntapStorageScaler:
@@ -128,6 +132,7 @@ Resources:
                 Action:
                   - sns:Publish
                 Resource: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${FileSystemId}-storage-capacity-alarm-notification
+
   SnsKey:
     Type: "AWS::KMS::Key"
     Properties:
@@ -139,7 +144,6 @@ Resources:
               AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
             Action: "kms:*"
             Resource: "*"
-
           - Effect: Allow
             Principal:
               Service: !Sub "sns.amazonaws.com"
@@ -152,7 +156,6 @@ Resources:
               - "kms:ListGrants"
               - "kms:DescribeKey"
             Resource: "*"
-
           - Effect: Allow
             Principal:
               Service: !Sub "cloudwatch.amazonaws.com"
@@ -160,7 +163,6 @@ Resources:
               - "kms:Decrypt"
               - "kms:GenerateDataKey*"
             Resource: "*"
-
           - Effect: Allow
             Principal:
               Service: !Sub "lambda.amazonaws.com"
@@ -168,7 +170,6 @@ Resources:
               - "kms:Decrypt"
               - "kms:GenerateDataKey*"
             Resource: "*"
-
           - Effect: Allow
             Principal:
               AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${FSxOntapStorageScalerRole}"
@@ -184,8 +185,11 @@ Resources:
       DisplayName:
         !Join ["", [!Ref FileSystemId, "-storage-capacity-alarm-notification"]]
       Subscription:
-        - Endpoint: !Ref EmailAddress
-          Protocol: "email"
+        - !If
+          - EmailProvided
+          - Endpoint: !Ref EmailAddress
+            Protocol: "email"
+          - !Ref "AWS::NoValue"
         - Endpoint: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}
           Protocol: lambda
       TopicName:

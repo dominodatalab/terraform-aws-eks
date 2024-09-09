@@ -390,7 +390,7 @@ variable "storage" {
         enabled                    = optional(bool, false)
         threshold                  = optional(number, 70)
         percent_capacity_increase  = optional(number, 30)
-        notification_email_address = optional(string, null)
+        notification_email_address = optional(string, "")
       }), {})
     }), {})
     s3 = optional(object({
