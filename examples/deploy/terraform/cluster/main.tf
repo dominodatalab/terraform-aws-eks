@@ -60,6 +60,10 @@ module "irsa_external_dns" {
   ignore_tags         = local.infra.ignore_tags
   use_fips_endpoint   = var.use_fips_endpoint
   kms_info            = local.kms
+
+  providers = {
+    aws = aws.global
+  }
 }
 
 moved {
@@ -90,6 +94,10 @@ module "irsa_external_deployments_operator" {
   ignore_tags                   = local.infra.ignore_tags
   use_fips_endpoint             = var.use_fips_endpoint
   kms_info                      = local.kms
+
+  providers = {
+    aws = aws.global
+  }
 }
 
 # Provider configuration for the account where the hosted zone is defined.
@@ -99,6 +107,17 @@ module "irsa_external_deployments_operator" {
 provider "aws" {
   alias = "global"
   # profile = "global"
+  default_tags {
+    tags = local.infra.tags
+  }
+  ignore_tags {
+    keys = local.infra.ignore_tags
+  }
+  use_fips_endpoint = var.use_fips_endpoint
+}
+
+provider "aws" {
+  region = local.infra.region
   default_tags {
     tags = local.infra.tags
   }
