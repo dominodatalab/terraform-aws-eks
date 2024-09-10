@@ -52,6 +52,7 @@ module "irsa_external_dns" {
   tags              = module.infra.tags
   ignore_tags       = module.infra.ignore_tags
   use_fips_endpoint = var.use_fips_endpoint
+  kms_info          = module.infra.kms
 }
 
 data "aws_iam_policy_document" "mypod_s3" {
@@ -77,6 +78,7 @@ module "irsa_policies" {
   tags              = module.infra.tags
   ignore_tags       = module.infra.ignore_tags
   use_fips_endpoint = var.use_fips_endpoint
+  kms_info          = module.infra.kms
 }
 
 module "irsa_external_deployments_operator" {
@@ -87,6 +89,7 @@ module "irsa_external_deployments_operator" {
   tags                          = module.infra.tags
   ignore_tags                   = module.infra.ignore_tags
   use_fips_endpoint             = var.use_fips_endpoint
+  kms_info                      = module.infra.kms
 }
 
 module "nodes" {

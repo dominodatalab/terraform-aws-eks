@@ -59,6 +59,7 @@ module "irsa_external_dns" {
   tags                = local.infra.tags
   ignore_tags         = local.infra.ignore_tags
   use_fips_endpoint   = var.use_fips_endpoint
+  kms_info            = local.kms
 }
 
 moved {
@@ -75,6 +76,7 @@ module "irsa_policies" {
   tags                    = local.infra.tags
   ignore_tags             = local.infra.ignore_tags
   use_fips_endpoint       = var.use_fips_endpoint
+  kms_info                = local.kms
 }
 
 # If you are enabling the IRSA configuration for external-deployments-operator
@@ -87,6 +89,7 @@ module "irsa_external_deployments_operator" {
   tags                          = local.infra.tags
   ignore_tags                   = local.infra.ignore_tags
   use_fips_endpoint             = var.use_fips_endpoint
+  kms_info                      = local.kms
 }
 
 # Provider configuration for the account where the hosted zone is defined.
