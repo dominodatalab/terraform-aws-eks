@@ -14,6 +14,7 @@ module "infra" {
   tags                   = var.tags
   domino_cur             = var.domino_cur
   use_fips_endpoint      = var.use_fips_endpoint
+  vpn_connection         = var.vpn_connection
 }
 
 
@@ -37,6 +38,7 @@ module "eks" {
     route53_hosted_zone_name = var.route53_hosted_zone_name
   }
   use_fips_endpoint = var.use_fips_endpoint
+  netapp            = module.infra.storage.netapp
 }
 
 module "irsa_external_dns" {

@@ -346,6 +346,14 @@ variable "storage" {
         throughput_capacity = Filesystem throughput capacity
         automatic_backup_retention_days = How many days to keep backups
         daily_automatic_backup_start_time = Start time in 'HH:MM' format to initiate backups
+
+        storage_capacity_autosizing = Options for the FXN automatic storage capacity increase, cloudformation template
+          enabled                     = Enable automatic storage capacity increase.
+          threshold                  = Used storage capacity threshold.
+          percent_capacity_increase  = The percentage increase in storage capacity when used storage exceeds
+                                       LowFreeDataStorageCapacityThreshold. Minimum increase is 10 %.
+          notification_email_address = The email address for alarm notification.
+        }))
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
@@ -378,6 +386,12 @@ variable "storage" {
       throughput_capacity               = optional(number, 128)
       automatic_backup_retention_days   = optional(number, 90)
       daily_automatic_backup_start_time = optional(string, "00:00")
+      storage_capacity_autosizing = optional(object({
+        enabled                    = optional(bool, false)
+        threshold                  = optional(number, 70)
+        percent_capacity_increase  = optional(number, 30)
+        notification_email_address = optional(string, "")
+      }), {})
     }), {})
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool, true)
@@ -436,4 +450,25 @@ variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
+}
+
+variable "vpn_connection" {
+  description = <<EOF
+    create = Create a VPN connection.
+    shared_ip = Customer's shared IP Address.
+    cidr_block = CIDR block for the customer's network.
+  EOF
+
+  type = object({
+    create     = optional(bool, false)
+    shared_ip  = optional(string, "")
+    cidr_block = optional(string, "")
+  })
+
+  default = {}
+
+  validation {
+    condition     = !(var.vpn_connection.create) || (length(var.vpn_connection.shared_ip) >= 7 && length(var.vpn_connection.cidr_block) >= 7)
+    error_message = "When 'create' is true, both 'shared_ip' and 'cidr_block' must be a valid IPv4 IP."
+  }
 }
