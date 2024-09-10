@@ -59,8 +59,8 @@ data "aws_iam_policy_document" "external_deployments_operator" {
       "ecr:UploadLayerPart",
     ]
     resources = [
-      "arn:aws:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_ecr_repository}",
-      "arn:aws:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_ecr_repository}*"
+      "arn.${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_ecr_repository}",
+      "arn.${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_ecr_repository}*"
     ]
   }
   statement {
@@ -107,7 +107,7 @@ data "aws_iam_policy_document" "external_deployments_operator" {
       "logs:GetLogEvents",
       "logs:FilterLogEvents"
     ]
-    resources = ["arn:aws:logs:${var.region}:${local.account_id}:log-group:/aws/sagemaker/*"]
+    resources = ["arn.${data.aws_partition.current.partition}:logs:${var.region}:${local.account_id}:log-group:/aws/sagemaker/*"]
   }
   statement {
     sid    = "SagemakerManageResources"
@@ -161,7 +161,7 @@ data "aws_iam_policy_document" "external_deployments_operator" {
     actions = [
       "iam:CreateServiceLinkedRole"
     ]
-    resources = ["arn:aws:iam::${local.account_id}:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/*"
+    resources = ["arn.${data.aws_partition.current.partition}:iam::${local.account_id}:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/*"
     ]
     condition {
       test     = "StringLike"
