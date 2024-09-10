@@ -49,8 +49,6 @@ module "irsa_external_dns" {
     hosted_zone_name = var.route53_hosted_zone_name
   }
   region            = module.infra.region
-  tags              = module.infra.tags
-  ignore_tags       = module.infra.ignore_tags
   use_fips_endpoint = var.use_fips_endpoint
   kms_info          = module.infra.kms
 }
@@ -75,8 +73,6 @@ module "irsa_policies" {
     }
   ]
   region            = module.infra.region
-  tags              = module.infra.tags
-  ignore_tags       = module.infra.ignore_tags
   use_fips_endpoint = var.use_fips_endpoint
   kms_info          = module.infra.kms
 }
@@ -86,8 +82,6 @@ module "irsa_external_deployments_operator" {
   eks_info                      = module.eks.info
   external_deployments_operator = var.irsa_external_deployments_operator
   region                        = module.infra.region
-  tags                          = module.infra.tags
-  ignore_tags                   = module.infra.ignore_tags
   use_fips_endpoint             = var.use_fips_endpoint
   kms_info                      = module.infra.kms
 }

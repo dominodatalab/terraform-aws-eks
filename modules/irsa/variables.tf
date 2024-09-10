@@ -88,12 +88,6 @@ variable "additional_irsa_configs" {
   }
 }
 
-variable "tags" {
-  type        = map(string)
-  description = "Deployment tags."
-  default     = {}
-}
-
 variable "kms_info" {
   description = <<EOF
     key_id  = KMS key id.
@@ -115,12 +109,6 @@ variable "region" {
     condition     = can(regex("(us(-gov)?|ap|ca|cn|eu|sa|me|af|il)-(central|(north|south)?(east|west)?)-[0-9]", var.region))
     error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2, us-gov-west-1."
   }
-}
-
-variable "ignore_tags" {
-  type        = list(string)
-  description = "Tag keys to be ignored by the aws provider."
-  default     = []
 }
 
 variable "use_fips_endpoint" {

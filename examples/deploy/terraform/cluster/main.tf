@@ -56,8 +56,6 @@ module "irsa_external_dns" {
   eks_info            = module.eks.info
   external_dns        = var.irsa_external_dns
   region              = local.infra.region
-  tags                = local.infra.tags
-  ignore_tags         = local.infra.ignore_tags
   use_fips_endpoint   = var.use_fips_endpoint
   kms_info            = local.kms
 
@@ -77,8 +75,6 @@ module "irsa_policies" {
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
   region                  = local.infra.region
-  tags                    = local.infra.tags
-  ignore_tags             = local.infra.ignore_tags
   use_fips_endpoint       = var.use_fips_endpoint
   kms_info                = local.kms
 }
@@ -90,8 +86,6 @@ module "irsa_external_deployments_operator" {
   eks_info                      = module.eks.info
   external_deployments_operator = var.irsa_external_deployments_operator
   region                        = local.infra.region
-  tags                          = local.infra.tags
-  ignore_tags                   = local.infra.ignore_tags
   use_fips_endpoint             = var.use_fips_endpoint
   kms_info                      = local.kms
 
