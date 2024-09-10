@@ -39,7 +39,8 @@ data "aws_iam_policy_document" "external_deployments_operator" {
       "iam:PassRole",
     ]
     resources = [
-      local.external_deployments_operator_role
+      "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/${local.external_deployments_operator_role}"
+
     ]
   }
   statement {
