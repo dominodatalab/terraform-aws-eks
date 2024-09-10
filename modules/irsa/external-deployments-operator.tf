@@ -60,8 +60,8 @@ data "aws_iam_policy_document" "external_deployments_operator" {
       "ecr:UploadLayerPart",
     ]
     resources = [
-      "arn.${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_repository}",
-      "arn.${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_repository}*"
+      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_repository}",
+      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_repository}*"
     ]
   }
   statement {
@@ -109,7 +109,7 @@ data "aws_iam_policy_document" "external_deployments_operator" {
       "logs:FilterLogEvents"
     ]
     resources = [
-      "arn.${data.aws_partition.current.partition}:logs:${var.region}:${local.account_id}:log-group:/aws/sagemaker/*"
+      "arn:${data.aws_partition.current.partition}:logs:${var.region}:${local.account_id}:log-group:/aws/sagemaker/*"
     ]
   }
   statement {
@@ -165,7 +165,7 @@ data "aws_iam_policy_document" "external_deployments_operator" {
       "iam:CreateServiceLinkedRole"
     ]
     resources = [
-      "arn.${data.aws_partition.current.partition}:iam::${local.account_id}:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/*"
+      "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/*"
     ]
     condition {
       test     = "StringLike"
@@ -184,8 +184,8 @@ data "aws_iam_policy_document" "external_deployments_operator" {
       "ecr:GetDownloadUrlForLayer",
     ]
     resources = [
-      "arn.${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.environments_repository}",
-      "arn.${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.environments_repository}*"
+      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.environments_repository}",
+      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.environments_repository}*"
     ]
   }
 }
