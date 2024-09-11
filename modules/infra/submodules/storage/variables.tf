@@ -53,6 +53,14 @@ variable "storage" {
         throughput_capacity = Filesystem throughput capacity
         automatic_backup_retention_days = How many days to keep backups
         daily_automatic_backup_start_time = Start time in 'HH:MM' format to initiate backups
+
+        storage_capacity_autosizing = Options for the FXN automatic storage capacity increase, cloudformation template
+          enabled                     = Enable automatic storage capacity increase.
+          threshold                  = Used storage capacity threshold.
+          percent_capacity_increase  = The percentage increase in storage capacity when used storage exceeds
+                                       LowFreeDataStorageCapacityThreshold. Minimum increase is 10 %.
+          notification_email_address = The email address for alarm notification.
+        }))
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
@@ -85,6 +93,12 @@ variable "storage" {
       throughput_capacity               = optional(number)
       automatic_backup_retention_days   = optional(number)
       daily_automatic_backup_start_time = optional(string)
+      storage_capacity_autosizing = optional(object({
+        enabled                    = optional(bool)
+        threshold                  = optional(number)
+        percent_capacity_increase  = optional(number)
+        notification_email_address = optional(string)
+      }))
     }))
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool)
