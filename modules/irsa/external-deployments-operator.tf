@@ -32,18 +32,30 @@ data "aws_iam_policy_document" "external_deployments_service_account_assume_role
 }
 data "aws_iam_policy_document" "external_deployments_self_sagemaker_assume_role" {
   statement {
-    sid     = "SelfSagemakerAssumeRole"
+    sid     = "SelfAssumeRole"
+    actions = ["sts:AssumeRole"]
+    effect  = "Allow"
+    principals {
+      type = "AWS"
+      identifiers = [
+        "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:root"
+      ]
+    }
+    condition {
+      test     = "ArnLike"
+      variable = "aws:PrincipalArn"
+      values = [
+        "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/${local.external_deployments_operator_role}"
+      ]
+    }
+  }
+  statement {
+    sid     = "SagemakerAssumeRole"
     actions = ["sts:AssumeRole"]
     effect  = "Allow"
     principals {
       type        = "Service"
       identifiers = ["sagemaker.amazonaws.com"]
-    }
-    principals {
-      type = "AWS"
-      identifiers = [
-        "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/${local.external_deployments_operator_role}"
-      ]
     }
   }
 }
@@ -53,8 +65,7 @@ data "aws_iam_policy_document" "external_deployments_operator_assume_role_policy
 }
 
 resource "aws_iam_role" "external_deployments_operator" {
-  count = var.external_deployments_operator.enabled ? 1 : 0
-
+  count              = var.external_deployments_operator.enabled ? 1 : 0
   name               = local.external_deployments_operator_role
   assume_role_policy = data.aws_iam_policy_document.external_deployments_operator_assume_role_policy.json
 }
