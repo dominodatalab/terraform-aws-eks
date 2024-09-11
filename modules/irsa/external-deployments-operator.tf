@@ -19,18 +19,11 @@ resource "aws_iam_role" "external_deployments_operator" {
         }
       },
       {
-        Action = [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
+        Action = ["sts:AssumeRole"]
         Effect = "Allow"
         Principal = {
-          Service = [
-            "sagemaker.amazonaws.com",
-          ]
-          AWS = [
-            "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/${local.external_deployments_operator_role}"
-          ]
+          Service = ["sagemaker.amazonaws.com"]
+          AWS     = ["arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/${local.external_deployments_operator_role}"]
         }
       },
     ]
@@ -39,15 +32,10 @@ resource "aws_iam_role" "external_deployments_operator" {
 
 data "aws_iam_policy_document" "external_deployments_operator" {
   statement {
-    sid    = "StsAllowAssumeRole"
-    effect = "Allow"
-    actions = [
-      "sts:AssumeRole",
-      "sts:TagSession"
-    ]
-    resources = [
-      "*"
-    ]
+    sid       = "StsAllowAssumeRole"
+    effect    = "Allow"
+    actions   = ["sts:AssumeRole"]
+    resources = ["*"]
   }
   statement {
     sid    = "IamAllowPassRole"

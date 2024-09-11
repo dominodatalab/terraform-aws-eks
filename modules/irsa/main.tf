@@ -7,7 +7,7 @@ locals {
   name_prefix                        = var.eks_info.cluster.specs.name
   account_id                         = var.eks_info.cluster.specs.account_id
   blobs_s3_bucket_arn                = "arn:${data.aws_partition.current.partition}:s3:::${local.name_prefix}-blobs"
-  environments_repository            = "${local.name_prefix}-environment"
+  environments_repository            = "${local.name_prefix}/environment"
   external_deployments_repository    = "${local.name_prefix}-external-deployments"
   external_deployments_operator_role = "${local.name_prefix}-external-deployments-operator"
   kms_key_arn                        = var.kms_info.enabled ? var.kms_info.key_arn : null
