@@ -30,6 +30,11 @@ variable "vpn_connections" {
     condition     = alltrue([for vpn in var.vpn_connections : alltrue([for cidr in vpn.cidr_blocks : can(cidrhost(cidr, 0))])])
     error_message = "Each 'cidr_block' must be a valid CIDR block."
   }
+
+  validation {
+    condition     = length(var.vpn_connections) == length(distinct([for vpn in var.vpn_connections : vpn.name]))
+    error_message = "Each connection 'name' must be unique."
+  }
 }
 
 variable "network_info" {

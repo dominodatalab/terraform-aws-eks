@@ -3,6 +3,7 @@ resource "aws_customer_gateway" "customer_gateway" {
 
   ip_address = each.value.shared_ip
   type       = "ipsec.1"
+  bgp_asn    = "65000"
   tags = {
     Name = each.value.name
   }
