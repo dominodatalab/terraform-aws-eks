@@ -35,6 +35,10 @@ variable "vpn_connections" {
     condition     = length(var.vpn_connections) == length(distinct([for vpn in var.vpn_connections : vpn.name]))
     error_message = "Each connection 'name' must be unique."
   }
+  validation {
+    condition     = length(flatten([for vpn in var.vpn_connections : vpn.cidr_blocks])) == length(distinct(flatten([for vpn in var.vpn_connections : vpn.cidr_blocks])))
+    error_message = "CIDR blocks must be unique."
+  }
 }
 
 variable "network_info" {
