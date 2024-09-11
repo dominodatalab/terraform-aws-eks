@@ -17,6 +17,6 @@ eks = {
   ssm_log_group_name = null
   vpc_cni            = null
 }
-kms_info = null
-
+kms_info          = null
+region            = null
 use_fips_endpoint = false

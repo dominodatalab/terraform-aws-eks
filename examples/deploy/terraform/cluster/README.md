@@ -42,6 +42,7 @@
 | <a name="input_irsa_external_dns"></a> [irsa\_external\_dns](#input\_irsa\_external\_dns) | Mappings for custom IRSA configurations. | <pre>object({<br>    enabled             = optional(bool, false)<br>    hosted_zone_name    = optional(string, null)<br>    namespace           = optional(string, null)<br>    serviceaccount_name = optional(string, null)<br>    rm_role_policy = optional(object({<br>      remove           = optional(bool, false)<br>      detach_from_role = optional(bool, false)<br>      policy_name      = optional(string, "")<br>    }), {})<br>  })</pre> | `{}` | no |
 | <a name="input_irsa_policies"></a> [irsa\_policies](#input\_irsa\_policies) | Mappings for custom IRSA configurations. | <pre>list(object({<br>    name                = string<br>    namespace           = string<br>    serviceaccount_name = string<br>    policy              = string #json<br>  }))</pre> | `[]` | no |
 | <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | Overrides the KMS key information. Meant for migrated configurations.<br>    {<br>      key\_id  = KMS key id.<br>      key\_arn = KMS key arn.<br>      enabled = KMS key is enabled.<br>    } | <pre>object({<br>    key_id  = string<br>    key_arn = string<br>    enabled = bool<br>  })</pre> | `null` | no |
+| <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 | <a name="input_use_fips_endpoint"></a> [use\_fips\_endpoint](#input\_use\_fips\_endpoint) | Use aws FIPS endpoints | `bool` | `false` | no |
 
 ## Outputs
@@ -49,7 +50,7 @@
 | Name | Description |
 |------|-------------|
 | <a name="output_eks"></a> [eks](#output\_eks) | EKS details. |
-| <a name="output_external_deployments_operator"></a> [external\_deployments\_operator](#output\_external\_deployments\_operator) | "External\_deployments\_operator info"<br>  {<br>    irsa\_role = irsa role arn<br>    service\_account\_name = service account name<br>  } |
+| <a name="output_external_deployments_operator"></a> [external\_deployments\_operator](#output\_external\_deployments\_operator) | "External\_deployments\_operator info"<br>  {<br>    irsa\_role = irsa role arn<br>    service\_account\_name = service account name<br>    repository = repository for external deployment images<br>    bucket = s3 bucket for external deployment images<br>    can\_assume\_any\_role = can the external deployments irsa role assume any role (in any account)<br>    can\_deploy\_in\_account = has the external deployments irsa role been granted permissions to deploy within the domino AWS account<br>  } |
 | <a name="output_external_dns_irsa_role_arn"></a> [external\_dns\_irsa\_role\_arn](#output\_external\_dns\_irsa\_role\_arn) | "External\_dns info"<br>  {<br>    irsa\_role = irsa role arn.<br>    zone\_id   = hosted zone id for external\_dns Iam policy<br>    zone\_name = hosted zone name for external\_dns Iam policy<br>  } |
 | <a name="output_infra"></a> [infra](#output\_infra) | Infra details. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
