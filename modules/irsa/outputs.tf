@@ -23,8 +23,11 @@ output "netapp_trident_operator" {
 output "external_deployments_operator" {
   description = "External deployments operator role info"
   value = var.external_deployments_operator.enabled ? {
-    irsa_role            = aws_iam_role.external_deployments_operator[0].arn
-    service_account_name = var.external_deployments_operator.service_account_name
-    repository           = local.external_deployments_repository
+    irsa_role             = aws_iam_role.external_deployments_operator[0].arn
+    service_account_name  = var.external_deployments_operator.service_account_name
+    repository            = local.external_deployments_repository
+    bucket                = local.external_deployments_bucket
+    can_assume_any_role   = var.external_deployments_operator.grant_assume_any_role
+    can_deploy_in_account = var.external_deployments_operator.grant_in_account_policies
   } : null
 }

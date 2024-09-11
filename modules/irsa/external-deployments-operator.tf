@@ -1,41 +1,82 @@
+locals {
+  blobs_s3_bucket_arn                             = "arn:${data.aws_partition.current.partition}:s3:::${local.name_prefix}-blobs"
+  environments_repository                         = "${local.name_prefix}/environment"
+  external_deployments_repository                 = "${local.name_prefix}-${var.external_deployments_operator.repository_suffix}"
+  external_deployments_bucket                     = "${local.name_prefix}-${var.external_deployments_operator.bucket_suffix}"
+  external_deployments_operator_role              = "${local.name_prefix}-${var.external_deployments_operator.role_suffix}"
+  external_deployments_operator_role_needs_policy = var.external_deployments_operator.enabled && (var.external_deployments_operator.grant_in_account_policies || var.external_deployments_operator.grant_assume_any_role)
+}
+
+data "aws_iam_policy_document" "service_account_assume_role" {
+  statement {
+    sid     = "ServiceAccountAssumeRole"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [local.oidc_provider_arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${trimprefix(local.oidc_provider_url, "https://")}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${trimprefix(local.oidc_provider_url, "https://")}:sub"
+      values = [
+        "system:serviceaccount:${var.external_deployments_operator.namespace}:${var.external_deployments_operator.service_account_name}"
+      ]
+    }
+  }
+}
+data "aws_iam_policy_document" "self_sagemaker_assume_role" {
+  statement {
+    sid     = "SelfSagemakerAssumeRole"
+    actions = ["sts:AssumeRole"]
+    effect  = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["sagemaker.amazonaws.com"]
+    }
+    principals {
+      type = "AWS"
+      identifiers = [
+        "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/${local.external_deployments_operator_role}"
+      ]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "operator_assume_role_policy" {
+  source_policy_documents = var.external_deployments_operator.grant_in_account_policies ? [data.aws_iam_policy_document.service_account_assume_role, data.aws_iam_policy_document.self_sagemaker_assume_role] : [data.aws_iam_policy_document.service_account_assume_role]
+}
+
 resource "aws_iam_role" "external_deployments_operator" {
   count = var.external_deployments_operator.enabled ? 1 : 0
 
-  name = local.external_deployments_operator_role
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Effect = "Allow"
-        Principal = {
-          Federated = local.oidc_provider_arn
-        }
-        Condition : {
-          StringEquals : {
-            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
-            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : "system:serviceaccount:${var.external_deployments_operator.namespace}:${var.external_deployments_operator.service_account_name}"
-          }
-        }
-      },
-      {
-        Action = ["sts:AssumeRole"]
-        Effect = "Allow"
-        Principal = {
-          Service = ["sagemaker.amazonaws.com"]
-          AWS     = ["arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/${local.external_deployments_operator_role}"]
-        }
-      },
-    ]
-  })
+  name               = local.external_deployments_operator_role
+  assume_role_policy = data.aws_iam_policy_document.operator_assume_role_policy.json
 }
 
-data "aws_iam_policy_document" "external_deployments_operator" {
+data "aws_iam_policy_document" "decrypt_blobs_kms" {
   statement {
-    sid       = "StsAllowAssumeRole"
+    sid       = "KmsDecryptDominoBlobs"
     effect    = "Allow"
-    actions   = ["sts:AssumeRole"]
-    resources = ["*"]
+    actions   = ["kms:Decrypt"]
+    resources = [coalesce(var.kms_info.key_arn, "ignored")]
+  }
+}
+
+data "aws_iam_policy_document" "in_account_policies" {
+  source_policy_documents = var.kms_info.enabled ? [data.aws_iam_policy_document.decrypt_blobs_kms] : []
+  statement {
+    sid     = "StsAllowAssumeRole"
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    resources = [
+      "arn:${data.aws_partition.current.partition}:iam::${local.account_id}:role/${local.external_deployments_operator_role}"
+    ]
   }
   statement {
     sid    = "IamAllowPassRole"
@@ -77,12 +118,6 @@ data "aws_iam_policy_document" "external_deployments_operator" {
       "ecr:DescribeRegistry"
     ]
     resources = ["*"]
-  }
-  statement {
-    sid       = "KmsDecryptDominoBlobs"
-    effect    = "Allow"
-    actions   = ["kms:Decrypt"]
-    resources = [local.kms_key_arn]
   }
   statement {
     sid    = "S3AccessDominoBlobs"
@@ -195,15 +230,28 @@ data "aws_iam_policy_document" "external_deployments_operator" {
   }
 }
 
-resource "aws_iam_policy" "external_deployments_operator" {
+data "aws_iam_policy_document" "assume_any_role" {
+  statement {
+    sid       = "StsAllowAssumeRole"
+    effect    = "Allow"
+    actions   = ["sts:AssumeRole"]
+    resources = ["*"]
+  }
+}
 
-  count  = var.external_deployments_operator.enabled ? 1 : 0
+data "aws_iam_policy_document" "operator_grant_policy" {
+  source_policy_documents   = var.external_deployments_operator.grant_in_account_policies ? [data.aws_iam_policy_document.in_account_policies] : []
+  override_policy_documents = var.external_deployments_operator.grant_assume_any_role ? [data.aws_iam_policy_document.assume_any_role] : []
+}
+
+resource "aws_iam_policy" "external_deployments_operator" {
+  count  = local.external_deployments_operator_role_needs_policy ? 1 : 0
   name   = "${local.name_prefix}-external-deployments-operator"
-  policy = data.aws_iam_policy_document.external_deployments_operator.json
+  policy = data.aws_iam_policy_document.operator_grant_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "external_deployments_operator" {
-  count      = var.external_deployments_operator.enabled ? 1 : 0
+  count      = local.external_deployments_operator_role_needs_policy ? 1 : 0
   role       = aws_iam_role.external_deployments_operator[0].name
   policy_arn = aws_iam_policy.external_deployments_operator[0].arn
 }
