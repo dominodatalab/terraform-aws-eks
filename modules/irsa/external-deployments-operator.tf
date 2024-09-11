@@ -1,7 +1,7 @@
 locals {
   blobs_s3_bucket_arn                             = "arn:${data.aws_partition.current.partition}:s3:::${local.name_prefix}-blobs"
   environments_repository                         = "${local.name_prefix}/environment"
-  external_deployments_repository                 = "${local.name_prefix}-${var.external_deployments_operator.repository_suffix}"
+  external_deployments_repository                 = "${local.name_prefix}/${var.external_deployments_operator.repository_suffix}"
   external_deployments_bucket                     = "${local.name_prefix}-${var.external_deployments_operator.bucket_suffix}"
   external_deployments_operator_role              = "${local.name_prefix}-${var.external_deployments_operator.role_suffix}"
   external_deployments_operator_role_needs_policy = var.external_deployments_operator.enabled && (var.external_deployments_operator.grant_in_account_policies || var.external_deployments_operator.grant_assume_any_role)
