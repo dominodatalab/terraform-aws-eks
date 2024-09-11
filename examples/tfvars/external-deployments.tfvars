@@ -19,7 +19,12 @@ bastion = {
 }
 
 irsa_external_deployments_operator = {
-  enabled              = "true",
-  namespace            = "domino-compute",
-  service_account_name = "test-operator-account"
+  enabled                   = "true",
+  namespace                 = "domino-compute",
+  service_account_name      = "test-operator-account",
+  role_suffix               = "external-deployments-operator",
+  repository_suffix         = "external-deployments",
+  bucket_suffix             = "external-deployments",
+  grant_assume_any_role     = "true",
+  grant_in_account_policies = "true"
 }
