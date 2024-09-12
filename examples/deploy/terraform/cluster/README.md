@@ -42,6 +42,7 @@
 | <a name="input_irsa_external_dns"></a> [irsa\_external\_dns](#input\_irsa\_external\_dns) | Mappings for custom IRSA configurations. | <pre>object({<br>    enabled             = optional(bool, false)<br>    hosted_zone_name    = optional(string, null)<br>    namespace           = optional(string, null)<br>    serviceaccount_name = optional(string, null)<br>    rm_role_policy = optional(object({<br>      remove           = optional(bool, false)<br>      detach_from_role = optional(bool, false)<br>      policy_name      = optional(string, "")<br>    }), {})<br>  })</pre> | `{}` | no |
 | <a name="input_irsa_policies"></a> [irsa\_policies](#input\_irsa\_policies) | Mappings for custom IRSA configurations. | <pre>list(object({<br>    name                = string<br>    namespace           = string<br>    serviceaccount_name = string<br>    policy              = string #json<br>  }))</pre> | `[]` | no |
 | <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | Overrides the KMS key information. Meant for migrated configurations.<br>    {<br>      key\_id  = KMS key id.<br>      key\_arn = KMS key arn.<br>      enabled = KMS key is enabled.<br>    } | <pre>object({<br>    key_id  = string<br>    key_arn = string<br>    enabled = bool<br>  })</pre> | `null` | no |
+| <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 | <a name="input_use_fips_endpoint"></a> [use\_fips\_endpoint](#input\_use\_fips\_endpoint) | Use aws FIPS endpoints | `bool` | `false` | no |
 
 ## Outputs

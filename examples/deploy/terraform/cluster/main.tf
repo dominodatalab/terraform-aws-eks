@@ -7,14 +7,15 @@ data "terraform_remote_state" "infra" {
 }
 
 locals {
-  infra = data.terraform_remote_state.infra.outputs.infra
-  kms   = var.kms_info != null ? var.kms_info : local.infra.kms
+  infra  = data.terraform_remote_state.infra.outputs.infra
+  kms    = var.kms_info != null ? var.kms_info : local.infra.kms
+  region = var.region != null ? var.region : local.infra.region
 }
 
 module "eks" {
   source    = "./../../../../modules/eks"
   deploy_id = local.infra.deploy_id
-  region    = local.infra.region
+  region    = local.region
 
   ssh_key             = local.infra.ssh_key
   node_iam_policies   = local.infra.node_iam_policies
@@ -55,7 +56,7 @@ module "irsa_external_dns" {
   use_cluster_odc_idp = local.is_eks_account_same
   eks_info            = module.eks.info
   external_dns        = var.irsa_external_dns
-  region              = local.infra.region
+  region              = local.region
   use_fips_endpoint   = var.use_fips_endpoint
   kms_info            = local.kms
 
@@ -74,7 +75,7 @@ module "irsa_policies" {
   use_cluster_odc_idp     = true
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
-  region                  = local.infra.region
+  region                  = local.region
   use_fips_endpoint       = var.use_fips_endpoint
   kms_info                = local.kms
 }
@@ -85,7 +86,7 @@ module "irsa_external_deployments_operator" {
   use_cluster_odc_idp           = local.is_eks_account_same
   eks_info                      = module.eks.info
   external_deployments_operator = var.irsa_external_deployments_operator
-  region                        = local.infra.region
+  region                        = local.region
   use_fips_endpoint             = var.use_fips_endpoint
   kms_info                      = local.kms
 
@@ -111,7 +112,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = local.infra.region
+  region = local.region
   default_tags {
     tags = local.infra.tags
   }
