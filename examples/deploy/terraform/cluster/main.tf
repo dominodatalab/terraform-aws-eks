@@ -78,7 +78,7 @@ module "irsa_external_deployments_operator" {
   source                        = "./../../../../modules/irsa"
   use_cluster_odc_idp           = local.is_eks_account_same
   eks_info                      = module.eks.info
-  external_deployments_operator = merge({ region : local.infra.region }, var.irsa_external_deployments_operator)
+  external_deployments_operator = var.irsa_external_deployments_operator
 
   providers = {
     aws = aws.global
