@@ -9,6 +9,7 @@ locals {
 }
 
 data "aws_iam_policy_document" "external_deployments_service_account_assume_role" {
+  count = var.external_deployments_operator.enabled ? 1 : 0
   statement {
     sid     = "ServiceAccountAssumeRole"
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -32,6 +33,7 @@ data "aws_iam_policy_document" "external_deployments_service_account_assume_role
   }
 }
 data "aws_iam_policy_document" "external_deployments_self_sagemaker_assume_role" {
+  count = var.external_deployments_operator.enabled ? 1 : 0
   statement {
     sid     = "SelfAssumeRole"
     actions = ["sts:AssumeRole"]
@@ -62,16 +64,18 @@ data "aws_iam_policy_document" "external_deployments_self_sagemaker_assume_role"
 }
 
 data "aws_iam_policy_document" "external_deployments_operator_assume_role_policy" {
-  source_policy_documents = var.external_deployments_operator.grant_in_account_policies ? [data.aws_iam_policy_document.external_deployments_service_account_assume_role.json, data.aws_iam_policy_document.external_deployments_self_sagemaker_assume_role.json] : [data.aws_iam_policy_document.external_deployments_service_account_assume_role.json]
+  count                   = var.external_deployments_operator.enabled ? 1 : 0
+  source_policy_documents = var.external_deployments_operator.grant_in_account_policies ? [data.aws_iam_policy_document.external_deployments_service_account_assume_role[0].json, data.aws_iam_policy_document.external_deployments_self_sagemaker_assume_role[0].json] : [data.aws_iam_policy_document.external_deployments_service_account_assume_role[0].json]
 }
 
 resource "aws_iam_role" "external_deployments_operator" {
   count              = var.external_deployments_operator.enabled ? 1 : 0
   name               = local.external_deployments_operator_role
-  assume_role_policy = data.aws_iam_policy_document.external_deployments_operator_assume_role_policy.json
+  assume_role_policy = data.aws_iam_policy_document.external_deployments_operator_assume_role_policy[0].json
 }
 
 data "aws_iam_policy_document" "external_deployments_decrypt_blobs_kms" {
+  count = var.external_deployments_operator.enabled ? 1 : 0
   statement {
     sid       = "KmsDecryptDominoBlobs"
     effect    = "Allow"
@@ -81,7 +85,8 @@ data "aws_iam_policy_document" "external_deployments_decrypt_blobs_kms" {
 }
 
 data "aws_iam_policy_document" "external_deployments_in_account_policies" {
-  source_policy_documents = var.external_deployments_operator.kms_key_arn != null ? [data.aws_iam_policy_document.external_deployments_decrypt_blobs_kms.json] : []
+  count                   = var.external_deployments_operator.enabled ? 1 : 0
+  source_policy_documents = var.external_deployments_operator.kms_key_arn != null ? [data.aws_iam_policy_document.external_deployments_decrypt_blobs_kms[0].json] : []
   statement {
     sid     = "StsAllowAssumeRole"
     effect  = "Allow"
@@ -244,6 +249,7 @@ data "aws_iam_policy_document" "external_deployments_in_account_policies" {
 }
 
 data "aws_iam_policy_document" "external_deployments_assume_any_role" {
+  count = var.external_deployments_operator.enabled ? 1 : 0
   statement {
     sid       = "StsAllowAssumeRole"
     effect    = "Allow"
@@ -253,14 +259,15 @@ data "aws_iam_policy_document" "external_deployments_assume_any_role" {
 }
 
 data "aws_iam_policy_document" "external_deployments_operator_grant_policy" {
-  source_policy_documents   = var.external_deployments_operator.grant_in_account_policies ? [data.aws_iam_policy_document.external_deployments_in_account_policies.json] : []
-  override_policy_documents = var.external_deployments_operator.grant_assume_any_role ? [data.aws_iam_policy_document.external_deployments_assume_any_role.json] : []
+  count                     = var.external_deployments_operator.enabled ? 1 : 0
+  source_policy_documents   = var.external_deployments_operator.grant_in_account_policies ? [data.aws_iam_policy_document.external_deployments_in_account_policies[0].json] : []
+  override_policy_documents = var.external_deployments_operator.grant_assume_any_role ? [data.aws_iam_policy_document.external_deployments_assume_any_role[0].json] : []
 }
 
 resource "aws_iam_policy" "external_deployments_operator" {
   count  = local.external_deployments_operator_role_needs_policy ? 1 : 0
   name   = "${local.name_prefix}-external-deployments-operator"
-  policy = data.aws_iam_policy_document.external_deployments_operator_grant_policy.json
+  policy = data.aws_iam_policy_document.external_deployments_operator_grant_policy[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "external_deployments_operator" {
