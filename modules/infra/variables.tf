@@ -329,6 +329,13 @@ variable "storage" {
     storage = {
       filesystem_type = File system type(netapp|efs)
       efs = {
+        migrate_to_netapp = {
+          enabled =  When enabled, both EFS and NetApp resources will be provisioned simultaneously during the migration period.
+          datasync = {
+            enabled  = Toggle to enable AWS DataSync for automated data transfer from EFS to NetApp FSx.
+            schedule = Cron-style schedule for the DataSync task, specifying how often the data transfer will occur (default: hourly).
+          }
+        }
         access_point_path = Filesystem path for efs.
         backup_vault = {
           create        = Create backup vault for EFS toggle.
@@ -369,6 +376,13 @@ variable "storage" {
   type = object({
     filesystem_type = optional(string, "efs")
     efs = optional(object({
+      migrate_to_netapp = optional(object({
+        enabled = optional(bool, false)
+        datasync = optional(object({
+          enabled  = optional(bool, false)
+          schedule = optional(string, "cron(0 * * * ? *)")
+        }))
+      }))
       access_point_path = optional(string, "/domino")
       backup_vault = optional(object({
         create        = optional(bool, true)
