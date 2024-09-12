@@ -381,7 +381,7 @@ variable "storage" {
         datasync = optional(object({
           enabled  = optional(bool, false)
           schedule = optional(string, "cron(0 * * * ? *)")
-        }))
+        }), {})
       }), {})
       access_point_path = optional(string, "/domino")
       backup_vault = optional(object({
