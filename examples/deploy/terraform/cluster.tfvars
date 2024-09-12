@@ -18,5 +18,4 @@ eks = {
   vpc_cni            = null
 }
 kms_info          = null
-region            = null
 use_fips_endpoint = false
