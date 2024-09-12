@@ -62,14 +62,12 @@ data "aws_iam_policy_document" "mypod_s3" {
 module "irsa_policies" {
   source   = "./../../../modules/irsa"
   eks_info = module.eks.info
-  additional_irsa_configs = [
-    {
-      name                = "mypod-s3"
-      namespace           = "domino-config"
-      policy              = data.aws_iam_policy_document.mypod_s3.json
-      serviceaccount_name = "mypod-s3"
-    }
-  ]
+  additional_irsa_configs = [{
+    name                = "mypod-s3"
+    namespace           = "domino-config"
+    policy              = data.aws_iam_policy_document.mypod_s3.json
+    serviceaccount_name = "mypod-s3"
+  }]
   use_fips_endpoint = var.use_fips_endpoint
 }
 

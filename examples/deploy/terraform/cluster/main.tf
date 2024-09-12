@@ -99,6 +99,7 @@ provider "aws" {
 }
 
 provider "aws" {
+  region = local.infra.region
   ignore_tags {
     keys = local.infra.ignore_tags
   }
