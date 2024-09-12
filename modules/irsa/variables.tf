@@ -88,12 +88,33 @@ variable "additional_irsa_configs" {
   }
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "Deployment tags."
+  default     = {}
+}
+
+variable "region" {
+  type        = string
+  description = "AWS region for the deployment"
+  nullable    = false
+  validation {
+    condition     = can(regex("(us(-gov)?|ap|ca|cn|eu|sa|me|af|il)-(central|(north|south)?(east|west)?)-[0-9]", var.region))
+    error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2, us-gov-west-1."
+  }
+}
+
+variable "ignore_tags" {
+  type        = list(string)
+  description = "Tag keys to be ignored by the aws provider."
+  default     = []
+}
+
 variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
 }
-
 
 variable "netapp_trident_operator" {
   description = "Config to create IRSA role for the netapp-trident-operator."

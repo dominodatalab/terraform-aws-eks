@@ -55,10 +55,10 @@ module "irsa_external_dns" {
   use_cluster_odc_idp = local.is_eks_account_same
   eks_info            = module.eks.info
   external_dns        = var.irsa_external_dns
-
-  providers = {
-    aws = aws.global
-  }
+  region              = local.infra.region
+  tags                = local.infra.tags
+  ignore_tags         = local.infra.ignore_tags
+  use_fips_endpoint   = var.use_fips_endpoint
 }
 
 moved {
@@ -71,6 +71,10 @@ module "irsa_policies" {
   use_cluster_odc_idp     = true
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
+  region                  = local.infra.region
+  tags                    = local.infra.tags
+  ignore_tags             = local.infra.ignore_tags
+  use_fips_endpoint       = var.use_fips_endpoint
 }
 
 # If you are enabling the IRSA configuration for external-deployments-operator
@@ -79,10 +83,10 @@ module "irsa_external_deployments_operator" {
   use_cluster_odc_idp           = local.is_eks_account_same
   eks_info                      = module.eks.info
   external_deployments_operator = var.irsa_external_deployments_operator
-
-  providers = {
-    aws = aws.global
-  }
+  region                        = local.infra.region
+  tags                          = local.infra.tags
+  ignore_tags                   = local.infra.ignore_tags
+  use_fips_endpoint             = var.use_fips_endpoint
 }
 
 # Provider configuration for the account where the hosted zone is defined.
@@ -92,19 +96,15 @@ module "irsa_external_deployments_operator" {
 provider "aws" {
   alias = "global"
   # profile = "global"
+  default_tags {
+    tags = local.infra.tags
+  }
   ignore_tags {
     keys = local.infra.ignore_tags
   }
   use_fips_endpoint = var.use_fips_endpoint
 }
 
-provider "aws" {
-  region = local.infra.region
-  ignore_tags {
-    keys = local.infra.ignore_tags
-  }
-  use_fips_endpoint = var.use_fips_endpoint
-}
 terraform {
   required_version = ">= 1.4.0"
   required_providers {

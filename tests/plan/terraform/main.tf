@@ -48,6 +48,9 @@ module "irsa_external_dns" {
     enabled          = var.route53_hosted_zone_name != null
     hosted_zone_name = var.route53_hosted_zone_name
   }
+  region            = module.infra.region
+  tags              = module.infra.tags
+  ignore_tags       = module.infra.ignore_tags
   use_fips_endpoint = var.use_fips_endpoint
 }
 
@@ -62,12 +65,17 @@ data "aws_iam_policy_document" "mypod_s3" {
 module "irsa_policies" {
   source   = "./../../../modules/irsa"
   eks_info = module.eks.info
-  additional_irsa_configs = [{
-    name                = "mypod-s3"
-    namespace           = "domino-config"
-    policy              = data.aws_iam_policy_document.mypod_s3.json
-    serviceaccount_name = "mypod-s3"
-  }]
+  additional_irsa_configs = [
+    {
+      name                = "mypod-s3"
+      namespace           = "domino-config"
+      policy              = data.aws_iam_policy_document.mypod_s3.json
+      serviceaccount_name = "mypod-s3"
+    }
+  ]
+  region            = module.infra.region
+  tags              = module.infra.tags
+  ignore_tags       = module.infra.ignore_tags
   use_fips_endpoint = var.use_fips_endpoint
 }
 
@@ -75,6 +83,9 @@ module "irsa_external_deployments_operator" {
   source                        = "./../../../modules/irsa"
   eks_info                      = module.eks.info
   external_deployments_operator = var.irsa_external_deployments_operator
+  region                        = module.infra.region
+  tags                          = module.infra.tags
+  ignore_tags                   = module.infra.ignore_tags
   use_fips_endpoint             = var.use_fips_endpoint
 }
 
