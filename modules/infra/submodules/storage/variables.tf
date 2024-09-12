@@ -36,6 +36,13 @@ variable "storage" {
     storage = {
       filesystem_type = File system type(netapp|efs)
       efs = {
+        migrate_to_netapp = {
+          enabled =  When enabled, both EFS and NetApp resources will be provisioned simultaneously during the migration period.
+          datasync = {
+            enabled  = Toggle to enable AWS DataSync for automated data transfer from EFS to NetApp FSx.
+            schedule = Cron-style schedule for the DataSync task, specifying how often the data transfer will occur (default: hourly).
+          }
+        }
         access_point_path = Filesystem path for efs.
         backup_vault = {
           create        = Create backup vault for EFS toggle.
@@ -76,6 +83,13 @@ variable "storage" {
   type = object({
     filesystem_type = string
     efs = optional(object({
+      migrate_to_netapp = optional(object({
+        enabled = optional(bool)
+        datasync = optional(object({
+          enabled  = optional(bool)
+          schedule = optional(string)
+        }))
+      }))
       access_point_path = optional(string)
       backup_vault = optional(object({
         create        = optional(bool)
@@ -117,6 +131,11 @@ variable "storage" {
   validation {
     condition     = var.storage.filesystem_type != "netapp" || (var.storage.filesystem_type == "netapp" && contains(["MULTI_AZ_1", "MULTI_AZ_2", "SINGLE_AZ_1", "SINGLE_AZ_2"], var.storage.netapp.deployment_type))
     error_message = "Invalid 'deployment_type' for netapp filesystem, supported deployment types are 'MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', and 'SINGLE_AZ_2'."
+  }
+
+  validation {
+    condition     = var.storage.filesystem_type != "netapp" && !var.storage.efs.migrate_to_netapp.enabled
+    error_message = "Expected filesystem_type=netapp if `efs.migrate_to_netapp` is enabled"
   }
 }
 
