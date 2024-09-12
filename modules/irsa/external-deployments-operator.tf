@@ -114,6 +114,7 @@ data "aws_iam_policy_document" "external_deployments_in_account_policies" {
       "ecr:GetDownloadUrlForLayer",
       "ecr:InitiateLayerUpload",
       "ecr:PutImage",
+      "ecr:TagResource",
       "ecr:UploadLayerPart",
     ]
     resources = [
