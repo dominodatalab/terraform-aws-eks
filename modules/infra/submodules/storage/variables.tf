@@ -134,7 +134,7 @@ variable "storage" {
   }
 
   validation {
-    condition     = var.storage.filesystem_type != "netapp" && !var.storage.efs.migrate_to_netapp.enabled
+    condition     = !var.storage.efs.migrate_to_netapp.enabled || var.storage.filesystem_type == "netapp"
     error_message = "Expected filesystem_type=netapp if `efs.migrate_to_netapp` is enabled"
   }
 }

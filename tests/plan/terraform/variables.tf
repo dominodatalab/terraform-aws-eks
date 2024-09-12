@@ -372,6 +372,13 @@ variable "storage" {
   type = object({
     filesystem_type = optional(string, "efs")
     efs = optional(object({
+      migrate_to_netapp = optional(object({
+        enabled = optional(bool, false)
+        datasync = optional(object({
+          enabled  = optional(bool, false)
+          schedule = optional(string, "cron(0 * * * ? *)")
+        }), {})
+      }), {})
       access_point_path = optional(string, "/domino")
       backup_vault = optional(object({
         create        = optional(bool, true)

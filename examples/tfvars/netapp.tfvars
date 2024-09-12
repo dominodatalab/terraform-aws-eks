@@ -21,5 +21,11 @@ storage = {
       enabled = true
     }
   }
+  efs = {
+    migrate_to_netapp = {
+      enabled = true
+    }
+
+  }
 
 }
