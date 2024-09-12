@@ -36,13 +36,6 @@ variable "storage" {
     storage = {
       filesystem_type = File system type(netapp|efs)
       efs = {
-        migrate_to_netapp = {
-          enabled =  When enabled, both EFS and NetApp resources will be provisioned simultaneously during the migration period.
-          datasync = {
-            enabled  = Toggle to enable AWS DataSync for automated data transfer from EFS to NetApp FSx.
-            schedule = Cron-style schedule for the DataSync task, specifying how often the data transfer will occur (default: hourly).
-          }
-        }
         access_point_path = Filesystem path for efs.
         backup_vault = {
           create        = Create backup vault for EFS toggle.
@@ -55,6 +48,13 @@ variable "storage" {
         }
       }
       netapp = {
+        migrate_from_efs = {
+          enabled =  When enabled, both EFS and NetApp resources will be provisioned simultaneously during the migration period.
+          datasync = {
+            enabled  = Toggle to enable AWS DataSync for automated data transfer from EFS to NetApp FSx.
+            schedule = Cron-style schedule for the DataSync task, specifying how often the data transfer will occur (default: hourly).
+          }
+        }
         deployment_type = netapp ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
         storage_capacity = Filesystem Storage capacity
         throughput_capacity = Filesystem throughput capacity
@@ -83,13 +83,6 @@ variable "storage" {
   type = object({
     filesystem_type = string
     efs = optional(object({
-      migrate_to_netapp = optional(object({
-        enabled = optional(bool)
-        datasync = optional(object({
-          enabled  = optional(bool)
-          schedule = optional(string)
-        }))
-      }))
       access_point_path = optional(string)
       backup_vault = optional(object({
         create        = optional(bool)
@@ -102,6 +95,13 @@ variable "storage" {
       }))
     }))
     netapp = optional(object({
+      migrate_from_efs = optional(object({
+        enabled = optional(bool)
+        datasync = optional(object({
+          enabled  = optional(bool)
+          schedule = optional(string)
+        }))
+      }))
       deployment_type                   = optional(string)
       storage_capacity                  = optional(number)
       throughput_capacity               = optional(number)
@@ -134,8 +134,8 @@ variable "storage" {
   }
 
   validation {
-    condition     = !var.storage.efs.migrate_to_netapp.enabled || var.storage.filesystem_type == "netapp"
-    error_message = "Expected filesystem_type=netapp if `efs.migrate_to_netapp` is enabled"
+    condition     = !var.storage.netapp.migrate_from_efs.enabled || var.storage.filesystem_type == "netapp"
+    error_message = "Expected filesystem_type=netapp if `netapp.migrate_from_efs` is enabled"
   }
 }
 
