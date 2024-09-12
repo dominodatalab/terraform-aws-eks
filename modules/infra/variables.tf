@@ -452,23 +452,23 @@ variable "use_fips_endpoint" {
   default     = false
 }
 
-variable "vpn_connection" {
+variable "vpn_connections" {
   description = <<EOF
     create = Create a VPN connection.
-    shared_ip = Customer's shared IP Address.
-    cidr_block = CIDR block for the customer's network.
+    connections = List of VPN connections, each with:
+      - name: Name for identification (optional).
+      - shared_ip: Customer's shared IP Address (optional).
+      - cidr_block: CIDR block for the customer's network (optional).
   EOF
 
   type = object({
-    create     = optional(bool, false)
-    shared_ip  = optional(string, "")
-    cidr_block = optional(string, "")
+    create = optional(bool, false)
+    connections = optional(list(object({
+      name        = optional(string, "")
+      shared_ip   = optional(string, "")
+      cidr_blocks = optional(list(string), [])
+    })), [])
   })
 
   default = {}
-
-  validation {
-    condition     = !(var.vpn_connection.create) || (length(var.vpn_connection.shared_ip) >= 7 && length(var.vpn_connection.cidr_block) >= 7)
-    error_message = "When 'create' is true, both 'shared_ip' and 'cidr_block' must be a valid IPv4 IP."
-  }
 }

@@ -67,11 +67,11 @@ module "network" {
 }
 
 module "vpn" {
-  count          = var.vpn_connection.create ? 1 : 0
-  source         = "./submodules/vpn"
-  deploy_id      = var.deploy_id
-  network_info   = module.network.info
-  vpn_connection = var.vpn_connection
+  count           = var.vpn_connections.create ? 1 : 0
+  source          = "./submodules/vpn"
+  deploy_id       = var.deploy_id
+  network_info    = module.network.info
+  vpn_connections = var.vpn_connections.connections
 }
 
 locals {
