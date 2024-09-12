@@ -110,7 +110,7 @@ resource "aws_fsx_ontap_storage_virtual_machine" "eks" {
 
 
 resource "aws_cloudformation_stack" "fsx_ontap_scaling" {
-  count         = var.storage.netapp.storage_capacity_autosizing.enabled ? 1 : 0
+  count         = local.deploy_netapp && var.storage.netapp.storage_capacity_autosizing.enabled ? 1 : 0
   name          = "${var.deploy_id}-fxn-storage-scaler"
   template_body = file("${path.module}/files/FSxOntapDynamicStorageScalingCLoudFormationTemplate.yaml")
 
