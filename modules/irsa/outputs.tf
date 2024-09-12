@@ -19,3 +19,11 @@ output "netapp_trident_operator" {
     irsa_role = aws_iam_role.trident_operator[0].arn
   } : null
 }
+
+
+output "netapp_trident_configurator" {
+  description = "NetApp Astra Trident NETAPP configurator role info"
+  value = var.netapp_trident_configurator.enabled ? {
+    irsa_role = aws_iam_role.trident_configurator[0].arn
+  } : null
+}

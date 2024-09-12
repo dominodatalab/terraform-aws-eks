@@ -121,6 +121,14 @@
         "s3:GetObject"
       ],
       "Resource": "arn:${partition}:s3:::solution-references-*"
+    },
+    {
+      "Sid": "DatasyncUngated",
+      "Effect": "Allow",
+      "Action": [
+        "datasync:*"
+      ],
+      "Resource": ["*"]
     }
   ]
 }
