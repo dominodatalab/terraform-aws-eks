@@ -382,7 +382,7 @@ variable "storage" {
           enabled  = optional(bool, false)
           schedule = optional(string, "cron(0 * * * ? *)")
         }))
-      }))
+      }), {})
       access_point_path = optional(string, "/domino")
       backup_vault = optional(object({
         create        = optional(bool, true)
