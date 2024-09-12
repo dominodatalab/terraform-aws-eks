@@ -17,9 +17,3 @@ irsa_external_deployments_operator = {
 use_fips_endpoint = true
 
 region = "us-west-2"
-
-kms_info = {
-  enabled = true
-  key_id = "key"
-  key_arn = "arn:${data.aws_partition.current.partition}:kms:us-west-2:123456789012:key/key"
-}

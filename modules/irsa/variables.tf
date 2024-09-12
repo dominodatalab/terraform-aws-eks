@@ -95,10 +95,13 @@ variable "kms_info" {
     enabled = KMS key is enabled
   EOF
   type = object({
-    key_id  = string
-    key_arn = string
+    key_id  = optional(string)
+    key_arn = optional(string)
     enabled = bool
   })
+  default = {
+    enabled = false
+  }
 }
 
 variable "region" {
