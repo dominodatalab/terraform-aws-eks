@@ -1,8 +1,12 @@
-
-
 resource "aws_customer_gateway" "customer_gateway" {
-  ip_address = var.vpn_connection.shared_ip
+  for_each = { for vpn in var.vpn_connections : vpn.name => vpn }
+
+  ip_address = each.value.shared_ip
   type       = "ipsec.1"
+  bgp_asn    = "65000"
+  tags = {
+    Name = each.value.name
+  }
 }
 
 resource "aws_vpn_gateway" "this" {
@@ -18,21 +22,39 @@ resource "aws_vpn_gateway_attachment" "this" {
 }
 
 resource "aws_vpn_connection" "this" {
-  customer_gateway_id = aws_customer_gateway.customer_gateway.id
+  for_each = aws_customer_gateway.customer_gateway
+
+  customer_gateway_id = each.value.id
   vpn_gateway_id      = aws_vpn_gateway.this.id
   type                = "ipsec.1"
-
-  static_routes_only = true
-
+  static_routes_only  = true
   tags = {
-    Name = "${var.deploy_id}-vpn-connection"
+    Name = "${each.key}-vpn-connection"
   }
 }
 
-resource "aws_vpn_connection_route" "this" {
-  destination_cidr_block = var.vpn_connection.cidr_block
-  vpn_connection_id      = aws_vpn_connection.this.id
+locals {
+  vpn_cidr_blocks = {
+    for vpn in var.vpn_connections : vpn.name => {
+      cidr_blocks = vpn.cidr_blocks
+      vpn_id      = aws_vpn_connection.this[vpn.name].id
+    }
+  }
+
+  flattened_vpn_cidr_block = merge([
+    for vpn, data in local.vpn_cidr_blocks : {
+      for cidr in data.cidr_blocks : cidr => data.vpn_id
+    }
+  ]...)
 }
+
+resource "aws_vpn_connection_route" "this" {
+  for_each = local.flattened_vpn_cidr_block
+
+  destination_cidr_block = each.key
+  vpn_connection_id      = each.value
+}
+
 
 locals {
   route_table_ids = concat(var.network_info.route_tables.private, var.network_info.route_tables.pod)

@@ -14,8 +14,18 @@ default_node_groups = {
   }
 }
 
-vpn_connection = {
-  create     = true
-  shared_ip  = "203.0.113.12"
-  cidr_block = "192.168.0.0/16"
+vpn_connections = {
+  create = true
+  connections = [
+    {
+      name        = "vpn_connection_test_1"
+      shared_ip   = "203.0.113.12"
+      cidr_blocks = ["192.168.0.0/16"]
+    },
+    {
+      name        = "vpn_connection_test_2"
+      shared_ip   = "200.0.110.120"
+      cidr_blocks = ["3.4.5.6/16"]
+    }
+  ]
 }
