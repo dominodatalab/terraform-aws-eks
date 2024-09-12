@@ -105,7 +105,6 @@ provider "aws" {
   }
   use_fips_endpoint = var.use_fips_endpoint
 }
-
 terraform {
   required_version = ">= 1.4.0"
   required_providers {
