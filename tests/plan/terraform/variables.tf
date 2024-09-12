@@ -490,6 +490,8 @@ variable "irsa_external_deployments_operator" {
     enabled                   = optional(bool, false)
     namespace                 = optional(string, "domino-compute")
     service_account_name      = optional(string, "pham-juno-operator")
+    region                    = optional(string)
+    kms_key_arn               = optional(string)
     role_suffix               = optional(string, "external-deployments-operator")
     repository_suffix         = optional(string, "external-deployments")
     bucket_suffix             = optional(string, "external-deployments")

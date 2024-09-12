@@ -22,6 +22,7 @@ irsa_external_deployments_operator = {
   enabled                   = "true",
   namespace                 = "domino-compute",
   service_account_name      = "test-operator-account",
+  region                    = "us-west-2"
   role_suffix               = "external-deployments-operator",
   repository_suffix         = "external-deployments",
   bucket_suffix             = "external-deployments",

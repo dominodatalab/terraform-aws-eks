@@ -83,16 +83,6 @@ variable "kms_info" {
   default = null
 }
 
-variable "region" {
-  type        = string
-  description = "AWS region for the deployment"
-  nullable    = false
-  validation {
-    condition     = can(regex("(us(-gov)?|ap|ca|cn|eu|sa|me|af|il)-(central|(north|south)?(east|west)?)-[0-9]", var.region))
-    error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2, us-gov-west-1."
-  }
-}
-
 variable "irsa_policies" {
   description = "Mappings for custom IRSA configurations."
   type = list(object({
@@ -135,6 +125,8 @@ variable "irsa_external_deployments_operator" {
     enabled                   = optional(bool, false)
     namespace                 = optional(string, "domino-compute")
     service_account_name      = optional(string, "pham-juno-operator")
+    region                    = optional(string)
+    kms_key_arn               = optional(string)
     role_suffix               = optional(string, "external-deployments-operator")
     repository_suffix         = optional(string, "external-deployments")
     bucket_suffix             = optional(string, "external-deployments")

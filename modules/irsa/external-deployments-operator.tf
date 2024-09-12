@@ -1,4 +1,5 @@
 locals {
+  account_id                                      = var.eks_info.cluster.specs.account_id
   blobs_s3_bucket_arn                             = "arn:${data.aws_partition.current.partition}:s3:::${local.name_prefix}-blobs"
   environments_repository                         = "${local.name_prefix}/environment"
   external_deployments_repository                 = "${local.name_prefix}/${var.external_deployments_operator.repository_suffix}"
@@ -75,12 +76,12 @@ data "aws_iam_policy_document" "external_deployments_decrypt_blobs_kms" {
     sid       = "KmsDecryptDominoBlobs"
     effect    = "Allow"
     actions   = ["kms:Decrypt"]
-    resources = [coalesce(var.kms_info.key_arn, "ignored")]
+    resources = [coalesce(var.external_deployments_operator.kms_key_arn, "ignored")]
   }
 }
 
 data "aws_iam_policy_document" "external_deployments_in_account_policies" {
-  source_policy_documents = var.kms_info.enabled ? [data.aws_iam_policy_document.external_deployments_decrypt_blobs_kms.json] : []
+  source_policy_documents = var.external_deployments_operator.kms_key_arn != null ? [data.aws_iam_policy_document.external_deployments_decrypt_blobs_kms.json] : []
   statement {
     sid     = "StsAllowAssumeRole"
     effect  = "Allow"
@@ -118,8 +119,8 @@ data "aws_iam_policy_document" "external_deployments_in_account_policies" {
       "ecr:UploadLayerPart",
     ]
     resources = [
-      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_repository}",
-      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.external_deployments_repository}*"
+      "arn:${data.aws_partition.current.partition}:ecr:${var.external_deployments_operator.region}:${local.account_id}:repository/${local.external_deployments_repository}",
+      "arn:${data.aws_partition.current.partition}:ecr:${var.external_deployments_operator.region}:${local.account_id}:repository/${local.external_deployments_repository}*"
     ]
   }
   statement {
@@ -161,7 +162,7 @@ data "aws_iam_policy_document" "external_deployments_in_account_policies" {
       "logs:FilterLogEvents"
     ]
     resources = [
-      "arn:${data.aws_partition.current.partition}:logs:${var.region}:${local.account_id}:log-group:/aws/sagemaker/*"
+      "arn:${data.aws_partition.current.partition}:logs:${var.external_deployments_operator.region}:${local.account_id}:log-group:/aws/sagemaker/*"
     ]
   }
   statement {
@@ -236,8 +237,8 @@ data "aws_iam_policy_document" "external_deployments_in_account_policies" {
       "ecr:GetDownloadUrlForLayer",
     ]
     resources = [
-      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.environments_repository}",
-      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${local.account_id}:repository/${local.environments_repository}*"
+      "arn:${data.aws_partition.current.partition}:ecr:${var.external_deployments_operator.region}:${local.account_id}:repository/${local.environments_repository}",
+      "arn:${data.aws_partition.current.partition}:ecr:${var.external_deployments_operator.region}:${local.account_id}:repository/${local.environments_repository}*"
     ]
   }
 }
