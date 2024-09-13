@@ -1,3 +1,5 @@
+
+data "aws_region" "current" {}
 locals {
   account_id                                      = var.eks_info.cluster.specs.account_id
   blobs_s3_bucket_arn                             = "arn:${data.aws_partition.current.partition}:s3:::${local.name_prefix}-blobs"
@@ -6,6 +8,7 @@ locals {
   external_deployments_bucket                     = "${local.name_prefix}-${var.external_deployments_operator.bucket_suffix}"
   external_deployments_operator_role              = "${local.name_prefix}-${var.external_deployments_operator.role_suffix}"
   external_deployments_operator_role_needs_policy = var.external_deployments_operator.enabled && (var.external_deployments_operator.grant_in_account_policies || var.external_deployments_operator.grant_assume_any_role)
+  region                                          = coalesce(var.external_deployments_operator.region, data.aws_region.current.name)
 }
 
 data "aws_iam_policy_document" "external_deployments_service_account_assume_role" {
@@ -124,8 +127,8 @@ data "aws_iam_policy_document" "external_deployments_in_account_policies" {
       "ecr:UploadLayerPart",
     ]
     resources = [
-      "arn:${data.aws_partition.current.partition}:ecr:${var.external_deployments_operator.region}:${local.account_id}:repository/${local.external_deployments_repository}",
-      "arn:${data.aws_partition.current.partition}:ecr:${var.external_deployments_operator.region}:${local.account_id}:repository/${local.external_deployments_repository}*"
+      "arn:${data.aws_partition.current.partition}:ecr:${local.region}:${local.account_id}:repository/${local.external_deployments_repository}",
+      "arn:${data.aws_partition.current.partition}:ecr:${local.region}:${local.account_id}:repository/${local.external_deployments_repository}*"
     ]
   }
   statement {
@@ -167,7 +170,7 @@ data "aws_iam_policy_document" "external_deployments_in_account_policies" {
       "logs:FilterLogEvents"
     ]
     resources = [
-      "arn:${data.aws_partition.current.partition}:logs:${var.external_deployments_operator.region}:${local.account_id}:log-group:/aws/sagemaker/*"
+      "arn:${data.aws_partition.current.partition}:logs:${local.region}:${local.account_id}:log-group:/aws/sagemaker/*"
     ]
   }
   statement {
@@ -242,8 +245,8 @@ data "aws_iam_policy_document" "external_deployments_in_account_policies" {
       "ecr:GetDownloadUrlForLayer",
     ]
     resources = [
-      "arn:${data.aws_partition.current.partition}:ecr:${var.external_deployments_operator.region}:${local.account_id}:repository/${local.environments_repository}",
-      "arn:${data.aws_partition.current.partition}:ecr:${var.external_deployments_operator.region}:${local.account_id}:repository/${local.environments_repository}*"
+      "arn:${data.aws_partition.current.partition}:ecr:${local.region}:${local.account_id}:repository/${local.environments_repository}",
+      "arn:${data.aws_partition.current.partition}:ecr:${local.region}:${local.account_id}:repository/${local.environments_repository}*"
     ]
   }
 }
