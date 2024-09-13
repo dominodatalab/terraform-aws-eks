@@ -94,7 +94,6 @@ variable "use_fips_endpoint" {
   default     = false
 }
 
-
 variable "netapp_trident_operator" {
   description = "Config to create IRSA role for the netapp-trident-operator."
 
@@ -107,13 +106,21 @@ variable "netapp_trident_operator" {
 
   default = {}
 }
+
 variable "external_deployments_operator" {
   description = "Config to create IRSA role for the external deployments operator."
 
   type = object({
-    enabled              = optional(bool, false)
-    namespace            = optional(string, "domino-compute")
-    service_account_name = optional(string, "pham-juno-operator")
+    enabled                   = optional(bool, false)
+    namespace                 = optional(string, "domino-compute")
+    service_account_name      = optional(string, "pham-juno-operator")
+    region                    = optional(string)
+    kms_key_arn               = optional(string)
+    role_suffix               = optional(string, "external-deployments-operator")
+    repository_suffix         = optional(string, "external-deployments")
+    bucket_suffix             = optional(string, "external-deployments")
+    grant_assume_any_role     = optional(bool, true)
+    grant_in_account_policies = optional(bool, true)
   })
 
   default = {}

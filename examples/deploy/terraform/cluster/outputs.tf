@@ -26,6 +26,10 @@ output "external_deployments_operator" {
   {
     irsa_role = irsa role arn
     service_account_name = service account name
+    repository = repository for external deployment images
+    bucket = s3 bucket for external deployment images
+    can_assume_any_role = can the external deployments irsa role assume any role (in any account)
+    can_deploy_in_account = has the external deployments irsa role been granted permissions to deploy within the domino AWS account
   }
   EOF
   value       = module.irsa_external_deployments_operator
