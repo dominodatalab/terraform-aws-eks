@@ -255,8 +255,6 @@ jobs:
       - set_tf_vars
       - set_mod_source_latest_rel
       - tf_deploy
-      - set_tf_mods
-      - set_tf_vars
       - set_mod_source_current
       - pre_upgrade_updates
       - set_infra_imports
