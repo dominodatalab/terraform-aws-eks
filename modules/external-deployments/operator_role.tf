@@ -52,7 +52,10 @@ data "aws_iam_policy_document" "self_sagemaker_assume_role" {
 }
 
 data "aws_iam_policy_document" "operator_assume_role_policy" {
-  source_policy_documents = var.enable_in_account_deployments ? [data.aws_iam_policy_document.service_account_assume_role.json, data.aws_iam_policy_document.self_sagemaker_assume_role.json] : [data.aws_iam_policy_document.service_account_assume_role.json]
+  source_policy_documents = concat(
+    [data.aws_iam_policy_document.service_account_assume_role.json],
+    var.enable_in_account_deployments ? [data.aws_iam_policy_document.self_sagemaker_assume_role.json] : []
+  )
 }
 
 resource "aws_iam_role" "operator" {
