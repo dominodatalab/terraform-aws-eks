@@ -11,13 +11,13 @@ declare -a MOD_DIRS=(
 
 declare -A COMP_MODS
 COMP_MODS["infra"]="infra"
-COMP_MODS["cluster"]="eks irsa_external_dns irsa_policies irsa_external_deployments_operator"
+COMP_MODS["cluster"]="eks irsa_external_dns irsa_policies external_deployments_operator"
 COMP_MODS["nodes"]="nodes"
 
 declare -A MOD_ADD
 MOD_ADD["irsa_external_dns"]="irsa"
 MOD_ADD["irsa_policies"]="irsa"
-MOD_ADD["irsa_external_deployments_operator"]="irsa"
+MOD_ADD["external_deployments_operator"]="external-deployments"
 
 INFRA_DIR="${MOD_DIRS[0]}"
 CLUSTER_DIR="${MOD_DIRS[1]}"
