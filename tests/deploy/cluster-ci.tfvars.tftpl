@@ -9,6 +9,11 @@ external_deployments_operator = {
   service_account_name = "test-operator-account"
 }
 
-irsa_external_deployments_operator = external_deployments_operator
+# backwards compatiblity
+irsa_external_deployments_operator = {
+  enabled = true
+  namespace = "domino-compute"
+  service_account_name = "test-operator-account"
+}
 
 use_fips_endpoint = true
