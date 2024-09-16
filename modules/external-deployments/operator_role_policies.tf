@@ -182,7 +182,6 @@ data "aws_iam_policy_document" "assume_any_role" {
       variable = "aws:ResourceAccount"
       values   = [local.account_id]
     }
-
   }
 }
 

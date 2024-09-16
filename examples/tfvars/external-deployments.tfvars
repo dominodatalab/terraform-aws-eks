@@ -19,7 +19,7 @@ bastion = {
 }
 
 external_deployments_operator = {
-  enabled                       = "true",
+  enabled                       = true,
   namespace                     = "domino-compute",
   operator_service_account_name = "test-operator-account"
 }
