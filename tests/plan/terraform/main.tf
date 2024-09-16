@@ -71,6 +71,11 @@ module "irsa_policies" {
   use_fips_endpoint = var.use_fips_endpoint
 }
 
+moved {
+  from = module.irsa_external_deployments_operator
+  to   = module.external_deployments_operator
+}
+
 module "external_deployments_operator" {
   count = var.external_deployments_operator.enabled ? 1 : 0
 
