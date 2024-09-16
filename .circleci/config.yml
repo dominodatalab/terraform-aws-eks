@@ -105,14 +105,14 @@ commands:
           name: Bootstrap terraform vars
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_tf_vars
-  set_tf_mods:
+  setup_tf_mods:
     description: "Bootstrap modules using the CI branch"
     steps:
       - run:
           name: Bootstrap terraform module using the CI branch
           working_directory: tests/deploy
           command: bash ci-deploy.sh setup_modules_ci_branch
-  set_tf_mods_latest_rel:
+  setup_tf_mods_latest_rel:
     description: "Bootstrap modules using latest release"
     steps:
       - run:
@@ -228,7 +228,7 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - set_tf_mods
+      - setup_tf_mods
       - set_tf_vars
       - set_mod_source_current
       - tf_deploy
@@ -251,10 +251,12 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
-      - set_tf_mods_latest_rel
+      - setup_tf_mods_latest_rel
       - set_tf_vars
       - set_mod_source_latest_rel
       - tf_deploy
+      - setup_tf_mods
+      - set_tf_vars
       - set_mod_source_current
       - pre_upgrade_updates
       - set_infra_imports

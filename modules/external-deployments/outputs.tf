@@ -1,6 +1,6 @@
 output "operator_role_arn" {
   description = "Operator IAM Role ARN"
-  value       = aws_iam_role.operator
+  value       = aws_iam_role.operator.arn
 }
 
 output "operator_service_account_name" {
