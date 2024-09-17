@@ -34,6 +34,7 @@ commands:
     steps:
       - terraform/install:
           terraform_version: << parameters.terraform_version >>
+
   install_hcledit:
     description: "Install HCL edit"
     parameters:
@@ -47,6 +48,7 @@ commands:
           environment:
             HCLEDIT_VERSION: << parameters.hcledit_version >>
           command: bash ci-deploy.sh install_hcledit
+
   set_mod_source_current:
     description: "Set up module source to current branch."
     steps:
@@ -54,6 +56,7 @@ commands:
           name: Set module source to current branch
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_circle_branch
+
   set_infra_imports:
     description: "Set up root infra module imports."
     steps:
@@ -61,6 +64,7 @@ commands:
           name: Set root infra module imports
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_infra_imports
+
   pre_upgrade_updates:
     description: "Updates necessary for upgrade."
     steps:
@@ -68,6 +72,7 @@ commands:
           name: Manual updates
           working_directory: tests/deploy
           command: bash ci-deploy.sh pre_upgrade_updates
+
   set_cluster_imports:
     description: "Set up root cluster module imports."
     steps:
@@ -75,6 +80,7 @@ commands:
           name: Set root cluster module imports
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_cluster_imports
+
   set_nodes_imports:
     description: "Set up root nodes module imports."
     steps:
@@ -82,6 +88,7 @@ commands:
           name: Set root nodes module imports
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_nodes_imports
+
   set_mod_source_latest_rel:
     description: "Set up module source to current branch"
     steps:
@@ -89,12 +96,14 @@ commands:
           name: Set module source to latest published release
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_mod_src_latest_rel
+
   set_aws_creds:
     description: "Sets short-lived creds"
     steps:
       - aws-cli/setup:
           role-arn: "${AWS_IAM_ROLE}"
           session-duration: "900"
+
   set_tf_vars:
     description: "Sets Terraform variables"
     steps:
@@ -105,6 +114,7 @@ commands:
           name: Bootstrap terraform vars
           working_directory: tests/deploy
           command: bash ci-deploy.sh set_tf_vars
+
   setup_tf_mods:
     description: "Bootstrap modules using the CI branch"
     steps:
@@ -112,6 +122,7 @@ commands:
           name: Bootstrap terraform module using the CI branch
           working_directory: tests/deploy
           command: bash ci-deploy.sh setup_modules_ci_branch
+
   setup_tf_mods_latest_rel:
     description: "Bootstrap modules using latest release"
     steps:
@@ -119,6 +130,14 @@ commands:
           name: Bootstrap terraform module using latest release
           working_directory: tests/deploy
           command: bash ci-deploy.sh setup_modules_latest_rel
+
+  setup_tf_mods_upgrade:
+    description: "Upgrade existing modules using current branch"
+    steps:
+      - run:
+          name: Bootstrap terraform module using latest release
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh setup_modules_upgrade
 
   install_helm:
     description: "Install Helm"
@@ -132,6 +151,7 @@ commands:
           environment:
             HELM_VERSION: << parameters.helm_version >>
           command: bash ci-deploy.sh install_helm
+
   tf_init_apply:
     description: "Terraform Init, Validate, Apply"
     steps:
@@ -139,6 +159,7 @@ commands:
           name: Terraform init/validate/apply
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy
+
   tf_deploy_infra:
     description: "Terraform deploy Infra"
     steps:
@@ -146,6 +167,7 @@ commands:
           name: Terraform deploy Infra
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy_infra
+
   tf_deploy_cluster:
     description: "Terraform deploy Cluster"
     steps:
@@ -153,6 +175,7 @@ commands:
           name: Terraform deploy Cluster
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy_cluster
+
   tf_deploy_nodes:
     description: "Terraform deploy Nodes"
     steps:
@@ -160,6 +183,7 @@ commands:
           name: Terraform deploy Nodes
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy_nodes
+
   tf_deploy_single_node:
     description: "Terraform deploy single-node"
     steps:
@@ -171,6 +195,7 @@ commands:
           name: Deploy single-node
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy_single_node
+
   tf_destroy_single_node:
     description: "Terraform destroy single-node"
     steps:
@@ -178,6 +203,7 @@ commands:
           name: Destroy single-node
           working_directory: tests/deploy
           command: bash ci-deploy.sh destroy_single_node
+
   tf_deploy:
     description: "Terraform deploy"
     steps:
@@ -187,6 +213,7 @@ commands:
       - tf_deploy_infra
       - tf_deploy_cluster
       - tf_deploy_nodes
+
   tf_destroy:
     description: "Terraform destroy"
     steps:
@@ -195,6 +222,7 @@ commands:
           working_directory: tests/deploy
           command: bash ci-deploy.sh destroy
           when: always
+
   tf_plan_test:
     steps:
       - set_aws_creds
@@ -202,6 +230,23 @@ commands:
           name: Terraform plan test
           working_directory: tests/plan
           command: bash tf-plan-test.sh
+
+  store_deploy_artifacts:
+    parameters:
+      path:
+        type: string
+        default: deploy
+    steps:
+      - run:
+          name: Store artifacts
+          when: always
+          command: |
+            mkdir -p /tmp/artifacts/<< parameters.path >>/{cluster,infra,nodes}
+            cp tests/deploy/deploy-test/terraform/{cluster,infra,nodes}.tfvars /tmp/artifacts/<< parameters.path >>/
+            cp tests/deploy/deploy-test/terraform/cluster/main.tf /tmp/artifacts/<< parameters.path >>/cluster/
+            cp tests/deploy/deploy-test/terraform/infra/main.tf /tmp/artifacts/<< parameters.path >>/infra/
+            cp tests/deploy/deploy-test/terraform/nodes/main.tf /tmp/artifacts/<< parameters.path >>/nodes/
+
 jobs:
   tf-plan-test:
     docker:
@@ -214,6 +259,7 @@ jobs:
       - install_tf:
           terraform_version: << parameters.terraform_version >>
       - tf_plan_test
+
   test-deploy:
     docker:
       - image: cimg/aws:2023.04.1
@@ -232,9 +278,13 @@ jobs:
       - set_tf_vars
       - set_mod_source_current
       - tf_deploy
+      - store_deploy_artifacts
       - tf_deploy_single_node
       - tf_destroy_single_node
       - tf_destroy
+      - store_artifacts:
+          path: /tmp/artifacts/
+
   test-upgrade:
     docker:
       - image: cimg/aws:2023.04.1
@@ -255,13 +305,20 @@ jobs:
       - set_tf_vars
       - set_mod_source_latest_rel
       - tf_deploy
+      - store_deploy_artifacts
+      - setup_tf_mods_upgrade
+      - set_tf_vars
       - set_mod_source_current
       - pre_upgrade_updates
       - set_infra_imports
       - set_cluster_imports
       - set_nodes_imports
       - tf_deploy
+      - store_deploy_artifacts:
+          path: upgrade
       - tf_destroy
+      - store_artifacts:
+          path: /tmp/artifacts/
 
 workflows:
   test-deploy-workflow:
@@ -272,6 +329,7 @@ workflows:
           context: aws-oidc
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
+
   test-upgrade-workflow:
     when:
       equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >>]
@@ -281,6 +339,7 @@ workflows:
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
           hcledit_version: << pipeline.parameters.hcledit_version >>
+
   examples-plan-test-workflow:
     when:
       equal:

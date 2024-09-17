@@ -73,11 +73,6 @@ module "irsa_policies" {
   additional_irsa_configs = var.irsa_policies
 }
 
-moved {
-  from = module.irsa_external_deployments_operator
-  to   = module.external_deployments_operator
-}
-
 module "external_deployments_operator" {
   count = var.external_deployments_operator.enabled ? 1 : 0
 
