@@ -128,7 +128,7 @@
       "Action": [
         "datasync:*"
       ],
-      "Resource": "arn:${partition}:datasync::${account_id}:location/*"
+      "Resource": ["*"]
     }
   ]
 }
