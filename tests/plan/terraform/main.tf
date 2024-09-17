@@ -71,11 +71,14 @@ module "irsa_policies" {
   use_fips_endpoint = var.use_fips_endpoint
 }
 
-module "irsa_external_deployments_operator" {
-  source                        = "./../../../modules/irsa"
-  eks_info                      = module.eks.info
-  external_deployments_operator = var.irsa_external_deployments_operator
-  use_fips_endpoint             = var.use_fips_endpoint
+module "external_deployments_operator" {
+  count = var.external_deployments_operator.enabled ? 1 : 0
+
+  source               = "./../../../modules/external-deployments"
+  eks_info             = module.eks.info
+  kms_info             = module.infra.kms
+  region               = module.infra.region
+  external_deployments = var.external_deployments_operator
 }
 
 module "nodes" {

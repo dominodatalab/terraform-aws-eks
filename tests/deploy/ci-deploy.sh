@@ -16,7 +16,7 @@ fi
 # remote module vars
 BASE_REMOTE_SRC="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 BASE_REMOTE_MOD_SRC="${BASE_REMOTE_SRC}//modules"
-LATEST_REL_TAG="$(curl -sSfL -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest | jq -r '.tag_name')"
+LATEST_REL_TAG="$(curl -sSfL -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
 
 deploy() {
   component=${1:-all}
@@ -60,6 +60,10 @@ setup_modules_ci_branch() {
 
 setup_modules_latest_rel() {
   setup_module "$DEPLOY_DIR" "$LATEST_REL_TAG"
+}
+
+setup_modules_upgrade() {
+  rsync -ra --exclude '.terraform*' ../../examples/deploy/ "$DEPLOY_DIR"
 }
 
 install_helm() {
