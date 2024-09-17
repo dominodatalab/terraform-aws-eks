@@ -74,17 +74,11 @@ module "irsa_policies" {
 module "external_deployments_operator" {
   count = var.external_deployments_operator.enabled ? 1 : 0
 
-  source                          = "./../../../modules/external-deployments"
-  eks_info                        = module.eks.info
-  kms_info                        = module.infra.kms
-  region                          = module.infra.region
-  namespace                       = var.external_deployments_operator.namespace
-  operator_service_account_name   = var.external_deployments_operator.operator_service_account_name
-  operator_role_suffix            = var.external_deployments_operator.operator_role_suffix
-  repository_suffix               = var.external_deployments_operator.repository_suffix
-  bucket_suffix                   = var.external_deployments_operator.bucket_suffix
-  enable_assume_any_external_role = var.external_deployments_operator.enable_assume_any_external_role
-  enable_in_account_deployments   = var.external_deployments_operator.enable_in_account_deployments
+  source               = "./../../../modules/external-deployments"
+  eks_info             = module.eks.info
+  kms_info             = module.infra.kms
+  region               = module.infra.region
+  external_deployments = var.external_deployments_operator
 }
 
 module "nodes" {

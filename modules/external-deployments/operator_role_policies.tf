@@ -187,8 +187,8 @@ data "aws_iam_policy_document" "assume_any_role" {
 
 data "aws_iam_policy_document" "operator_grant_policy" {
   source_policy_documents = concat(
-    var.enable_in_account_deployments ? [data.aws_iam_policy_document.in_account_policies.json] : [],
-    var.enable_assume_any_external_role ? [data.aws_iam_policy_document.assume_any_role.json] : []
+    var.external_deployments.enable_in_account_deployments ? [data.aws_iam_policy_document.in_account_policies.json] : [],
+    var.external_deployments.enable_assume_any_external_role ? [data.aws_iam_policy_document.assume_any_role.json] : []
   )
 }
 

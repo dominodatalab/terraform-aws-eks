@@ -1,37 +1,17 @@
-variable "operator_service_account_name" {
-  description = "Service account name for the External Deployments Operator"
-  type        = string
-  default     = "external-deployments-operator"
-}
+variable "external_deployments" {
+  description = "Config to create IRSA role for the external deployments operator."
 
-variable "operator_role_suffix" {
-  description = "Suffix for the External Deployments Operator IAM role"
-  type        = string
-  default     = "external-deployments-operator"
-}
+  type = object({
+    namespace                       = optional(string, "domino-compute")
+    operator_service_account_name   = optional(string, "pham-juno-operator")
+    operator_role_suffix            = optional(string, "external-deployments-operator")
+    repository_suffix               = optional(string, "external-deployments")
+    bucket_suffix                   = optional(string, "external-deployments")
+    enable_assume_any_external_role = optional(bool, true)
+    enable_in_account_deployments   = optional(bool, true)
+  })
 
-variable "repository_suffix" {
-  description = "Suffix for the External Deployments ECR Repository"
-  type        = string
-  default     = "external-deployments"
-}
-
-variable "bucket_suffix" {
-  description = "Suffix for the External Deployments S3 Bucket"
-  type        = string
-  default     = "external-deployments"
-}
-
-variable "enable_assume_any_external_role" {
-  description = "Flag to indicate whether to create policies for the operator role to assume any role to deploy in any other AWS account"
-  type        = bool
-  default     = true
-}
-
-variable "enable_in_account_deployments" {
-  description = "Flag to indicate whether to create policies for the operator role to deploy in this AWS account"
-  type        = bool
-  default     = true
+  default = {}
 }
 
 variable "eks_info" {
@@ -66,11 +46,6 @@ variable "eks_info" {
       })
     })
   })
-}
-
-variable "namespace" {
-  description = "Name of namespace for this deploy"
-  type        = string
 }
 
 variable "kms_info" {

@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "service_account_assume_role" {
       test     = "StringEquals"
       variable = "${trimprefix(local.oidc_provider_url, "https://")}:sub"
       values = [
-        "system:serviceaccount:${var.namespace}:${var.operator_service_account_name}"
+        "system:serviceaccount:${var.external_deployments.namespace}:${var.external_deployments.operator_service_account_name}"
       ]
     }
   }
@@ -54,7 +54,7 @@ data "aws_iam_policy_document" "self_sagemaker_assume_role" {
 data "aws_iam_policy_document" "operator_assume_role_policy" {
   source_policy_documents = concat(
     [data.aws_iam_policy_document.service_account_assume_role.json],
-    var.enable_in_account_deployments ? [data.aws_iam_policy_document.self_sagemaker_assume_role.json] : []
+    var.external_deployments.enable_in_account_deployments ? [data.aws_iam_policy_document.self_sagemaker_assume_role.json] : []
   )
 }
 

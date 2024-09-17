@@ -38,25 +38,14 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_bucket_suffix"></a> [bucket\_suffix](#input\_bucket\_suffix) | Suffix for the External Deployments S3 Bucket | `string` | `"external-deployments"` | no |
 | <a name="input_eks_info"></a> [eks\_info](#input\_eks\_info) | cluster = {<br>      specs {<br>        name            = Cluster name.<br>        account\_id      = AWS account id where the cluster resides.<br>      }<br>      oidc = {<br>        arn = OIDC provider ARN.<br>        url = OIDC provider url.<br>        cert = {<br>          thumbprint\_list = OIDC cert thumbprints.<br>          url             = OIDC cert URL.<br>      }<br>    } | <pre>object({<br>    cluster = object({<br>      specs = object({<br>        name       = string<br>        account_id = string<br>      })<br>      oidc = object({<br>        arn = string<br>        url = string<br>        cert = object({<br>          thumbprint_list = list(string)<br>          url             = string<br>        })<br>      })<br>    })<br>  })</pre> | n/a | yes |
-| <a name="input_enable_assume_any_external_role"></a> [enable\_assume\_any\_external\_role](#input\_enable\_assume\_any\_external\_role) | Flag to indicate whether to create policies for the operator role to assume any role to deploy in any other AWS account | `bool` | `true` | no |
-| <a name="input_enable_in_account_deployments"></a> [enable\_in\_account\_deployments](#input\_enable\_in\_account\_deployments) | Flag to indicate whether to create policies for the operator role to deploy in this AWS account | `bool` | `true` | no |
+| <a name="input_external_deployments"></a> [external\_deployments](#input\_external\_deployments) | Config to create IRSA role for the external deployments operator. | <pre>object({<br>    namespace                       = optional(string, "domino-compute")<br>    operator_service_account_name   = optional(string, "pham-juno-operator")<br>    operator_role_suffix            = optional(string, "external-deployments-operator")<br>    repository_suffix               = optional(string, "external-deployments")<br>    bucket_suffix                   = optional(string, "external-deployments")<br>    enable_assume_any_external_role = optional(bool, true)<br>    enable_in_account_deployments   = optional(bool, true)<br>  })</pre> | `{}` | no |
 | <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | key\_id  = KMS key id.<br>    key\_arn = KMS key arn.<br>    enabled = KMS key is enabled | <pre>object({<br>    key_id  = string<br>    key_arn = string<br>    enabled = bool<br>  })</pre> | n/a | yes |
-| <a name="input_namespace"></a> [namespace](#input\_namespace) | Name of namespace for this deploy | `string` | n/a | yes |
-| <a name="input_operator_role_suffix"></a> [operator\_role\_suffix](#input\_operator\_role\_suffix) | Suffix for the External Deployments Operator IAM role | `string` | `"external-deployments-operator"` | no |
-| <a name="input_operator_service_account_name"></a> [operator\_service\_account\_name](#input\_operator\_service\_account\_name) | Service account name for the External Deployments Operator | `string` | `"external-deployments-operator"` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
-| <a name="input_repository_suffix"></a> [repository\_suffix](#input\_repository\_suffix) | Suffix for the External Deployments ECR Repository | `string` | `"external-deployments"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_bucket"></a> [bucket](#output\_bucket) | S3 Bucket for external deployment model artifacts |
-| <a name="output_can_assume_any_external_role"></a> [can\_assume\_any\_external\_role](#output\_can\_assume\_any\_external\_role) | Indicates whether policies have been created for the operator role to assume any role to deploy in any other AWS account |
-| <a name="output_can_deploy_in_account"></a> [can\_deploy\_in\_account](#output\_can\_deploy\_in\_account) | Indicates whether policies for the operator role to deploy in this AWS account have been created |
-| <a name="output_operator_role_arn"></a> [operator\_role\_arn](#output\_operator\_role\_arn) | Operator IAM Role ARN |
-| <a name="output_operator_service_account_name"></a> [operator\_service\_account\_name](#output\_operator\_service\_account\_name) | Operator Service Account Name |
-| <a name="output_repository"></a> [repository](#output\_repository) | ECR Repository for external deployment images |
+| <a name="output_eks"></a> [eks](#output\_eks) | External deployments eks info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
