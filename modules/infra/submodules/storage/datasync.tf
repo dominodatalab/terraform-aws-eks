@@ -1,6 +1,6 @@
 locals {
   create_ds = var.storage.netapp.migrate_from_efs.datasync.enabled
-  datasync_security_group_rules = local.create_ds ? toset([
+  datasync_security_group_rules = toset([
     {
       protocol                 = "-1"
       from_port                = 0
@@ -19,7 +19,7 @@ locals {
       source_security_group_id = aws_security_group.datasync[0].id
       security_group_id        = aws_security_group.netapp[0].id
     },
-  ]) : []
+  ])
 }
 
 resource "aws_security_group" "datasync" {
@@ -35,7 +35,7 @@ resource "aws_security_group" "datasync" {
 }
 
 resource "aws_security_group_rule" "datasync_ingress" {
-  for_each = local.datasync_security_group_rules
+  for_each = local.create_ds ? local.datasync_security_group_rules : []
 
   security_group_id        = each.value.security_group_id
   protocol                 = each.value.protocol
