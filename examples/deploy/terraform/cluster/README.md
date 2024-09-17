@@ -49,7 +49,7 @@
 | Name | Description |
 |------|-------------|
 | <a name="output_eks"></a> [eks](#output\_eks) | EKS details. |
-| <a name="output_external_deployments_operator"></a> [external\_deployments\_operator](#output\_external\_deployments\_operator) | External\_deployments\_operator info |
+| <a name="output_external_deployments_operator"></a> [external\_deployments\_operator](#output\_external\_deployments\_operator) | External deployments operator details. |
 | <a name="output_external_dns_irsa_role_arn"></a> [external\_dns\_irsa\_role\_arn](#output\_external\_dns\_irsa\_role\_arn) | "External\_dns info"<br>  {<br>    irsa\_role = irsa role arn.<br>    zone\_id   = hosted zone id for external\_dns Iam policy<br>    zone\_name = hosted zone name for external\_dns Iam policy<br>  } |
 | <a name="output_infra"></a> [infra](#output\_infra) | Infra details. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

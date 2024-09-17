@@ -21,6 +21,6 @@ output "external_dns_irsa_role_arn" {
 }
 
 output "external_deployments_operator" {
-  description = "External_deployments_operator info"
+  description = "External deployments operator details."
   value       = module.external_deployments_operator
 }
