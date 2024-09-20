@@ -31,3 +31,26 @@ resource "aws_ecr_pull_through_cache_rule" "quay" {
   ecr_repository_prefix = "${var.deploy_id}/quay"
   upstream_registry_url = "quay.io"
 }
+
+resource "terraform_data" "pull_through_cache_deletion" {
+  input = {
+    region                = var.region
+    ecr_repository_prefix = "${var.deploy_id}/quay"
+    use_fips_endpoint     = var.use_fips_endpoint
+  }
+
+  provisioner "local-exec" {
+    when        = destroy
+    command     = <<-EOF
+      set -ex -o pipefail
+      for repo_name in calico/apiserver calico/csi calico/kube-controllers calico/node calico/node-driver-registrar calico/pod2daemon-flexvol calico/typha tigera/operator; do
+        aws ecr delete-repository --force --repository-name "${self.input.ecr_repository_prefix}/$repo_name" > /dev/null || echo "Failed to delete repository $repo_name"
+      done
+    EOF
+    interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(self.input.use_fips_endpoint)
+      AWS_REGION            = self.input.region
+    }
+  }
+}
