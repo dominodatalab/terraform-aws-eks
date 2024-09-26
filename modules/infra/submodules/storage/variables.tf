@@ -113,6 +113,13 @@ variable "storage" {
         percent_capacity_increase  = optional(number)
         notification_email_address = optional(string)
       }))
+      volume = optional(object({
+        name_suffix                = optional(string)
+        storage_efficiency_enabled = optional(bool)
+        create                     = optional(bool)
+        junction_path              = optional(string)
+        size_in_megabytes          = optional(number)
+      }))
     }))
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool)
@@ -136,6 +143,11 @@ variable "storage" {
   validation {
     condition     = !var.storage.netapp.migrate_from_efs.enabled || var.storage.filesystem_type == "netapp"
     error_message = "Expected filesystem_type=netapp if `netapp.migrate_from_efs` is enabled"
+  }
+
+  validation {
+    condition     = !var.storage.netapp.migrate_from_efs.datasync.enabled || (var.storage.netapp.migrate_from_efs.datasync.enabled && var.storage.netapp.migrate_from_efs.enabled)
+    error_message = "Expected `storage.netapp.migrate_from_efs.enabled` if `storage.netapp.migrate_from_efs.datasync.enabled`"
   }
 }
 
