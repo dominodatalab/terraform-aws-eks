@@ -406,6 +406,13 @@ variable "storage" {
         percent_capacity_increase  = optional(number, 30)
         notification_email_address = optional(string, "")
       }), {})
+      volume = optional(object({
+        create                     = optional(bool, true)
+        name_suffix                = optional(string, "domino_shared_storage")
+        storage_efficiency_enabled = optional(bool, true)
+        junction_path              = optional(string, "/domino")
+        size_in_megabytes          = optional(number, 1099511)
+      }), {})
     }), {})
     s3 = optional(object({
       force_destroy_on_deletion = optional(bool, true)

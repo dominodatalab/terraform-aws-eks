@@ -1,25 +1,24 @@
 locals {
   create_ds = var.storage.netapp.migrate_from_efs.datasync.enabled
-  datasync_security_group_rules = toset([
-    {
+  datasync_security_group_rules = local.create_ds ? {
+    efs = {
       protocol                 = "-1"
       from_port                = 0
       to_port                  = 0
-      description              = "Allow all traffic to DataSync"
-      type                     = "ingress"
+      description              = "EFS allow all traffic to DataSync"
       source_security_group_id = aws_security_group.datasync[0].id
       security_group_id        = aws_security_group.efs[0].id
-    },
-    {
+    }
+    netapp = {
       protocol                 = "-1"
       from_port                = 0
       to_port                  = 0
-      description              = "Allow all traffic to DataSync"
-      type                     = "ingress"
+      description              = "Netapp allow all traffic to DataSync"
       source_security_group_id = aws_security_group.datasync[0].id
       security_group_id        = aws_security_group.netapp[0].id
-    },
-  ])
+    }
+  } : {}
+
 }
 
 resource "aws_security_group" "datasync" {
@@ -34,14 +33,26 @@ resource "aws_security_group" "datasync" {
   }
 }
 
+resource "aws_security_group_rule" "datasync_egress" {
+  for_each = local.create_ds ? local.datasync_security_group_rules : {}
+
+  security_group_id        = each.value.source_security_group_id
+  protocol                 = each.value.protocol
+  from_port                = each.value.from_port
+  to_port                  = each.value.to_port
+  type                     = "egress"
+  description              = each.value.description
+  source_security_group_id = each.value.security_group_id
+}
+
 resource "aws_security_group_rule" "datasync_ingress" {
-  for_each = local.create_ds ? local.datasync_security_group_rules : []
+  for_each = local.create_ds ? local.datasync_security_group_rules : {}
 
   security_group_id        = each.value.security_group_id
   protocol                 = each.value.protocol
   from_port                = each.value.from_port
   to_port                  = each.value.to_port
-  type                     = each.value.type
+  type                     = "ingress"
   description              = each.value.description
   source_security_group_id = each.value.source_security_group_id
 }
@@ -54,7 +65,7 @@ data "aws_subnet" "ds" {
 resource "aws_datasync_location_efs" "this" {
   count               = local.create_ds ? 1 : 0
   efs_file_system_arn = aws_efs_file_system.eks[0].arn
-  subdirectory        = "/"
+  subdirectory        = "/domino/"
   ec2_config {
     security_group_arns = [aws_security_group.datasync[0].arn]
     subnet_arn          = data.aws_subnet.ds[0].arn
@@ -65,6 +76,7 @@ resource "aws_datasync_location_fsx_ontap_file_system" "this" {
   count                       = local.create_ds ? 1 : 0
   security_group_arns         = [aws_security_group.datasync[0].arn]
   storage_virtual_machine_arn = aws_fsx_ontap_storage_virtual_machine.eks[0].arn
+  subdirectory                = "${var.storage.netapp.volume.junction_path}${endswith(var.storage.netapp.volume.junction_path, "/") ? "" : "/"}"
 
   protocol {
     nfs {
