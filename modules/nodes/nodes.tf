@@ -73,7 +73,7 @@ data "aws_ssm_parameter" "eks_ami_release_version" {
 }
 
 data "aws_ssm_parameter" "eks_gpu_ami_release_version" {
-  name = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2-gpu/recommended/release_version"
+  name = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/nvidia/recommended/release_version"
 }
 
 resource "aws_eks_node_group" "node_groups" {
