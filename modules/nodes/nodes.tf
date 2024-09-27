@@ -91,7 +91,7 @@ resource "aws_eks_node_group" "node_groups" {
     desired_size = each.value.node_group.desired_per_az
   }
 
-  ami_type       = each.value.node_group.ami != null ? "CUSTOM" : each.value.node_group.gpu ? "AL2_x86_64_GPU" : "AL2023_x86_64_STANDARD"
+  ami_type       = each.value.node_group.ami != null ? "CUSTOM" : each.value.node_group.gpu ? "AL2023_x86_64_NVIDIA" : "AL2023_x86_64_STANDARD"
   capacity_type  = each.value.node_group.spot ? "SPOT" : "ON_DEMAND"
   instance_types = each.value.node_group.instance_types
   launch_template {
