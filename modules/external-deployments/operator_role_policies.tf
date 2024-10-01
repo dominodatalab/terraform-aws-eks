@@ -104,10 +104,13 @@ data "aws_iam_policy_document" "in_account_policies" {
       "sagemaker:DeleteEndpoint",
       "sagemaker:DeleteEndpointConfig",
       "sagemaker:DeleteModel",
+      "sagemaker:DeleteTags",
       "sagemaker:DescribeEndpoint",
       "sagemaker:DescribeEndpointConfig",
       "sagemaker:DescribeModel",
       "sagemaker:InvokeEndpoint",
+      "sagemaker:InvokeEndpointWithResponseStream",
+      "sagemaker:UpdateEndpoint",
       "sagemaker:UpdateEndpointWeightsAndCapacities"
     ]
     resources = ["*"]
@@ -167,6 +170,44 @@ data "aws_iam_policy_document" "in_account_policies" {
     resources = [
       "arn:${data.aws_partition.current.partition}:ecr:${local.region}:${local.account_id}:repository/${local.environments_repository}",
       "arn:${data.aws_partition.current.partition}:ecr:${local.region}:${local.account_id}:repository/${local.environments_repository}*"
+    ]
+  }
+  statement {
+    sid    = "S3ManageUseTargetBucket"
+    effect = "Allow"
+    actions = [
+      "s3:AbortMultipartUpload",
+      "s3:CreateBucket",
+      "s3:DeleteBucket",
+      "s3:DeleteObject",
+      "s3:DeleteObjectTagging",
+      "s3:DeleteObjectVersionTagging",
+      "s3:GetBucketTagging",
+      "s3:GetBucketVersioning",
+      "s3:GetBucketObjectLockConfiguration",
+      "s3:GetObject",
+      "s3:GetObjectAcl",
+      "s3:GetObjectVersion",
+      "s3:GetObjectVersionAcl",
+      "s3:GetObjectTagging",
+      "s3:GetObjectRetention",
+      "s3:ListBucket",
+      "s3:ListBucketVersions",
+      "s3:ListBucketMultipartUploads",
+      "s3:ListMultipartUploadParts",
+      "s3:PutBucketObjectLockConfiguration",
+      "s3:PutBucketTagging",
+      "s3:PutBucketVersioning",
+      "s3:PutObject",
+      "s3:PutObjectAcl",
+      "s3:PutObjectTagging",
+      "s3:PutObjectVersionAcl",
+      "s3:PutObjectVersionTagging",
+      "s3:PutObjectRetention"
+    ]
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${local.bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${local.bucket}/*"
     ]
   }
 }
