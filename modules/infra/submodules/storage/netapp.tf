@@ -120,7 +120,7 @@ resource "aws_fsx_ontap_volume" "eks" {
   copy_tags_to_backups       = true
   volume_style               = "FLEXVOL"
   lifecycle {
-    ignore_changes = all # This volume is meant to be managed by the trident operator after initial creation.
+    ignore_changes = [name, size_in_megabytes] # This volume is meant to be managed by the trident operator after initial creation.
   }
 }
 
