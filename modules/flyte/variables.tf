@@ -54,6 +54,7 @@ variable "serviceaccount_names" {
     datacatalog    = optional(string, "datacatalog")
     flyteadmin     = optional(string, "flyteadmin")
     flytepropeller = optional(string, "flytepropeller")
+    importer       = optional(string, "domino-data-importer")
   })
 
   default = {}
