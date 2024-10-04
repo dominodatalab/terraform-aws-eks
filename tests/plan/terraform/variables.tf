@@ -112,7 +112,7 @@ variable "eks" {
       groups_prefix                 = optional(string, null)
       identity_provider_config_name = string
       issuer_url                    = optional(string, null)
-      required_claims               = optional(string, null)
+      required_claims               = optional(map(string), null)
       username_claim                = optional(string, null)
       username_prefix               = optional(string, null)
     })), [])
