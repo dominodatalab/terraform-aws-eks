@@ -37,6 +37,7 @@ locals {
     ANNOTATE_POD_IP          = tostring(try(var.eks_info.cluster.vpc_cni.annotate_pod_ip, true))
     }, local.is_pod_sb ? {
     AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG = "true"
+    AWS_VPC_K8S_CNI_EXTERNALSNAT       = "true"
   ENI_CONFIG_LABEL_DEF = "topology.kubernetes.io/zone" } : {})
 
   vpc_cni_eni_config = {

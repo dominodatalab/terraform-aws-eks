@@ -103,6 +103,16 @@ module "bastion" {
   bastion      = var.bastion
 }
 
+module "nat_instance" {
+  # TODO enabled -> enabled && nat_instance?
+  count        = var.bastion.enabled && !var.network.use_nat_gateway ? 1 : 0
+  source       = "./submodules/nat-instance"
+  deploy_id    = var.deploy_id
+  network_info = module.network.info
+  bastion_info = module.bastion[0].info
+  ssh_key      = local.ssh_key
+}
+
 locals {
   cost_usage_report_info    = var.domino_cur.provision_cost_usage_report && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
   bastion_info              = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null

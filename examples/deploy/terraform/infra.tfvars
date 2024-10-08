@@ -32,7 +32,8 @@ network = {
     private = 19
     public  = 27
   }
-  use_pod_cidr = true
+  use_pod_cidr    = true
+  use_nat_gateway = true
   vpc = {
     id = null
     subnets = {
