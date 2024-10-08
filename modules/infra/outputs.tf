@@ -65,7 +65,7 @@ output "default_node_groups" {
 
 output "efs_security_group" {
   description = "Security Group ID for EFS"
-  value       = var.storage.filesystem_type == "efs" ? module.storage.info.efs.security_group_id : null
+  value       = var.storage.filesystem_type == "efs" || var.storage.netapp.migrate_from_efs.enabled ? module.storage.info.efs.security_group_id : null
 }
 
 output "node_iam_policies" {

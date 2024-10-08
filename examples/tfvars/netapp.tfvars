@@ -17,6 +17,9 @@ default_node_groups = {
 storage = {
   filesystem_type = "netapp"
   netapp = {
+    migrate_from_efs = {
+      enabled = true
+    }
     storage_capacity_autosizing = {
       enabled = true
     }

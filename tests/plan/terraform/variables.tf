@@ -384,6 +384,13 @@ variable "storage" {
       }), {})
     }), {})
     netapp = optional(object({
+      migrate_from_efs = optional(object({
+        enabled = optional(bool, false)
+        datasync = optional(object({
+          enabled  = optional(bool, false)
+          schedule = optional(string, "cron(0 * * * ? *)")
+        }), {})
+      }), {})
       deployment_type                   = optional(string, "SINGLE_AZ_1")
       storage_capacity                  = optional(number, 1024)
       throughput_capacity               = optional(number, 128)
@@ -394,6 +401,13 @@ variable "storage" {
         threshold                  = optional(number, 70)
         percent_capacity_increase  = optional(number, 30)
         notification_email_address = optional(string, "")
+      }), {})
+      volume = optional(object({
+        create                     = optional(bool, true)
+        name_suffix                = optional(string, "domino_shared_storage")
+        storage_efficiency_enabled = optional(bool, true)
+        junction_path              = optional(string, "/domino")
+        size_in_megabytes          = optional(number, 1099511)
       }), {})
     }), {})
     s3 = optional(object({
