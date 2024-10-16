@@ -25,7 +25,7 @@ module "eks" {
 
   ssh_key             = module.infra.ssh_key
   node_iam_policies   = module.infra.node_iam_policies
-  efs_security_group  = module.infra.efs_security_group
+  efs_security_group  = var.storage.filesystem_type == "efs" ? module.infra.efs_security_group : null
   eks                 = module.infra.eks
   network_info        = module.infra.network
   kms_info            = module.infra.kms
