@@ -411,7 +411,7 @@ variable "storage" {
         name_suffix                = optional(string, "domino_shared_storage")
         storage_efficiency_enabled = optional(bool, true)
         junction_path              = optional(string, "/domino")
-        size_in_megabytes          = optional(number, 1099511)
+        size_in_megabytes          = optional(number, 11094880)
       }), {})
     }), {})
     s3 = optional(object({

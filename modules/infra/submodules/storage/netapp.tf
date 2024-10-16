@@ -30,7 +30,7 @@ resource "aws_security_group_rule" "netapp_outbound" {
 
 locals {
   netapp_ontap_components_user = local.deploy_netapp ? {
-    filesystem = "netappadmin"
+    filesystem = "fsxadmin"
     svm        = "vsadmin"
   } : {}
 }
@@ -61,10 +61,60 @@ resource "aws_secretsmanager_secret_version" "netapp" {
 }
 
 
+locals {
+  required_secret_names = [for key in keys(local.netapp_ontap_components_user) : "${var.deploy_id}-netapp-ontap-${key}"]
+}
+
+
+## Mitigating propagation delay: Error: reading Secrets Manager Secret Version ...couldn't find resource
+
+resource "terraform_data" "wait_for_secrets" {
+  provisioner "local-exec" {
+    command     = <<-EOF
+      set -x -o pipefail
+
+      sleep_duration=10
+      max_retries=30  # 5 minutes with 10-second intervals
+      required_secrets=(${join(" ", local.required_secret_names)})
+
+      check_secrets() {
+        secrets=$(aws secretsmanager list-secrets --region ${var.region} --query 'SecretList[?starts_with(Name, `${var.deploy_id}`)].Name' --output text)
+
+        for secret in "$${required_secrets[@]}"; do
+          if ! grep -q "$secret" <<< "$secrets"; then
+            return 1
+          fi
+        done
+
+        return 0
+      }
+
+      for i in $(seq 1 $max_retries); do
+        if check_secrets; then
+          exit 0
+        fi
+
+        echo "Waiting for secrets... attempt $i"
+        sleep "$sleep_duration"
+      done
+
+      echo "Timed out waiting for secrets."
+      exit 1
+    EOF
+    interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
+    }
+  }
+
+  depends_on = [aws_secretsmanager_secret.netapp]
+}
+
+
 data "aws_secretsmanager_secret_version" "netapp_creds" {
   for_each   = local.netapp_ontap_components_user
   secret_id  = aws_secretsmanager_secret.netapp[each.key].id
-  depends_on = [aws_secretsmanager_secret_version.netapp]
+  depends_on = [terraform_data.wait_for_secrets]
 }
 
 

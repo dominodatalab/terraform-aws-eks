@@ -92,6 +92,12 @@ resource "aws_datasync_task" "efs_to_netapp_migration" {
   source_location_arn      = aws_datasync_location_efs.this[0].arn
   destination_location_arn = aws_datasync_location_fsx_ontap_file_system.this[0].arn
 
+  options {
+    posix_permissions = "NONE"
+    gid               = "NONE"
+    uid               = "NONE"
+  }
+
   schedule {
     schedule_expression = var.storage.netapp.migrate_from_efs.datasync.schedule
   }
