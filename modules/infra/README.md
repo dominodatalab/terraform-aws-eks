@@ -80,7 +80,6 @@
 | <a name="output_default_node_groups"></a> [default\_node\_groups](#output\_default\_node\_groups) | Default nodegroups. |
 | <a name="output_deploy_id"></a> [deploy\_id](#output\_deploy\_id) | Domino Deployment ID. |
 | <a name="output_domino_key_pair"></a> [domino\_key\_pair](#output\_domino\_key\_pair) | Domino key pair |
-| <a name="output_efs_security_group"></a> [efs\_security\_group](#output\_efs\_security\_group) | Security Group ID for EFS |
 | <a name="output_eks"></a> [eks](#output\_eks) | EKS variables. |
 | <a name="output_ignore_tags"></a> [ignore\_tags](#output\_ignore\_tags) | Tags to be ignored by the aws provider |
 | <a name="output_kms"></a> [kms](#output\_kms) | KMS key details, if enabled. |
