@@ -5,7 +5,7 @@ data "aws_caller_identity" "this" {}
 locals {
   private_subnet_ids = var.network_info.subnets.private[*].subnet_id
   kms_key_arn        = var.kms_info.enabled ? var.kms_info.key_arn : null
-  deploy_efs         = var.storage.filesystem_type == "efs"
+  deploy_efs         = var.storage.filesystem_type == "efs" || var.storage.netapp.migrate_from_efs.enabled
   deploy_netapp      = var.storage.filesystem_type == "netapp"
 
   s3_buckets = { for k, v in {
