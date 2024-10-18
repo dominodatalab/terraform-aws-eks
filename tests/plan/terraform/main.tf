@@ -25,7 +25,7 @@ module "eks" {
 
   ssh_key             = module.infra.ssh_key
   node_iam_policies   = module.infra.node_iam_policies
-  efs_security_group  = module.infra.efs_security_group
+  storage_info        = module.infra.storage
   eks                 = module.infra.eks
   network_info        = module.infra.network
   kms_info            = module.infra.kms
@@ -38,7 +38,6 @@ module "eks" {
     route53_hosted_zone_name = var.route53_hosted_zone_name
   }
   use_fips_endpoint = var.use_fips_endpoint
-  netapp            = module.infra.storage.netapp
 }
 
 module "irsa_external_dns" {

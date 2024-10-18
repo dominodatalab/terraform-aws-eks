@@ -105,19 +105,3 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
-
-variable "netapp" {
-  description = "Configuration for NetApp"
-  type = object({
-    astra_trident_operator_role = optional(string, null)
-    svm = optional(object({
-      id            = optional(string, null)
-      management_ip = optional(string, null)
-      nfs_ip        = optional(string, null)
-    }), null)
-    filesystem = optional(object({
-      id = optional(string, null)
-    }), null)
-  })
-  default = null
-}

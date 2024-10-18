@@ -54,33 +54,32 @@ resource "aws_security_group_rule" "node" {
 moved {
   from = aws_security_group_rule.efs
   to   = aws_security_group_rule.shared_storage["efs_2049_2049"]
+
 }
 
-### NETAPP
-
-locals {
-  shared_storage_type = var.netapp != null ? "netapp" : "efs"
-  inbound_rules = local.shared_storage_type == "netapp" ? {
-    rules = [
-      { protocol = "all", from_port = 0, to_port = 65535, description = "All traffic from EKS nodes." },
-    ]
-    security_group_id = var.netapp.filesystem.security_group_id
-    } : {
-    rules = [
-      { protocol = "tcp", from_port = 2049, to_port = 2049, description = "EFS access" }
-    ]
-    security_group_id = var.efs_security_group
-  }
+moved {
+  from = aws_security_group_rule.shared_storage["efs_2049_2049"]
+  to   = aws_security_group_rule.efs[0]
 }
 
-resource "aws_security_group_rule" "shared_storage" {
-  for_each = { for r in local.inbound_rules.rules : "${local.shared_storage_type}_${r.from_port}_${r.to_port}" => r }
-
-  security_group_id        = local.inbound_rules.security_group_id
-  source_security_group_id = aws_security_group.eks_nodes.id
-  protocol                 = each.value.protocol
-  from_port                = each.value.from_port
-  to_port                  = each.value.to_port
+resource "aws_security_group_rule" "efs" {
+  count                    = var.storage_info.efs != null ? 1 : 0
+  security_group_id        = var.storage_info.efs.security_group_id
+  protocol                 = "tcp"
+  from_port                = 2049
+  to_port                  = 2049
   type                     = "ingress"
-  description              = each.value.description
+  description              = "EFS access"
+  source_security_group_id = aws_security_group.eks_nodes.id
+}
+
+resource "aws_security_group_rule" "netapp" {
+  count                    = var.storage_info.netapp != null ? 1 : 0
+  security_group_id        = var.storage_info.netapp.filesystem.security_group_id
+  protocol                 = "-1"
+  from_port                = 0
+  to_port                  = 65535
+  type                     = "ingress"
+  description              = "Netapp access from EKS nodes."
+  source_security_group_id = aws_security_group.eks_nodes.id
 }
