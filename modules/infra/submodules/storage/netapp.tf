@@ -60,31 +60,24 @@ resource "aws_secretsmanager_secret_version" "netapp" {
   })
 }
 
-
-locals {
-  required_secret_names = [for key in keys(local.netapp_ontap_components_user) : "${var.deploy_id}-netapp-ontap-${key}"]
-}
-
-
 ## Mitigating propagation delay: Error: reading Secrets Manager Secret Version ...couldn't find resource
 
 resource "terraform_data" "wait_for_secrets" {
+  for_each = aws_secretsmanager_secret.netapp
   provisioner "local-exec" {
     command     = <<-EOF
       set -x -o pipefail
 
       sleep_duration=10
       max_retries=30
-      required_secrets=(${join(" ", local.required_secret_names)})
+      required_secret="${each.value.name}"
 
       check_secrets() {
         secrets=$(aws secretsmanager list-secrets --region ${var.region} --query 'SecretList[?starts_with(Name, `${var.deploy_id}`)].Name' --output text)
 
-        for secret in "$${required_secrets[@]}"; do
-          if ! grep -q "$secret" <<< "$secrets"; then
+        if ! grep -q "$required_secret" <<< "$secrets"; then
             return 1
-          fi
-        done
+        fi
 
         return 0
       }
