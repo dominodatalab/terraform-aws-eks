@@ -85,12 +85,6 @@ variable "node_iam_policies" {
   type        = list(string)
 }
 
-variable "efs_security_group" {
-  description = "Security Group ID for EFS"
-  type        = string
-  default     = null
-}
-
 variable "bastion_info" {
   description = <<EOF
     user                = Bastion username.
@@ -275,20 +269,29 @@ variable "calico" {
   default = {}
 }
 
+variable "storage_info" {
+  description = "Defines the configuration for different storage types like EFS, S3, and ECR."
 
-variable "netapp" {
-  description = "Configuration for NETAPP"
   type = object({
-    astra_trident_operator_role = optional(string, null)
-    svm = optional(object({
-      id            = optional(string, null)
-      management_ip = optional(string, null)
-      nfs_ip        = optional(string, null)
-    }), null)
-    filesystem = optional(object({
-      id                = optional(string, null)
+    efs = optional(object({
       security_group_id = optional(string, null)
     }), null)
+    netapp = optional(object({
+      svm = object({
+        name             = optional(string, null)
+        management_ip    = optional(string, null)
+        nfs_ip           = optional(string, null)
+        creds_secret_arn = optional(string, null)
+      })
+      filesystem = object({
+        id                = optional(string, null)
+        security_group_id = optional(string, null)
+      })
+      volume = object({
+        name = optional(string, null)
+      })
+    }), null)
   })
-  default = null
+
+  default = {}
 }
