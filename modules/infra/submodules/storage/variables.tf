@@ -99,6 +99,7 @@ variable "storage" {
         enabled = optional(bool)
         datasync = optional(object({
           enabled  = optional(bool)
+          target   = optional(string)
           schedule = optional(string)
         }))
       }))

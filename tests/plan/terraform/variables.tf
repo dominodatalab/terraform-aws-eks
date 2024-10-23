@@ -388,6 +388,7 @@ variable "storage" {
         enabled = optional(bool, false)
         datasync = optional(object({
           enabled  = optional(bool, false)
+          target   = optional(string, "netapp")
           schedule = optional(string, "cron(0 * * * ? *)")
         }), {})
       }), {})

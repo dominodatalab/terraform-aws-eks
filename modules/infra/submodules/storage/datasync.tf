@@ -18,7 +18,6 @@ locals {
       security_group_id        = aws_security_group.netapp[0].id
     }
   } : {}
-
 }
 
 resource "aws_security_group" "datasync" {
@@ -87,10 +86,26 @@ resource "aws_datasync_location_fsx_ontap_file_system" "this" {
   }
 }
 
-resource "aws_datasync_task" "efs_to_netapp_migration" {
-  count                    = local.create_ds ? 1 : 0
+resource "aws_datasync_task" "efs_to_netapp_sync" {
+  count                    = local.create_ds && var.storage.netapp.migrate_from_efs.datasync.target == "netapp" ? 1 : 0
   source_location_arn      = aws_datasync_location_efs.this[0].arn
   destination_location_arn = aws_datasync_location_fsx_ontap_file_system.this[0].arn
+
+  options {
+    posix_permissions = "NONE"
+    gid               = "NONE"
+    uid               = "NONE"
+  }
+
+  schedule {
+    schedule_expression = var.storage.netapp.migrate_from_efs.datasync.schedule
+  }
+}
+
+resource "aws_datasync_task" "netapp_to_efs_sync" {
+  count                    = local.create_ds && var.storage.netapp.migrate_from_efs.datasync.target == "efs" ? 1 : 0
+  source_location_arn      = aws_datasync_location_fsx_ontap_file_system.this[0].arn
+  destination_location_arn = aws_datasync_location_efs.this[0].arn
 
   options {
     posix_permissions = "NONE"
