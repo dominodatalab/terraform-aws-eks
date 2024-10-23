@@ -12,13 +12,12 @@ default_node_groups = {
   platform = {
     "availability_zone_ids" = ["usw2-az1", "usw2-az2"]
   }
+}
 
-  eks = {
-    public_access = {
-      enabled = true
-      cidrs   = ["108.214.49.0/24"] # Replace this with the desired CIDR range
-
-    }
+eks = {
+  public_access = {
+    enabled = true
+    cidrs   = ["108.214.49.0/24"] # Replace this with the desired CIDR range
   }
 }
 

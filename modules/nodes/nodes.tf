@@ -73,7 +73,7 @@ data "aws_ssm_parameter" "eks_ami_release_version" {
 }
 
 data "aws_ssm_parameter" "eks_gpu_ami_release_version" {
-  name = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2-gpu/recommended/release_version"
+  name = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/nvidia/recommended/release_version"
 }
 
 resource "aws_eks_node_group" "node_groups" {
@@ -91,7 +91,7 @@ resource "aws_eks_node_group" "node_groups" {
     desired_size = each.value.node_group.desired_per_az
   }
 
-  ami_type       = each.value.node_group.ami != null ? "CUSTOM" : each.value.node_group.gpu ? "AL2_x86_64_GPU" : "AL2023_x86_64_STANDARD"
+  ami_type       = each.value.node_group.ami != null ? "CUSTOM" : each.value.node_group.gpu ? "AL2023_x86_64_NVIDIA" : "AL2023_x86_64_STANDARD"
   capacity_type  = each.value.node_group.spot ? "SPOT" : "ON_DEMAND"
   instance_types = each.value.node_group.instance_types
   launch_template {

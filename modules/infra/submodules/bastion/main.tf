@@ -130,24 +130,13 @@ resource "terraform_data" "check_bastion_instance_profile" {
   depends_on = [aws_iam_instance_profile.bastion]
 }
 
-data "aws_ami" "al2023" {
-  count       = var.bastion.ami_id == null ? 1 : 0
-  most_recent = true
-  owners      = ["amazon"]
 
-  filter {
-    name   = "name"
-    values = ["al2023-ami*"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
+data "aws_ssm_parameter" "al2023_ami" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-minimal-kernel-default-x86_64"
 }
 
 locals {
-  ami_id = var.bastion.ami_id != null ? var.bastion.ami_id : data.aws_ami.al2023[0].id
+  ami_id = var.bastion.ami_id != null ? var.bastion.ami_id : data.aws_ssm_parameter.al2023_ami.value
 }
 
 resource "aws_instance" "bastion" {

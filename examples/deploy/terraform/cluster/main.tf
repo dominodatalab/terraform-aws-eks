@@ -73,16 +73,14 @@ module "irsa_policies" {
   additional_irsa_configs = var.irsa_policies
 }
 
-# If you are enabling the IRSA configuration for external-deployments-operator
-module "irsa_external_deployments_operator" {
-  source                        = "./../../../../modules/irsa"
-  use_cluster_odc_idp           = local.is_eks_account_same
-  eks_info                      = module.eks.info
-  external_deployments_operator = var.irsa_external_deployments_operator
+module "external_deployments_operator" {
+  count = var.external_deployments_operator.enabled ? 1 : 0
 
-  providers = {
-    aws = aws.global
-  }
+  source               = "./../../../../modules/external-deployments"
+  eks_info             = module.eks.info
+  kms_info             = local.kms
+  region               = local.infra.region
+  external_deployments = var.external_deployments_operator
 }
 
 # Provider configuration for the account where the hosted zone is defined.

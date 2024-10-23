@@ -57,7 +57,7 @@ variable "eks" {
       groups_prefix                 = optional(string)
       identity_provider_config_name = string
       issuer_url                    = optional(string)
-      required_claims               = optional(string)
+      required_claims               = optional(map(string))
       username_claim                = optional(string)
       username_prefix               = optional(string)
     })))
@@ -118,13 +118,18 @@ variable "use_fips_endpoint" {
   default     = false
 }
 
-variable "irsa_external_deployments_operator" {
+variable "external_deployments_operator" {
   description = "Config to create IRSA role for the external deployments operator."
 
   type = object({
-    enabled              = optional(bool, false)
-    namespace            = optional(string, "domino-compute")
-    service_account_name = optional(string, "pham-juno-operator")
+    enabled                         = optional(bool, false)
+    namespace                       = optional(string, "domino-compute")
+    operator_service_account_name   = optional(string, "pham-juno-operator")
+    operator_role_suffix            = optional(string, "external-deployments-operator")
+    repository_suffix               = optional(string, "external-deployments")
+    bucket_suffix                   = optional(string, "external-deployments")
+    enable_assume_any_external_role = optional(bool, true)
+    enable_in_account_deployments   = optional(bool, true)
   })
 
   default = {}
