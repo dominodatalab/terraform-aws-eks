@@ -263,7 +263,7 @@ variable "calico" {
 
   type = object({
     image_registry = optional(string, "quay.io")
-    version        = optional(string, "v3.27.3")
+    version        = optional(string, "v3.28.2")
   })
 
   default = {}
