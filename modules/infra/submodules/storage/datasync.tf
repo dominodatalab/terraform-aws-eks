@@ -62,9 +62,11 @@ data "aws_subnet" "ds" {
 }
 
 resource "aws_datasync_location_efs" "this" {
-  count               = local.create_ds ? 1 : 0
-  efs_file_system_arn = aws_efs_file_system.eks[0].arn
-  subdirectory        = "/domino/"
+  count                 = local.create_ds ? 1 : 0
+  efs_file_system_arn   = aws_efs_file_system.eks[0].arn
+  subdirectory          = "/domino/"
+  in_transit_encryption = "TLS1_2"
+
   ec2_config {
     security_group_arns = [aws_security_group.datasync[0].arn]
     subnet_arn          = data.aws_subnet.ds[0].arn
