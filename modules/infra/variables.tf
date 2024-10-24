@@ -117,46 +117,11 @@ variable "default_node_groups" {
   description = "EKS managed node groups definition."
   type = object(
     {
-      compute = object(
+      karpenter = object(
         {
           ami                        = optional(string, null)
           bootstrap_extra_args       = optional(string, "")
-          instance_types             = optional(list(string), ["m6i.2xlarge"])
-          spot                       = optional(bool, false)
-          min_per_az                 = optional(number, 0)
-          max_per_az                 = optional(number, 10)
-          max_unavailable_percentage = optional(number, 50)
-          max_unavailable            = optional(number, null)
-          desired_per_az             = optional(number, 0)
-          availability_zone_ids      = list(string)
-          labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "default"
-          })
-          taints = optional(list(object({
-            key    = string
-            value  = optional(string)
-            effect = string
-          })), [])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
-          volume = optional(object({
-            size       = optional(number, 1000)
-            type       = optional(string, "gp3")
-            iops       = optional(number)
-            throughput = optional(number, 500)
-            }), {
-            size       = 1000
-            type       = "gp3"
-            iops       = null
-            throughput = 500
-            }
-          )
-      }),
-      platform = object(
-        {
-          ami                        = optional(string, null)
-          bootstrap_extra_args       = optional(string, "")
-          instance_types             = optional(list(string), ["m7i-flex.2xlarge"])
+          instance_types             = optional(list(string), ["m7i-flex.large"])
           spot                       = optional(bool, false)
           min_per_az                 = optional(number, 1)
           max_per_az                 = optional(number, 10)
@@ -165,7 +130,7 @@ variable "default_node_groups" {
           desired_per_az             = optional(number, 1)
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "platform"
+            "dominodatalab.com/node-pool" = "karpenter"
           })
           taints = optional(list(object({
             key    = string
@@ -179,43 +144,6 @@ variable "default_node_groups" {
             type = optional(string, "gp3")
             }), {
             size = 100
-            type = "gp3"
-            }
-          )
-      }),
-      gpu = object(
-        {
-          ami                        = optional(string, null)
-          bootstrap_extra_args       = optional(string, "")
-          instance_types             = optional(list(string), ["g5.2xlarge"])
-          spot                       = optional(bool, false)
-          min_per_az                 = optional(number, 0)
-          max_per_az                 = optional(number, 10)
-          max_unavailable_percentage = optional(number, 50)
-          max_unavailable            = optional(number, null)
-          desired_per_az             = optional(number, 0)
-          availability_zone_ids      = list(string)
-          labels = optional(map(string), {
-            "dominodatalab.com/node-pool" = "default-gpu"
-            "nvidia.com/gpu"              = true
-          })
-          taints = optional(list(object({
-            key    = string
-            value  = optional(string)
-            effect = string
-            })), [{
-            key    = "nvidia.com/gpu"
-            value  = "true"
-            effect = "NO_SCHEDULE"
-            }
-          ])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
-          volume = optional(object({
-            size = optional(number, 1000)
-            type = optional(string, "gp3")
-            }), {
-            size = 1000
             type = "gp3"
             }
           )
