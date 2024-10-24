@@ -48,6 +48,13 @@ variable "storage" {
         }
       }
       netapp = {
+        migrate_from_efs = {
+          enabled =  When enabled, both EFS and NetApp resources will be provisioned simultaneously during the migration period.
+          datasync = {
+            enabled  = Toggle to enable AWS DataSync for automated data transfer from EFS to NetApp FSx.
+            schedule = Cron-style schedule for the DataSync task, specifying how often the data transfer will occur (default: hourly).
+          }
+        }
         deployment_type = netapp ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
         storage_capacity = Filesystem Storage capacity
         throughput_capacity = Filesystem throughput capacity
@@ -88,6 +95,14 @@ variable "storage" {
       }))
     }))
     netapp = optional(object({
+      migrate_from_efs = optional(object({
+        enabled = optional(bool)
+        datasync = optional(object({
+          enabled  = optional(bool)
+          target   = optional(string)
+          schedule = optional(string)
+        }))
+      }))
       deployment_type                   = optional(string)
       storage_capacity                  = optional(number)
       throughput_capacity               = optional(number)
@@ -98,6 +113,13 @@ variable "storage" {
         threshold                  = optional(number)
         percent_capacity_increase  = optional(number)
         notification_email_address = optional(string)
+      }))
+      volume = optional(object({
+        name_suffix                = optional(string)
+        storage_efficiency_enabled = optional(bool)
+        create                     = optional(bool)
+        junction_path              = optional(string)
+        size_in_megabytes          = optional(number)
       }))
     }))
     s3 = optional(object({
@@ -117,6 +139,16 @@ variable "storage" {
   validation {
     condition     = var.storage.filesystem_type != "netapp" || (var.storage.filesystem_type == "netapp" && contains(["MULTI_AZ_1", "MULTI_AZ_2", "SINGLE_AZ_1", "SINGLE_AZ_2"], var.storage.netapp.deployment_type))
     error_message = "Invalid 'deployment_type' for netapp filesystem, supported deployment types are 'MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', and 'SINGLE_AZ_2'."
+  }
+
+  validation {
+    condition     = !var.storage.netapp.migrate_from_efs.enabled || var.storage.filesystem_type == "netapp"
+    error_message = "Expected filesystem_type=netapp if `netapp.migrate_from_efs` is enabled"
+  }
+
+  validation {
+    condition     = !var.storage.netapp.migrate_from_efs.datasync.enabled || (var.storage.netapp.migrate_from_efs.datasync.enabled && var.storage.netapp.migrate_from_efs.enabled)
+    error_message = "Expected `storage.netapp.migrate_from_efs.enabled` if `storage.netapp.migrate_from_efs.datasync.enabled`"
   }
 }
 

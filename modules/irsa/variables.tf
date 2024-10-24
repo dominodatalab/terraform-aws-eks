@@ -107,3 +107,17 @@ variable "netapp_trident_operator" {
 
   default = {}
 }
+
+
+variable "netapp_trident_configurator" {
+  description = "Config to create IRSA role for the netapp-trident-configurator."
+
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string, "trident")
+    serviceaccount_name = optional(string, "trident-configurator")
+    region              = optional(string)
+  })
+
+  default = {}
+}

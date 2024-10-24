@@ -63,11 +63,6 @@ output "default_node_groups" {
   value       = var.default_node_groups
 }
 
-output "efs_security_group" {
-  description = "Security Group ID for EFS"
-  value       = var.storage.filesystem_type == "efs" ? module.storage.info.efs.security_group_id : null
-}
-
 output "node_iam_policies" {
   description = "Policies attached to EKS nodes role"
   value       = local.node_iam_policies
