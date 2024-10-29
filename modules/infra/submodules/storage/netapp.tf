@@ -30,7 +30,7 @@ resource "aws_security_group_rule" "netapp_outbound" {
 
 locals {
   netapp_ontap_components_user = local.deploy_netapp ? {
-    filesystem = "netappadmin"
+    filesystem = "fsxadmin"
     svm        = "vsadmin"
   } : {}
 }
@@ -60,11 +60,54 @@ resource "aws_secretsmanager_secret_version" "netapp" {
   })
 }
 
+## Mitigating propagation delay: Error: reading Secrets Manager Secret Version ...couldn't find resource
+
+resource "terraform_data" "wait_for_secrets" {
+  for_each = aws_secretsmanager_secret.netapp
+  provisioner "local-exec" {
+    command     = <<-EOF
+      set -x -o pipefail
+
+      sleep_duration=10
+      max_retries=30
+      required_secret="${each.value.name}"
+
+      check_secrets() {
+        secrets=$(aws secretsmanager list-secrets --region ${var.region} --query 'SecretList[?starts_with(Name, `${var.deploy_id}`)].Name' --output text)
+
+        if ! grep -q "$required_secret" <<< "$secrets"; then
+            return 1
+        fi
+
+        return 0
+      }
+
+      for i in $(seq 1 $max_retries); do
+        if check_secrets; then
+          exit 0
+        fi
+
+        echo "Waiting for secrets... attempt $i"
+        sleep "$sleep_duration"
+      done
+
+      echo "Timed out waiting for secrets."
+      exit 1
+    EOF
+    interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
+    }
+  }
+
+  depends_on = [aws_secretsmanager_secret.netapp]
+}
+
 
 data "aws_secretsmanager_secret_version" "netapp_creds" {
   for_each   = local.netapp_ontap_components_user
   secret_id  = aws_secretsmanager_secret.netapp[each.key].id
-  depends_on = [aws_secretsmanager_secret_version.netapp]
+  depends_on = [terraform_data.wait_for_secrets]
 }
 
 
@@ -108,9 +151,25 @@ resource "aws_fsx_ontap_storage_virtual_machine" "eks" {
   }
 }
 
+resource "aws_fsx_ontap_volume" "eks" {
+  count                      = local.deploy_netapp && var.storage.netapp.volume.create ? 1 : 0
+  storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.eks[0].id
+  name                       = "${var.deploy_id}_${var.storage.netapp.volume.name_suffix}"
+  junction_path              = var.storage.netapp.volume.junction_path
+  size_in_megabytes          = var.storage.netapp.volume.size_in_megabytes
+  storage_efficiency_enabled = true
+  security_style             = "UNIX"
+  ontap_volume_type          = "RW"
+  copy_tags_to_backups       = true
+  volume_style               = "FLEXVOL"
+  lifecycle {
+    ignore_changes = [name, size_in_megabytes] # This volume is meant to be managed by the trident operator after initial creation.
+  }
+}
+
 
 resource "aws_cloudformation_stack" "fsx_ontap_scaling" {
-  count         = var.storage.netapp.storage_capacity_autosizing.enabled ? 1 : 0
+  count         = local.deploy_netapp && var.storage.netapp.storage_capacity_autosizing.enabled ? 1 : 0
   name          = "${var.deploy_id}-fxn-storage-scaler"
   template_body = file("${path.module}/files/FSxOntapDynamicStorageScalingCLoudFormationTemplate.yaml")
 

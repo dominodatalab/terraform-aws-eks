@@ -16,7 +16,7 @@ output "info" {
     }
   EOF
   value = {
-    efs = local.deploy_efs ? {
+    efs = var.storage.filesystem_type == "efs" || var.storage.netapp.migrate_from_efs.enabled ? {
       access_point      = aws_efs_access_point.eks[0]
       file_system       = aws_efs_file_system.eks[0]
       security_group_id = aws_security_group.efs[0].id
@@ -29,6 +29,9 @@ output "info" {
         creds_secret_arn = aws_secretsmanager_secret.netapp["svm"].arn
       }
       filesystem = { id = aws_fsx_ontap_file_system.eks[0].id, security_group_id = aws_security_group.netapp[0].id }
+      volume = {
+        name = aws_fsx_ontap_volume.eks[0].name
+      }
     } : null
     s3 = {
       buckets = { for k, b in local.s3_buckets : k => {
