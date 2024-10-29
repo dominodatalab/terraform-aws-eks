@@ -363,3 +363,9 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+
+variable "no_default_ngs" {
+  description = "Don't provision the default nodegroups"
+  type        = bool
+  default     = false
+}
