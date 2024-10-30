@@ -77,3 +77,19 @@ resource "terraform_data" "calico_setup" {
 
   depends_on = [aws_eks_node_group.node_groups]
 }
+
+resource "terraform_data" "karpenter_setup" {
+  count = var.no_default_ngs && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+
+  triggers_replace = [
+    filemd5(var.eks_info.k8s_pre_setup_sh_file)
+  ]
+
+  provisioner "local-exec" {
+    command     = "bash ./${basename(var.eks_info.k8s_pre_setup_sh_file)} install_karpenter"
+    interpreter = ["bash", "-c"]
+    working_dir = dirname(var.eks_info.k8s_pre_setup_sh_file)
+  }
+
+  depends_on = [terraform_data.calico_setup]
+}
