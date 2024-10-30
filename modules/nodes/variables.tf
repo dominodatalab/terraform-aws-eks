@@ -103,7 +103,7 @@ variable "eks_info" {
   type = object({
     k8s_pre_setup_sh_file = string
     cluster = object({
-      addons = optional(list(string), ["kube-proxy", "coredns", "vpc-cni"])
+      addons = optional(list(string), ["kube-proxy", "coredns", "vpc-cni", "eks-pod-identity-agent"])
       vpc_cni = optional(object({
         prefix_delegation = optional(bool, false)
         annotate_pod_ip   = optional(bool, true)
@@ -367,5 +367,5 @@ variable "use_fips_endpoint" {
 variable "no_default_ngs" {
   description = "Don't provision the default nodegroups"
   type        = bool
-  default     = false
+  default     = true
 }

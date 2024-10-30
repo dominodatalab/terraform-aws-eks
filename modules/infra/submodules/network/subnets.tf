@@ -64,6 +64,7 @@ resource "aws_subnet" "private" {
     var.add_eks_elb_tags ? {
       "kubernetes.io/role/internal-elb"        = "1"
       "kubernetes.io/cluster/${var.deploy_id}" = "shared"
+      "karpenter.sh/discovery"                 = var.deploy_id
   } : {})
 
   lifecycle {
