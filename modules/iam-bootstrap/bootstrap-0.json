@@ -146,7 +146,9 @@
         "eks:TagResource",
         "eks:UntagResource",
         "eks:UpdateNodegroupConfig",
-        "eks:UpdateNodegroupVersion"
+        "eks:UpdateNodegroupVersion",
+        "eks:CreatePodIdentityAssociation",
+        "eks:DescribePodIdentityAssociation"
       ],
       "Resource": "*"
     },
