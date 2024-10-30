@@ -105,3 +105,15 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+
+variable "cluster_name" {
+  description = "Name of EKS clsuter"
+  type        = string
+  default     = ""
+}
+
+variable "karpenter_namespace" {
+  description = "Namespace to install karpenter"
+  type        = string
+  default     = "karpenter"
+}
