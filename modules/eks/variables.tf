@@ -307,3 +307,9 @@ variable "karpenter" {
   type        = bool
   default     = true
 }
+
+variable "karpenter_namespace" {
+  description = "Namespace to install karpenter"
+  type        = string
+  default     = "karpenter"
+}
