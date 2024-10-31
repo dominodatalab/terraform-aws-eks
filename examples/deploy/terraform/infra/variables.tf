@@ -227,7 +227,14 @@ variable "storage" {
           percent_capacity_increase  = The percentage increase in storage capacity when used storage exceeds
                                        LowFreeDataStorageCapacityThreshold. Minimum increase is 10 %.
           notification_email_address = The email address for alarm notification.
-        }))
+        }
+        volume = {
+          create                     = Create a volume associated with the filesystem.
+          name_suffix                = The suffix to name the volume
+          storage_efficiency_enabled = Toggle storage_efficiency_enabled
+          junction_path              = filesystem junction path
+          size_in_megabytes          = The size of the volume
+        }
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
