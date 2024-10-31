@@ -154,7 +154,7 @@ resource "aws_fsx_ontap_storage_virtual_machine" "eks" {
 resource "aws_fsx_ontap_volume" "eks" {
   count                      = local.deploy_netapp && var.storage.netapp.volume.create ? 1 : 0
   storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.eks[0].id
-  name                       = replace("${var.deploy_id}_${var.storage.netapp.volume.name_suffix}", "/[^a-z_]/", "_")
+  name                       = replace("${var.deploy_id}_${var.storage.netapp.volume.name_suffix}", "/[^a-zA-z0-9_]/", "_")
   junction_path              = var.storage.netapp.volume.junction_path
   size_in_megabytes          = var.storage.netapp.volume.size_in_megabytes
   storage_efficiency_enabled = true
