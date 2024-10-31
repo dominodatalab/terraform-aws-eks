@@ -83,6 +83,19 @@ module "external_deployments_operator" {
   external_deployments = var.external_deployments_operator
 }
 
+module "flyte" {
+  count                     = var.flyte.enabled ? 1 : 0
+  source                    = "./../../../../modules/flyte"
+  region                    = local.infra.region
+  kms_info                  = local.infra.kms
+  eks_info                  = module.eks.info
+  force_destroy_on_deletion = var.flyte.force_destroy_on_deletion
+  platform_namespace        = var.flyte.platform_namespace
+  compute_namespace         = var.flyte.compute_namespace
+}
+
+
+
 # Provider configuration for the account where the hosted zone is defined.
 # Useful in configurations where accounts do not have a public hosted zone(i.e us-gov regions) and internet routing(public DNS)
 # is instead defined in a different account. Configure the `global` aws alias accordingly,

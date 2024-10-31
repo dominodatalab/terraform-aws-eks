@@ -22,5 +22,10 @@ output "external_dns_irsa_role_arn" {
 
 output "external_deployments_operator" {
   description = "External deployments operator details."
-  value       = module.external_deployments_operator
+  value       = try(module.external_deployments_operator[0], null)
+}
+
+output "flyte" {
+  description = "Flyte details."
+  value       = try(module.flyte[0], null)
 }

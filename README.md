@@ -2,6 +2,8 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/dominodatalab/terraform-aws-eks/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/dominodatalab/terraform-aws-eks/tree/main)
 
+:warning: Important: If you are currently using a version of the module >= `v3.0.0`  and want to update to >= `v3.5.0` you should take a look at the `bin/module-update/` utility.
+
 :warning: Important: If you have existing infrastructure created with a version of this module < `v3.0.0` you will need to migrate your state before updating the module to versions >= `v3.0.0`. See [state-migration](./bin/state-migration/README.md#terraform-state-migration-guide) for more details.
 
 :warning: Important: Starting from version v2.0.0, this module has KMS enabled by default. If you utilized a prior version without setting the kms.enabled variable, ensure you define kms.enabled = false to preserve your existing state. Failing to do so will default to kms.enabled = true, potentially causing the destruction of your existing infrastructure and possible data loss.
@@ -9,21 +11,26 @@
 
 ## Repository Structure
 
-* examples/:
+* `examples/`:
   * Purpose: Acts as an intuitive guide for module users.
   * Contents: Features end-user Terraform configurations along with illustrative `tfvars` samples, showcasing potential setups.
 
-* modules/:
+* `modules/`:
   * Purpose: Houses the primary modules that orchestrate the provisioning process.
   * Contents: These modules act as the main entry points for the setup of the underlying infrastructure beneath the **EKS** cluster and its associated components.
 
-* tests/:
+* `tests/`:
   * Purpose: Ensures the integrity and functionality of the module.
   * Contents: Contains automation-driven tests intended for validation and continuous integration (CI) checks.
 
-* bin/state-migration/:
+* `bin/state-migration/`:
   * Purpose: Contains automation to perform terraform state migration, from a monolithic module to a multi-module structure.
   * Contents: Script and documentation to perform terraform state migration.
+
+* `bin/module-update/`:
+  * A helper script to update the module version. Compatible only with modules on version `>= v3.0.0`.
+  * Contents: The directory includes the script and associated documentation for performing module updates.
+
 
 Always refer to each section's respective README or documentation for detailed information and usage guidelines.
 
