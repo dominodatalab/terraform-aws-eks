@@ -24,6 +24,7 @@ single_node = {
   name          = "dev-v2"
   ami = {
     name_prefix = "amazon-eks-node-al2023-x86_64-standard-"
+    owner       = "602401143452"
   }
   labels = {
     "dominodatalab.com/node-pool"   = "default",
