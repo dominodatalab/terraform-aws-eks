@@ -41,5 +41,5 @@ storage = {
 }
 
 eks = {
-  k8s_version = "1.27"
+  k8s_version = "1.30"
 }
