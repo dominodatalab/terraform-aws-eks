@@ -1,7 +1,7 @@
 data "aws_default_tags" "this" {}
 
 data "aws_ec2_instance_type" "all" {
-  for_each      = toset(flatten([for ng in merge(var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
+  for_each      = toset(flatten([for ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
   instance_type = each.value
 }
 
@@ -14,7 +14,7 @@ locals {
   }]
   node_groups = {
     for name, ng in
-    (var.no_default_ngs ? var.additional_node_groups : merge(var.additional_node_groups, var.default_node_groups)) :
+    (var.no_default_ngs ? var.karpenter_node_groups : merge(var.additional_node_groups, var.default_node_groups)) :
     name => merge(ng, {
       gpu           = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
