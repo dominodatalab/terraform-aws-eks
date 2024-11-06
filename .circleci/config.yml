@@ -9,7 +9,7 @@ parameters:
     default: "1.9.3"
   hcledit_version:
     type: string
-    default: "0.2.9"
+    default: "0.2.15"
   GHA_Actor:
     type: string
     default: ""
@@ -21,9 +21,9 @@ parameters:
     default: ""
 
 orbs:
-  terraform: circleci/terraform@3.2.0
+  terraform: circleci/terraform@3.3.0
   aws-cli: circleci/aws-cli@3.1
-  envsubst: sawadashota/envsubst@1.1.0
+  envsubst: sawadashota/envsubst@1.4.3
 
 commands:
   install_tf:
@@ -40,7 +40,7 @@ commands:
     parameters:
       hcledit_version:
         type: string
-        default: "0.2.9"
+        default: "0.2.15"
     steps:
       - run:
           name: Install HCL edit
@@ -250,7 +250,7 @@ commands:
 jobs:
   tf-plan-test:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2024.03.1
     parameters:
       terraform_version:
         type: string
@@ -262,7 +262,7 @@ jobs:
 
   test-deploy:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2024.03.1
     parameters:
       terraform_version:
         type: string
@@ -287,7 +287,7 @@ jobs:
 
   test-upgrade:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2024.03.1
     parameters:
       terraform_version:
         type: string

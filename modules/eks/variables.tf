@@ -144,7 +144,7 @@ variable "eks" {
   type = object({
     service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.27")
+    k8s_version        = optional(string, "1.31")
     nodes_master       = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
