@@ -9,12 +9,14 @@ locals {
     key_arn = local.kms_key.arn
     enabled = var.kms.enabled
   }
+  deploy_cur = !strcontains(var.region, "us-gov") && var.domino_cur.provision_cost_usage_report
 }
+
 
 module "cost_usage_report" {
   #https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cur_report_definition.html
   # is only available in us-east-1
-  count        = !strcontains(var.region, "us-gov") && var.domino_cur.provision_cost_usage_report ? 1 : 0
+  count        = local.deploy_cur ? 1 : 0
   source       = "./submodules/cost-usage-report"
   deploy_id    = var.deploy_id
   network_info = module.network.info
@@ -30,7 +32,7 @@ module "storage" {
   deploy_id         = var.deploy_id
   network_info      = module.network.info
   kms_info          = local.kms_info
-  storage           = var.storage
+  storage           = merge(var.storage, { costs_enabled = local.deploy_cur })
   use_fips_endpoint = var.use_fips_endpoint
   region            = var.region
 }
