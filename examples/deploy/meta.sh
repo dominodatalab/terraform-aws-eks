@@ -2,7 +2,12 @@
 
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 
-BASE_TF_DIR="${SH_DIR}/terraform"
+if [ -n "${DEPLOY_DIR:-}" ]; then
+  BASE_TF_DIR="${DEPLOY_DIR}/terraform"
+else
+  BASE_TF_DIR="${SH_DIR}/terraform"
+fi
+
 declare -a MOD_DIRS=(
   "${BASE_TF_DIR}/infra"
   "${BASE_TF_DIR}/cluster"
@@ -11,7 +16,7 @@ declare -a MOD_DIRS=(
 
 declare -A COMP_MODS
 COMP_MODS["infra"]="infra"
-COMP_MODS["cluster"]="eks irsa_external_dns irsa_policies external_deployments_operator"
+COMP_MODS["cluster"]="eks irsa_external_dns irsa_policies external_deployments_operator flyte"
 COMP_MODS["nodes"]="nodes"
 
 declare -A MOD_ADD

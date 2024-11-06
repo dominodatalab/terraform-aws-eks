@@ -20,7 +20,7 @@ variable "eks" {
       groups   = list(string)
     }
     master_role_names  = IAM role names to be added as masters in eks.
-    cluster_addons     = EKS cluster addons. vpc-cni is installed separately.
+    cluster_addons     = EKS cluster addons.
     vpc_cni            = Configuration for AWS VPC CNI
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
@@ -132,5 +132,18 @@ variable "external_deployments_operator" {
     enable_in_account_deployments   = optional(bool, true)
   })
 
+  default = {}
+}
+
+variable "flyte" {
+  description = "Config to provision the flyte infrastructure."
+
+  type = object({
+    enabled                   = optional(bool, false)
+    force_destroy_on_deletion = optional(bool, true)
+    platform_namespace        = optional(string, "domino-platform")
+    compute_namespace         = optional(string, "domino-compute")
+
+  })
   default = {}
 }
