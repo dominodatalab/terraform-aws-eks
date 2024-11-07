@@ -59,7 +59,7 @@ resource "aws_vpc_endpoint" "ecr-dkr-endpoint" {
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.region}.ecr.dkr"
   vpc_endpoint_type   = "Interface"
-  subnet_ids          = aws_subnet.pod.*.id
+  subnet_ids          = [aws_subnet.pod.*.id]
 
   tags = {
     "Name" = "${var.deploy_id}-ecr-dkr"
