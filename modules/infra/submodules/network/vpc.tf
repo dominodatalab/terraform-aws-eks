@@ -50,7 +50,7 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 data "aws_prefix_list" "s3" {
-  prefix_list_id = "${aws_vpc_endpoint.s3.prefix_list_id}"
+  prefix_list_id = aws_vpc_endpoint.s3.prefix_list_id
 }
 
 data "aws_network_acls" "default" {
