@@ -15,5 +15,6 @@ output "info" {
     }
     eips      = [for k, eip in aws_eip.public : eip.public_ip]
     vpc_cidrs = var.network.cidrs.vpc
+    s3_cidr = data.aws_prefix_list.s3.cidr_blocks
   }
 }
