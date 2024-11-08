@@ -177,7 +177,6 @@ variable "single_node" {
     ami = optional(object({
       name_prefix = optional(string, null)
       owner       = optional(string, null)
-
     }))
     instance_type            = optional(string, "m6i.2xlarge")
     authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
