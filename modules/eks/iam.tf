@@ -230,7 +230,8 @@ data "aws_iam_policy_document" "ssm" {
 
 data "aws_iam_policy_document" "custom_eks_node_policy" {
   source_policy_documents = [
-    var.karpenter ? "" : data.aws_iam_policy_document.autoscaler.json,
+    # var.karpenter ? "" : data.aws_iam_policy_document.autoscaler.json,
+    data.aws_iam_policy_document.autoscaler.json,
     data.aws_iam_policy_document.ebs_csi.json,
     data.aws_iam_policy_document.snapshot.json,
     data.aws_iam_policy_document.ssm.json
