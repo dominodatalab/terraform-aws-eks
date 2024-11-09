@@ -389,7 +389,7 @@ variable "use_fips_endpoint" {
   default     = false
 }
 
-variable "no_default_ngs" {
+variable "no_default_nodegroups" {
   description = "Don't provision the default nodegroups"
   type        = bool
   default     = false
