@@ -221,6 +221,7 @@ variable "default_node_groups" {
           )
       })
   })
+  default = { platform = { availability_zone_ids = [] }, compute = { availability_zone_ids = [] }, gpu = { availability_zone_ids = [] } }
 }
 
 variable "additional_node_groups" {
