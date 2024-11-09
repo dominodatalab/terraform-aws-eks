@@ -14,7 +14,7 @@ locals {
   }]
   node_groups = {
     for name, ng in
-    (var.no_default_ngs ? var.karpenter_node_groups : merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups)) :
+    (var.no_default_nodegroups ? var.karpenter_node_groups : merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups)) :
     name => merge(ng, {
       gpu           = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
@@ -79,7 +79,7 @@ resource "terraform_data" "calico_setup" {
 }
 
 resource "terraform_data" "karpenter_setup" {
-  count = var.no_default_ngs && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = var.no_default_nodegroups && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
 
   triggers_replace = [
     filemd5(var.eks_info.k8s_pre_setup_sh_file)
