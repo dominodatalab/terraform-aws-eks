@@ -1,6 +1,6 @@
 # infra
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -48,4 +48,4 @@ No resources.
 | <a name="output_domino_config_values"></a> [domino\_config\_values](#output\_domino\_config\_values) | Values used to update the `domino.yml` for installation. |
 | <a name="output_infra"></a> [infra](#output\_infra) | Infrastructure outputs. |
 | <a name="output_ssh_bastion_command"></a> [ssh\_bastion\_command](#output\_ssh\_bastion\_command) | Command used in order to ssh to bastion. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

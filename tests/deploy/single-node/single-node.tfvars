@@ -1,10 +1,9 @@
 single_node = {
   instance_type = "m6i.2xlarge"
-  name          = "dev-v2"
+  name          = "al2023"
   ami = {
-    name_prefix = "dev-v2_"
-    owner       = "977170443939"
-
+    name_prefix = "amazon-eks-node-al2023-x86_64-standard-"
+    owner       = "602401143452"
   }
   labels = {
     "dominodatalab.com/node-pool"   = "default",
