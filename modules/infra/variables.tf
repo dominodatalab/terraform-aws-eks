@@ -92,7 +92,7 @@ variable "eks" {
       groups   = list(string)
     })), [])
     master_role_names  = optional(list(string), [])
-    cluster_addons     = optional(list(string), ["kube-proxy", "coredns", "vpc-cni"])
+    cluster_addons     = optional(list(string), ["kube-proxy", "coredns", "vpc-cni", "eks-pod-identity-agent"])
     ssm_log_group_name = optional(string, "session-manager")
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
@@ -221,6 +221,7 @@ variable "default_node_groups" {
           )
       })
   })
+  default = { platform = { availability_zone_ids = [] }, compute = { availability_zone_ids = [] }, gpu = { availability_zone_ids = [] } }
 }
 
 variable "additional_node_groups" {
@@ -254,6 +255,40 @@ variable "additional_node_groups" {
 
   default = {}
 }
+
+variable "karpenter_node_groups" {
+  description = "Node groups for karpenter."
+  type = map(object({
+    ami                        = optional(string, null)
+    bootstrap_extra_args       = optional(string, "")
+    instance_types             = optional(list(string), ["m5.large"])
+    spot                       = optional(bool, false)
+    min_per_az                 = optional(number, 1)
+    max_per_az                 = optional(number, 1)
+    max_unavailable_percentage = optional(number, 50)
+    max_unavailable            = optional(number)
+    desired_per_az             = optional(number, 1)
+    availability_zone_ids      = list(string)
+    labels = optional(map(string), {
+      "dominodatalab.com/node-pool" = "karpenter"
+    })
+    taints = optional(list(object({
+      key    = string
+      value  = optional(string)
+      effect = string
+    })), [])
+    tags = optional(map(string), {})
+    gpu  = optional(bool, null)
+    volume = optional(object({
+      size       = optional(string, "30")
+      type       = optional(string, "gp3")
+      iops       = optional(number)
+      throughput = optional(number, 500)
+    }), {})
+  }))
+  default = {}
+}
+
 
 variable "network" {
   description = <<EOF

@@ -160,7 +160,7 @@ variable "eks" {
       groups   = list(string)
     })), [])
     master_role_names  = optional(list(string), [])
-    cluster_addons     = optional(list(string), ["kube-proxy", "coredns", "vpc-cni"])
+    cluster_addons     = optional(list(string), ["kube-proxy", "coredns", "vpc-cni", "eks-pod-identity-agent"])
     ssm_log_group_name = optional(string, "session-manager")
     vpc_cni = optional(object({
       prefix_delegation = optional(bool, false)
@@ -294,4 +294,16 @@ variable "storage_info" {
   })
 
   default = {}
+}
+
+variable "karpenter" {
+  description = "Use karpenter instead of autoscaler"
+  type        = bool
+  default     = true
+}
+
+variable "karpenter_namespace" {
+  description = "Namespace to install karpenter"
+  type        = string
+  default     = "karpenter"
 }
