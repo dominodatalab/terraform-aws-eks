@@ -164,6 +164,7 @@ _install_karpenter_chart() {
     --set controller.resources.requests.memory=1Gi \
     --set controller.resources.limits.cpu=1 \
     --set controller.resources.limits.memory=1Gi \
+    --set replicas=1 \
     --wait \
     --timeout 10m \
     --create-namespace \
