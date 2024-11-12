@@ -48,4 +48,4 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_info"></a> [info](#output\_info) | Target groups... |
-+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
