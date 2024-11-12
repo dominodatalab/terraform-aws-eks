@@ -183,7 +183,8 @@ kubectl_cmd() {
 }
 
 wait_for_single_node() {
-  TIMEOUT=600
+  # Derive timeout from first argument
+  TIMEOUT=${1:-600}
   ELAPSED_TIME=0
   SLEEP_INTERVAL=30
 
