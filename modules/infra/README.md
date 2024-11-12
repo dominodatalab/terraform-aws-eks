@@ -1,6 +1,6 @@
 # infra
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -91,4 +91,4 @@
 | <a name="output_storage"></a> [storage](#output\_storage) | Storage details. |
 | <a name="output_tags"></a> [tags](#output\_tags) | Deployment tags. |
 | <a name="output_vpn_connections"></a> [vpn\_connections](#output\_vpn\_connections) | VPN connection information |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

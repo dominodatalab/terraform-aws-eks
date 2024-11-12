@@ -6,7 +6,7 @@ This module is an opinionated implementation of predefined and custom `irsa` rol
 
 * `external-dns`
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -70,4 +70,4 @@ No modules.
 | <a name="output_netapp_trident_configurator"></a> [netapp\_trident\_configurator](#output\_netapp\_trident\_configurator) | NetApp Astra Trident NETAPP configurator role info |
 | <a name="output_netapp_trident_operator"></a> [netapp\_trident\_operator](#output\_netapp\_trident\_operator) | NetApp Astra Trident NETAPP Operator role info |
 | <a name="output_roles"></a> [roles](#output\_roles) | Roles mapping info |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

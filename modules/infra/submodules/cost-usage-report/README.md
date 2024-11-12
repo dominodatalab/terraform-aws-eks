@@ -1,6 +1,6 @@
 # cost-usage-report
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -93,4 +93,4 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_info"></a> [info](#output\_info) | athena\_info\_configs = "Athena based cost reporting config information for kubecost cost-analyzer"<br/>   athena\_region"  = "athena region"<br/>   athena\_query\_result\_s3 = "S3 location for athena query results"<br/>   cur\_report\_bucket\_name = "Name of S3 bucket used for storing CUR data. This may be provisioned by this module or not."<br/>   glue\_catalog\_database\_name = "Name of the Glue Catalog Database which is populated with CUR data."<br/>   glue\_catalog\_table\_name = "Name of the Glue Catalog table which is populated with CUR data."<br/>   glue\_catalog\_status\_table\_name = "Name of the Glue Catalog table which is populated with CUR data's status."<br/>   report\_name = "Name of the provisioned Cost and Usage Report."<br/>   s3\_bucket\_region  = "Region where the S3 bucket used for storing CUR data is provisioned. This may be provisioned by this module or not."<br/>   athena\_work\_group = "Athena workgroup to execute queries"<br/>   cur\_iam\_policy\_arn = CUR IAM Policy ARN. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
