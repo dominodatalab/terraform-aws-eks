@@ -56,7 +56,7 @@ data "aws_prefix_list" "s3" {
 resource "aws_vpc_endpoint" "ecr_dkr" {
   count               = local.create_vpc ? 1 : 0
   vpc_id              = aws_vpc.this[0].id
-  private_dns_enabled = true
+  private_dns_enabled = false
   service_name        = "com.amazonaws.${var.region}.ecr.dkr"
   vpc_endpoint_type   = "Interface"
   subnet_ids          = [for s in aws_subnet.pod : s.id]
