@@ -2,6 +2,7 @@
 
 RED="\e[31m"
 GREEN="\e[32m"
+YELLOW="\e[33m"
 EC="\e[0m"
 
 KUBECONFIG="${kubeconfig_path}"
@@ -129,17 +130,20 @@ install_calico() {
       --create-namespace \
       --install; then
 
-      echo "Calico installation succeeded."
+      printf "$GREEN Calico installation succeeded. $EC \n"
       break
+
     else
-      echo "Helm install attempt $i failed."
+      printf "$YELLOW Helm install attempt $i failed. $EC \n"
+
       if [ $i -lt $max_retries ]; then
-        echo "Retrying in ${sleep_duration}s..."
+        printf "Retrying in $sleep_duration s..."
         sleep $sleep_duration
       else
         printf "$RED Maximum attempts reached. Exiting. $EC \n"
         exit 1
       fi
+
     fi
   done
 }
