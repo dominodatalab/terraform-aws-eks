@@ -127,6 +127,7 @@ data "aws_iam_policy_document" "in_account_policies" {
       "sagemaker:InvokeEndpoint",
       "sagemaker:InvokeEndpointWithResponseStream",
       "sagemaker:ListEndpointConfigs",
+      "sagemaker:ListEndpoints",
       "sagemaker:ListModels",
       "sagemaker:UpdateEndpoint",
       "sagemaker:UpdateEndpointWeightsAndCapacities"
