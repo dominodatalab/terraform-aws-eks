@@ -53,6 +53,19 @@ data "aws_prefix_list" "s3" {
   prefix_list_id = aws_vpc_endpoint.s3[0].prefix_list_id
 }
 
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  count               = local.create_vpc ? 1 : 0
+  vpc_id              = aws_vpc.this[0].id
+  private_dns_enabled = false
+  service_name        = "com.amazonaws.${var.region}.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [for s in aws_subnet.pod : s.id]
+
+  tags = {
+    "Name" = "${var.deploy_id}-ecr-dkr"
+  }
+}
+
 data "aws_network_acls" "default" {
   count  = local.create_vpc ? 1 : 0
   vpc_id = aws_vpc.this[0].id
