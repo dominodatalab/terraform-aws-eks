@@ -111,7 +111,9 @@ install_calico() {
   local sleep_duration=10
 
   for i in $(seq 1 $max_retries); do
-    helm_cmd upgrade "calico-tigera-operator" \
+    echo "Attempt $i of $max_retries..."
+
+    if helm_cmd upgrade "calico-tigera-operator" \
       tigera-operator \
       --repo "https://projectcalico.docs.tigera.io/charts" \
       --version "${calico_version}" \
@@ -125,20 +127,20 @@ install_calico() {
       --wait \
       --timeout 10m \
       --create-namespace \
-      --install
+      --install; then
 
-    if [ $? -eq 0 ]; then
+      echo "Calico installation succeeded."
       break
-    fi
-
-    if [ $i -lt $max_retries ]; then
-      echo "Attempt $i failed. Retrying in $${sleep_duration}s..."
-      sleep $sleep_duration
     else
-      printf "$RED Maximum attempts reached. Exiting. $EC \n"
-      exit 1
+      echo "Helm install attempt $i failed."
+      if [ $i -lt $max_retries ]; then
+        echo "Retrying in ${sleep_duration}s..."
+        sleep $sleep_duration
+      else
+        printf "$RED Maximum attempts reached. Exiting. $EC \n"
+        exit 1
+      fi
     fi
-
   done
 }
 
