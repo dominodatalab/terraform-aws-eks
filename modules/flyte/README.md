@@ -53,7 +53,7 @@ No modules.
 | <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | key\_id  = KMS key id.<br/>    key\_arn = KMS key arn.<br/>    enabled = KMS key is enabled | <pre>object({<br/>    key_id  = string<br/>    key_arn = string<br/>    enabled = bool<br/>  })</pre> | n/a | yes |
 | <a name="input_platform_namespace"></a> [platform\_namespace](#input\_platform\_namespace) | Name of Domino platform namespace for this deploy | `string` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
-| <a name="input_serviceaccount_names"></a> [serviceaccount\_names](#input\_serviceaccount\_names) | Service account names for Flyte | <pre>object({<br/>    datacatalog    = optional(string, "datacatalog")<br/>    flyteadmin     = optional(string, "flyteadmin")<br/>    flytepropeller = optional(string, "flytepropeller")<br/>  })</pre> | `{}` | no |
+| <a name="input_serviceaccount_names"></a> [serviceaccount\_names](#input\_serviceaccount\_names) | Service account names for Flyte | <pre>object({<br>    datacatalog    = optional(string, "datacatalog")<br>    flyteadmin     = optional(string, "flyteadmin")<br>    flytepropeller = optional(string, "flytepropeller")<br>    importer       = optional(string, "domino-data-importer")<br>  })</pre> | `{}` | no |
 
 ## Outputs
 
