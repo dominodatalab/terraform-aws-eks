@@ -162,6 +162,8 @@ resource "aws_fsx_ontap_volume" "eks" {
   ontap_volume_type          = "RW"
   copy_tags_to_backups       = true
   volume_style               = "FLEXVOL"
+  tags                       = local.backup_tagging
+
   lifecycle {
     ignore_changes = [name, size_in_megabytes] # This volume is meant to be managed by the trident operator after initial creation.
   }

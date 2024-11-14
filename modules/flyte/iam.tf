@@ -15,6 +15,7 @@ resource "aws_iam_role" "flyte_controlplane" {
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.datacatalog}",
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flytepropeller}",
+              "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.importer}",
             ]
           }
         }
