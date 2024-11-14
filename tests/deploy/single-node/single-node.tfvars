@@ -1,12 +1,16 @@
 single_node = {
   instance_type = "m6i.2xlarge"
-  name          = "al2023"
+  name          = "dev-v2"
   ami = {
-    name_prefix = "amazon-eks-node-al2023-x86_64-standard-"
-    owner       = "602401143452"
+    name_prefix = "dev-v2_"
+    owner       = "977170443939"
+
+  }
+  eks = {
+    k8s_version = "1.30"
   }
   labels = {
     "dominodatalab.com/node-pool"   = "default",
     "dominodatalab.com/domino-node" = "true"
-  },
+  }
 }
