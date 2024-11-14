@@ -44,11 +44,92 @@ resource "random_password" "netapp" {
   min_lower   = 1
 }
 
+
 resource "aws_secretsmanager_secret" "netapp" {
   for_each                = local.netapp_ontap_components_user
   name                    = "${var.deploy_id}-netapp-ontap-${each.key}"
   description             = "Credentials for ONTAP ${each.key}"
   recovery_window_in_days = 0
+  provisioner "local-exec" {
+    command     = <<-EOF
+      set -x -o pipefail
+
+      sleep_duration=10
+      max_retries=30
+      required_secret="${self.name}"
+
+      check_secret_created() {
+        secrets=$(aws secretsmanager list-secrets --region ${var.region} --query 'SecretList[?starts_with(Name, `${var.deploy_id}`)].Name' --output text)
+
+        if grep -q "$required_secret" <<< "$secrets"; then
+          return 0
+        fi
+
+        return 1
+      }
+
+      for i in $(seq 1 $max_retries); do
+        if check_secret_created; then
+          echo "Secret ${self.name} successfully created."
+          exit 0
+        fi
+
+        echo "Waiting for secret to appear... attempt $i"
+        sleep "$sleep_duration"
+      done
+
+      echo "Timed out waiting for secret creation."
+      exit 1
+    EOF
+    interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
+    }
+  }
+
+  provisioner "local-exec" {
+    when        = destroy
+    command     = <<-EOF
+      set -x -o pipefail
+
+      sleep 30
+
+      delete_secret() {
+        if [ "${self.recovery_window_in_days}" -eq 0 ]; then
+          aws secretsmanager delete-secret --secret-id ${self.id} --force-delete-without-recovery
+        else
+          aws secretsmanager delete-secret --secret-id ${self.id} --no-force-delete-without-recovery
+        fi
+      }
+
+      check_secret_deleted() {
+        aws secretsmanager describe-secret --secret-id ${self.id} --query 'Name' --output text 2>&1 | grep -q 'ResourceNotFoundException'
+        return $?
+      }
+
+      delete_secret
+
+      sleep_duration=10
+      max_retries=30
+
+      for i in $(seq 1 $max_retries); do
+        if check_secret_deleted; then
+          echo "Secret ${self.id} successfully deleted."
+          exit 0
+        fi
+
+        echo "Waiting for secret deletion... attempt $i"
+        sleep "$sleep_duration"
+      done
+
+      echo "Timed out waiting for secret deletion."
+      exit 1
+    EOF
+    interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = "true" #tostring(var.use_fips_endpoint)
+    }
+  }
 }
 
 resource "aws_secretsmanager_secret_version" "netapp" {
@@ -60,54 +141,9 @@ resource "aws_secretsmanager_secret_version" "netapp" {
   })
 }
 
-## Mitigating propagation delay: Error: reading Secrets Manager Secret Version ...couldn't find resource
-
-resource "terraform_data" "wait_for_secrets" {
-  for_each = aws_secretsmanager_secret.netapp
-  provisioner "local-exec" {
-    command     = <<-EOF
-      set -x -o pipefail
-
-      sleep_duration=10
-      max_retries=30
-      required_secret="${each.value.name}"
-
-      check_secrets() {
-        secrets=$(aws secretsmanager list-secrets --region ${var.region} --query 'SecretList[?starts_with(Name, `${var.deploy_id}`)].Name' --output text)
-
-        if ! grep -q "$required_secret" <<< "$secrets"; then
-            return 1
-        fi
-
-        return 0
-      }
-
-      for i in $(seq 1 $max_retries); do
-        if check_secrets; then
-          exit 0
-        fi
-
-        echo "Waiting for secrets... attempt $i"
-        sleep "$sleep_duration"
-      done
-
-      echo "Timed out waiting for secrets."
-      exit 1
-    EOF
-    interpreter = ["bash", "-c"]
-    environment = {
-      AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
-    }
-  }
-
-  depends_on = [aws_secretsmanager_secret.netapp]
-}
-
-
 data "aws_secretsmanager_secret_version" "netapp_creds" {
-  for_each   = local.netapp_ontap_components_user
-  secret_id  = aws_secretsmanager_secret.netapp[each.key].id
-  depends_on = [terraform_data.wait_for_secrets]
+  for_each  = local.netapp_ontap_components_user
+  secret_id = aws_secretsmanager_secret.netapp[each.key].id
 }
 
 
