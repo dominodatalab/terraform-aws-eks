@@ -53,7 +53,7 @@ data "aws_prefix_list" "s3" {
   prefix_list_id = aws_vpc_endpoint.s3[0].prefix_list_id
 }
 
-resource "aws_security_group" "ecr-dkr-endpoint" {
+resource "aws_security_group" "ecr_dkr_endpoint" {
   name        = "${var.deploy_id}-ecr-dkr"
   description = "ECR Endpoint security group"
   vpc_id      = aws_vpc.this[0].id
@@ -63,7 +63,6 @@ resource "aws_security_group" "ecr-dkr-endpoint" {
     protocol    = "tcp"
     from_port   = 443
     to_port     = 443
-    type        = "ingress"
     self        = true
   }
 
