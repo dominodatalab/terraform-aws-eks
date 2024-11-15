@@ -53,6 +53,36 @@ data "aws_prefix_list" "s3" {
   prefix_list_id = aws_vpc_endpoint.s3[0].prefix_list_id
 }
 
+resource "aws_security_group" "ecr-dkr-endpoint" {
+  name        = "${var.deploy_id}-ecr-dkr"
+  description = "ECR Endpoint security group"
+  vpc_id      = aws_vpc.this[0].id
+
+  ingress {
+    description = "Node to node https traffic"
+    protocol    = "tcp"
+    from_port   = 443
+    to_port     = 443
+    type        = "ingress"
+    self        = true
+  }
+
+  egress {
+    description = "Allow outbound TCP traffic."
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    self        = true
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = {
+    "Name" = "${var.deploy_id}-ecr-dkr"
+  }
+}
+
 resource "aws_vpc_endpoint" "ecr_dkr" {
   count               = local.create_vpc ? 1 : 0
   vpc_id              = aws_vpc.this[0].id
@@ -62,7 +92,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   subnet_ids          = [for s in aws_subnet.pod : s.id]
 
   security_group_ids = [
-    aws_security_group.eks_nodes.id,
+    aws_security_group.ecr-dkr-endpoint.id,
   ]
 
   tags = {
