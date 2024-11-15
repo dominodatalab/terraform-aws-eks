@@ -85,7 +85,6 @@ resource "aws_security_group_rule" "netapp" {
 }
 
 resource "aws_security_group_rule" "ecr_endpoint" {
-  count                    = var.network_info.ecr_endpoint_sg_id != null ? 1 : 0
   security_group_id        = var.network_info.ecr_endpoint_sg_id
   protocol                 = "tcp"
   from_port                = 443
