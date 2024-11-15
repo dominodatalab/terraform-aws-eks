@@ -48,7 +48,7 @@ variable "network_info" {
   EOF
   type = object({
     vpc_id             = string
-    ecr_endpoint_sg_id = string
+    ecr_endpoint_sg_id = optional(string, null)
     subnets = object({
       public = list(object({
         name      = string
