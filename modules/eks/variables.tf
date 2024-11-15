@@ -21,6 +21,7 @@ variable "region" {
 variable "network_info" {
   description = <<EOF
     id = VPC ID.
+    ecr_endpoint_sg_id = ECR Endpoint security group id.
     subnets = {
       public = List of public Subnets.
       [{
@@ -47,6 +48,7 @@ variable "network_info" {
   EOF
   type = object({
     vpc_id = string
+    ecr_endpoint_sg_id = string
     subnets = object({
       public = list(object({
         name      = string

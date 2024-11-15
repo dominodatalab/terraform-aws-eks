@@ -17,5 +17,6 @@ output "info" {
     vpc_cidrs = var.network.cidrs.vpc
     pod_cidrs = var.network.cidrs.pod
     s3_cidrs  = data.aws_prefix_list.s3.cidr_blocks
+    ecr_endpoint_sg_id = data.aws_security_group.ecr_endpoint.id
   }
 }

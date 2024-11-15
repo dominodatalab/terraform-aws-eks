@@ -58,22 +58,6 @@ resource "aws_security_group" "ecr_endpoint" {
   description = "ECR Endpoint security group"
   vpc_id      = aws_vpc.this[0].id
 
-  ingress {
-    description = "Node to node https traffic"
-    protocol    = "tcp"
-    from_port   = 443
-    to_port     = 443
-    self        = true
-  }
-
-  egress {
-    description = "Allow outbound TCP traffic."
-    from_port   = 0
-    to_port     = 65535
-    protocol    = "tcp"
-    self        = true
-  }
-
   lifecycle {
     create_before_destroy = true
   }
