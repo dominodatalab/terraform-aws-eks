@@ -1,10 +1,11 @@
-#!/bin/bash
-set -e
-${pre_bootstrap_user_data ~}
-%{ if length(cluster_service_ipv4_cidr) > 0 ~}
-export SERVICE_IPV4_CIDR=${cluster_service_ipv4_cidr}
-%{ endif ~}
-B64_CLUSTER_CA=${cluster_auth_base64}
-API_SERVER_URL=${cluster_endpoint}
-/etc/eks/bootstrap.sh ${cluster_name} ${bootstrap_extra_args} --b64-cluster-ca $B64_CLUSTER_CA --apiserver-endpoint $API_SERVER_URL
-${post_bootstrap_user_data ~}
+---
+apiVersion: node.eks.aws/v1alpha1
+kind: NodeConfig
+spec:
+  cluster:
+    name: ${cluster_name}
+    apiServerEndpoint: ${cluster_endpoint}
+    certificateAuthority: ${cluster_auth_base64}
+    cidr: ${cluster_service_ipv4_cidr}
+  kubelet:
+    flags: ["${bootstrap_extra_args}"]

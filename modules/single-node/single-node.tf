@@ -11,7 +11,7 @@ locals {
     "cluster" = var.eks_info.cluster.specs.name
   }, data.aws_default_tags.this.tags, local.node_labels)
 
-  kubelet_extra_args = "--kubelet-extra-args '--node-labels=${join(",", [for k, v in local.node_labels : format("%s=%s", k, v)])}'"
+  kubelet_extra_args = "--node-labels=${join(",", [for k, v in local.node_labels : format("%s=%s", k, v)])}"
 
   bootstrap_extra_args = join(" ", [local.kubelet_extra_args, var.single_node.bootstrap_extra_args])
 }
