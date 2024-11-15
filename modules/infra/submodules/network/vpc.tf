@@ -91,7 +91,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   subnet_ids          = [for s in aws_subnet.pod : s.id]
 
   security_group_ids = [
-    aws_security_group.ecr-dkr-endpoint.id,
+    aws_security_group.ecr_dkr_endpoint.id,
   ]
 
   tags = {
