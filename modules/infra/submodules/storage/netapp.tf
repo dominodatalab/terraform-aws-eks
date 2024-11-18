@@ -47,10 +47,10 @@ resource "random_password" "netapp" {
 }
 
 
-resource "null_resource" "secrets_cleanup" {
+resource "terraform_data" "secrets_cleanup" {
   for_each = local.netapp_secret_names
 
-  triggers = {
+  input = {
     AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
     secret_name           = each.value
     AWS_REGION            = var.region
@@ -66,11 +66,11 @@ resource "null_resource" "secrets_cleanup" {
 
       secret_id=$(aws secretsmanager list-secrets \
         --include-planned-deletion \
-        --query "SecretList[?Name=='${self.triggers.secret_name}'].SecretId" \
+        --query "SecretList[?Name=='${self.input.secret_name}'].SecretId" \
         --output text)
 
       if [ -z "$secret_id" ]; then
-        echo "Secret with name '${self.triggers.secret_name}' not found. Skipping deletion."
+        echo "Secret with name '${self.input.secret_name}' not found. Skipping deletion."
         exit 0
       fi
 
@@ -100,8 +100,8 @@ resource "null_resource" "secrets_cleanup" {
     EOF
     interpreter = ["bash", "-c"]
     environment = {
-      AWS_USE_FIPS_ENDPOINT = self.triggers.AWS_USE_FIPS_ENDPOINT
-      AWS_REGION            = self.triggers.AWS_REGION
+      AWS_USE_FIPS_ENDPOINT = self.input.AWS_USE_FIPS_ENDPOINT
+      AWS_REGION            = self.input.AWS_REGION
     }
   }
 }
@@ -112,7 +112,7 @@ resource "aws_secretsmanager_secret" "netapp" {
   name                    = each.value
   description             = "Credentials for ONTAP ${each.key}"
   recovery_window_in_days = 0
-  depends_on              = [null_resource.secrets_cleanup]
+  depends_on              = [terraform_data.secrets_cleanup]
 }
 
 
