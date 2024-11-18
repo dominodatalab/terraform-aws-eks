@@ -53,12 +53,13 @@ resource "null_resource" "secrets_cleanup" {
   triggers = {
     AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
     secret_name           = each.value
+    AWS_REGION            = var.region
   }
 
   provisioner "local-exec" {
     when        = destroy
     command     = <<-EOF
-      set -xe -o pipefail
+      set -euo pipefail
 
       sleep_duration=10
       max_retries=30
@@ -100,6 +101,7 @@ resource "null_resource" "secrets_cleanup" {
     interpreter = ["bash", "-c"]
     environment = {
       AWS_USE_FIPS_ENDPOINT = self.triggers.AWS_USE_FIPS_ENDPOINT
+      AWS_REGION            = self.triggers.AWS_REGION
     }
   }
 }
