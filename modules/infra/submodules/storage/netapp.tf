@@ -33,6 +33,8 @@ locals {
     filesystem = "fsxadmin"
     svm        = "vsadmin"
   } : {}
+
+  netapp_secret_names = { for k, v in local.netapp_ontap_components_user : k => "${var.deploy_id}-netapp-ontap-${k}" }
 }
 
 resource "random_password" "netapp" {
@@ -44,15 +46,78 @@ resource "random_password" "netapp" {
   min_lower   = 1
 }
 
-resource "aws_secretsmanager_secret" "netapp" {
-  for_each                = local.netapp_ontap_components_user
-  name                    = "${var.deploy_id}-netapp-ontap-${each.key}"
-  description             = "Credentials for ONTAP ${each.key}"
-  recovery_window_in_days = 0
+
+resource "terraform_data" "secrets_cleanup" {
+  for_each = local.netapp_secret_names
+
+  input = {
+    AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
+    secret_name           = each.value
+    AWS_REGION            = var.region
+  }
+
+  provisioner "local-exec" {
+    when        = destroy
+    command     = <<-EOF
+      set -euo pipefail
+
+      sleep_duration=10
+      max_retries=30
+
+      secret_id=$(aws secretsmanager list-secrets \
+        --include-planned-deletion \
+        --query "SecretList[?Name=='${self.input.secret_name}'].SecretId" \
+        --output text)
+
+      if [ -z "$secret_id" ]; then
+        echo "Secret with name '${self.input.secret_name}' not found. Skipping deletion."
+        exit 0
+      fi
+
+      delete_secret() {
+        echo "Force deleting secret $secret_id"
+        aws secretsmanager delete-secret --secret-id "$secret_id" --force-delete-without-recovery || true
+      }
+
+      secret_exists() {
+        aws secretsmanager describe-secret --secret-id "$secret_id" --query 'Name' --output text > /dev/null 2>&1
+      }
+
+      for i in $(seq 1 $max_retries); do
+        if ! secret_exists; then
+          echo "Secret $secret_id successfully deleted."
+          exit 0
+        fi
+
+        delete_secret
+
+        echo "Waiting for secret deletion... attempt $i"
+        sleep "$sleep_duration"
+      done
+
+      echo "Timed out waiting for secret deletion."
+      exit 1
+    EOF
+    interpreter = ["bash", "-c"]
+    environment = {
+      AWS_USE_FIPS_ENDPOINT = self.input.AWS_USE_FIPS_ENDPOINT
+      AWS_REGION            = self.input.AWS_REGION
+    }
+  }
 }
 
+
+resource "aws_secretsmanager_secret" "netapp" {
+  for_each                = local.netapp_secret_names
+  name                    = each.value
+  description             = "Credentials for ONTAP ${each.key}"
+  recovery_window_in_days = 0
+  depends_on              = [terraform_data.secrets_cleanup]
+}
+
+
 resource "aws_secretsmanager_secret_version" "netapp" {
-  for_each  = local.netapp_ontap_components_user
+  for_each  = local.netapp_secret_names
   secret_id = aws_secretsmanager_secret.netapp[each.key].id
   secret_string = jsonencode({
     username = each.value
@@ -105,7 +170,7 @@ resource "terraform_data" "wait_for_secrets" {
 
 
 data "aws_secretsmanager_secret_version" "netapp_creds" {
-  for_each   = local.netapp_ontap_components_user
+  for_each   = local.netapp_secret_names
   secret_id  = aws_secretsmanager_secret.netapp[each.key].id
   depends_on = [terraform_data.wait_for_secrets]
 }
