@@ -23,7 +23,7 @@ validate_mod_version() {
     fi
 
     local tag_array=()
-    mapfile -t tag_array <<<$("${curl_cmd[@]}" "$url" | jq -r '.[].name | select(test("^v\\d+\\.\\d+\\.\\d+$"))')
+    mapfile -t tag_array <<<$("${curl_cmd[@]}" "$url" | jq -r '.[].name | select(test("^v\\d+\\.\\d+\\.\\d+(-\\d+)?$"))')
 
     for tag in "${tag_array[@]}"; do
       [[ "$MOD_VERSION" == "$tag" ]] && return
