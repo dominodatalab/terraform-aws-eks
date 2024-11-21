@@ -1,6 +1,7 @@
 locals {
-  create_vpc   = var.network.vpc.id == null
-  provided_vpc = var.network.vpc.id != null
+  create_vpc          = var.network.vpc.id == null
+  provided_vpc        = var.network.vpc.id != null
+  create_ecr_endpoint = local.create_vpc && var.network.create_ecr_endpoint
 }
 
 data "aws_subnet" "public" {

@@ -277,7 +277,8 @@ variable "network" {
       vpc     = The IPv4 CIDR block for the VPC.
       pod     = The IPv4 CIDR block for the Pod subnets.
     }
-    use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
+    use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
+    create_ecr_endpoint = Create the VPC Endpoint For ECR.
   EOF
 
   type = object({
@@ -299,7 +300,8 @@ variable "network" {
       vpc = optional(string, "10.0.0.0/16")
       pod = optional(string, "100.64.0.0/16")
     }), {})
-    use_pod_cidr = optional(bool, true)
+    use_pod_cidr        = optional(bool, true)
+    create_ecr_endpoint = optional(bool, false)
   })
 
   default = {}

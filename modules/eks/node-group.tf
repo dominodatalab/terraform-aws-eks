@@ -83,3 +83,14 @@ resource "aws_security_group_rule" "netapp" {
   description              = "Netapp access from EKS nodes."
   source_security_group_id = aws_security_group.eks_nodes.id
 }
+
+resource "aws_security_group_rule" "ecr_endpoint" {
+  count                    = var.network_info.ecr_endpoint != null ? 1 : 0
+  security_group_id        = var.network_info.ecr_endpoint.security_group_id
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+  type                     = "ingress"
+  description              = "ECR Endpoint access from EKS nodes."
+  source_security_group_id = aws_security_group.eks_nodes.id
+}

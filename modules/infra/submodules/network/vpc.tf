@@ -49,6 +49,58 @@ resource "aws_vpc_endpoint" "s3" {
   }
 }
 
+data "aws_prefix_list" "s3" {
+  prefix_list_id = aws_vpc_endpoint.s3[0].prefix_list_id
+}
+
+resource "aws_security_group" "ecr_endpoint" {
+  count       = local.create_ecr_endpoint ? 1 : 0
+  name        = "${var.deploy_id}-ecr"
+  description = "ECR Endpoint security group"
+  vpc_id      = aws_vpc.this[0].id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = {
+    "Name" = "${var.deploy_id}-ecr"
+  }
+}
+
+resource "aws_vpc_endpoint" "ecr_dkr" {
+  count               = local.create_ecr_endpoint ? 1 : 0
+  vpc_id              = aws_vpc.this[0].id
+  private_dns_enabled = true
+  service_name        = "com.amazonaws.${var.region}.ecr.dkr"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [for s in aws_subnet.pod : s.id]
+
+  security_group_ids = [
+    aws_security_group.ecr_endpoint[0].id,
+  ]
+
+  tags = {
+    "Name" = "${var.deploy_id}-ecr-dkr"
+  }
+}
+
+resource "aws_vpc_endpoint" "ecr_api" {
+  count               = local.create_ecr_endpoint ? 1 : 0
+  vpc_id              = aws_vpc.this[0].id
+  private_dns_enabled = true
+  service_name        = "com.amazonaws.${var.region}.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [for s in aws_subnet.pod : s.id]
+
+  security_group_ids = [
+    aws_security_group.ecr_endpoint[0].id,
+  ]
+
+  tags = {
+    "Name" = "${var.deploy_id}-ecr-api"
+  }
+}
+
 data "aws_network_acls" "default" {
   count  = local.create_vpc ? 1 : 0
   vpc_id = aws_vpc.this[0].id
