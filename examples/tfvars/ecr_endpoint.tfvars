@@ -16,4 +16,4 @@ default_node_groups = {
 
 network = {
   create_ecr_endpoint = true
-}  
+}
