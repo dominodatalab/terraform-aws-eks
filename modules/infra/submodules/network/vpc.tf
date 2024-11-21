@@ -54,6 +54,7 @@ data "aws_prefix_list" "s3" {
 }
 
 resource "aws_security_group" "ecr_endpoint" {
+  count       = local.create_ecr_endpoint ? 1 : 0
   name        = "${var.deploy_id}-ecr"
   description = "ECR Endpoint security group"
   vpc_id      = aws_vpc.this[0].id
@@ -67,7 +68,7 @@ resource "aws_security_group" "ecr_endpoint" {
 }
 
 resource "aws_vpc_endpoint" "ecr_dkr" {
-  count               = local.create_vpc ? 1 : 0
+  count               = local.create_ecr_endpoint ? 1 : 0
   vpc_id              = aws_vpc.this[0].id
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.region}.ecr.dkr"
@@ -75,7 +76,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   subnet_ids          = [for s in aws_subnet.pod : s.id]
 
   security_group_ids = [
-    aws_security_group.ecr_endpoint.id,
+    aws_security_group.ecr_endpoint[0].id,
   ]
 
   tags = {
@@ -84,7 +85,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
 }
 
 resource "aws_vpc_endpoint" "ecr_api" {
-  count               = local.create_vpc ? 1 : 0
+  count               = local.create_ecr_endpoint ? 1 : 0
   vpc_id              = aws_vpc.this[0].id
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.region}.ecr.api"
@@ -92,7 +93,7 @@ resource "aws_vpc_endpoint" "ecr_api" {
   subnet_ids          = [for s in aws_subnet.pod : s.id]
 
   security_group_ids = [
-    aws_security_group.ecr_endpoint.id,
+    aws_security_group.ecr_endpoint[0].id,
   ]
 
   tags = {
