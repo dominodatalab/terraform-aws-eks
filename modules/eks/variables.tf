@@ -49,7 +49,7 @@ variable "network_info" {
     }
   EOF
   type = object({
-    vpc_id       = string
+    vpc_id = string
     ecr_endpoint = optional(object({
       security_group_id = optional(string, null)
     }), null)
