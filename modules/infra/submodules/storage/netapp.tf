@@ -120,7 +120,7 @@ resource "aws_secretsmanager_secret_version" "netapp" {
   for_each  = local.netapp_secret_names
   secret_id = aws_secretsmanager_secret.netapp[each.key].id
   secret_string = jsonencode({
-    username = local.netapp_ontap_components_user[each.value]
+    username = local.netapp_ontap_components_user[each.key]
     password = random_password.netapp[each.key].result
   })
 }
