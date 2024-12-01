@@ -1,4 +1,4 @@
-# Terraform Module for EKS Setup. Optimized for Domino Installation
+# Terraform Module for EKS Setup. Optimized for Domino Installation1
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/dominodatalab/terraform-aws-eks/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/dominodatalab/terraform-aws-eks/tree/main)
 
