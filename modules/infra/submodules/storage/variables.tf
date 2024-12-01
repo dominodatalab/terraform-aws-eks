@@ -148,11 +148,6 @@ variable "storage" {
     error_message = "Invalid 'deployment_type' for netapp filesystem, supported deployment types are 'MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', and 'SINGLE_AZ_2'."
   }
 
-  # validation {
-  #   condition     = !var.storage.netapp.migrate_from_efs.enabled || var.storage.filesystem_type == "netapp"
-  #   error_message = "Expected filesystem_type=netapp if `netapp.migrate_from_efs` is enabled"
-  # }
-
   validation {
     condition     = !var.storage.netapp.migrate_from_efs.datasync.enabled || (var.storage.netapp.migrate_from_efs.datasync.enabled && var.storage.netapp.migrate_from_efs.enabled)
     error_message = "Expected `storage.netapp.migrate_from_efs.enabled` if `storage.netapp.migrate_from_efs.datasync.enabled`"
