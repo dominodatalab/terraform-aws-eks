@@ -15,6 +15,56 @@ resource "aws_iam_role" "eks_nodes" {
   assume_role_policy = data.aws_iam_policy_document.eks_nodes.json
 }
 
+variable "nucleus" {
+  description = "Config to enable irsa for external-dns"
+
+  type = object({
+    namespace           = optional(string, "domino-platform")
+    serviceaccount_name = optional(string, "nucleus")
+  })
+
+  default = {}
+}
+
+locals {
+  oidc_provider_url = local.eks_info.cluster.oidc.cert.url
+  oidc_provider_arn = local.eks_info.cluster.oidc.arn
+}
+
+resource "aws_iam_role" "nucleus" {
+  name               = "${local.eks_cluster_name}-nucleus"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = local.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition : {
+          StringEquals : {
+            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com"
+            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : "system:serviceaccount:${var.nucleus.namespace}:${var.nucleus.serviceaccount_name}"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "aws_eks_nodes" {
+  for_each   = toset(local.eks_aws_node_iam_policies)
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/${each.key}"
+  role       = aws_iam_role.nucleus.name
+}
+
+resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
+  count      = length(local.custom_node_policies)
+  policy_arn = element(local.custom_node_policies, count.index)
+  role       = aws_iam_role.nucleus.name
+}
+
 resource "aws_security_group" "eks_nodes" {
   name        = "${local.eks_cluster_name}-nodes"
   description = "EKS cluster Nodes security group"
