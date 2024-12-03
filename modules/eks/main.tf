@@ -197,14 +197,24 @@ locals {
   } : {})
 
 
+  eks_network_config = aws_eks_cluster.this.kubernetes_network_config[0]
+
   eks_info = {
     cluster = {
       specs = {
-        name                      = aws_eks_cluster.this.name
-        endpoint                  = aws_eks_cluster.this.endpoint
-        certificate_authority     = aws_eks_cluster.this.certificate_authority
-        kubernetes_network_config = aws_eks_cluster.this.kubernetes_network_config
-        account_id                = data.aws_caller_identity.cluster_aws_account.account_id
+        name                  = aws_eks_cluster.this.name
+        endpoint              = aws_eks_cluster.this.endpoint
+        certificate_authority = aws_eks_cluster.this.certificate_authority
+        kubernetes_network_config = {
+          elastic_load_balancing = {
+            enabled = try(local.eks_network_config.elastic_load_balancing[0].enabled, false)
+          }
+          ip_family         = local.eks_network_config.ip_family
+          service_ipv4_cidr = local.eks_network_config.service_ipv4_cidr
+          service_ipv6_cidr = local.eks_network_config.service_ipv6_cidr
+
+        }
+        account_id = data.aws_caller_identity.cluster_aws_account.account_id
       }
       addons            = var.eks.cluster_addons
       vpc_cni           = var.eks.vpc_cni
