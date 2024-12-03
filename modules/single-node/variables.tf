@@ -109,10 +109,17 @@ variable "eks_info" {
         annotate_pod_ip   = optional(bool, true)
       }))
       specs = object({
-        name                      = string
-        endpoint                  = string
-        kubernetes_network_config = list(map(any))
-        certificate_authority     = list(map(any))
+        name     = string
+        endpoint = string
+        kubernetes_network_config = object({
+          elastic_load_balancing = object({
+            enabled = bool
+          })
+          ip_family         = string
+          service_ipv4_cidr = string
+          service_ipv6_cidr = string
+        })
+        certificate_authority = list(map(any))
       })
       version           = string
       arn               = string
