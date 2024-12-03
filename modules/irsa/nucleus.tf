@@ -1,6 +1,10 @@
 variable "node_iam_policies" {
   description = "Additional IAM Policy Arns for Nodes"
   type        = list(string)
+  default = [
+    "arn:aws:iam::890728157128:policy/ashtesteks628-S3",
+    "arn:aws:iam::890728157128:policy/ashtesteks628-ECR"
+  ]
 }
 
 variable "nucleus" {
