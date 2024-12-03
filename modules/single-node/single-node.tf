@@ -57,7 +57,7 @@ resource "aws_launch_template" "single_node" {
       cluster_endpoint    = var.eks_info.cluster.specs.endpoint
       cluster_auth_base64 = var.eks_info.cluster.specs.certificate_authority[0].data
       # Optional
-      cluster_service_ipv4_cidr = var.eks_info.cluster.specs.kubernetes_network_config[0].service_ipv4_cidr != null ? var.eks_info.cluster.specs.kubernetes_network_config[0].service_ipv4_cidr : ""
+      cluster_service_ipv4_cidr = var.eks_info.cluster.specs.kubernetes_network_config.service_ipv4_cidr != null ? var.eks_info.cluster.specs.kubernetes_network_config.service_ipv4_cidr : ""
       bootstrap_extra_args      = local.bootstrap_extra_args
       pre_bootstrap_user_data   = ""
       post_bootstrap_user_data  = ""
