@@ -53,13 +53,13 @@ resource "aws_iam_role" "nucleus" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "aws_eks_nodes" {
+resource "aws_iam_role_policy_attachment" "nucleus_eks_attach" {
   for_each   = toset(local.eks_aws_node_iam_policies)
   policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/${each.key}"
   role       = aws_iam_role.nucleus.name
 }
 
-resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
+resource "aws_iam_role_policy_attachment" "nucleus_custom_attach" {
   count      = length(local.custom_node_policies)
   policy_arn = element(local.custom_node_policies, count.index)
   role       = aws_iam_role.nucleus.name
