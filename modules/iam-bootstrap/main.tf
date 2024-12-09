@@ -41,7 +41,11 @@ resource "aws_iam_role" "deployment" {
     ]
   })
 
-  managed_policy_arns = aws_iam_policy.deployment[*].arn
-
   max_session_duration = var.max_session_duration
+}
+
+
+resource "aws_iam_role_policy_attachments_exclusive" "deployment" {
+  role_name   = aws_iam_role.deployment.name
+  policy_arns = aws_iam_policy.deployment[*].arn
 }
