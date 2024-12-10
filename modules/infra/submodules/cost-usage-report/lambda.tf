@@ -5,7 +5,7 @@ data "archive_file" "cur_initializer_zip" {
   source {
     content = templatefile("${local.templates_dir}/${local.aws_cur_initializer_template}", {
       cur_crawler = local.cur_crawler
-      glue_dns    = aws_vpc_endpoint.aws_glue_vpc_endpoint.dns_entries[0].dns_name
+      glue_dns    = aws_vpc_endpoint.aws_glue_vpc_endpoint.dns_entry[0].dns_name
       glue_region = var.region
     })
     filename = local.index_filename
