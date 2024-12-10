@@ -1,7 +1,7 @@
 data "aws_default_tags" "this" {}
 
 data "aws_ec2_instance_type" "all" {
-  for_each      = toset(flatten([for ng in merge(var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
+  for_each      = toset(flatten([for ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
   instance_type = each.value
 }
 
@@ -14,7 +14,7 @@ locals {
   }]
   node_groups = {
     for name, ng in
-    merge(var.additional_node_groups, var.default_node_groups) :
+    (var.no_default_nodegroups ? var.karpenter_node_groups : merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups)) :
     name => merge(ng, {
       gpu           = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
@@ -76,4 +76,20 @@ resource "terraform_data" "calico_setup" {
   }
 
   depends_on = [aws_eks_node_group.node_groups]
+}
+
+resource "terraform_data" "karpenter_setup" {
+  count = var.no_default_nodegroups && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+
+  triggers_replace = [
+    filemd5(var.eks_info.k8s_pre_setup_sh_file)
+  ]
+
+  provisioner "local-exec" {
+    command     = "bash ./${basename(var.eks_info.k8s_pre_setup_sh_file)} install_karpenter"
+    interpreter = ["bash", "-c"]
+    working_dir = dirname(var.eks_info.k8s_pre_setup_sh_file)
+  }
+
+  depends_on = [terraform_data.calico_setup]
 }

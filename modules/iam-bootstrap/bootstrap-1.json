@@ -181,6 +181,7 @@
         "ecr:DeleteRepository",
         "eks:DeleteCluster",
         "eks:DeleteNodegroup",
+        "eks:DeletePodIdentityAssociation",
         "elasticfilesystem:DeleteAccessPoint",
         "elasticfilesystem:DeleteFileSystem",
         "elasticfilesystem:DeleteMountTarget",
