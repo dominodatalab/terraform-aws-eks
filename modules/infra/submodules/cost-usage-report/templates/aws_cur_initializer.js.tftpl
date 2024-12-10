@@ -4,7 +4,10 @@ exports.handler = function(event, context, callback) {
     if (event.RequestType === 'Delete') {
         response.send(event, context, response.SUCCESS);
     } else {
-        const glue = new AWS.Glue();
+        const glue = new AWS.Glue({
+            'endpoint': 'https://${glue_dns}',
+            'region': '${glue_region}'
+        });
         glue.startCrawler({ Name: '${cur_crawler}' }, function(err, data) {
         if (err) {
             const responseData = JSON.parse(this.httpResponse.body);
