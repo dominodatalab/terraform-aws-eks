@@ -45,6 +45,13 @@ resource "aws_iam_role" "deployment" {
 }
 
 
+resource "aws_iam_role_policy_attachment" "deployment" {
+  count      = length(aws_iam_policy.deployment)
+  role       = aws_iam_role.deployment.name
+  policy_arn = aws_iam_policy.deployment[count.index].arn
+}
+
+
 resource "aws_iam_role_policy_attachments_exclusive" "deployment" {
   role_name   = aws_iam_role.deployment.name
   policy_arns = aws_iam_policy.deployment[*].arn
