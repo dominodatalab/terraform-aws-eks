@@ -261,20 +261,6 @@
         "athena:ListTagsForResource"
       ],
       "Resource": ["arn:${partition}:athena:*:*:workgroup/${deploy_id}*"]
-    },
-    {
-      "Sid": "SQSGated",
-      "Effect": "Allow",
-      "Action": [
-        "sqs:createqueue",
-        "sqs:deletequeue",
-        "sqs:tagqueue",
-        "sqs:getqueueattributes",
-        "sqs:listqueuetags"
-      ],
-      "Resource": [
-        "arn:${partition}:sqs:*:*:${deploy_id}*"
-      ]
     }
   ]
 }
