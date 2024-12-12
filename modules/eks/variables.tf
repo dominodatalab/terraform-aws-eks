@@ -302,12 +302,6 @@ variable "storage_info" {
   default = {}
 }
 
-variable "karpenter" {
-  description = "Use karpenter instead of autoscaler"
-  type        = bool
-  default     = true
-}
-
 variable "karpenter_namespace" {
   description = "Namespace to install karpenter"
   type        = string

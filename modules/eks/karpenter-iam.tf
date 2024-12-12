@@ -22,7 +22,14 @@ data "aws_iam_policy_document" "karpenter_trust_policy" {
 data "aws_iam_policy_document" "karpenter" {
   statement {
     actions = [
-      "ssm:GetParameter",
+      "ssm:GetParameter"
+    ]
+    effect    = "Allow"
+    resources = ["arn:${data.aws_partition.current.partition}:ssm:${var.region}::parameter/aws/service/*"]
+    sid       = "KarpenterSSMGetParameter"
+  }
+  statement {
+    actions = [
       "ec2:DescribeImages",
       "ec2:RunInstances",
       "ec2:DescribeSubnets",
@@ -179,8 +186,8 @@ resource "aws_iam_role_policy_attachment" "karpenter" {
 }
 
 resource "aws_eks_pod_identity_association" "karpenter" {
-  cluster_name = aws_eks_cluster.this.name
-  namespace = "karpenter"
+  cluster_name    = aws_eks_cluster.this.name
+  namespace       = "karpenter"
   service_account = "karpenter"
-  role_arn = aws_iam_role.karpenter.arn
+  role_arn        = aws_iam_role.karpenter.arn
 }
