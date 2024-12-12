@@ -27,8 +27,17 @@ resource "aws_iam_role" "eks_cluster" {
   }
 }
 
+locals {
+  eks_aws_cluster_iam_policies = ["AmazonEKSClusterPolicy", "AmazonEKSBlockStoragePolicy", "AmazonEKSComputePolicy", "AmazonEKSLoadBalancingPolicy", "AmazonEKSNetworkingPolicy"]
+}
+moved {
+  from = aws_iam_role_policy_attachment.eks_cluster
+  to   = aws_iam_role_policy_attachment.eks_cluster["AmazonEKSClusterPolicy"]
+}
+
 resource "aws_iam_role_policy_attachment" "eks_cluster" {
-  policy_arn = "${local.policy_arn_prefix}/AmazonEKSClusterPolicy"
+  for_each   = toset(local.eks_aws_cluster_iam_policies)
+  policy_arn = "${local.policy_arn_prefix}/${each.key}"
   role       = aws_iam_role.eks_cluster.name
 }
 
@@ -250,6 +259,8 @@ locals {
     "AmazonEC2ContainerRegistryReadOnly",
     "AmazonSSMManagedInstanceCore",
     "AmazonElasticFileSystemReadOnlyAccess",
+    "AmazonEC2ContainerRegistryPullOnly",
+    "AmazonEKSWorkerNodeMinimalPolicy"
   ]
 
   custom_node_policies = concat([aws_iam_policy.custom_eks_node_policy.arn], var.node_iam_policies)

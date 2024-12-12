@@ -38,10 +38,11 @@ data "aws_caller_identity" "cluster_aws_account" {
 resource "aws_eks_cluster" "this" {
   provider = aws.eks
 
-  name                      = local.eks_cluster_name
-  role_arn                  = aws_iam_role.eks_cluster.arn
-  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-  version                   = var.eks.k8s_version
+  name                          = local.eks_cluster_name
+  role_arn                      = aws_iam_role.eks_cluster.arn
+  enabled_cluster_log_types     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  version                       = var.eks.k8s_version
+  bootstrap_self_managed_addons = false
 
   encryption_config {
     provider {
@@ -51,9 +52,29 @@ resource "aws_eks_cluster" "this" {
     resources = ["secrets"]
   }
 
+  compute_config {
+    enabled       = true
+    node_pools    = ["general-purpose"]
+    node_role_arn = aws_iam_role.eks_nodes.arn
+  }
+
   kubernetes_network_config {
     ip_family         = "ipv4"
     service_ipv4_cidr = var.eks.service_ipv4_cidr
+    elastic_load_balancing {
+      enabled = true
+    }
+  }
+
+  storage_config {
+    block_storage {
+      enabled = true
+    }
+  }
+
+  access_config {
+    authentication_mode                         = "API_AND_CONFIG_MAP"
+    bootstrap_cluster_creator_admin_permissions = true
   }
 
   vpc_config {
