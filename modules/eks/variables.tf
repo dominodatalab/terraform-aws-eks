@@ -148,6 +148,11 @@ variable "eks" {
   EOF
 
   type = object({
+    auto_mode_enabled   = optional(bool, false)
+    authentication_mode = optional(string, "CONFIG_MAP")
+    compute_config = optional(object({
+      node_pools = optional(list(string), ["general-purpose"])
+    }))
     service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
     k8s_version        = optional(string, "1.27")
@@ -185,6 +190,11 @@ variable "eks" {
   })
 
   default = {}
+
+  validation {
+    condition     = contains(["CONFIG_MAP", "API", "API_AND_CONFIG_MAP"], var.eks.authentication_mode)
+    error_message = "EKS cluster authentication mode must be CONFIG_MAP, API or API_AND_CONFIG_MAP."
+  }
 }
 
 variable "ssh_key" {

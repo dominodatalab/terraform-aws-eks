@@ -35,6 +35,7 @@ data "aws_caller_identity" "cluster_aws_account" {
   provider = aws.eks
 }
 
+
 resource "aws_eks_cluster" "this" {
   provider = aws.eks
 
@@ -52,29 +53,30 @@ resource "aws_eks_cluster" "this" {
     resources = ["secrets"]
   }
 
+
   compute_config {
-    enabled       = true
-    node_pools    = ["general-purpose"]
-    node_role_arn = aws_iam_role.eks_nodes.arn
+    enabled       = var.eks.auto_mode_enabled
+    node_pools    = try(var.eks.compute_config.value.node_pools, null)
+    node_role_arn = try(aws_iam_role.eks_auto_node_role[0].arn, null)
   }
 
   kubernetes_network_config {
     ip_family         = "ipv4"
     service_ipv4_cidr = var.eks.service_ipv4_cidr
     elastic_load_balancing {
-      enabled = true
+      enabled = var.eks.auto_mode_enabled
     }
   }
 
   storage_config {
     block_storage {
-      enabled = true
+      enabled = var.eks.auto_mode_enabled
     }
   }
 
   access_config {
-    authentication_mode                         = "API_AND_CONFIG_MAP"
-    bootstrap_cluster_creator_admin_permissions = true
+    authentication_mode                         = var.eks.authentication_mode
+    bootstrap_cluster_creator_admin_permissions = var.eks.auto_mode_enabled
   }
 
   vpc_config {

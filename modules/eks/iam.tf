@@ -1,7 +1,7 @@
 data "aws_iam_policy_document" "eks_cluster" {
   statement {
     sid     = "EKSClusterAssumeRoleService"
-    actions = ["sts:AssumeRole"]
+    actions = ["sts:AssumeRole", "sts:TagSession"]
 
     principals {
       type        = "Service"
@@ -10,7 +10,7 @@ data "aws_iam_policy_document" "eks_cluster" {
   }
   statement {
     sid     = "EKSClusterAssumeRoleUser"
-    actions = ["sts:AssumeRole"]
+    actions = ["sts:AssumeRole", "sts:TagSession"]
 
     principals {
       type        = "AWS"
@@ -259,11 +259,35 @@ locals {
     "AmazonEC2ContainerRegistryReadOnly",
     "AmazonSSMManagedInstanceCore",
     "AmazonElasticFileSystemReadOnlyAccess",
-    "AmazonEC2ContainerRegistryPullOnly",
-    "AmazonEKSWorkerNodeMinimalPolicy"
   ]
+  eks_auto_aws_node_iam_policies = ["AmazonEC2ContainerRegistryPullOnly", "AmazonEKSWorkerNodeMinimalPolicy"]
 
   custom_node_policies = concat([aws_iam_policy.custom_eks_node_policy.arn], var.node_iam_policies)
+}
+
+
+data "aws_iam_policy_document" "auto_node_trust_policy" {
+  count = var.eks.auto_mode_enabled ? 1 : 0
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "eks_auto_node_role" {
+  count              = var.eks.auto_mode_enabled ? 1 : 0
+  name               = "${var.deploy_id}-AmazonEKSAutoNodeRole"
+  assume_role_policy = data.aws_iam_policy_document.auto_node_trust_policy[0].json
+}
+
+resource "aws_iam_role_policy_attachment" "aws_auto_eks_nodes" {
+  for_each   = var.eks.auto_mode_enabled ? toset(local.eks_auto_aws_node_iam_policies) : toset([])
+  role       = aws_iam_role.eks_auto_node_role[0].name
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/${each.key}"
 }
 
 resource "aws_iam_role_policy_attachment" "aws_eks_nodes" {
