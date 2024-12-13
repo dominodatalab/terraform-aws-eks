@@ -74,9 +74,13 @@ resource "aws_eks_cluster" "this" {
     }
   }
 
+  upgrade_policy {
+    support_type = "EXTENDED"
+  }
+
   access_config {
     authentication_mode                         = var.eks.authentication_mode
-    bootstrap_cluster_creator_admin_permissions = var.eks.auto_mode_enabled
+    bootstrap_cluster_creator_admin_permissions = true
   }
 
   vpc_config {
