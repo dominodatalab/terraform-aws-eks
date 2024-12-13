@@ -55,11 +55,11 @@ resource "aws_eks_cluster" "this" {
 
 
   dynamic "compute_config" {
-    for_each = var.eks.auto_mode_enabled ? [1] : []
+    for_each = var.eks.auto_mode_enabled ? var.eks.compute_config : {}
     content {
       enabled       = var.eks.auto_mode_enabled
-      node_pools    = try(var.eks.compute_config.value.node_pools, null)
-      node_role_arn = try(aws_iam_role.eks_auto_node_role[0].arn, null)
+      node_pools    = compute_config.value.node_pools
+      node_role_arn = aws_iam_role.eks_auto_node_role[0].arn
     }
   }
 
@@ -72,7 +72,7 @@ resource "aws_eks_cluster" "this" {
   }
 
   dynamic "storage_config" {
-    for_each = var.eks.auto_mode_enabled ? [1] : []
+    for_each = var.eks.auto_mode_enabled ? var.eks.compute_config : {}
     content {
       block_storage {
         enabled = var.eks.auto_mode_enabled
