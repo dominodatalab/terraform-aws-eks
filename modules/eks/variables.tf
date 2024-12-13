@@ -148,7 +148,7 @@ variable "eks" {
   EOF
 
   type = object({
-    auto_mode_enabled   = optional(bool, false)
+    auto_mode_enabled   = optional(bool, true)
     authentication_mode = optional(string, "CONFIG_MAP")
     compute_config = optional(object({
       node_pools = optional(list(string), ["general-purpose"])
