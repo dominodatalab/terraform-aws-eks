@@ -28,7 +28,7 @@ resource "aws_iam_role" "eks_cluster" {
 }
 
 locals {
-  eks_aws_cluster_iam_policies = ["AmazonEKSClusterPolicy", "AmazonEKSBlockStoragePolicy", "AmazonEKSComputePolicy", "AmazonEKSLoadBalancingPolicy", "AmazonEKSNetworkingPolicy"]
+  eks_aws_cluster_iam_policies = var.eks.auto_mode_enabled ? ["AmazonEKSClusterPolicy", "AmazonEKSBlockStoragePolicy", "AmazonEKSComputePolicy", "AmazonEKSLoadBalancingPolicy", "AmazonEKSNetworkingPolicy"] : ["AmazonEKSClusterPolicy"]
 }
 moved {
   from = aws_iam_role_policy_attachment.eks_cluster
