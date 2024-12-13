@@ -43,7 +43,7 @@ resource "aws_eks_cluster" "this" {
   role_arn                      = aws_iam_role.eks_cluster.arn
   enabled_cluster_log_types     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
   version                       = var.eks.k8s_version
-  bootstrap_self_managed_addons = false
+  bootstrap_self_managed_addons = true
 
   encryption_config {
     provider {
