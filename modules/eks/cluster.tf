@@ -43,22 +43,20 @@ resource "aws_eks_cluster" "this" {
   role_arn                      = aws_iam_role.eks_cluster.arn
   enabled_cluster_log_types     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
   version                       = var.eks.k8s_version
-  bootstrap_self_managed_addons = true
+  bootstrap_self_managed_addons = !var.eks.auto_mode_enabled
 
   encryption_config {
     provider {
       key_arn = local.kms_key_arn
     }
-
     resources = ["secrets"]
   }
-
 
   dynamic "compute_config" {
     for_each = var.eks.auto_mode_enabled ? var.eks.compute_config : {}
     content {
-      enabled       = var.eks.auto_mode_enabled
-      node_pools    = compute_config.value.node_pools
+      enabled       = true #var.eks.auto_mode_enabled
+      node_pools    = var.eks.compute_config.node_pools
       node_role_arn = aws_iam_role.eks_auto_node_role[0].arn
     }
   }
@@ -66,19 +64,24 @@ resource "aws_eks_cluster" "this" {
   kubernetes_network_config {
     ip_family         = "ipv4"
     service_ipv4_cidr = var.eks.service_ipv4_cidr
-    elastic_load_balancing {
-      enabled = var.eks.auto_mode_enabled
+    dynamic "elastic_load_balancing" {
+      for_each = var.eks.auto_mode_enabled ? var.eks.compute_config : {}
+      content {
+        enabled = var.eks.auto_mode_enabled
+      }
     }
   }
+
 
   dynamic "storage_config" {
     for_each = var.eks.auto_mode_enabled ? var.eks.compute_config : {}
     content {
       block_storage {
-        enabled = var.eks.auto_mode_enabled
+        enabled = true #var.eks.auto_mode_enabled
       }
     }
   }
+
   upgrade_policy {
     support_type = "EXTENDED"
   }
@@ -106,7 +109,8 @@ resource "aws_eks_cluster" "this" {
   lifecycle {
     ignore_changes = [
       encryption_config,
-      kubernetes_network_config
+      kubernetes_network_config[0].ip_family,
+      kubernetes_network_config[0].service_ipv4_cidr
     ]
   }
 }

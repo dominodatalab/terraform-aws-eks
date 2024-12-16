@@ -121,7 +121,10 @@ variable "kms_info" {
 
 variable "eks" {
   description = <<EOF
+    auto_mode_enabled = Enable EKS auto mode.
+    authentication_mode = CONFIG_MAP, CONFIG_MAP_API or API(Updates are non reversible)
     service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
+    compute_config = eks built in node pools(Karpenter)
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
@@ -152,7 +155,7 @@ variable "eks" {
     authentication_mode = optional(string, "CONFIG_MAP")
     compute_config = optional(object({
       node_pools = optional(list(string), ["general-purpose"])
-    }))
+    }), {})
     service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
     k8s_version        = optional(string, "1.27")
@@ -192,7 +195,11 @@ variable "eks" {
   default = {}
 
   validation {
-    condition     = contains(["CONFIG_MAP", "API", "API_AND_CONFIG_MAP"], var.eks.authentication_mode)
+    condition     = !var.eks.auto_mode_enabled || (var.eks.auto_mode_enabled && contains(["CONFIG_MAP", "API", "API_AND_CONFIG_MAP"], var.eks.authentication_mode))
+    error_message = "In order to use EKS Auto Mode, the cluster authentication mode needs to be changed to API_AND_CONFIG_MAP API only.."
+  }
+  validation {
+    condition     = contains(["API", "API_AND_CONFIG_MAP"], var.eks.authentication_mode)
     error_message = "EKS cluster authentication mode must be CONFIG_MAP, API or API_AND_CONFIG_MAP."
   }
 }

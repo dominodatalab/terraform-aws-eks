@@ -289,7 +289,6 @@ resource "aws_iam_role_policy_attachment" "aws_auto_eks_nodes" {
   role       = aws_iam_role.eks_auto_node_role[0].name
   policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/${each.key}"
 }
-
 resource "aws_iam_role_policy_attachment" "aws_eks_nodes" {
   for_each   = toset(local.eks_aws_node_iam_policies)
   policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/${each.key}"
