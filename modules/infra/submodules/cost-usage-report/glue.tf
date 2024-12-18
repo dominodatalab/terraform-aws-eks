@@ -137,6 +137,4 @@ resource "aws_vpc_endpoint" "aws_glue_vpc_endpoint" {
   tags = {
     "Name" = "${var.deploy_id}-glue"
   }
-
-  private_dns_enabled = true
 }
