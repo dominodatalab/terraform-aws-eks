@@ -27,7 +27,7 @@ data "aws_eks_addon_version" "default" {
 }
 
 locals {
-  post_compute_addons = setintersection(var.eks_info.cluster.addons, ["coredns", "aws-ebs-csi-driver"])
+  post_compute_addons = setintersection(var.eks_info.cluster.addons, ["coredns", "aws-ebs-csi-driver", "eks-pod-identity-agent"])
   pre_compute_addons  = setsubtract(var.eks_info.cluster.addons, local.post_compute_addons)
 
   is_pod_sb = length(var.network_info.subnets.pod) > 0
