@@ -79,7 +79,7 @@ resource "terraform_data" "calico_setup" {
 }
 
 resource "terraform_data" "karpenter_setup" {
-  count = var.no_default_nodegroups && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = var.karpenter_node_groups != null && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
 
   triggers_replace = [
     filemd5(var.eks_info.k8s_pre_setup_sh_file)
