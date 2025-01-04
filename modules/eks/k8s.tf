@@ -6,11 +6,13 @@ locals {
 module "k8s_setup" {
   count = local.run_setup
 
-  source            = "./submodules/k8s"
-  ssh_key           = var.ssh_key
-  bastion_info      = var.bastion_info
-  eks_info          = local.eks_info
-  use_fips_endpoint = var.use_fips_endpoint
+  source              = "./submodules/k8s"
+  ssh_key             = var.ssh_key
+  bastion_info        = var.bastion_info
+  eks_info            = local.eks_info
+  use_fips_endpoint   = var.use_fips_endpoint
+  cluster_name        = var.deploy_id
+  karpenter_namespace = var.karpenter_namespace
 
   depends_on = [null_resource.kubeconfig]
 }
