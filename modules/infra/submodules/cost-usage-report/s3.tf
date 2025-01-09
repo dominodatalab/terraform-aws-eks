@@ -43,6 +43,27 @@ resource "aws_s3_bucket_public_access_block" "athena_result" {
 }
 
 data "aws_iam_policy_document" "athena_result" {
+  statement {
+    effect = "Deny"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.athena_result.bucket}/*",
+    ]
+
+    actions = ["s3:*"]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
 
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
@@ -119,6 +140,27 @@ resource "aws_s3_bucket_public_access_block" "cur_report" {
 }
 
 data "aws_iam_policy_document" "cur_report" {
+  statement {
+    effect = "Deny"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.cur_report.bucket}/*",
+    ]
+
+    actions = ["s3:*"]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
 
   statement {
     principals {
