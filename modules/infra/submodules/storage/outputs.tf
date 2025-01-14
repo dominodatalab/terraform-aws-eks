@@ -47,7 +47,7 @@ output "info" {
     ecr = {
       container_registry    = join("/", concat(slice(split("/", aws_ecr_repository.this["environment"].repository_url), 0, 1), [var.deploy_id]))
       iam_policy_arn        = aws_iam_policy.ecr.arn
-      calico_image_registry = local.supports_pull_through_cache ? "${data.aws_caller_identity.this.id}.dkr.ecr.${var.region}.amazonaws.com/${var.deploy_id}/quay" : "quay.io"
+      calico_image_registry = local.supports_pull_through_cache ? "${data.aws_caller_identity.this.id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_pull_through_cache_rule.quay[0].ecr_repository_prefix}" : "quay.io"
     }
   }
 }
