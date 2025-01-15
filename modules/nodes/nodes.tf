@@ -76,12 +76,13 @@ data "aws_ssm_parameter" "eks_gpu_ami_release_version" {
   name = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/nvidia/recommended/release_version"
 }
 
+
 resource "aws_eks_node_group" "node_groups" {
   for_each             = local.node_groups_by_name
   cluster_name         = var.eks_info.cluster.specs.name
   version              = each.value.node_group.ami != null ? null : var.eks_info.cluster.version
   release_version      = each.value.node_group.ami != null ? null : (each.value.node_group.gpu ? nonsensitive(data.aws_ssm_parameter.eks_gpu_ami_release_version.value) : nonsensitive(data.aws_ssm_parameter.eks_ami_release_version.value))
-  node_group_name      = "${var.eks_info.cluster.specs.name}-${each.key}"
+  node_group_name      = each.key
   node_role_arn        = var.eks_info.nodes.roles[0].arn
   subnet_ids           = try(lookup(each.value.node_group, "single_nodegroup", false), false) ? [for s in values(each.value.subnet) : s.subnet_id] : [each.value.subnet.subnet_id]
   force_update_version = true

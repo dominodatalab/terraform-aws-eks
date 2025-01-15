@@ -110,7 +110,7 @@ module "bastion" {
 locals {
   cost_usage_report_info = var.domino_cur.provision_cost_usage_report && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
   bastion_info           = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
-  add_s3_pol             = local.create_s3 ? [module.storage.info.s3.iam_policy_arn] : []
+  add_s3_pol             = [module.storage.info.s3.iam_policy_arn]
   add_ecr_pol            = local.create_ecr ? concat([module.storage.info.ecr.iam_policy_arn], local.add_s3_pol) : local.add_s3_pol
   node_iam_policies      = local.cost_usage_report_info != null ? concat(local.add_ecr_pol, [local.cost_usage_report_info.cur_iam_policy_arn]) : local.add_ecr_pol
 }

@@ -7,7 +7,8 @@ resource "aws_efs_file_system" "eks" {
   kms_key_id                      = local.kms_key_arn
 
   tags = merge(local.backup_tagging, {
-    "Name" = var.deploy_id
+    "Name"     = var.deploy_id
+    "migrated" = "aws_efs_mount_target"
   })
 
   lifecycle {
@@ -31,12 +32,11 @@ resource "aws_security_group" "efs" {
   }
 }
 
-
-resource "aws_efs_mount_target" "eks" {
-  count           = local.deploy_efs ? length(local.private_subnet_ids) : 0
+resource "aws_efs_mount_target" "eks_cluster" {
+  for_each        = local.deploy_efs ? { for sb in var.network_info.subnets.private : sb.name => sb } : {}
   file_system_id  = aws_efs_file_system.eks[0].id
   security_groups = [aws_security_group.efs[0].id]
-  subnet_id       = element(local.private_subnet_ids, count.index)
+  subnet_id       = each.value.subnet_id
 }
 
 
@@ -75,7 +75,11 @@ moved {
   to   = aws_efs_mount_target.eks[0]
 }
 
-moved {
-  from = aws_efs_access_point.eks
-  to   = aws_efs_access_point.eks[0]
+
+removed {
+  from = aws_efs_mount_target.eks
+
+  lifecycle {
+    destroy = false
+  }
 }
