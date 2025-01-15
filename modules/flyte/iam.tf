@@ -1,5 +1,6 @@
 resource "aws_iam_role" "flyte_controlplane" {
-  name = "${local.deploy_id}-flyte-controlplane"
+  count = var.enable_irsa == true ? 1 : 0
+  name  = "${local.deploy_id}-flyte-controlplane"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -11,8 +12,8 @@ resource "aws_iam_role" "flyte_controlplane" {
         }
         Condition : {
           StringEquals : {
-            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
-            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
+            "${local.oidc_provider_url}:aud" : "sts.amazonaws.com",
+            "${local.oidc_provider_url}:sub" : [
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.datacatalog}",
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flytepropeller}",
             ]
@@ -51,13 +52,16 @@ resource "aws_iam_policy" "flyte_controlplane" {
   policy = data.aws_iam_policy_document.flyte_controlplane.json
 }
 
+
 resource "aws_iam_role_policy_attachment" "flyte_controlplane" {
-  role       = aws_iam_role.flyte_controlplane.name
+  count      = var.enable_irsa == true ? 1 : 0
+  role       = aws_iam_role.flyte_controlplane.0.name
   policy_arn = aws_iam_policy.flyte_controlplane.arn
 }
 
 resource "aws_iam_role" "flyte_dataplane" {
-  name = "${local.deploy_id}-flyte-dataplane"
+  count = var.enable_irsa == true ? 1 : 0
+  name  = "${local.deploy_id}-flyte-dataplane"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -69,8 +73,8 @@ resource "aws_iam_role" "flyte_dataplane" {
         }
         Condition : {
           StringLike : {
-            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
-            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
+            "${local.oidc_provider_url}:aud" : "sts.amazonaws.com",
+            "${local.oidc_provider_url}:sub" : [
               "system:serviceaccount:${var.compute_namespace}:run-*"
             ]
           }
@@ -84,8 +88,8 @@ resource "aws_iam_role" "flyte_dataplane" {
         }
         Condition : {
           StringEquals : {
-            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com",
-            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
+            "${local.oidc_provider_url}:aud" : "sts.amazonaws.com",
+            "${local.oidc_provider_url}:sub" : [
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flyteadmin}",
             ]
           }
@@ -127,6 +131,26 @@ resource "aws_iam_policy" "flyte_dataplane" {
 }
 
 resource "aws_iam_role_policy_attachment" "flyte_dataplane" {
-  role       = aws_iam_role.flyte_dataplane.name
+  count      = var.enable_irsa == true ? 1 : 0
+  role       = aws_iam_role.flyte_dataplane.0.name
   policy_arn = aws_iam_policy.flyte_dataplane.arn
+}
+
+
+data "aws_iam_policy_document" "flyte_combined_policy" {
+  source_policy_documents = [
+    data.aws_iam_policy_document.flyte_controlplane.json,
+    data.aws_iam_policy_document.flyte_dataplane.json
+  ]
+}
+
+resource "aws_iam_policy" "flyte_combined" {
+  name   = "${local.deploy_id}-flyte-combined"
+  policy = data.aws_iam_policy_document.flyte_combined_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "flyte_node_role_attachment" {
+  count      = var.enable_irsa == true ? 0 : 1
+  role       = var.target_iam_role_name
+  policy_arn = aws_iam_policy.flyte_combined.arn
 }
