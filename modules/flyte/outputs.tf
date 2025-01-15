@@ -3,7 +3,7 @@ output "eks" {
   value = {
     metadata_bucket       = aws_s3_bucket.flyte_metadata.bucket
     data_bucket           = aws_s3_bucket.flyte_data.bucket
-    controlplane_role_arn = aws_iam_role.flyte_controlplane.arn
-    dataplane_role_arn    = aws_iam_role.flyte_dataplane.arn
+    controlplane_role_arn = one(aws_iam_role.flyte_controlplane[*].arn)
+    dataplane_role_arn    = one(aws_iam_role.flyte_dataplane[*].arn)
   }
 }
