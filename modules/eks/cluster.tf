@@ -75,7 +75,7 @@ resource "aws_eks_cluster" "this" {
     ignore_changes = [
       encryption_config,
       kubernetes_network_config,
-      vpc_config.subnet_ids
+      vpc_config[0].subnet_ids
     ]
   }
 }
