@@ -399,9 +399,10 @@ variable "storage" {
       migrate_from_efs = optional(object({
         enabled = optional(bool, false)
         datasync = optional(object({
-          enabled  = optional(bool, false)
-          target   = optional(string, "netapp")
-          schedule = optional(string, "cron(0 * * * ? *)")
+          enabled     = optional(bool, false)
+          target      = optional(string, "netapp")
+          schedule    = optional(string, "cron(0 * * * ? *)")
+          verify_mode = optional(string, "ONLY_FILES_TRANSFERRED")
         }), {})
       }), {})
       deployment_type                   = optional(string, "SINGLE_AZ_1")
