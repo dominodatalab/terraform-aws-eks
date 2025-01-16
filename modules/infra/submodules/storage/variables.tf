@@ -52,6 +52,7 @@ variable "storage" {
           enabled =  When enabled, both EFS and NetApp resources will be provisioned simultaneously during the migration period.
           datasync = {
             enabled  = Toggle to enable AWS DataSync for automated data transfer from EFS to NetApp FSx.
+            target = efs or netapp as the destination
             schedule = Cron-style schedule for the DataSync task, specifying how often the data transfer will occur (default: hourly).
           }
         }
@@ -105,9 +106,10 @@ variable "storage" {
       migrate_from_efs = optional(object({
         enabled = optional(bool)
         datasync = optional(object({
-          enabled  = optional(bool)
-          target   = optional(string)
-          schedule = optional(string)
+          enabled     = optional(bool)
+          target      = optional(string)
+          schedule    = optional(string)
+          verify_mode = optional(string)
         }))
       }))
       deployment_type                   = optional(string)

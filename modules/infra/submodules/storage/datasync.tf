@@ -97,6 +97,7 @@ resource "aws_datasync_task" "efs_to_netapp_sync" {
     posix_permissions = "NONE"
     gid               = "NONE"
     uid               = "NONE"
+    verify_mode       = var.storage.netapp.migrate_from_efs.datasync.verify_mode
   }
 
   schedule {
