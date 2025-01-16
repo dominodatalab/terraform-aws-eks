@@ -27,3 +27,11 @@ output "netapp_trident_configurator" {
     irsa_role = aws_iam_role.trident_configurator[0].arn
   } : null
 }
+
+
+output "karpenter" {
+  description = "Karpenter role info"
+  value = var.karpenter.enabled ? {
+    irsa_role = aws_iam_role.karpenter[0].arn
+  } : null
+}

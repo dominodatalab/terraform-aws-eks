@@ -121,3 +121,17 @@ variable "netapp_trident_configurator" {
 
   default = {}
 }
+
+
+variable "karpenter" {
+  description = "Config to create IRSA role for Karpenter."
+
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string, "karpenter")
+    serviceaccount_name = optional(string, "karpenter")
+    region              = optional(string)
+  })
+
+  default = {}
+}

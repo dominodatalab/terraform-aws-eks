@@ -113,7 +113,7 @@ install_helm_chart() {
     echo "Attempt $i of $max_retries..."
 
     if ($1); then
-      printf "$GREEN Calico installation succeeded. $EC \n"
+      printf "$GREEN installation succeeded. $EC \n"
       break
     else
       printf "$YELLOW Helm install attempt $i failed. $EC \n"
@@ -154,6 +154,11 @@ install_calico() {
 }
 
 _install_karpenter_chart() {
+  if [ -z "$KARPENTER_IAM_ROLE_ARN" ]; then
+    printf "$RED 'KARPENTER_IAM_ROLE_ARN' is not defined. $EC \n"
+    return 1
+  fi
+
   helm_cmd upgrade "karpenter" \
     oci://public.ecr.aws/karpenter/karpenter \
     --version "1.0.6" \
@@ -164,11 +169,8 @@ _install_karpenter_chart() {
     --set controller.resources.requests.memory=1Gi \
     --set controller.resources.limits.cpu=1 \
     --set controller.resources.limits.memory=1Gi \
+    --set "serviceAccount.annotations.eks\.amazonaws\.com/role-arn=$${KARPENTER_IAM_ROLE_ARN}" \
     --set replicas=1 \
-    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=dominodatalab.com/node-pool \
-    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
-    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=karpenter \
-    --set affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey=kubernetes.io/hostname \
     --wait \
     --timeout 10m \
     --create-namespace \

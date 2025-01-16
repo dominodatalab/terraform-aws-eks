@@ -21,7 +21,7 @@ resource "terraform_data" "run_k8s_pre_setup" {
   count = local.run_setup
 
   triggers_replace = [
-    module.k8s_setup[0].change_hash
+    # module.k8s_setup[0].change_hash
   ]
 
   provisioner "local-exec" {

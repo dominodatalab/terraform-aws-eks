@@ -62,34 +62,41 @@ locals {
 }
 
 
-resource "terraform_data" "calico_setup" {
-  count = try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+### Testing removal to complete karpenter in fargate given that we can nor run calico on fargate
 
-  triggers_replace = [
-    filemd5(var.eks_info.k8s_pre_setup_sh_file)
-  ]
+# resource "terraform_data" "calico_setup" {
+#   count = try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
 
-  provisioner "local-exec" {
-    command     = "bash ./${basename(var.eks_info.k8s_pre_setup_sh_file)} install_calico"
-    interpreter = ["bash", "-c"]
-    working_dir = dirname(var.eks_info.k8s_pre_setup_sh_file)
-  }
+#   triggers_replace = [
+#     filemd5(var.eks_info.k8s_pre_setup_sh_file)
+#   ]
 
-  depends_on = [aws_eks_node_group.node_groups]
-}
+#   provisioner "local-exec" {
+#     command     = "bash ./${basename(var.eks_info.k8s_pre_setup_sh_file)} install_calico"
+#     interpreter = ["bash", "-c"]
+#     working_dir = dirname(var.eks_info.k8s_pre_setup_sh_file)
+#   }
+
+#   depends_on = [aws_eks_node_group.node_groups, terraform_data.karpenter_setup]
+# }
+
 
 resource "terraform_data" "karpenter_setup" {
-  count = var.karpenter_node_groups != null && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = (var.karpenter_node_groups != null || var.enable_karpenter_fargate) && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) && var.karpenter_iam_role != null ? 1 : 0
 
   triggers_replace = [
-    filemd5(var.eks_info.k8s_pre_setup_sh_file)
+    filemd5(var.eks_info.k8s_pre_setup_sh_file),
+    tostring(var.karpenter_iam_role)
   ]
 
   provisioner "local-exec" {
     command     = "bash ./${basename(var.eks_info.k8s_pre_setup_sh_file)} install_karpenter"
     interpreter = ["bash", "-c"]
     working_dir = dirname(var.eks_info.k8s_pre_setup_sh_file)
+    environment = {
+      KARPENTER_IAM_ROLE_ARN = tostring(var.karpenter_iam_role)
+    }
   }
 
-  depends_on = [terraform_data.calico_setup]
+  # depends_on = [terraform_data.calico_setup]
 }

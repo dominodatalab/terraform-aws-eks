@@ -137,6 +137,7 @@
       "Effect": "Allow",
       "Action": [
         "eks:*Addon*",
+        "eks:*Fargate*",
         "eks:CreateCluster",
         "eks:CreateNodegroup",
         "eks:DescribeCluster",

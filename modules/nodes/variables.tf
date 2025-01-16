@@ -322,6 +322,12 @@ variable "additional_node_groups" {
   default = {}
 }
 
+variable "enable_karpenter_fargate" {
+  description = "Create Fargate profile for karpanter"
+  type        = bool
+  default     = false
+}
+
 variable "karpenter_node_groups" {
   description = "Node groups for karpenter."
   type = map(object({
@@ -395,4 +401,9 @@ variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
+}
+
+variable "karpenter_iam_role" {
+  type    = string
+  default = null
 }
