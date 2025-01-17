@@ -133,12 +133,12 @@ deploy_latest_ami_nodes() {
 }
 
 set_infra_imports() {
+  set -x
   printf "Generating infra imports.\n"
   local import_file_tmp="${INFRA_DIR}/imports.tf.tmp"
   local region
   local deploy_id
 
-  # Fetch region and deploy_id from hcledit
   region="$(hcledit attribute get region -f "$INFRA_VARS")" || {
     echo "Failed to get region"
     return 1
@@ -174,6 +174,7 @@ EOF
   done
 
   set_import "$INFRA_DIR" "$import_file_tmp"
+  set +x
 }
 
 # Not used atm, scaffold for seamless future use.
