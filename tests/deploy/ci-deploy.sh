@@ -160,13 +160,13 @@ set_infra_imports() {
     aws efs describe-mount-targets \
       --file-system-id "$fs_id" \
       --region "$region" \
-      --query 'MountTargets[*].[SubnetId, MountTargetId]' \
+      --query 'MountTargets[*].[AvailabilityZoneId, MountTargetId]' \
       --output json | jq -c '.[]' | while read -r mount_point; do
-      subnet_id=$(echo "$mount_point" | jq -r '.[0]')
+      az_id=$(echo "$mount_point" | jq -r '.[0]')
       mount_target_id=$(echo "$mount_point" | jq -r '.[1]')
       cat <<-EOF >>"$import_file_tmp"
 import {
-  to = module.storage.efs_mount_targets["$subnet_id"]
+  to = module.storage.efs_mount_targets["$az_id"]
   id = "$mount_target_id"
 }
 EOF
