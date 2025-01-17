@@ -134,7 +134,7 @@ deploy_latest_ami_nodes() {
 
 set_infra_imports() {
   printf "Generating infra imports.\n"
-  local import_file_tmp="${import_file}.tmp"
+  local import_file_tmp="${INFRA_DIR}/imports.tf.tmp"
   local region
   local deploy_id
 
@@ -204,8 +204,8 @@ set_import() {
 
   if [[ ! -f "$import_file" ]] || ! grep -Fqx -f "$import_file_tmp" "$import_file"; then
     printf "Adding import from %s to %s.\n\n" "$import_file_tmp" "$import_file"
+    printf "Import file:\n"
     tee -a "$import_file" <"$import_file_tmp"
-    printf "Import file:\n" && cat "$import_file"
   else
     printf "Import on %s already present on %s.\n" "$import_file" "$import_file_tmp"
   fi
