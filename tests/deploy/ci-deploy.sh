@@ -132,22 +132,56 @@ deploy_latest_ami_nodes() {
   deploy 'nodes'
 }
 
-# Not used atm, scaffold for seamless future use.
 set_infra_imports() {
-  printf "Nothing to import into the infra module.\n"
-  local import_file="${INFRA_DIR}/imports.tf.tmp"
+  printf "Generating infra imports.\n"
   local import_file_tmp="${import_file}.tmp"
-  return 0 # Remove return if used.
-  set_import "$import_file" "$import_file_tmp"
+  local region
+  local deploy_id
+
+  # Fetch region and deploy_id from hcledit
+  region="$(hcledit attribute get region -f "$INFRA_VARS")" || {
+    echo "Failed to get region"
+    return 1
+  }
+  deploy_id="$(hcledit attribute get deploy_id -f "$INFRA_VARS")" || {
+    echo "Failed to get deploy_id"
+    return 1
+  }
+
+  : >"$import_file_tmp"
+  printf "Generating infra imports for EFS mount points.\n"
+
+  aws efs describe-file-systems \
+    --region "$region" \
+    --query "FileSystems[?Tags[?Key=='deploy_id' && Value=='$deploy_id']].FileSystemId" \
+    --output text | while read -r fs_id; do
+    printf "Processing file system: %s.\n" "$fs_id"
+
+    aws efs describe-mount-targets \
+      --file-system-id "$fs_id" \
+      --region "$region" \
+      --query 'MountTargets[*].[SubnetId, MountTargetId]' \
+      --output json | jq -c '.[]' | while read -r mount_point; do
+      subnet_id=$(echo "$mount_point" | jq -r '.[0]')
+      mount_target_id=$(echo "$mount_point" | jq -r '.[1]')
+      cat <<-EOF >>"$import_file_tmp"
+import {
+  to = module.storage.efs_mount_targets["$subnet_id"]
+  id = "$mount_target_id"
+}
+EOF
+    done
+  done
+
+  set_import "$INFRA_DIR" "$import_file_tmp"
 }
 
 # Not used atm, scaffold for seamless future use.
 set_cluster_imports() {
   printf "Nothing to import into the cluster module.\n"
-  local import_file="${CLUSTER_DIR}/imports.tf.tmp"
   local import_file_tmp="${import_file}.tmp"
   return 0 # Remove return if used.
-  set_import "$import_file" "$import_file_tmp"
+  set_import "$CLUSTER_DIR" "$import_file_tmp"
 }
 
 set_nodes_imports() {
@@ -170,7 +204,7 @@ set_import() {
 
   if [[ ! -f "$import_file" ]] || ! grep -Fqx -f "$import_file_tmp" "$import_file"; then
     printf "Adding import from %s to %s.\n\n" "$import_file_tmp" "$import_file"
-    cat "$import_file_tmp" >>"$import_file"
+    tee -a "$import_file" <"$import_file_tmp"
     printf "Import file:\n" && cat "$import_file"
   else
     printf "Import on %s already present on %s.\n" "$import_file" "$import_file_tmp"
