@@ -139,11 +139,13 @@ set_infra_imports() {
   local region
   local deploy_id
 
-  region="$(hcledit attribute get region -f "$INFRA_VARS")" || {
+  region=$(hcledit attribute get region -f "$INFRA_VARS") || {
     echo "Failed to get region"
     return 1
   }
-  deploy_id="$(hcledit attribute get deploy_id -f "$INFRA_VARS")" || {
+  region="us-west-2"
+
+  deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS") || {
     echo "Failed to get deploy_id"
     return 1
   }
@@ -152,14 +154,14 @@ set_infra_imports() {
   printf "Generating infra imports for EFS mount points.\n"
 
   aws efs describe-file-systems \
-    --region "$region" \
-    --query "FileSystems[?Tags[?Key=='deploy_id' && Value=='$deploy_id']].FileSystemId" \
+    --region $region \
+    --query "FileSystems[?Tags[?Key=='deploy_id' && Value==$deploy_id]].FileSystemId" \
     --output text | while read -r fs_id; do
     printf "Processing file system: %s.\n" "$fs_id"
 
     aws efs describe-mount-targets \
       --file-system-id "$fs_id" \
-      --region "$region" \
+      --region $region \
       --query 'MountTargets[*].[AvailabilityZoneId, MountTargetId]' \
       --output json | jq -c '.[]' | while read -r mount_point; do
       az_id=$(echo "$mount_point" | jq -r '.[0]')
