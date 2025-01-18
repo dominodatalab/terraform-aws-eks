@@ -182,13 +182,13 @@ EOF
 # Not used atm, scaffold for seamless future use.
 set_cluster_imports() {
   printf "Nothing to import into the cluster module.\n"
-  local import_file_tmp="${import_file}.tmp"
+  local import_file_tmp="${CLUSTER_DIR}/imports.tf.tmp"
   return 0 # Remove return if used.
   set_import "$CLUSTER_DIR" "$import_file_tmp"
 }
 
 set_nodes_imports() {
-  local import_file_tmp="${NODES_DIR}/nodes-imports.tf.tmp"
+  local import_file_tmp="${NODES_DIR}/imports.tf.tmp"
   cat <<-EOF >"$import_file_tmp"
 import {
   to = module.nodes.aws_eks_addon.pre_compute_addons["vpc-cni"]
