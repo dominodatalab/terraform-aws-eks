@@ -35,25 +35,60 @@ data "aws_caller_identity" "cluster_aws_account" {
   provider = aws.eks
 }
 
+
 resource "aws_eks_cluster" "this" {
   provider = aws.eks
 
-  name                      = local.eks_cluster_name
-  role_arn                  = aws_iam_role.eks_cluster.arn
-  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-  version                   = var.eks.k8s_version
+  name                          = local.eks_cluster_name
+  role_arn                      = aws_iam_role.eks_cluster.arn
+  enabled_cluster_log_types     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  version                       = var.eks.k8s_version
+  bootstrap_self_managed_addons = !var.eks.auto_mode_enabled
 
   encryption_config {
     provider {
       key_arn = local.kms_key_arn
     }
-
     resources = ["secrets"]
+  }
+
+  dynamic "compute_config" {
+    for_each = var.eks.auto_mode_enabled ? var.eks.compute_config : {}
+    content {
+      enabled       = true #var.eks.auto_mode_enabled
+      node_pools    = var.eks.compute_config.node_pools
+      node_role_arn = aws_iam_role.eks_auto_node_role[0].arn
+    }
   }
 
   kubernetes_network_config {
     ip_family         = "ipv4"
     service_ipv4_cidr = var.eks.service_ipv4_cidr
+    dynamic "elastic_load_balancing" {
+      for_each = var.eks.auto_mode_enabled ? var.eks.compute_config : {}
+      content {
+        enabled = var.eks.auto_mode_enabled
+      }
+    }
+  }
+
+
+  dynamic "storage_config" {
+    for_each = var.eks.auto_mode_enabled ? var.eks.compute_config : {}
+    content {
+      block_storage {
+        enabled = true #var.eks.auto_mode_enabled
+      }
+    }
+  }
+
+  upgrade_policy {
+    support_type = "EXTENDED"
+  }
+
+  access_config {
+    authentication_mode                         = var.eks.authentication_mode
+    bootstrap_cluster_creator_admin_permissions = true
   }
 
   vpc_config {
@@ -74,7 +109,8 @@ resource "aws_eks_cluster" "this" {
   lifecycle {
     ignore_changes = [
       encryption_config,
-      kubernetes_network_config
+      kubernetes_network_config[0].ip_family,
+      kubernetes_network_config[0].service_ipv4_cidr
     ]
   }
 }
