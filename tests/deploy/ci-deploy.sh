@@ -154,13 +154,17 @@ set_infra_imports() {
   printf "Generating infra imports for EFS mount points.\n"
 
   fs_id=$(aws efs describe-file-systems \
-    --region $region \
-    --query "FileSystems[?Tags[?Key==deploy_id && Value==$deploy_id]].FileSystemId" \
+    --region "$region" \
+    --query "FileSystems[?Tags[?Key=='deploy_id' && Value=='$deploy_id']].FileSystemId" \
     --output text) || {
     echo "Failed to get fs_id"
     return 1
   }
 
+  if [ -z "${fs_id// /}" ]; then
+    echo "Error: fs_id is not set or empty."
+    return 1
+  fi
   printf "Processing file system: %s.\n" "$fs_id"
 
   aws efs describe-mount-targets \
