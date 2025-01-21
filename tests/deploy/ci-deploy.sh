@@ -177,7 +177,7 @@ set_infra_imports() {
     mount_target_id=$(echo "$mount_point" | jq -r '.[1]')
     cat <<-EOF >>"$import_file_tmp"
 import {
-  to = module.storage.efs_mount_targets["$az_id"]
+  to =  module.infra.module.storage.aws_efs_mount_target.eks_cluster["$az_id"]
   id = "$mount_target_id"
 }
 EOF
