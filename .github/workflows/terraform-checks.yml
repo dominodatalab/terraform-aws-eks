@@ -6,6 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.4"
       - name: Terraform fmt
         uses: pre-commit/action@v3.0.1
         with:
@@ -15,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.4"
       - name: Install tflint
         uses: nick-fields/retry@v3.0.0
         with:
@@ -53,6 +59,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.4"
       - name: Generate pvt key
         run: >-
           ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f tests/domino.pem
