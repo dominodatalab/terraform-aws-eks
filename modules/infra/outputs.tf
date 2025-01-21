@@ -20,7 +20,7 @@ output "bastion" {
 
 output "storage" {
   description = "Storage details."
-  value       = module.storage[0].info
+  value       = try(module.storage[0].info, null)
 }
 
 output "tags" {
