@@ -155,7 +155,7 @@ set_infra_imports() {
 
   fs_id=$(aws efs describe-file-systems \
     --region "$region" \
-    --query "FileSystems[?Tags[?Key=='deploy_id' && Value=='$deploy_id']].FileSystemId" \
+    --query "FileSystems[?Tags[?Key==\`deploy_id\` && Value==\`$deploy_id\`]].FileSystemId" \
     --output text) || {
     echo "Failed to get fs_id"
     return 1
@@ -165,6 +165,7 @@ set_infra_imports() {
     echo "Error: fs_id is not set or empty."
     return 1
   fi
+
   printf "Processing file system: %s.\n" "$fs_id"
 
   aws efs describe-mount-targets \
