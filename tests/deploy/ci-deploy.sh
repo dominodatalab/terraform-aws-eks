@@ -133,17 +133,16 @@ deploy_latest_ami_nodes() {
 }
 
 set_infra_imports() {
-  set -x
   printf "Generating infra imports.\n"
   local import_file_tmp="${INFRA_DIR}/imports.tf.tmp"
   local region
   local deploy_id
+  local fs_id
 
   region=$(hcledit attribute get region -f "$INFRA_VARS") || {
     echo "Failed to get region"
     return 1
   }
-  region="us-west-2"
 
   deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS") || {
     echo "Failed to get deploy_id"
@@ -153,30 +152,32 @@ set_infra_imports() {
   : >"$import_file_tmp"
   printf "Generating infra imports for EFS mount points.\n"
 
-  aws efs describe-file-systems \
+  fs_id=$(aws efs describe-file-systems \
     --region $region \
-    --query "FileSystems[?Tags[?Key=='deploy_id' && Value==$deploy_id]].FileSystemId" \
-    --output text | while read -r fs_id; do
-    printf "Processing file system: %s.\n" "$fs_id"
+    --query "FileSystems[?Tags[?Key==deploy_id && Value==$deploy_id]].FileSystemId" \
+    --output text) || {
+    echo "Failed to get fs_id"
+    return 1
+  }
 
-    aws efs describe-mount-targets \
-      --file-system-id "$fs_id" \
-      --region $region \
-      --query 'MountTargets[*].[AvailabilityZoneId, MountTargetId]' \
-      --output json | jq -c '.[]' | while read -r mount_point; do
-      az_id=$(echo "$mount_point" | jq -r '.[0]')
-      mount_target_id=$(echo "$mount_point" | jq -r '.[1]')
-      cat <<-EOF >>"$import_file_tmp"
+  printf "Processing file system: %s.\n" "$fs_id"
+
+  aws efs describe-mount-targets \
+    --file-system-id "$fs_id" \
+    --region $region \
+    --query 'MountTargets[*].[AvailabilityZoneId, MountTargetId]' \
+    --output json | jq -c '.[]' | while read -r mount_point; do
+    az_id=$(echo "$mount_point" | jq -r '.[0]')
+    mount_target_id=$(echo "$mount_point" | jq -r '.[1]')
+    cat <<-EOF >>"$import_file_tmp"
 import {
   to = module.storage.efs_mount_targets["$az_id"]
   id = "$mount_target_id"
 }
 EOF
-    done
   done
 
   set_import "$INFRA_DIR" "$import_file_tmp"
-  set +x
 }
 
 # Not used atm, scaffold for seamless future use.
