@@ -4,38 +4,21 @@ variable "force_destroy_on_deletion" {
   default     = true
 }
 
-variable "eks_info" {
-  description = <<EOF
-    cluster = {
-      specs {
-        name            = Cluster name.
-        account_id      = AWS account id where the cluster resides.
-      }
-      oidc = {
-        arn = OIDC provider ARN.
-        url = OIDC provider url.
-        cert = {
-          thumbprint_list = OIDC cert thumbprints.
-          url             = OIDC cert URL.
-      }
-    }
-  EOF
-  type = object({
-    cluster = object({
-      specs = object({
-        name       = string
-        account_id = string
-      })
-      oidc = object({
-        arn = string
-        url = string
-        cert = object({
-          thumbprint_list = list(string)
-          url             = string
-        })
-      })
-    })
-  })
+variable "enable_irsa" {
+  default     = false
+  description = "Whether to assume AWS EKS IRSA is configured; if not, attach permissions to target_iam_role_name."
+  type        = bool
+}
+
+variable "target_iam_role_name" {
+  default     = null
+  description = "If not using IRSA, attach new policies to this AWS IAM role"
+  type        = string
+}
+
+variable "eks_cluster_name" {
+  type        = string
+  description = "Name of the EKS cluster running Domino workloads"
 }
 
 variable "platform_namespace" {
