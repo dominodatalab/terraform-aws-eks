@@ -25,7 +25,7 @@ module "eks" {
 
   ssh_key             = module.infra.ssh_key
   node_iam_policies   = module.infra.node_iam_policies
-  storage_info        = var.storage != null ? module.infra.storage : null
+  storage_info        = module.infra.storage
   eks                 = module.infra.eks
   network_info        = module.infra.network
   kms_info            = module.infra.kms
