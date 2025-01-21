@@ -75,7 +75,7 @@ output "create_eks_role_arn" {
 
 output "monitoring_bucket" {
   description = "Monitoring Bucket"
-  value       = module.storage[0].info.s3.buckets.monitoring.bucket_name
+  value       = var.storage != null ? module.storage[0].info.s3.buckets.monitoring.bucket_name : null
 }
 
 output "cost_usage_report" {
