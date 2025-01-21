@@ -139,10 +139,11 @@ set_infra_imports() {
   local deploy_id
   local fs_id
 
-  region=$(hcledit attribute get region -f "$INFRA_VARS") || {
-    echo "Failed to get region"
-    return 1
-  }
+  # region=$(hcledit attribute get region -f "$INFRA_VARS") || {
+  #   echo "Failed to get region"
+  #   return 1
+  # }
+  region="us-west-2"
 
   deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS") || {
     echo "Failed to get deploy_id"
