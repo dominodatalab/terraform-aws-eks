@@ -1,6 +1,6 @@
 # external-deployments
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -38,9 +38,9 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_eks_info"></a> [eks\_info](#input\_eks\_info) | cluster = {<br>      specs {<br>        name            = Cluster name.<br>        account\_id      = AWS account id where the cluster resides.<br>      }<br>      oidc = {<br>        arn = OIDC provider ARN.<br>        url = OIDC provider url.<br>        cert = {<br>          thumbprint\_list = OIDC cert thumbprints.<br>          url             = OIDC cert URL.<br>      }<br>    } | <pre>object({<br>    cluster = object({<br>      specs = object({<br>        name       = string<br>        account_id = string<br>      })<br>      oidc = object({<br>        arn = string<br>        url = string<br>        cert = object({<br>          thumbprint_list = list(string)<br>          url             = string<br>        })<br>      })<br>    })<br>  })</pre> | n/a | yes |
-| <a name="input_external_deployments"></a> [external\_deployments](#input\_external\_deployments) | Config to create IRSA role for the external deployments operator. | <pre>object({<br>    namespace                       = optional(string, "domino-compute")<br>    operator_service_account_name   = optional(string, "pham-juno-operator")<br>    operator_role_suffix            = optional(string, "external-deployments-operator")<br>    repository_suffix               = optional(string, "external-deployments")<br>    bucket_suffix                   = optional(string, "external-deployments")<br>    enable_assume_any_external_role = optional(bool, true)<br>    enable_in_account_deployments   = optional(bool, true)<br>  })</pre> | `{}` | no |
-| <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | key\_id  = KMS key id.<br>    key\_arn = KMS key arn.<br>    enabled = KMS key is enabled | <pre>object({<br>    key_id  = string<br>    key_arn = string<br>    enabled = bool<br>  })</pre> | n/a | yes |
+| <a name="input_eks_info"></a> [eks\_info](#input\_eks\_info) | cluster = {<br/>      specs {<br/>        name            = Cluster name.<br/>        account\_id      = AWS account id where the cluster resides.<br/>      }<br/>      oidc = {<br/>        arn = OIDC provider ARN.<br/>        url = OIDC provider url.<br/>        cert = {<br/>          thumbprint\_list = OIDC cert thumbprints.<br/>          url             = OIDC cert URL.<br/>      }<br/>    } | <pre>object({<br/>    cluster = object({<br/>      specs = object({<br/>        name       = string<br/>        account_id = string<br/>      })<br/>      oidc = object({<br/>        arn = string<br/>        url = string<br/>        cert = object({<br/>          thumbprint_list = list(string)<br/>          url             = string<br/>        })<br/>      })<br/>    })<br/>  })</pre> | n/a | yes |
+| <a name="input_external_deployments"></a> [external\_deployments](#input\_external\_deployments) | Config to create IRSA role for the external deployments operator. | <pre>object({<br/>    namespace                       = optional(string, "domino-compute")<br/>    operator_service_account_name   = optional(string, "pham-juno-operator")<br/>    operator_role_suffix            = optional(string, "external-deployments-operator")<br/>    repository_suffix               = optional(string, "external-deployments")<br/>    bucket_suffix                   = optional(string, "external-deployments")<br/>    enable_assume_any_external_role = optional(bool, true)<br/>    enable_in_account_deployments   = optional(bool, true)<br/>  })</pre> | `{}` | no |
+| <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | key\_id  = KMS key id.<br/>    key\_arn = KMS key arn.<br/>    enabled = KMS key is enabled | <pre>object({<br/>    key_id  = string<br/>    key_arn = string<br/>    enabled = bool<br/>  })</pre> | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 
 ## Outputs
@@ -48,4 +48,4 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_eks"></a> [eks](#output\_eks) | External deployments eks info |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
