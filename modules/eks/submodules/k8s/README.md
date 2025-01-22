@@ -1,6 +1,6 @@
 # k8s
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -44,4 +44,4 @@ No modules.
 | <a name="output_change_hash"></a> [change\_hash](#output\_change\_hash) | Hash of all templated files |
 | <a name="output_filepath"></a> [filepath](#output\_filepath) | Filename of primary script |
 | <a name="output_resources_directory"></a> [resources\_directory](#output\_resources\_directory) | Directory for provisioned scripts and templated files |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

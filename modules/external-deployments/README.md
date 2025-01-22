@@ -1,6 +1,6 @@
 # external-deployments
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -48,4 +48,4 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_eks"></a> [eks](#output\_eks) | External deployments eks info |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

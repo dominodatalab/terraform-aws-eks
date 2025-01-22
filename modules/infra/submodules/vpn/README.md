@@ -1,6 +1,6 @@
 # vpn
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -42,4 +42,4 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_vpn_connections"></a> [vpn\_connections](#output\_vpn\_connections) | List of VPN connections information |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

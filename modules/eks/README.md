@@ -1,6 +1,6 @@
 # eks
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -91,4 +91,4 @@
 | Name | Description |
 |------|-------------|
 | <a name="output_info"></a> [info](#output\_info) | EKS information |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

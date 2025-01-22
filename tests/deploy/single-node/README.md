@@ -1,7 +1,7 @@
 # single_node
 :x: **DO NOT USE TO PROVISION INFRASTRUCTURE.This implementation is meant for internal purposes ONLY.** :anger:
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -40,4 +40,4 @@
 | Name | Description |
 |------|-------------|
 | <a name="output_info"></a> [info](#output\_info) | Single Node details. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
