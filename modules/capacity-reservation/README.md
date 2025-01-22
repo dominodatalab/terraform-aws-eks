@@ -32,7 +32,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_instance_capacity"></a> [instance\_capacity](#input\_instance\_capacity) | Creates a capacity reservation for each instance\_type on each zone.<br>    instance\_types        = List of instance types to create a capacity reservation for.<br>    capacity              = Number of instances to reserve<br>    availability\_zone\_ids = List of azs to create a capacity reservation in.<br>    } | <pre>map(object({<br>    instance_types        = list(string)<br>    capacity              = number<br>    availability_zone_ids = list(string)<br>  }))</pre> | `{}` | no |
+| <a name="input_instance_capacity"></a> [instance\_capacity](#input\_instance\_capacity) | Creates a capacity reservation for each instance\_type on each zone.<br/>    instance\_types        = List of instance types to create a capacity reservation for.<br/>    capacity              = Number of instances to reserve<br/>    availability\_zone\_ids = List of azs to create a capacity reservation in.<br/>    } | <pre>map(object({<br/>    instance_types        = list(string)<br/>    capacity              = number<br/>    availability_zone_ids = list(string)<br/>  }))</pre> | `{}` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 
 ## Outputs
