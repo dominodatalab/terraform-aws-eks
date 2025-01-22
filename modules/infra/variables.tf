@@ -348,6 +348,7 @@ variable "storage" {
           datasync = {
             enabled  = Toggle to enable AWS DataSync for automated data transfer from EFS to NetApp FSx.
             schedule = Cron-style schedule for the DataSync task, specifying how often the data transfer will occur (default: hourly).
+            verify_mode = One of: POINT_IN_TIME_CONSISTENT, ONLY_FILES_TRANSFERRED, NONE.
           }
         }
         deployment_type = netapp ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
