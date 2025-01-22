@@ -405,7 +405,7 @@ variable "storage" {
         datasync = optional(object({
           enabled     = optional(bool, false)
           target      = optional(string, "netapp")
-          schedule    = optional(string, "cron(0 * * * ? *)")
+          schedule    = optional(string, "cron(0 */4 * * ? *)")
           verify_mode = optional(string, "ONLY_FILES_TRANSFERRED")
         }), {})
       }), {})
