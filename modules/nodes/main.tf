@@ -22,6 +22,18 @@ locals {
       taints        = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]) ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
     })
   }
+
+  node_groups_per_zone = flatten([
+    for ng_name, ng in local.node_groups : [
+      for sb in var.network_info.subnets.private : {
+        ng_prefix_name = ng_name
+        sb_name        = sb.name
+        subnet         = sb
+        node_group     = ng
+      } if contains(ng.availability_zone_ids, sb.az_id)
+    ]
+  ])
+  node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_prefix_name}-${ngz.sb_name}" => ngz }
 }
 
 data "aws_ec2_instance_type_offerings" "nodes" {
