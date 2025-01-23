@@ -302,8 +302,12 @@ variable "storage_info" {
   default = {}
 }
 
-variable "karpenter_namespace" {
-  description = "Namespace to install karpenter"
-  type        = string
-  default     = "karpenter"
+variable "karpenter" {
+  description = "Karpenter enabled toggle and namespace to install karpenter"
+  type = object({
+    enabled   = optional(bool, false)
+    namespace = optional(string, "karpenter")
+  })
+
+  default = {}
 }

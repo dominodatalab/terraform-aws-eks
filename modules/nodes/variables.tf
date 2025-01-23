@@ -325,12 +325,13 @@ variable "additional_node_groups" {
 variable "karpenter_node_groups" {
   description = "Node groups for karpenter."
   type = map(object({
+    single_nodegroup           = optional(bool, false)
     ami                        = optional(string, null)
     bootstrap_extra_args       = optional(string, "")
-    instance_types             = optional(list(string), ["m5.large"])
+    instance_types             = optional(list(string), ["m6a.large"])
     spot                       = optional(bool, false)
-    min_per_az                 = optional(number, 0)
-    max_per_az                 = optional(number, 10)
+    min_per_az                 = optional(number, 1)
+    max_per_az                 = optional(number, 3)
     max_unavailable_percentage = optional(number, 50)
     max_unavailable            = optional(number)
     desired_per_az             = optional(number, 1)

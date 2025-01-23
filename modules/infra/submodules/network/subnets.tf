@@ -53,6 +53,13 @@ resource "aws_subnet" "public" {
   }
 }
 
+locals {
+  default_tags = {
+    "kubernetes.io/role/internal-elb"        = "1"
+    "kubernetes.io/cluster/${var.deploy_id}" = "shared"
+  }
+}
+
 resource "aws_subnet" "private" {
   for_each = local.private_cidrs
 
@@ -61,15 +68,12 @@ resource "aws_subnet" "private" {
   cidr_block           = each.key
   tags = merge(
     { "Name" : each.value.name },
-    var.add_eks_elb_tags ? {
-      "kubernetes.io/role/internal-elb"        = "1"
-      "kubernetes.io/cluster/${var.deploy_id}" = "shared"
-      "karpenter.sh/discovery"                 = var.deploy_id
-  } : {})
+  var.add_eks_elb_tags ? local.default_tags : {})
 
   lifecycle {
     ignore_changes = [tags]
   }
+
 }
 
 resource "aws_subnet" "pod" {
@@ -80,10 +84,7 @@ resource "aws_subnet" "pod" {
   cidr_block           = each.key
   tags = merge(
     { "Name" : each.value.name },
-    var.add_eks_elb_tags ? {
-      "kubernetes.io/role/internal-elb"        = "1"
-      "kubernetes.io/cluster/${var.deploy_id}" = "shared"
-  } : {})
+  var.add_eks_elb_tags ? local.default_tags : {})
 
   lifecycle {
     ignore_changes = [tags]

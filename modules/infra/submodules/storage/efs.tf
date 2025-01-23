@@ -31,12 +31,14 @@ resource "aws_security_group" "efs" {
   }
 }
 
+
 resource "aws_efs_mount_target" "eks" {
   count           = local.deploy_efs ? length(local.private_subnet_ids) : 0
   file_system_id  = aws_efs_file_system.eks[0].id
   security_groups = [aws_security_group.efs[0].id]
   subnet_id       = element(local.private_subnet_ids, count.index)
 }
+
 
 resource "aws_efs_access_point" "eks" {
   count          = local.deploy_efs ? 1 : 0

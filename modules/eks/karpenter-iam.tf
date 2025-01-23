@@ -1,4 +1,6 @@
+
 data "aws_iam_policy_document" "karpenter_trust_policy" {
+  count = var.karpenter.enabled ? 1 : 0
   statement {
     sid     = "KarpenterAssumer"
     actions = ["sts:AssumeRole", "sts:TagSession"]
@@ -20,6 +22,7 @@ data "aws_iam_policy_document" "karpenter_trust_policy" {
 }
 
 data "aws_iam_policy_document" "karpenter" {
+  count = var.karpenter.enabled ? 1 : 0
   statement {
     actions = [
       "ssm:GetParameter"
@@ -170,24 +173,28 @@ data "aws_iam_policy_document" "karpenter" {
 }
 
 resource "aws_iam_policy" "karpenter_policy" {
+  count  = var.karpenter.enabled ? 1 : 0
   name   = "${var.deploy_id}-karpenter"
   path   = "/"
-  policy = data.aws_iam_policy_document.karpenter.json
+  policy = data.aws_iam_policy_document.karpenter[0].json
 }
 
 resource "aws_iam_role" "karpenter" {
+  count              = var.karpenter.enabled ? 1 : 0
   name               = "${var.deploy_id}-karpenter"
-  assume_role_policy = data.aws_iam_policy_document.karpenter_trust_policy.json
+  assume_role_policy = data.aws_iam_policy_document.karpenter_trust_policy[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter" {
-  policy_arn = aws_iam_policy.karpenter_policy.arn
-  role       = aws_iam_role.karpenter.name
+  count      = var.karpenter.enabled ? 1 : 0
+  policy_arn = aws_iam_policy.karpenter_policy[0].arn
+  role       = aws_iam_role.karpenter[0].name
 }
 
 resource "aws_eks_pod_identity_association" "karpenter" {
+  count           = var.karpenter.enabled ? 1 : 0
   cluster_name    = aws_eks_cluster.this.name
-  namespace       = "karpenter"
+  namespace       = var.karpenter.namespace
   service_account = "karpenter"
-  role_arn        = aws_iam_role.karpenter.arn
+  role_arn        = aws_iam_role.karpenter[0].arn
 }

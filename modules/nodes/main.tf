@@ -48,19 +48,39 @@ data "aws_ami" "custom" {
 }
 
 locals {
-  node_groups_per_zone = flatten([
+  multi_zone_node_groups = [
+    for ng_name, ng in local.node_groups : {
+      ng_name            = ng_name
+      sb_name            = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
+      subnet             = { for sb_name, sb in var.network_info.subnets.private : sb_name => sb if contains(ng.availability_zone_ids, sb.az_id) }
+      availability_zones = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
+      node_group = merge(ng, {
+        availability_zone_ids = [for sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)]
+        availability_zones    = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
+      })
+    }
+    if lookup(ng, "single_nodegroup", false)
+  ]
+
+  single_zone_node_groups = flatten([
     for ng_name, ng in local.node_groups : [
       for sb_name, sb in var.network_info.subnets.private : {
-        ng_name    = ng_name
-        sb_name    = sb_name
-        subnet     = sb
-        node_group = ng
-      } if contains(ng.availability_zone_ids, sb.az_id)
+        ng_name = ng_name
+        sb_name = sb_name
+        subnet  = sb
+        node_group = merge(ng, {
+          availability_zone_ids = [sb.az_id]
+          availability_zones    = [sb.az]
+        })
+      }
+      if !lookup(ng, "single_nodegroup", false) && contains(ng.availability_zone_ids, sb.az_id)
     ]
   ])
+
+  node_groups_per_zone = concat(local.multi_zone_node_groups, local.single_zone_node_groups)
+
   node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
-
 
 resource "terraform_data" "calico_setup" {
   count = try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
@@ -92,4 +112,15 @@ resource "terraform_data" "karpenter_setup" {
   }
 
   depends_on = [terraform_data.calico_setup]
+}
+
+locals {
+  karpenter_tag_resources = var.karpenter_node_groups != null ? flatten([var.eks_info.nodes.security_group_id, [for sb in var.network_info.subnets.private : sb.subnet_id]]) : []
+}
+
+resource "aws_ec2_tag" "karpenter" {
+  count       = length(local.karpenter_tag_resources)
+  resource_id = local.karpenter_tag_resources[count.index]
+  key         = "karpenter.sh/discovery"
+  value       = var.eks_info.cluster.specs.name
 }
