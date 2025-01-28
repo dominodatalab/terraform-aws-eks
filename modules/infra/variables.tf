@@ -257,11 +257,17 @@ variable "additional_node_groups" {
 }
 
 variable "karpenter_node_groups" {
-  description = "Node groups for karpenter."
+  description = <<EOF
+    Configuration for EKS node groups managed by Karpenter. These node groups are designed to dynamically scale
+    workloads based on resource requirements.
+    Set `single_nodegroup: true` to create a single node group spanning multiple availability zones (AZs)
+    instead of creating a separate node group per AZ. This is useful for simplifying management but may
+    not be ideal for workloads requiring strict zone affinity (e.g., due to EBS volume zonal constraints).
+  EOF
   type = map(object({
     ami                        = optional(string, null)
     bootstrap_extra_args       = optional(string, "")
-    instance_types             = optional(list(string), ["m5.large"])
+    instance_types             = optional(list(string), ["m6a.large"])
     spot                       = optional(bool, false)
     min_per_az                 = optional(number, 1)
     max_per_az                 = optional(number, 1)
@@ -285,6 +291,7 @@ variable "karpenter_node_groups" {
       iops       = optional(number)
       throughput = optional(number, 500)
     }), {})
+    single_nodegroup = optional(bool, false)
   }))
   default = {}
 }

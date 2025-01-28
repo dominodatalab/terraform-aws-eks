@@ -12,7 +12,7 @@ module "k8s_setup" {
   eks_info            = local.eks_info
   use_fips_endpoint   = var.use_fips_endpoint
   cluster_name        = var.deploy_id
-  karpenter_namespace = var.karpenter_namespace
+  karpenter_namespace = var.karpenter.namespace
 
   depends_on = [null_resource.kubeconfig]
 }

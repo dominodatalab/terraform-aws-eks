@@ -24,13 +24,13 @@ resource "aws_security_group" "eks_nodes" {
     create_before_destroy = true
     ignore_changes = [
       name,
-      description
+      description,
+      tags
     ]
   }
   tags = {
     "Name"                                            = "${local.eks_cluster_name}-eks-nodes"
     "kubernetes.io/cluster/${local.eks_cluster_name}" = "owned"
-    "karpenter.sh/discovery"                          = var.deploy_id
   }
 }
 
