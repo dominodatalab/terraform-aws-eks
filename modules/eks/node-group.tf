@@ -64,7 +64,9 @@ moved {
 }
 
 resource "aws_security_group_rule" "efs" {
-  count                    = var.storage_info.efs != null ? 1 : 0
+  count = var.storage_info != null ? (
+    var.storage_info.efs != null ? 1 : 0
+  ) : 0
   security_group_id        = var.storage_info.efs.security_group_id
   protocol                 = "tcp"
   from_port                = 2049
@@ -75,7 +77,9 @@ resource "aws_security_group_rule" "efs" {
 }
 
 resource "aws_security_group_rule" "netapp" {
-  count                    = var.storage_info.netapp != null ? 1 : 0
+  count = var.storage_info != null ? (
+    var.storage_info.netapp != null ? 1 : 0
+  ) : 0
   security_group_id        = var.storage_info.netapp.filesystem.security_group_id
   protocol                 = "-1"
   from_port                = 0
