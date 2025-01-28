@@ -112,8 +112,17 @@ variable "cluster_name" {
   default     = ""
 }
 
-variable "karpenter_namespace" {
-  description = "Namespace to install karpenter"
-  type        = string
-  default     = "karpenter"
+variable "karpenter" {
+  description = <<EOF
+    karpenter = {
+      enabled = Toggle installation of Karpenter.
+      namespace = Namespace to install Karpenter.
+      version = Configure the version for Karpenter.
+    }
+  EOF
+  type = object({
+    enabled   = bool
+    namespace = string
+    version   = string
+  })
 }

@@ -156,7 +156,7 @@ install_calico() {
 _install_karpenter_chart() {
   helm_cmd upgrade "karpenter" \
     oci://public.ecr.aws/karpenter/karpenter \
-    --version "1.0.6" \
+    --version "${karpenter_version}" \
     --kubeconfig "$kubeconfig" \
     --namespace "${karpenter_namespace}" \
     --set "settings.clusterName=${cluster_name}" \

@@ -303,10 +303,17 @@ variable "storage_info" {
 }
 
 variable "karpenter" {
-  description = "Karpenter enabled toggle and namespace to install karpenter"
+  description = <<EOF
+    karpenter = {
+      enabled = Toggle installation of Karpenter.
+      namespace = Namespace to install Karpenter.
+      version = Configure the version for Karpenter.
+    }
+  EOF
   type = object({
     enabled   = optional(bool, false)
     namespace = optional(string, "karpenter")
+    version   = optional(string, "1.0.6")
   })
 
   default = {}
