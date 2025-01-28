@@ -215,6 +215,14 @@ variable "storage" {
         }
       }
       netapp = {
+        migrate_from_efs = {
+          enabled =  When enabled, both EFS and NetApp resources will be provisioned simultaneously during the migration period.
+          datasync = {
+            enabled  = Toggle to enable AWS DataSync for automated data transfer from EFS to NetApp FSx.
+            schedule = Cron-style schedule for the DataSync task, specifying how often the data transfer will occur (default: hourly).
+            verify_mode = One of: POINT_IN_TIME_CONSISTENT, ONLY_FILES_TRANSFERRED, NONE.
+          }
+        }
         deployment_type = netapp ontap deployment type,('MULTI_AZ_1', 'MULTI_AZ_2', 'SINGLE_AZ_1', 'SINGLE_AZ_2')
         storage_capacity = Filesystem Storage capacity
         throughput_capacity = Filesystem throughput capacity
@@ -234,7 +242,6 @@ variable "storage" {
           storage_efficiency_enabled = Toggle storage_efficiency_enabled
           junction_path              = filesystem junction path
           size_in_megabytes          = The size of the volume
-        }
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
@@ -265,9 +272,10 @@ variable "storage" {
       migrate_from_efs = optional(object({
         enabled = optional(bool, false)
         datasync = optional(object({
-          enabled  = optional(bool, false)
-          target   = optional(string, "netapp")
-          schedule = optional(string, "cron(0 * * * ? *)")
+          enabled     = optional(bool, false)
+          target      = optional(string, "netapp")
+          schedule    = optional(string, "cron(0 */4 * * ? *)")
+          verify_mode = optional(string, "ONLY_FILES_TRANSFERRED")
         }), {})
       }), {})
       deployment_type                   = optional(string, "SINGLE_AZ_1")
