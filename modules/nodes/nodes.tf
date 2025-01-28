@@ -83,7 +83,7 @@ resource "aws_eks_node_group" "node_groups" {
   release_version      = each.value.node_group.ami != null ? null : (each.value.node_group.gpu ? nonsensitive(data.aws_ssm_parameter.eks_gpu_ami_release_version.value) : nonsensitive(data.aws_ssm_parameter.eks_ami_release_version.value))
   node_group_name      = "${var.eks_info.cluster.specs.name}-${each.key}"
   node_role_arn        = var.eks_info.nodes.roles[0].arn
-  subnet_ids           = [each.value.subnet.subnet_id]
+  subnet_ids           = try(lookup(each.value.node_group, "single_nodegroup", false), false) ? [for s in values(each.value.subnet) : s.subnet_id] : [each.value.subnet.subnet_id]
   force_update_version = true
   scaling_config {
     min_size     = each.value.node_group.min_per_az
@@ -134,7 +134,7 @@ locals {
     {
       name  = name
       key   = "k8s.io/cluster-autoscaler/node-template/label/topology.ebs.csi.aws.com/zone"
-      value = v.subnet.az
+      value = join(",", v.node_group.availability_zones)
     },
     {
       name  = name

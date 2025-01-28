@@ -1,7 +1,20 @@
 {
   "Version": "2012-10-17",
   "Statement": [
-
+    {
+      "Sid": "SQSGated",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:createqueue",
+        "sqs:deletequeue",
+        "sqs:tagqueue",
+        "sqs:getqueueattributes",
+        "sqs:listqueuetags"
+      ],
+      "Resource": [
+        "arn:${partition}:sqs:*:*:${deploy_id}*"
+      ]
+    },
     {
       "Sid": "LambdaGated",
       "Effect": "Allow",

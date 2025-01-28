@@ -103,7 +103,7 @@ variable "eks_info" {
   type = object({
     k8s_pre_setup_sh_file = string
     cluster = object({
-      addons = optional(list(string), ["kube-proxy", "coredns", "vpc-cni"])
+      addons = optional(list(string), ["kube-proxy", "coredns", "vpc-cni", "eks-pod-identity-agent"])
       vpc_cni = optional(object({
         prefix_delegation = optional(bool, false)
         annotate_pod_ip   = optional(bool, true)
@@ -282,6 +282,7 @@ variable "default_node_groups" {
           )
       })
   })
+  default = { platform = { availability_zone_ids = [] }, compute = { availability_zone_ids = [] }, gpu = { availability_zone_ids = [] } }
 }
 
 variable "additional_node_groups" {
@@ -321,6 +322,39 @@ variable "additional_node_groups" {
   default = {}
 }
 
+variable "karpenter_node_groups" {
+  description = "Node groups for karpenter."
+  type = map(object({
+    single_nodegroup           = optional(bool, false)
+    ami                        = optional(string, null)
+    bootstrap_extra_args       = optional(string, "")
+    instance_types             = optional(list(string), ["m6a.large"])
+    spot                       = optional(bool, false)
+    min_per_az                 = optional(number, 1)
+    max_per_az                 = optional(number, 3)
+    max_unavailable_percentage = optional(number, 50)
+    max_unavailable            = optional(number)
+    desired_per_az             = optional(number, 1)
+    availability_zone_ids      = list(string)
+    labels = optional(map(string), {
+      "dominodatalab.com/node-pool" = "karpenter"
+    })
+    taints = optional(list(object({
+      key    = string
+      value  = optional(string)
+      effect = string
+    })), [])
+    tags = optional(map(string), {})
+    gpu  = optional(bool, null)
+    volume = optional(object({
+      size       = optional(string, "30")
+      type       = optional(string, "gp3")
+      iops       = optional(number)
+      throughput = optional(number, 500)
+    }), {})
+  }))
+  default = {}
+}
 
 variable "tags" {
   type        = map(string)

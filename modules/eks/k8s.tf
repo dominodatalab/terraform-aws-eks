@@ -11,6 +11,8 @@ module "k8s_setup" {
   bastion_info      = var.bastion_info
   eks_info          = local.eks_info
   use_fips_endpoint = var.use_fips_endpoint
+  cluster_name      = var.deploy_id
+  karpenter         = var.karpenter
 
   depends_on = [null_resource.kubeconfig]
 }

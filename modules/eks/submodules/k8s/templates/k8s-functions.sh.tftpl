@@ -105,34 +105,16 @@ check_remove_calico() {
   fi
 }
 
-install_calico() {
-  check_remove_calico
-
+install_helm_chart() {
   local max_retries=3
   local sleep_duration=10
 
   for i in $(seq 1 $max_retries); do
     echo "Attempt $i of $max_retries..."
 
-    if helm_cmd upgrade "calico-tigera-operator" \
-      tigera-operator \
-      --repo "https://projectcalico.docs.tigera.io/charts" \
-      --version "${calico_version}" \
-      --kubeconfig "$kubeconfig" \
-      --namespace "tigera-operator" \
-      --set installation.kubernetesProvider=EKS \
-      --set installation.cni.type=AmazonVPC \
-      --set installation.registry="${calico_image_registry}/" \
-      --set installation.fipsMode="${calico_fips_mode}" \
-      --set tigeraOperator.registry="${calico_image_registry}" \
-      --wait \
-      --timeout 10m \
-      --create-namespace \
-      --install; then
-
+    if ($1); then
       printf "$GREEN Calico installation succeeded. $EC \n"
       break
-
     else
       printf "$YELLOW Helm install attempt $i failed. $EC \n"
 
@@ -146,6 +128,55 @@ install_calico() {
 
     fi
   done
+}
+
+_install_calico_chart() {
+  helm_cmd upgrade "calico-tigera-operator" \
+    tigera-operator \
+    --repo "https://projectcalico.docs.tigera.io/charts" \
+    --version "${calico_version}" \
+    --kubeconfig "$kubeconfig" \
+    --namespace "tigera-operator" \
+    --set installation.kubernetesProvider=EKS \
+    --set installation.cni.type=AmazonVPC \
+    --set installation.registry="${calico_image_registry}/" \
+    --set installation.fipsMode="${calico_fips_mode}" \
+    --set tigeraOperator.registry="${calico_image_registry}" \
+    --wait \
+    --timeout 10m \
+    --create-namespace \
+    --install
+}
+
+install_calico() {
+  check_remove_calico
+  install_helm_chart "_install_calico_chart"
+}
+
+_install_karpenter_chart() {
+  helm_cmd upgrade "karpenter" \
+    oci://public.ecr.aws/karpenter/karpenter \
+    --version "${karpenter_version}" \
+    --kubeconfig "$kubeconfig" \
+    --namespace "${karpenter_namespace}" \
+    --set "settings.clusterName=${cluster_name}" \
+    --set controller.resources.requests.cpu=1 \
+    --set controller.resources.requests.memory=1Gi \
+    --set controller.resources.limits.cpu=1 \
+    --set controller.resources.limits.memory=1Gi \
+    --set replicas=1 \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=dominodatalab.com/node-pool \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=karpenter \
+    --set affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey=kubernetes.io/hostname \
+    --wait \
+    --timeout 10m \
+    --create-namespace \
+    --install
+}
+
+install_karpenter() {
+  install_helm_chart "_install_karpenter_chart"
 }
 
 validate_url() {

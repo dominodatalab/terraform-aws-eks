@@ -105,3 +105,24 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+
+variable "cluster_name" {
+  description = "Name of EKS clsuter"
+  type        = string
+  default     = ""
+}
+
+variable "karpenter" {
+  description = <<EOF
+    karpenter = {
+      enabled = Toggle installation of Karpenter.
+      namespace = Namespace to install Karpenter.
+      version = Configure the version for Karpenter.
+    }
+  EOF
+  type = object({
+    enabled   = bool
+    namespace = string
+    version   = string
+  })
+}

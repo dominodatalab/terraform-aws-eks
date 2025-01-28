@@ -24,7 +24,8 @@ resource "aws_security_group" "eks_nodes" {
     create_before_destroy = true
     ignore_changes = [
       name,
-      description
+      description,
+      tags
     ]
   }
   tags = {
