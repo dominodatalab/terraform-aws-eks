@@ -132,26 +132,70 @@ deploy_latest_ami_nodes() {
   deploy 'nodes'
 }
 
-# Not used atm, scaffold for seamless future use.
 set_infra_imports() {
-  printf "Nothing to import into the infra module.\n"
-  local import_file="${INFRA_DIR}/imports.tf.tmp"
-  local import_file_tmp="${import_file}.tmp"
-  return 0 # Remove return if used.
-  set_import "$import_file" "$import_file_tmp"
+  printf "Generating infra imports.\n"
+  local import_file_tmp="${INFRA_DIR}/imports.tf.tmp"
+  local region
+  local deploy_id
+  local fs_id
+
+  # region=$(hcledit attribute get region -f "$INFRA_VARS") || {
+  #   echo "Failed to get region"
+  #   return 1
+  # }
+  region="us-west-2"
+
+  deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS") || {
+    echo "Failed to get deploy_id"
+    return 1
+  }
+
+  : >"$import_file_tmp"
+  printf "Generating infra imports for EFS mount points.\n"
+
+  fs_id=$(aws efs describe-file-systems \
+    --region "$region" \
+    --query "FileSystems[?Tags[?Key==\`deploy_id\` && Value==\`$deploy_id\`]].FileSystemId" \
+    --output text) || {
+    echo "Failed to get fs_id"
+    return 1
+  }
+
+  if [ -z "${fs_id// /}" ]; then
+    echo "Error: fs_id is not set or empty."
+    return 1
+  fi
+
+  printf "Processing file system: %s.\n" "$fs_id"
+
+  aws efs describe-mount-targets \
+    --file-system-id "$fs_id" \
+    --region $region \
+    --query 'MountTargets[*].[AvailabilityZoneId, MountTargetId]' \
+    --output json | jq -c '.[]' | while read -r mount_point; do
+    az_id=$(echo "$mount_point" | jq -r '.[0]')
+    mount_target_id=$(echo "$mount_point" | jq -r '.[1]')
+    cat <<-EOF >>"$import_file_tmp"
+import {
+  to =  module.infra.module.storage.aws_efs_mount_target.eks_cluster["$az_id"]
+  id = "$mount_target_id"
+}
+EOF
+  done
+
+  set_import "$INFRA_DIR" "$import_file_tmp"
 }
 
 # Not used atm, scaffold for seamless future use.
 set_cluster_imports() {
   printf "Nothing to import into the cluster module.\n"
-  local import_file="${CLUSTER_DIR}/imports.tf.tmp"
-  local import_file_tmp="${import_file}.tmp"
+  local import_file_tmp="${CLUSTER_DIR}/imports.tf.tmp"
   return 0 # Remove return if used.
-  set_import "$import_file" "$import_file_tmp"
+  set_import "$CLUSTER_DIR" "$import_file_tmp"
 }
 
 set_nodes_imports() {
-  local import_file_tmp="${NODES_DIR}/nodes-imports.tf.tmp"
+  local import_file_tmp="${NODES_DIR}/imports.tf.tmp"
   cat <<-EOF >"$import_file_tmp"
 import {
   to = module.nodes.aws_eks_addon.pre_compute_addons["vpc-cni"]
@@ -170,8 +214,8 @@ set_import() {
 
   if [[ ! -f "$import_file" ]] || ! grep -Fqx -f "$import_file_tmp" "$import_file"; then
     printf "Adding import from %s to %s.\n\n" "$import_file_tmp" "$import_file"
-    cat "$import_file_tmp" >>"$import_file"
-    printf "Import file:\n" && cat "$import_file"
+    printf "Import file:\n"
+    tee -a "$import_file" <"$import_file_tmp"
   else
     printf "Import on %s already present on %s.\n" "$import_file" "$import_file_tmp"
   fi

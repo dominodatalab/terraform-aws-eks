@@ -63,7 +63,7 @@ commands:
       - run:
           name: Set root infra module imports
           working_directory: tests/deploy
-          command: bash ci-deploy.sh set_infra_imports
+          command: bash -xp ci-deploy.sh set_infra_imports
 
   pre_upgrade_updates:
     description: "Updates necessary for upgrade."
