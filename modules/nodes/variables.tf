@@ -353,7 +353,7 @@ variable "karpenter_node_groups" {
       throughput = optional(number, 500)
     }), {})
   }))
-  default = {}
+  default = null
 }
 
 variable "tags" {
