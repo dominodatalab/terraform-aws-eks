@@ -71,6 +71,183 @@ Conditions:
   EmailProvided: !Not [!Equals [!Ref EmailAddress, ""]]
 
 Resources:
+  FSxOntapStorageScaler:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}
+      Description: Amazon FSx for NetApp ONTAP dynamic storage scaling function
+      Environment:
+        Variables:
+          fileSystemId: !Ref FileSystemId
+          snsTopicArn: !Sub ${SNSTopic}
+          maxFSxOntapSizeinGiB: !Ref MaxFSxSizeinGiB
+          percentIncrease: !Ref PercentIncrease
+      Handler: lambda_function.lambda_handler
+      Role: !Sub ${FSxOntapStorageScalerRole.Arn}
+      Code:
+        S3Bucket: !Sub solution-references-${AWS::Region}
+        S3Key: "fsx/DynamicScaling/Ontapstoragescaling.zip"
+      Runtime: python3.12
+      Timeout: 300
+
+  FSxOntapStorageScalerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub ${FSxOntapStorageScaler}
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}
+
+  FSxOntapStorageScalerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-${AWS::Region}
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
+      Path: /
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}-${AWS::Region}
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+              - Effect: Allow
+                Action:
+                  - fsx:UpdateFileSystem
+                  - fsx:DescribeFileSystems
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${FileSystemId}-storage-capacity-alarm-notification
+
+  SnsKey:
+    Type: "AWS::KMS::Key"
+    Properties:
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "sns.amazonaws.com"
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:CreateGrant"
+              - "kms:ListGrants"
+              - "kms:DescribeKey"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "cloudwatch.amazonaws.com"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "lambda.amazonaws.com"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${FSxOntapStorageScalerRole}"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey*"
+            Resource: "*"
+
+  SNSTopic:
+    DependsOn: SnsKey
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName:
+        !Join ["", [!Ref FileSystemId, "-storage-capacity-alarm-notification"]]
+      Subscription:
+        - !If
+          - EmailProvided
+          - Endpoint: !Ref EmailAddress
+            Protocol: "email"
+          - !Ref "AWS::NoValue"
+        - Endpoint: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}
+          Protocol: lambda
+      TopicName:
+        !Join ["", [!Ref FileSystemId, "-storage-capacity-alarm-notification"]]
+      KmsMasterKeyId: !Ref SnsKey
+
+  LowFreeDataStorageCapacityAlarm:
+    DependsOn: SNSTopic
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Sub ${SNSTopic}
+      AlarmDescription:
+        !Join ["", ["Low free storage capacity alarm - ", !Ref FileSystemId]]
+      AlarmName:
+        !Join ["", ["Low free storage capacity alarm - ", !Ref FileSystemId]]
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: "(m2*100)/m1"
+          Id: "e1"
+          Label: PercentageStorageUsed
+          ReturnData: true
+        - Id: "m1"
+          Label: StorageCapacity
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: FileSystemId
+                  Value: !Ref FileSystemId
+                - Name: StorageTier
+                  Value: SSD
+                - Name: DataType
+                  Value: All
+              MetricName: StorageCapacity
+              Namespace: AWS/FSx
+            Period: 60
+            Stat: Maximum
+          ReturnData: false
+        - Id: "m2"
+          Label: StorageUsed
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: FileSystemId
+                  Value: !Ref FileSystemId
+                - Name: StorageTier
+                  Value: SSD
+                - Name: DataType
+                  Value: All
+              MetricName: StorageUsed
+              Namespace: AWS/FSx
+            Period: 60
+            Stat: Average
+          ReturnData: false
+      Threshold: !Ref LowFreeDataStorageCapacityThreshold
+      TreatMissingData: missing
+
   AlarmResetLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -138,46 +315,3 @@ Resources:
       Action: "lambda:InvokeFunction"
       FunctionName: !Ref AlarmResetLambda
       Principal: "events.amazonaws.com"
-
-  LowFreeDataStorageCapacityAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmActions:
-        - !Sub ${SNSTopic}
-      AlarmDescription:
-        !Join ["", ["Low free storage capacity alarm - ", !Ref FileSystemId]]
-      AlarmName:
-        !Join ["", ["Low free storage capacity alarm - ", !Ref FileSystemId]]
-      ComparisonOperator: GreaterThanThreshold
-      EvaluationPeriods: 5
-      Metrics:
-        - Expression: "(m2*100)/m1"
-          Id: "e1"
-          Label: PercentageStorageUsed
-          ReturnData: true
-        - Id: "m1"
-          Label: StorageCapacity
-          MetricStat:
-            Metric:
-              Dimensions:
-                - Name: FileSystemId
-                  Value: !Ref FileSystemId
-              MetricName: StorageCapacity
-              Namespace: AWS/FSx
-            Period: 60
-            Stat: Maximum
-          ReturnData: false
-        - Id: "m2"
-          Label: StorageUsed
-          MetricStat:
-            Metric:
-              Dimensions:
-                - Name: FileSystemId
-                  Value: !Ref FileSystemId
-              MetricName: StorageUsed
-              Namespace: AWS/FSx
-            Period: 60
-            Stat: Average
-          ReturnData: false
-      Threshold: !Ref LowFreeDataStorageCapacityThreshold
-      TreatMissingData: missing
