@@ -71,37 +71,34 @@ Conditions:
   EmailProvided: !Not [!Equals [!Ref EmailAddress, ""]]
 
 Resources:
-  FSxOntapStorageScaler:
+  AlarmResetLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}
-      Description: Amazon FSx for NetApp ONTAP dynamic storage scaling function
+      FunctionName: !Sub ${AWS::StackName}-reset-alarm
+      Description: "Lambda function to reset the CloudWatch alarm every 6 hours."
+      Handler: index.lambda_handler
+      Runtime: python3.12
+      Role: !GetAtt AlarmResetLambdaRole.Arn
+      Timeout: 60
       Environment:
         Variables:
-          fileSystemId: !Ref FileSystemId
-          snsTopicArn: !Sub ${SNSTopic}
-          maxFSxOntapSizeinGiB: !Ref MaxFSxSizeinGiB
-          percentIncrease: !Ref PercentIncrease
-      Handler: lambda_function.lambda_handler
-      Role: !Sub ${FSxOntapStorageScalerRole.Arn}
+          ALARM_NAME: !Sub "Low free storage capacity alarm - ${FileSystemId}"
       Code:
-        S3Bucket: !Sub solution-references-${AWS::Region}
-        S3Key: "fsx/DynamicScaling/Ontapstoragescaling.zip"
-      Runtime: python3.12
-      Timeout: 300
+        ZipFile: |
+          import boto3
+          import os
 
-  FSxOntapStorageScalerLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub ${FSxOntapStorageScaler}
-      Action: lambda:InvokeFunction
-      Principal: sns.amazonaws.com
-      SourceArn: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${SNSTopic.TopicName}
+          cloudwatch = boto3.client('cloudwatch')
+          alarm_name = os.environ['ALARM_NAME']
 
-  FSxOntapStorageScalerRole:
+          def lambda_handler(event, context):
+              cloudwatch.disable_alarm_actions(AlarmNames=[alarm_name])
+              cloudwatch.enable_alarm_actions(AlarmNames=[alarm_name])
+              return {"status": "Alarm reset triggered"}
+
+  AlarmResetLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-${AWS::Region}
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -109,95 +106,40 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AWSLambdaExecute"
-      Path: /
       Policies:
-        - PolicyName: !Sub ${AWS::StackName}-${AWS::Region}
+        - PolicyName: CloudWatchAlarmResetPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
-              - Effect: Allow
-                Action:
-                  - fsx:UpdateFileSystem
-                  - fsx:DescribeFileSystems
+                  - cloudwatch:EnableAlarmActions
+                  - cloudwatch:DisableAlarmActions
                 Resource: "*"
               - Effect: Allow
                 Action:
-                  - sns:Publish
-                Resource: !Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:${FileSystemId}-storage-capacity-alarm-notification
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
 
-  SnsKey:
-    Type: "AWS::KMS::Key"
+  AlarmResetSchedule:
+    Type: AWS::Events::Rule
     Properties:
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
-            Action: "kms:*"
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              Service: !Sub "sns.amazonaws.com"
-            Action:
-              - "kms:Encrypt"
-              - "kms:Decrypt"
-              - "kms:ReEncrypt*"
-              - "kms:GenerateDataKey*"
-              - "kms:CreateGrant"
-              - "kms:ListGrants"
-              - "kms:DescribeKey"
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              Service: !Sub "cloudwatch.amazonaws.com"
-            Action:
-              - "kms:Decrypt"
-              - "kms:GenerateDataKey*"
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              Service: !Sub "lambda.amazonaws.com"
-            Action:
-              - "kms:Decrypt"
-              - "kms:GenerateDataKey*"
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${FSxOntapStorageScalerRole}"
-            Action:
-              - "kms:Decrypt"
-              - "kms:GenerateDataKey*"
-            Resource: "*"
+      ScheduleExpression: "rate(6 hours)"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt AlarmResetLambda.Arn
+          Id: "AlarmResetLambdaTarget"
 
-  SNSTopic:
-    DependsOn: SnsKey
-    Type: AWS::SNS::Topic
+  AlarmResetPermission:
+    Type: AWS::Lambda::Permission
     Properties:
-      DisplayName:
-        !Join ["", [!Ref FileSystemId, "-storage-capacity-alarm-notification"]]
-      Subscription:
-        - !If
-          - EmailProvided
-          - Endpoint: !Ref EmailAddress
-            Protocol: "email"
-          - !Ref "AWS::NoValue"
-        - Endpoint: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}
-          Protocol: lambda
-      TopicName:
-        !Join ["", [!Ref FileSystemId, "-storage-capacity-alarm-notification"]]
-      KmsMasterKeyId: !Ref SnsKey
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref AlarmResetLambda
+      Principal: "events.amazonaws.com"
 
   LowFreeDataStorageCapacityAlarm:
-    DependsOn: SNSTopic
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmActions:
@@ -220,10 +162,6 @@ Resources:
               Dimensions:
                 - Name: FileSystemId
                   Value: !Ref FileSystemId
-                - Name: StorageTier
-                  Value: SSD
-                - Name: DataType
-                  Value: All
               MetricName: StorageCapacity
               Namespace: AWS/FSx
             Period: 60
@@ -236,10 +174,6 @@ Resources:
               Dimensions:
                 - Name: FileSystemId
                   Value: !Ref FileSystemId
-                - Name: StorageTier
-                  Value: SSD
-                - Name: DataType
-                  Value: All
               MetricName: StorageUsed
               Namespace: AWS/FSx
             Period: 60
