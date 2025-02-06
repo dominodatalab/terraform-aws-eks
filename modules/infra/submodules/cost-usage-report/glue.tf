@@ -15,13 +15,13 @@ resource "aws_glue_security_configuration" "lambda_config" {
 
   encryption_configuration {
     cloudwatch_encryption {
-      cloudwatch_encryption_mode = "SSE-KMS"
-      kms_key_arn                = var.kms_info.key_arn
+      cloudwatch_encryption_mode = var.kms_info.enabled ? "SSE-KMS" : "DISABLED"
+      kms_key_arn                = local.kms_key_arn
     }
 
     job_bookmarks_encryption {
-      job_bookmarks_encryption_mode = "CSE-KMS"
-      kms_key_arn                   = var.kms_info.key_arn
+      job_bookmarks_encryption_mode = var.kms_info.enabled ? "CSE-KMS" : "DISABLED"
+      kms_key_arn                   = local.kms_key_arn
     }
 
     s3_encryption {
