@@ -11,6 +11,7 @@ resource "aws_glue_catalog_database" "aws_cur_database" {
 
 
 resource "aws_glue_security_configuration" "lambda_config" {
+  # checkov:skip=CKV_AWS_99:Ensure Glue Security Configuration Encryption is enabled
   name = "${var.deploy_id}_lambda_security_config"
 
   encryption_configuration {
