@@ -43,6 +43,7 @@
         "lambda:GetFunctionCodeSigningConfig",
         "lambda:DeleteCodeSigningConfig",
         "lambda:TagResource",
+        "lambda:UntagResource",
         "lambda:ListTags"
       ],
       "Resource": "*"
@@ -63,6 +64,7 @@
         "cur:DescribeReportDefinitions",
         "cur:DeleteReportDefinition",
         "cur:TagResource",
+        "cur:UntagResource",
         "cur:ListTagsForResource"
       ],
       "Resource": [
