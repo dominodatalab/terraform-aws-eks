@@ -11,21 +11,22 @@ resource "aws_glue_catalog_database" "aws_cur_database" {
 
 
 resource "aws_glue_security_configuration" "lambda_config" {
+  # checkov:skip=CKV_AWS_99:Ensure Glue Security Configuration Encryption is enabled
   name = "${var.deploy_id}_lambda_security_config"
 
   encryption_configuration {
     cloudwatch_encryption {
-      cloudwatch_encryption_mode = "SSE-KMS"
+      cloudwatch_encryption_mode = var.kms_info.enabled ? "SSE-KMS" : "DISABLED"
       kms_key_arn                = local.kms_key_arn
     }
 
     job_bookmarks_encryption {
-      job_bookmarks_encryption_mode = "CSE-KMS"
+      job_bookmarks_encryption_mode = var.kms_info.enabled ? "CSE-KMS" : "DISABLED"
       kms_key_arn                   = local.kms_key_arn
     }
 
     s3_encryption {
-      s3_encryption_mode = "SSE-KMS"
+      s3_encryption_mode = var.kms_info.enabled ? "SSE-KMS" : "SSE-S3"
       kms_key_arn        = local.kms_key_arn
     }
   }
@@ -117,7 +118,7 @@ resource "aws_athena_workgroup" "athena_work_group" {
       output_location = "s3://${aws_s3_bucket.athena_result.bucket}/"
 
       encryption_configuration {
-        encryption_option = "SSE_KMS"
+        encryption_option = var.kms_info.enabled ? "SSE_KMS" : "SSE_S3"
         kms_key_arn       = local.kms_key_arn
       }
     }

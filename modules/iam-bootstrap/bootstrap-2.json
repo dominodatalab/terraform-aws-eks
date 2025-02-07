@@ -20,7 +20,6 @@
       "Effect": "Allow",
       "Action": [
         "lambda:CreateFunction",
-        "lambda:TagResource",
         "lambda:GetFunction",
         "lambda:ListVersionsByFunction",
         "lambda:DeleteFunction",
@@ -42,7 +41,10 @@
         "lambda:UpdateCodeSigningConfig",
         "lambda:GetCodeSigningConfig",
         "lambda:GetFunctionCodeSigningConfig",
-        "lambda:DeleteCodeSigningConfig"
+        "lambda:DeleteCodeSigningConfig",
+        "lambda:TagResource",
+        "lambda:UntagResource",
+        "lambda:ListTags"
       ],
       "Resource": "*"
     },
@@ -60,7 +62,10 @@
       "Action": [
         "cur:PutReportDefinition",
         "cur:DescribeReportDefinitions",
-        "cur:DeleteReportDefinition"
+        "cur:DeleteReportDefinition",
+        "cur:TagResource",
+        "cur:UntagResource",
+        "cur:ListTagsForResource"
       ],
       "Resource": [
         "*"
