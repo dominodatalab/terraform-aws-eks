@@ -49,6 +49,21 @@ resource "aws_vpc_endpoint" "s3" {
   }
 }
 
+resource "aws_vpc_endpoint" "s3_interface" {
+  count             = local.create_vpc ? 1 : 0
+  vpc_id            = aws_vpc.this[0].id
+  service_name      = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type = "Interface"
+  private_dns_enabled = true
+  subnet_ids          = [for s in aws_subnet.pod : s.id]
+
+  route_table_ids = concat(local.public_route_table_ids, local.private_route_table_ids, local.pod_route_table_ids)
+
+  tags = {
+    "Name" = "${var.deploy_id}-s3"
+  }
+}
+
 data "aws_prefix_list" "s3" {
   count          = local.create_vpc ? 1 : 0
   prefix_list_id = aws_vpc_endpoint.s3[0].prefix_list_id
