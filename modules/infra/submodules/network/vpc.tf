@@ -57,8 +57,6 @@ resource "aws_vpc_endpoint" "s3_interface" {
   private_dns_enabled = true
   subnet_ids          = [for s in aws_subnet.pod : s.id]
 
-  route_table_ids = concat(local.public_route_table_ids, local.private_route_table_ids, local.pod_route_table_ids)
-
   tags = {
     "Name" = "${var.deploy_id}-s3"
   }
