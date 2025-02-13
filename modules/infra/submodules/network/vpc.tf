@@ -60,6 +60,8 @@ resource "aws_vpc_endpoint" "s3_interface" {
   tags = {
     "Name" = "${var.deploy_id}-s3"
   }
+
+  depends_on = [aws_vpc_endpoint.s3]
 }
 
 data "aws_prefix_list" "s3" {
