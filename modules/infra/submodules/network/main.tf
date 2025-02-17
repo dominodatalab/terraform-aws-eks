@@ -2,6 +2,7 @@ locals {
   create_vpc          = var.network.vpc.id == null
   provided_vpc        = var.network.vpc.id != null
   create_ecr_endpoint = local.create_vpc && var.network.create_ecr_endpoint
+  create_s3_interface = local.create_vpc && var.network.create_s3_interface
 }
 
 data "aws_subnet" "public" {
