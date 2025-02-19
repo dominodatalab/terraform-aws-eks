@@ -53,6 +53,10 @@ resource "aws_launch_template" "node_groups" {
     }
   }
 
+  network_interfaces {
+    associate_public_ip_address = false
+  }
+
   lifecycle {
     precondition {
       condition     = length(setsubtract(each.value.availability_zone_ids, data.aws_ec2_instance_type_offerings.nodes[each.key].locations)) == 0
