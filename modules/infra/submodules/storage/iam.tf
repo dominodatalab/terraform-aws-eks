@@ -32,7 +32,13 @@ resource "aws_iam_policy" "s3" {
   policy = data.aws_iam_policy_document.s3.json
 }
 
+moved {
+  from = data.aws_iam_policy_document.ecr
+  to   = data.aws_iam_policy_document.ecr[0]
+}
+
 data "aws_iam_policy_document" "ecr" {
+  count = local.create_ecr ? 1 : 0
   statement {
     effect    = "Allow"
     resources = ["*"]
@@ -61,7 +67,7 @@ data "aws_iam_policy_document" "ecr" {
 }
 
 data "aws_iam_policy_document" "ecr_pull_through_cache" {
-  count = local.supports_pull_through_cache ? 1 : 0
+  count = local.create_ecr && local.supports_pull_through_cache ? 1 : 0
 
   statement {
     effect = "Allow"
@@ -79,8 +85,14 @@ data "aws_iam_policy_document" "ecr_pull_through_cache" {
   }
 }
 
+moved {
+  from = aws_iam_policy.ecr
+  to   = aws_iam_policy.ecr[0]
+}
+
 resource "aws_iam_policy" "ecr" {
+  count  = local.create_ecr ? 1 : 0
   name   = "${var.deploy_id}-ECR"
   path   = "/"
-  policy = data.aws_iam_policy_document.ecr.json
+  policy = data.aws_iam_policy_document.ecr[0].json
 }

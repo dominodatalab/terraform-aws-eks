@@ -318,7 +318,7 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
-    create_s3_interface = Create the VPC Interface Endpoint For S3.
+    create_s3_endpoint = Create the VPC Endpoint For S3.
   EOF
 
   type = object({
@@ -342,7 +342,7 @@ variable "network" {
     }), {})
     use_pod_cidr        = optional(bool, true)
     create_ecr_endpoint = optional(bool, false)
-    create_s3_interface = optional(bool, false)
+    create_s3_endpoint  = optional(bool, true)
   })
 
   default = {}
@@ -373,7 +373,7 @@ variable "bastion" {
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(netapp|efs)
+      filesystem_type = File system type(netapp|efs|none)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -470,9 +470,11 @@ variable "storage" {
       }), {})
     }), {})
     s3 = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {})
     ecr = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {}),
     enable_remote_backup = optional(bool, false)

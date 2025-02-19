@@ -20,7 +20,7 @@ output "bastion" {
 
 output "storage" {
   description = "Storage details."
-  value       = module.storage.info
+  value       = var.storage != null ? module.storage[0].info : null
 }
 
 output "tags" {
@@ -75,7 +75,7 @@ output "create_eks_role_arn" {
 
 output "monitoring_bucket" {
   description = "Monitoring Bucket"
-  value       = module.storage.info.s3.buckets.monitoring.bucket_name
+  value       = var.storage != null ? (var.storage.s3.create ? module.storage[0].info.s3.buckets.monitoring.bucket_name : null) : null
 }
 
 output "cost_usage_report" {

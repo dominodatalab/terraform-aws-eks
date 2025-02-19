@@ -201,7 +201,7 @@ variable "additional_node_groups" {
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(netapp|efs)
+      filesystem_type = File system type(netapp|efs|none)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -298,9 +298,11 @@ variable "storage" {
       }), {})
     }), {})
     s3 = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {})
     ecr = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {}),
     enable_remote_backup = optional(bool, false)

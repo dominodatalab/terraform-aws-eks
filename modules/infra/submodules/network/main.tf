@@ -38,12 +38,12 @@ locals {
   private_cidr_blocks = try(data.aws_subnet.private[0].cidr_block, slice(local.subnet_cidr_blocks, local.num_of_azs, length(local.subnet_cidr_blocks)))
   ## Determine cidr blocks for pod network
   base_pod_cidr_network_bits = try(tonumber(regex("[^/]*$", var.network.cidrs.pod)), "")
-  pod_cidr_blocks = try(data.aws_subnet.pod[0].cidr_block,
+  pod_cidr_blocks = tolist(try(data.aws_subnet.pod[0].cidr_block,
     !var.network.use_pod_cidr ? [] :
     cidrsubnets(var.network.cidrs.pod,
       [for n in range(0, local.num_of_azs) :
     var.network.network_bits.pod - local.base_pod_cidr_network_bits]...)
-  )
+  ))
 
   public_subnets = local.create_vpc ? [
     for cidr, c in local.public_cidrs :
