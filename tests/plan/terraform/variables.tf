@@ -59,6 +59,7 @@ variable "ssh_pvt_key_path" {
 
 variable "eks" {
   description = <<EOF
+    run_k8s_setup = Toggle to run the k8s setup.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
     kubeconfig = {
@@ -84,8 +85,9 @@ variable "eks" {
   EOF
 
   type = object({
-    k8s_version  = optional(string, "1.27")
-    nodes_master = optional(bool, false)
+    run_k8s_setup = optional(bool, true)
+    k8s_version   = optional(string, "1.27")
+    nodes_master  = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
       path       = optional(string, null)
