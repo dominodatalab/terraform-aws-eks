@@ -2,6 +2,7 @@
 
 variable "eks" {
   description = <<EOF
+    run_k8s_setup = Toggle to run the k8s setup.
     service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
@@ -28,6 +29,7 @@ variable "eks" {
   EOF
 
   type = object({
+    run_k8s_setup      = optional(bool)
     service_ipv4_cidr  = optional(string)
     creation_role_name = optional(string, null)
     k8s_version        = optional(string)
