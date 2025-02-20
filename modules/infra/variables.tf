@@ -318,6 +318,7 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
+    create_s3_interface = Create the VPC Interface Endpoint For S3.
   EOF
 
   type = object({
@@ -341,6 +342,7 @@ variable "network" {
     }), {})
     use_pod_cidr        = optional(bool, true)
     create_ecr_endpoint = optional(bool, false)
+    create_s3_interface = optional(bool, false)
   })
 
   default = {}

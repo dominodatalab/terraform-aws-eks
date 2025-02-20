@@ -24,6 +24,9 @@ variable "network_info" {
     ecr_endpoint = {
       security_group_id = ECR Endpoint security group id.
     }
+    s3_endpoint = {
+      security_group_id = S3 Endpoint security group id.
+    }
     subnets = {
       public = List of public Subnets.
       [{
@@ -51,6 +54,9 @@ variable "network_info" {
   type = object({
     vpc_id = string
     ecr_endpoint = optional(object({
+      security_group_id = optional(string, null)
+    }), null)
+    s3_endpoint = optional(object({
       security_group_id = optional(string, null)
     }), null)
     subnets = object({

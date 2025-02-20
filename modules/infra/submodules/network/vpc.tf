@@ -49,6 +49,39 @@ resource "aws_vpc_endpoint" "s3" {
   }
 }
 
+resource "aws_security_group" "s3_endpoint" {
+  count       = local.create_s3_interface ? 1 : 0
+  name        = "${var.deploy_id}-s3-endpoint"
+  description = "S3 Endpoint security group"
+  vpc_id      = aws_vpc.this[0].id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = {
+    "Name" = "${var.deploy_id}-s3-endpoint"
+  }
+}
+
+resource "aws_vpc_endpoint" "s3_interface" {
+  count               = local.create_s3_interface ? 1 : 0
+  vpc_id              = aws_vpc.this[0].id
+  service_name        = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+  subnet_ids          = [for s in aws_subnet.pod : s.id]
+
+  security_group_ids = [
+    aws_security_group.s3_endpoint[0].id,
+  ]
+
+  tags = {
+    "Name" = "${var.deploy_id}-s3"
+  }
+
+  depends_on = [aws_vpc_endpoint.s3]
+}
+
 data "aws_prefix_list" "s3" {
   count          = local.create_vpc ? 1 : 0
   prefix_list_id = aws_vpc_endpoint.s3[0].prefix_list_id
