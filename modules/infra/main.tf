@@ -27,13 +27,7 @@ module "cost_usage_report" {
   }
 }
 
-moved {
-  from = module.storage
-  to   = module.storage[0]
-}
-
 module "storage" {
-  count             = var.storage != null ? 1 : 0
   source            = "./submodules/storage"
   deploy_id         = var.deploy_id
   network_info      = module.network.info

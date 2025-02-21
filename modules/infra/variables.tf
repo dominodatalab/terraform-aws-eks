@@ -341,7 +341,7 @@ variable "network" {
       pod = optional(string, "100.64.0.0/16")
     }), {})
     use_pod_cidr        = optional(bool, true)
-    create_ecr_endpoint = optional(bool, false)
+    create_ecr_endpoint = optional(bool, true)
     create_s3_endpoint  = optional(bool, true)
   })
 

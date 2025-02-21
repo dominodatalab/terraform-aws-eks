@@ -1,4 +1,4 @@
-deploy_id        = "plantest0017"
+deploy_id        = "plantest0012"
 region           = "us-west-2"
 ssh_pvt_key_path = "domino.pem"
 
