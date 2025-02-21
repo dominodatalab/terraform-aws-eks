@@ -67,7 +67,7 @@ module "network" {
   region              = var.region
   node_groups         = local.node_groups
   network             = var.network
-  flow_log_bucket_arn = local.create_s3 ? { arn = module.storage[0].info.s3.buckets.monitoring.arn } : null
+  flow_log_bucket_arn = local.create_s3 ? { arn = module.storage.info.s3.buckets.monitoring.arn } : null
 }
 
 module "vpn" {
@@ -110,7 +110,7 @@ module "bastion" {
 locals {
   cost_usage_report_info = var.domino_cur.provision_cost_usage_report && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
   bastion_info           = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
-  add_s3_pol             = local.create_s3 ? [module.storage[0].info.s3.iam_policy_arn] : []
-  add_ecr_pol            = local.create_ecr ? concat([module.storage[0].info.ecr.iam_policy_arn], local.add_s3_pol) : local.add_s3_pol
+  add_s3_pol             = local.create_s3 ? [module.storage.info.s3.iam_policy_arn] : []
+  add_ecr_pol            = local.create_ecr ? concat([module.storage.info.ecr.iam_policy_arn], local.add_s3_pol) : local.add_s3_pol
   node_iam_policies      = local.cost_usage_report_info != null ? concat(local.add_ecr_pol, [local.cost_usage_report_info.cur_iam_policy_arn]) : local.add_ecr_pol
 }
