@@ -81,6 +81,14 @@ variable "network" {
 
   validation {
     condition = alltrue([
+      for key, bits in coalesce(var.network.network_bits, {}) :
+      bits > tonumber(regex("[^/]*$", var.network.cidrs.vpc)) if var.network.cidrs.vpc != null
+    ])
+    error_message = "Each network_bits value must be greater than the VPC CIDR's network bits (e.g., > 19 for '10.0.0.0/19')."
+  }
+
+  validation {
+    condition = alltrue([
       for name, cidr in coalesce(var.network.cidrs, {}) :
       can(cidrhost(cidr, 0)) &&
       parseint(split("/", cidr)[1], 10) <= 32 && parseint(split("/", cidr)[1], 10) >= 8
