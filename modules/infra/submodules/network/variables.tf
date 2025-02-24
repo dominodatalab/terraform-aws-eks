@@ -80,9 +80,12 @@ variable "network" {
   })
 
   validation {
-    condition = alltrue([for name, cidr in var.network.cidrs : try(cidrhost(cidr, 0), false) == regex("^(.*)/", cidr)[0] &&
-    try(cidrnetmask(cidr), false) == "255.255.0.0"])
-    error_message = "Each of network.cidrs must be a valid CIDR block."
+    condition = alltrue([
+      for name, cidr in coalesce(var.network.cidrs, {}) :
+      can(cidrhost(cidr, 0)) &&
+      parseint(split("/", cidr)[1], 10) <= 32 && parseint(split("/", cidr)[1], 10) >= 8
+    ])
+    error_message = "Each of network.cidrs must be a valid CIDR block with a mask between /8 and /32."
   }
 
   validation {
