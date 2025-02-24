@@ -37,7 +37,7 @@ resource "aws_default_security_group" "default" {
 }
 
 resource "aws_vpc_endpoint" "s3" {
-  count             = local.create_vpc && var.network.create_s3_endpoint ? 1 : 0
+  count             = local.create_vpc ? 1 : 0
   vpc_id            = aws_vpc.this[0].id
   service_name      = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type = "Gateway"
