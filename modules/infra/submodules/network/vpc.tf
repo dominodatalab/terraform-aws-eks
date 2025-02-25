@@ -50,7 +50,7 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 resource "aws_security_group" "s3_endpoint" {
-  count       = local.create_s3_interface ? 1 : 0
+  count       = local.create_s3_endpoint ? 1 : 0
   name        = "${var.deploy_id}-s3-endpoint"
   description = "S3 Endpoint security group"
   vpc_id      = aws_vpc.this[0].id
@@ -64,7 +64,7 @@ resource "aws_security_group" "s3_endpoint" {
 }
 
 resource "aws_vpc_endpoint" "s3_interface" {
-  count               = local.create_s3_interface ? 1 : 0
+  count               = local.create_s3_endpoint ? 1 : 0
   vpc_id              = aws_vpc.this[0].id
   service_name        = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type   = "Interface"
@@ -83,7 +83,7 @@ resource "aws_vpc_endpoint" "s3_interface" {
 }
 
 data "aws_prefix_list" "s3" {
-  count          = local.create_vpc ? 1 : 0
+  count          = local.create_vpc && var.network.create_s3_endpoint ? 1 : 0
   prefix_list_id = aws_vpc_endpoint.s3[0].prefix_list_id
 }
 
