@@ -1,4 +1,4 @@
-deploy_id        = "plantest0016"
+deploy_id        = "plantest018"
 region           = "us-west-2"
 ssh_pvt_key_path = "domino.pem"
 
@@ -14,7 +14,17 @@ default_node_groups = {
   }
 }
 
+bastion = {
+  enabled = true
+}
 network = {
-  create_ecr_endpoint = true
-  create_s3_endpoint  = true
+  network_bits = { ## Bits need to be less than cidrs.vpc bits
+    public  = 27
+    private = 21
+    pod     = 20
+  }
+  cidrs = {
+    vpc = "10.0.0.0/19"
+  }
+  use_pod_cidr = false
 }

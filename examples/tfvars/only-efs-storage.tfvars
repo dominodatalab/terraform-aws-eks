@@ -1,4 +1,4 @@
-deploy_id        = "plantest0016"
+deploy_id        = "plantest0012"
 region           = "us-west-2"
 ssh_pvt_key_path = "domino.pem"
 
@@ -14,7 +14,12 @@ default_node_groups = {
   }
 }
 
-network = {
-  create_ecr_endpoint = true
-  create_s3_endpoint  = true
+bastion = {
+  enabled = false
+}
+
+storage = {
+  s3              = { "create" : false }
+  ecr             = { "create" : false }
+  filesystem_type = "efs"
 }

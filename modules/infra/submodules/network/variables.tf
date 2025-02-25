@@ -52,7 +52,8 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
-    create_s3_interface = Create the VPC Interface Endpoint For S3.
+    create_s3_endpoint = Create the VPC Interface Endpoint For S3.
+    create_ecr_endpoint = Create the VPC Endpoint For S3.
   EOF
 
   type = object({
@@ -76,13 +77,24 @@ variable "network" {
     }))
     use_pod_cidr        = optional(bool)
     create_ecr_endpoint = optional(bool, false)
-    create_s3_interface = optional(bool, false)
+    create_s3_endpoint  = optional(bool, true)
   })
 
   validation {
-    condition = alltrue([for name, cidr in var.network.cidrs : try(cidrhost(cidr, 0), false) == regex("^(.*)/", cidr)[0] &&
-    try(cidrnetmask(cidr), false) == "255.255.0.0"])
-    error_message = "Each of network.cidrs must be a valid CIDR block."
+    condition = alltrue([
+      for key, bits in coalesce(var.network.network_bits, {}) :
+      bits > tonumber(regex("[^/]*$", var.network.cidrs.vpc)) if var.network.cidrs.vpc != null
+    ])
+    error_message = "Each network_bits value must be greater than the VPC CIDR's network bits (e.g., > 19 for '10.0.0.0/19')."
+  }
+
+  validation {
+    condition = alltrue([
+      for name, cidr in coalesce(var.network.cidrs, {}) :
+      can(cidrhost(cidr, 0)) &&
+      parseint(split("/", cidr)[1], 10) <= 32 && parseint(split("/", cidr)[1], 10) >= 8
+    ])
+    error_message = "Each of network.cidrs must be a valid CIDR block with a mask between /8 and /32."
   }
 
   validation {
