@@ -1,5 +1,5 @@
 locals {
-  endpoint_services = { for service in var.privatelink.vpc_endpoint_services : service.name => {private_dns: service.private_dns, supported_regions: service.supported_regions}}
+  endpoint_services = { for service in var.privatelink.vpc_endpoint_services : service.name => { private_dns : service.private_dns, supported_regions : service.supported_regions } }
 
   listeners = distinct(flatten([
     for service in var.privatelink.vpc_endpoint_services : [
