@@ -22,6 +22,39 @@ locals {
       taints        = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]) ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
     })
   }
+
+  multi_zone_node_groups = [
+    for ng_name, ng in local.node_groups : {
+      ng_name            = ng_name
+      sb_name            = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
+      subnet             = { for sb in var.network_info.subnets.private : sb.name => sb if contains(ng.availability_zone_ids, sb.az_id) }
+      availability_zones = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
+      node_group = merge(ng, {
+        availability_zone_ids = [for sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)]
+        availability_zones    = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
+      })
+    }
+    if lookup(ng, "single_nodegroup", false)
+  ]
+
+  single_zone_node_groups = flatten([
+    for ng_name, ng in local.node_groups : [
+      for sb_name, sb in var.network_info.subnets.private : {
+        ng_name = ng_name
+        sb_name = sb.name
+        subnet  = sb
+        node_group = merge(ng, {
+          availability_zone_ids = [sb.az_id]
+          availability_zones    = [sb.az]
+        })
+      }
+      if !lookup(ng, "single_nodegroup", false) && contains(ng.availability_zone_ids, sb.az_id)
+    ]
+  ])
+
+  node_groups_per_zone = concat(local.multi_zone_node_groups, local.single_zone_node_groups)
+
+  node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
 data "aws_ec2_instance_type_offerings" "nodes" {
@@ -45,41 +78,6 @@ data "aws_ami" "custom" {
     name   = "image-id"
     values = [each.value]
   }
-}
-
-locals {
-  multi_zone_node_groups = [
-    for ng_name, ng in local.node_groups : {
-      ng_name            = ng_name
-      sb_name            = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
-      subnet             = { for sb_name, sb in var.network_info.subnets.private : sb_name => sb if contains(ng.availability_zone_ids, sb.az_id) }
-      availability_zones = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
-      node_group = merge(ng, {
-        availability_zone_ids = [for sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)]
-        availability_zones    = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
-      })
-    }
-    if lookup(ng, "single_nodegroup", false)
-  ]
-
-  single_zone_node_groups = flatten([
-    for ng_name, ng in local.node_groups : [
-      for sb_name, sb in var.network_info.subnets.private : {
-        ng_name = ng_name
-        sb_name = sb_name
-        subnet  = sb
-        node_group = merge(ng, {
-          availability_zone_ids = [sb.az_id]
-          availability_zones    = [sb.az]
-        })
-      }
-      if !lookup(ng, "single_nodegroup", false) && contains(ng.availability_zone_ids, sb.az_id)
-    ]
-  ])
-
-  node_groups_per_zone = concat(local.multi_zone_node_groups, local.single_zone_node_groups)
-
-  node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
 resource "terraform_data" "calico_setup" {
