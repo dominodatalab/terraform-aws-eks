@@ -139,16 +139,8 @@ set_infra_imports() {
   local deploy_id
   local fs_id
 
-  # region=$(hcledit attribute get region -f "$INFRA_VARS") || {
-  #   echo "Failed to get region"
-  #   return 1
-  # }
-  region="us-west-2"
-
-  deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS") || {
-    echo "Failed to get deploy_id"
-    return 1
-  }
+  region=$(hcledit attribute get region -f "$INFRA_VARS" | jq -r)
+  deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS" | jq -r)
 
   : >"$import_file_tmp"
   printf "Generating infra imports for EFS mount points.\n"
@@ -168,18 +160,30 @@ set_infra_imports() {
 
   printf "Processing file system: %s.\n" "$fs_id"
 
+  subnet_ids=$(aws efs describe-mount-targets \
+    --file-system-id "$fs_id" \
+    --region "$region" \
+    --query 'MountTargets[*].SubnetId' \
+    --output text)
+
+  subnet_map=$(aws ec2 describe-subnets \
+    --subnet-ids $subnet_ids \
+    --query 'Subnets[*].{Id:SubnetId,Name:Tags[?Key==`Name`].Value | [0]}' \
+    --output json | jq 'map({(.Id): .Name}) | add')
+
   aws efs describe-mount-targets \
     --file-system-id "$fs_id" \
-    --region $region \
-    --query 'MountTargets[*].[AvailabilityZoneId, MountTargetId]' \
+    --region "$region" \
+    --query 'MountTargets[*].[MountTargetId, SubnetId]' \
     --output json | jq -c '.[]' | while read -r mount_point; do
-    az_id=$(echo "$mount_point" | jq -r '.[0]')
-    mount_target_id=$(echo "$mount_point" | jq -r '.[1]')
+    mount_target_id=$(echo "$mount_point" | jq -r '.[0]')
+    subnet_id=$(echo "$mount_point" | jq -r '.[1]')
+    subnet_name=$(echo "$subnet_map" | jq -r ".\"$subnet_id\"")
     cat <<-EOF >>"$import_file_tmp"
-import {
-  to =  module.infra.module.storage.aws_efs_mount_target.eks_cluster["$az_id"]
-  id = "$mount_target_id"
-}
+  import {
+    to = module.infra.module.storage.aws_efs_mount_target.eks_cluster["$subnet_name"]
+    id = "$mount_target_id"
+  }
 EOF
   done
 
