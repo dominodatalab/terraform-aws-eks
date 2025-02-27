@@ -96,8 +96,8 @@ resource "aws_eks_node_group" "node_groups" {
   capacity_type  = each.value.node_group.spot ? "SPOT" : "ON_DEMAND"
   instance_types = each.value.node_group.instance_types
   launch_template {
-    id      = aws_launch_template.node_groups[each.value.ng_prefix_name].id
-    version = aws_launch_template.node_groups[each.value.ng_prefix_name].latest_version
+    id      = aws_launch_template.node_groups[each.value.ng_name].id
+    version = aws_launch_template.node_groups[each.value.ng_name].latest_version
   }
 
   labels = merge(each.value.node_group.labels, {
