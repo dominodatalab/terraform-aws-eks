@@ -32,7 +32,7 @@ resource "aws_security_group" "efs" {
 }
 
 resource "aws_efs_mount_target" "eks_cluster" {
-  for_each        = local.deploy_efs ? { for sb in var.network_info.subnets.private : sb.az_id => sb } : {}
+  for_each        = local.deploy_efs ? { for sb in var.network_info.subnets.private : sb.name => sb } : {}
   file_system_id  = aws_efs_file_system.eks[0].id
   security_groups = [aws_security_group.efs[0].id]
   subnet_id       = each.value.subnet_id
