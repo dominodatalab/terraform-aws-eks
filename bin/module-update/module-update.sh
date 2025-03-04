@@ -56,6 +56,23 @@ EOB
 
 }
 
+set_import() {
+  local mod_dir="$1"
+  local import_file_tmp="$2"
+
+  local import_file="${mod_dir}/imports.tf"
+
+  if [[ ! -f "$import_file" ]] || ! grep -Fqx -f "$import_file_tmp" "$import_file"; then
+    printf "Adding import from %s to %s.\n\n" "$import_file_tmp" "$import_file"
+    printf "Import file:\n"
+    tee -a "$import_file" <"$import_file_tmp"
+  else
+    printf "Import on %s already present on %s.\n" "$import_file" "$import_file_tmp"
+  fi
+
+  rm -f "$import_file_tmp"
+}
+
 set_vpc_cni_import() {
 
   local nodes_main_tf_path="${NODES_DIR}/imports.tf"
@@ -75,6 +92,91 @@ import {
 EOB
 
   echo
+}
+
+set_efs_mount_targets_imports() {
+  local import_file_tmp="${INFRA_DIR}/imports.tf.tmp"
+  local region
+  local deploy_id
+  local fs_id
+
+  filesystem_needs_migration() {
+    local tags_json="$1"
+    local migrated_resource_name="$2"
+    migrated_value=$(echo "$tags_json" | jq -r '.[] | select(.Key == "migrated") | .Value')
+    if [[ -z "$migrated_value" || "$migrated_value" != "$migrated_resource_name" ]]; then
+      return 0
+    else
+      return 1
+    fi
+  }
+
+  region=$(hcledit attribute get region -f "$INFRA_VARS" | jq -r)
+  deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS" | jq -r)
+
+  : >"$import_file_tmp"
+  printf "Generating infra imports for EFS mount points.\n"
+
+  fs_json=$(aws efs describe-file-systems \
+    --region "$region" \
+    --query "FileSystems[?Tags[?Key==\`deploy_id\` && Value==\`$deploy_id\`]]" | jq '.[0]') || {
+    printf "Failed to get fs_id.\n"
+    return 1
+  }
+
+  if [[ -z "$fs_json" || "$fs_json" == "[]" || "$fs_json" == "null" ]]; then
+    printf "EFS filesystem with tag deploy_id:%s does not exist.\n" "$deploy_id"
+    return 0
+  fi
+
+  fs_id=$(echo "$fs_json" | jq -r '.FileSystemId')
+  tags=$(echo "$fs_json" | jq -c '.Tags // []')
+
+  if [ -z "${tags// /}" ]; then
+    printf "Error: tags are empty.\n"
+    return 1
+  fi
+
+  if [ -z "${fs_id// /}" ]; then
+    printf "Error: fs_id is not set or empty.\n"
+    return 1
+  fi
+
+  if ! filesystem_needs_migration "$tags" "aws_efs_mount_target"; then
+    return 0
+  fi
+
+  printf "Processing file system: %s.\n" "$fs_id"
+
+  subnet_ids=$(aws efs describe-mount-targets \
+    --file-system-id "$fs_id" \
+    --region "$region" \
+    --query 'MountTargets[*].SubnetId' \
+    --output text)
+
+  subnet_map=$(aws ec2 describe-subnets \
+    --subnet-ids $subnet_ids \
+    --region "$region" \
+    --query 'Subnets[*].{Id:SubnetId,Name:Tags[?Key==`Name`].Value | [0]}' \
+    --output json | jq 'map({(.Id): .Name}) | add')
+
+  aws efs describe-mount-targets \
+    --file-system-id "$fs_id" \
+    --region "$region" \
+    --query 'MountTargets[*].[MountTargetId, SubnetId]' \
+    --output json | jq -c '.[]' | while read -r mount_point; do
+    mount_target_id=$(echo "$mount_point" | jq -r '.[0]')
+    subnet_id=$(echo "$mount_point" | jq -r '.[1]')
+    subnet_name=$(echo "$subnet_map" | jq -r ".\"$subnet_id\"")
+    cat <<-EOF >>"$import_file_tmp"
+  import {
+    to = module.infra.module.storage.aws_efs_mount_target.eks_cluster["$subnet_name"]
+    id = "$mount_target_id"
+  }
+EOF
+  done
+
+  set_import "$INFRA_DIR" "$import_file_tmp"
 }
 
 update_mod_source() {
@@ -156,6 +258,11 @@ cleanup() {
 
 imports_corrections_deprecations() {
   MOD_VERSION_NUM=${MOD_VERSION#v}
+
+  if [ "$(printf '%s\n' "3.25.0" "$MOD_VERSION_NUM" | sort -V | head -n 1)" = "3.25.0" ]; then
+    # https://github.com/dominodatalab/terraform-aws-eks/releases/tag/3.25.0
+    set_efs_mount_targets_imports
+  fi
 
   if [ "$(printf '%s\n' "3.6.0" "$MOD_VERSION_NUM" | sort -V | head -n 1)" = "3.6.0" ]; then
     # https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.6.0
