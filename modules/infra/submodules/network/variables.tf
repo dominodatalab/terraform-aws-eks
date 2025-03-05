@@ -83,8 +83,8 @@ variable "network" {
   validation {
     condition = alltrue([
       for key, bits in coalesce(var.network.network_bits, {}) :
-      key != "pod" ? 
-        bits > tonumber(regex("[^/]*$", var.network.cidrs.vpc)) : true
+      key != "pod" ?
+      bits > tonumber(regex("[^/]*$", var.network.cidrs.vpc)) : true
       if var.network.cidrs.vpc != null
     ])
     error_message = "Private and public network_bits values must be greater than the VPC CIDR's network bits (e.g., > 16 for '10.0.0.0/16')."
