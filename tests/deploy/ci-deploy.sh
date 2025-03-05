@@ -136,13 +136,16 @@ set_infra_imports() {
   local import_file_tmp="${INFRA_DIR}/imports.tf.tmp"
   local deploy_id
 
-  # Check if Terraform state file exists
   if [[ ! -f "$INFRA_STATE" ]]; then
     printf "Error: Terraform state file %s does not exist.\n" "$INFRA_STATE"
     return 1
   fi
 
-  # Get deploy_id from INFRA_VARS
+  if [[ ! -f "$INFRA_VARS" ]]; then
+    printf "Error: Terraform tfvars file %s does not exist.\n" "$INFRA_VARS"
+    return 1
+  fi
+
   deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS" | jq -r) || {
     printf "Error: Failed to retrieve deploy_id from %s.\n" "$INFRA_VARS"
     return 1
@@ -158,7 +161,7 @@ set_infra_imports() {
     return 1
   }
 
-  # Check if filesystem exists
+  # Check if filesystem exists in the tfstate and exit if not(nothing to migrate)
   if [[ -z "$fs_json" ]]; then
     printf "No EFS filesystem found with deploy_id:%s in state file.\n" "$deploy_id"
     return 0
@@ -210,7 +213,7 @@ import {
 EOF
   done
 
-  printf "Mount targets with integer index_key found. Migration needed for filesystem %s.\n" "$fs_id"
+  printf "Mount targets with integer index_key found(use of count instead of for_each). Migration needed for filesystem %s mount targets.\n" "$fs_id"
   set_import "$INFRA_DIR" "$import_file_tmp"
 }
 
