@@ -133,60 +133,84 @@ deploy_latest_ami_nodes() {
 }
 
 set_infra_imports() {
-  printf "Generating infra imports.\n"
   local import_file_tmp="${INFRA_DIR}/imports.tf.tmp"
-  local region
   local deploy_id
-  local fs_id
 
-  region=$(hcledit attribute get region -f "$INFRA_VARS" | jq -r)
-  deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS" | jq -r)
-
-  : >"$import_file_tmp"
-  printf "Generating infra imports for EFS mount points.\n"
-
-  fs_id=$(aws efs describe-file-systems \
-    --region "$region" \
-    --query "FileSystems[?Tags[?Key==\`deploy_id\` && Value==\`$deploy_id\`]].FileSystemId" \
-    --output text) || {
-    echo "Failed to get fs_id"
-    return 1
-  }
-
-  if [ -z "${fs_id// /}" ]; then
-    echo "Error: fs_id is not set or empty."
+  # Check if Terraform state file exists
+  if [[ ! -f "$INFRA_STATE" ]]; then
+    printf "Error: Terraform state file %s does not exist.\n" "$INFRA_STATE"
     return 1
   fi
 
-  printf "Processing file system: %s.\n" "$fs_id"
+  # Get deploy_id from INFRA_VARS
+  deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS" | jq -r) || {
+    printf "Error: Failed to retrieve deploy_id from %s.\n" "$INFRA_VARS"
+    return 1
+  }
 
-  subnet_ids=$(aws efs describe-mount-targets \
-    --file-system-id "$fs_id" \
-    --region "$region" \
-    --query 'MountTargets[*].SubnetId' \
-    --output text)
+  : >"$import_file_tmp"
+  printf "Generating import blocks for EFS mount targets from Terraform state.\n"
 
-  subnet_map=$(aws ec2 describe-subnets \
-    --subnet-ids $subnet_ids \
-    --query 'Subnets[*].{Id:SubnetId,Name:Tags[?Key==`Name`].Value | [0]}' \
-    --output json | jq 'map({(.Id): .Name}) | add')
+  # Extract filesystem matching deploy_id
+  fs_json=$(jq -r --arg deploy_id "$deploy_id" \
+    '.resources[] | select(.type == "aws_efs_file_system") | .instances[] | select(.attributes.tags.Name == $deploy_id)' "$INFRA_STATE") || {
+    printf "Error: Failed to extract filesystem from state file.\n"
+    return 1
+  }
 
-  aws efs describe-mount-targets \
-    --file-system-id "$fs_id" \
-    --region "$region" \
-    --query 'MountTargets[*].[MountTargetId, SubnetId]' \
-    --output json | jq -c '.[]' | while read -r mount_point; do
+  # Check if filesystem exists
+  if [[ -z "$fs_json" ]]; then
+    printf "No EFS filesystem found with deploy_id:%s in state file.\n" "$deploy_id"
+    return 0
+  fi
+
+  # Extract filesystem ID
+  fs_id=$(echo "$fs_json" | jq -r '.attributes.id')
+
+  if [[ -z "${fs_id// /}" ]]; then
+    printf "Error: Filesystem ID is empty.\n"
+    return 1
+  fi
+
+  printf "Processing filesystem: %s\n" "$fs_id"
+
+  # Extract mount targets for this filesystem where index_key is an integer
+  mount_targets=$(jq -r --arg fs_id "$fs_id" \
+    '.resources[] | select(.type == "aws_efs_mount_target") | .instances[] | select(.attributes.file_system_id == $fs_id and (.index_key | type == "number")) | [.attributes.id, .attributes.subnet_id]' "$INFRA_STATE") || {
+    printf "Error: Failed to extract mount targets.\n"
+    return 1
+  }
+
+  # Check if there are any mount targets with integer index_key
+  if [[ -z "$mount_targets" ]]; then
+    printf "No mount targets with integer index_key found for filesystem %s. No migration needed.\n" "$fs_id"
+    return 0
+  fi
+
+  # Extract subnet mapping from outputs
+  subnet_map=$(jq -r '.outputs.infra.value.network.subnets.private | map({(.subnet_id): .name}) | add' "$INFRA_STATE") || {
+    printf "Error: Failed to extract subnet mapping.\n"
+    return 1
+  }
+
+  # Generate import blocks for each mount target with integer index_key
+  echo "$mount_targets" | jq -c '.' | while read -r mount_point; do
     mount_target_id=$(echo "$mount_point" | jq -r '.[0]')
     subnet_id=$(echo "$mount_point" | jq -r '.[1]')
     subnet_name=$(echo "$subnet_map" | jq -r ".\"$subnet_id\"")
+    if [[ -z "$subnet_name" ]]; then
+      printf "Warning: No subnet name found for subnet_id %s, skipping.\n" "$subnet_id"
+      continue
+    fi
     cat <<-EOF >>"$import_file_tmp"
-  import {
-    to = module.infra.module.storage.aws_efs_mount_target.eks_cluster["$subnet_name"]
-    id = "$mount_target_id"
-  }
+import {
+  to = module.infra.module.storage.aws_efs_mount_target.eks_cluster["$subnet_name"]
+  id = "$mount_target_id"
+}
 EOF
   done
 
+  printf "Mount targets with integer index_key found. Migration needed for filesystem %s.\n" "$fs_id"
   set_import "$INFRA_DIR" "$import_file_tmp"
 }
 

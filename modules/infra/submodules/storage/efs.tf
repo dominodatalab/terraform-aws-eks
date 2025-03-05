@@ -7,8 +7,7 @@ resource "aws_efs_file_system" "eks" {
   kms_key_id                      = local.kms_key_arn
 
   tags = merge(local.backup_tagging, {
-    "Name"     = var.deploy_id
-    "migrated" = "aws_efs_mount_target"
+    "Name" = var.deploy_id
   })
 
   lifecycle {

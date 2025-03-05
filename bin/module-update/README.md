@@ -103,20 +103,8 @@ cd "$DEPLOY_DIR"
         id                     = "fsmt-244444444"
     }
 
-# module.infra.module.storage.aws_efs_file_system.eks[0] will be updated in-place
-~ resource "aws_efs_file_system" "eks" {
-    ~ tags                            = {
-        + "migrated" = "aws_efs_mount_target"
-      }
-    ~ tags_all                        = {
-        + "migrated"       = "aws_efs_mount_target"
-          # (5 unchanged elements hidden)
-      }
-      # (13 unchanged attributes hidden)
-      # (1 unchanged block hidden)
-  }
 
-Plan: 2 to import, 0 to add, 1 to change, 0 to destroy.
+Plan: 2 to import, 0 to add, 0 to change, 0 to destroy.
 ```
 
 ### :warning: IMPORTANT: There should be no destroys as a result of the aws_efs_mount_target migration.
