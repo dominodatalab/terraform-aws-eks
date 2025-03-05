@@ -16,7 +16,7 @@ output "info" {
     eips      = [for k, eip in aws_eip.public : eip.public_ip]
     vpc_cidrs = local.create_vpc ? aws_vpc.this[0].cidr_block : data.aws_vpc.provided[0].cidr_block
     pod_cidrs = local.pod_cidr_blocks
-    s3_cidrs  = local.create_vpc && var.network.create_s3_endpoint ? data.aws_prefix_list.s3[0].cidr_blocks : null
+    s3_cidrs  = local.create_vpc ? data.aws_prefix_list.s3[0].cidr_blocks : null
     ecr_endpoint = local.create_ecr_endpoint ? {
       security_group_id = aws_security_group.ecr_endpoint[0].id
     } : null
