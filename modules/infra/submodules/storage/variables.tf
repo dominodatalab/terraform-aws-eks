@@ -171,7 +171,7 @@ variable "network_info" {
       private = List of private Subnets.
       [{
         name = Subnet name.
-        subnet_id = Subnet ud
+        subnet_id = Subnet id
         az = Subnet availability_zone
         az_id = Subnet availability_zone_id
       }]
