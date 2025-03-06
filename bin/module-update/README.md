@@ -72,6 +72,62 @@ cd "$DEPLOY_DIR"
   ```
 
 
+
+  **if MOD_VERSION >= https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.25.0**
+
+  The EFS mountpoints will be imported using a different index, `module.infra.module.storage.aws_efs_mount_target.eks[0]` -> `module.infra.module.storage.aws_efs_mount_target.eks_cluster["deployid-private-us-west-2a"]`
+
+```shell
+  Terraform will perform the following actions:
+ # module.infra.module.storage.aws_efs_mount_target.eks[0] will no longer be managed by Terraform, but will not be destroyed
+ # (destroy = false is set in the configuration)
+ . resource "aws_efs_mount_target" "eks" {
+        id                     = "fsmt-1234556666"
+        # (11 unchanged attributes hidden)
+    }
+
+ # module.infra.module.storage.aws_efs_mount_target.eks[1] will no longer be managed by Terraform, but will not be destroyed
+ # (destroy = false is set in the configuration)
+ . resource "aws_efs_mount_target" "eks" {
+        id                     = "fsmt-244444444"
+        # (11 unchanged attributes hidden)
+    }
+
+  # module.infra.module.storage.aws_efs_mount_target.eks_cluster["deployid-private-us-west-2a"] will be imported
+    resource "aws_efs_mount_target" "eks_cluster" {
+        id                     = "fsmt-1234556666"
+    }
+
+  # module.infra.module.storage.aws_efs_mount_target.eks_cluster["deployid-private-us-west-2b"] will be imported
+    resource "aws_efs_mount_target" "eks_cluster" {
+        id                     = "fsmt-244444444"
+    }
+
+
+Plan: 2 to import, 0 to add, 0 to change, 0 to destroy.
+
+│ Warning: Some objects will no longer be managed by Terraform
+│
+│ If you apply this plan, Terraform will discard its tracking information for the following objects, but it will not delete them:
+│  - module.infra.module.storage.aws_efs_mount_target.eks[1]
+│  - module.infra.module.storage.aws_efs_mount_target.eks[0]
+```
+
+### :warning: IMPORTANT: There should be 0 destroys(0 to destroy) as a result of the aws_efs_mount_target migration.
+
+if there are any errors using the `module-update.sh` to create the `aws_efs_mount_target` imports.tf file, create the file manually. Create a file named `imports.tf` in the `terraform/infra/` directory such that it imports each of the EFS mountpoints for example:
+
+```hcl
+  import {
+    to = module.infra.module.storage.aws_efs_mount_target.eks_cluster["deployid-private-us-west-2a"] ## where deployid-private-us-west-2a is the subnet name(NOT id) for fsmt-1234556666
+    id = "fsmt-1234556666"
+  }
+  import {
+    to = module.infra.module.storage.aws_efs_mount_target.eks_cluster["deployid-private-us-west-2b"]
+    id = "fsmt-244444444"
+  }
+```
+
   **if MOD_VERSION >= https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.6.0**
 
 ```shell

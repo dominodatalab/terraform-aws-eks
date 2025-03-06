@@ -2,6 +2,9 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/dominodatalab/terraform-aws-eks/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/dominodatalab/terraform-aws-eks/tree/main)
 
+:warning: Important: If you are currently using a version of the module <= `v3.24.2`  and want to update to >= `v3.25.0` you should take a look at the `bin/module-update/` utility. There are changes related to the EFS mount_point which may cause downtime if not addressed properly.
+
+
 :warning: Important: If you are currently using a version of the module >= `v3.0.0`  and want to update to >= `v3.5.0` you should take a look at the `bin/module-update/` utility.
 
 :warning: Important: If you have existing infrastructure created with a version of this module < `v3.0.0` you will need to migrate your state before updating the module to versions >= `v3.0.0`. See [state-migration](./bin/state-migration/README.md#terraform-state-migration-guide) for more details.
