@@ -17,7 +17,7 @@ locals {
     for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
     name => {
       is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
-      is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].neuron_devices) > 0])
+      is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
     }
   }
 
