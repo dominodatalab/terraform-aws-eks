@@ -163,6 +163,8 @@ locals {
       key   = "k8s.io/cluster-autoscaler/node-template/resources/smarter-devices/fuse"
       value = "20"
     },
+    # this is necessary until cluster-autoscaler v1.24, labels and taints are from the nodegroup
+    # https://github.com/kubernetes/autoscaler/commit/b4cadfb4e25b6660c41dbe2b73e66e9a2f3a2cc9
     [for lkey, lvalue in v.node_group.labels : {
       name  = name
       key   = format("k8s.io/cluster-autoscaler/node-template/label/%v", lkey)
