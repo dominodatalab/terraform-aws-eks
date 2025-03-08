@@ -113,7 +113,7 @@ install_helm_chart() {
     echo "Attempt $i of $max_retries..."
 
     if ($1); then
-      printf "$GREEN Calico installation succeeded. $EC \n"
+      printf "$GREEN Helm installation succeeded. $EC \n"
       break
     else
       printf "$YELLOW Helm install attempt $i failed. $EC \n"

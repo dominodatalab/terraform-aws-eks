@@ -245,8 +245,9 @@ variable "additional_node_groups" {
       value  = optional(string)
       effect = string
     })), [])
-    tags = optional(map(string), {})
-    gpu  = optional(bool, null)
+    tags   = optional(map(string), {})
+    gpu    = optional(bool, null)
+    neuron = optional(bool, null)
     volume = object({
       size       = string
       type       = string
@@ -288,7 +289,7 @@ variable "karpenter_node_groups" {
     tags = optional(map(string), {})
     gpu  = optional(bool, null)
     volume = optional(object({
-      size       = optional(string, "30")
+      size       = optional(string, "100")
       type       = optional(string, "gp3")
       iops       = optional(number)
       throughput = optional(number, 500)
