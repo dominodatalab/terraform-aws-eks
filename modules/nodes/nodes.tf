@@ -72,15 +72,15 @@ locals {
   ami_type_map = {
     standard = {
       ami_type      = "AL2023_x86_64_STANDARD"
-      ssm_ami_param = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/standard/recommended/release_version"
+      ssm_ami_param = "standard"
     }
     neuron = {
       ami_type      = "AL2023_x86_64_NEURON"
-      ssm_ami_param = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/neuron/recommended/release_version"
+      ssm_ami_param = "neuron"
     }
     nvidia = {
       ami_type      = "AL2023_x86_64_NVIDIA"
-      ssm_ami_param = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/nvidia/recommended/release_version"
+      ssm_ami_param = "nvidia"
     }
     custom = {
       ami_type      = "CUSTOM"
@@ -93,7 +93,7 @@ locals {
 
 data "aws_ssm_parameter" "eks_amis" {
   for_each = { for k, v in local.ami_type_map : k => v if v.ssm_ami_param != null }
-  name     = each.value.ssm_ami_param
+  name     = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/${each.value.ssm_ami_param}/recommended/release_version"
 }
 
 
