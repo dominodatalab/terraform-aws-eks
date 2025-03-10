@@ -1,6 +1,7 @@
 locals {
   encryption_type = var.kms_info.enabled ? "KMS" : "AES256"
-  ecr_repos       = toset(["model", "environment"])
+  create_ecr      = try(var.storage.ecr.create, true)
+  ecr_repos       = local.create_ecr ? toset(["model", "environment"]) : []
 
   # FIPS, GovCloud and China don't support pull through cache fully yet
   # https://docs.aws.amazon.com/AmazonECR/latest/userguide/pull-through-cache.html#pull-through-cache-considerations
@@ -27,12 +28,18 @@ resource "aws_ecr_repository" "this" {
 }
 
 resource "aws_ecr_pull_through_cache_rule" "quay" {
-  count                 = local.supports_pull_through_cache ? 1 : 0
+  count                 = local.create_ecr && local.supports_pull_through_cache ? 1 : 0
   ecr_repository_prefix = "${substr(var.deploy_id, 0, 24)}/quay"
   upstream_registry_url = "quay.io"
 }
 
+moved {
+  from = terraform_data.pull_through_cache_deletion
+  to   = terraform_data.pull_through_cache_deletion[0]
+}
+
 resource "terraform_data" "pull_through_cache_deletion" {
+  count = local.create_ecr ? 1 : 0
   input = {
     region                = var.region
     ecr_repository_prefix = "${var.deploy_id}/quay"

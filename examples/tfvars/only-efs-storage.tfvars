@@ -1,4 +1,4 @@
-deploy_id        = "plantest008"
+deploy_id        = "plantest0012"
 region           = "us-west-2"
 ssh_pvt_key_path = "domino.pem"
 
@@ -19,12 +19,8 @@ bastion = {
   enabled = false
 }
 
-
-## The following will ALSO need to be set in the cluster.tfvars
-eks = {
-  public_access = {
-    enabled = true
-    cidrs   = ["108.214.49.0/24"] # Replace this with the desired CIDR range
-
-  }
+storage = {
+  s3              = { "create" : false }
+  ecr             = { "create" : false }
+  filesystem_type = "efs"
 }

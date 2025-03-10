@@ -187,8 +187,9 @@ variable "additional_node_groups" {
       value  = optional(string)
       effect = string
     })))
-    tags = optional(map(string))
-    gpu  = optional(bool)
+    tags   = optional(map(string))
+    gpu    = optional(bool)
+    neuron = optional(bool)
     volume = object({
       size = string
       type = string
@@ -201,7 +202,7 @@ variable "additional_node_groups" {
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(netapp|efs)
+      filesystem_type = File system type(netapp|efs|none)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -298,9 +299,11 @@ variable "storage" {
       }), {})
     }), {})
     s3 = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {})
     ecr = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {}),
     enable_remote_backup = optional(bool, false)
@@ -325,6 +328,7 @@ variable "kms" {
 
 variable "eks" {
   description = <<EOF
+    run_k8s_setup = Toggle to run the k8s setup.
     service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
@@ -352,6 +356,7 @@ variable "eks" {
   EOF
 
   type = object({
+    run_k8s_setup      = optional(bool)
     service_ipv4_cidr  = optional(string)
     creation_role_name = optional(string, null)
     k8s_version        = optional(string)

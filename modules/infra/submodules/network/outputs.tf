@@ -20,7 +20,7 @@ output "info" {
     ecr_endpoint = local.create_ecr_endpoint ? {
       security_group_id = aws_security_group.ecr_endpoint[0].id
     } : null
-    s3_endpoint = local.create_s3_interface ? {
+    s3_endpoint = local.create_s3_endpoint ? {
       security_group_id = aws_security_group.s3_endpoint[0].id
     } : null
   }
