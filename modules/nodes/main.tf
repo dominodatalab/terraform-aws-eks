@@ -12,14 +12,36 @@ locals {
     value  = "true"
     effect = "NO_SCHEDULE"
   }]
+
+  node_group_status = {
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    name => {
+      is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
+      is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
+    }
+  }
+
+  node_group_ami_class_types = {
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    name => {
+      ami_class = ng.ami != null ? "custom" : (
+        local.node_group_status[name].is_neuron ? "neuron" :
+        local.node_group_status[name].is_gpu ? "nvidia" :
+        "standard"
+      )
+    }
+  }
+
   node_groups = {
-    for name, ng in
-    merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
     name => merge(ng, {
-      gpu           = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
-      instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
-      labels        = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]) ? merge(local.gpu_labels, ng.labels) : ng.labels
-      taints        = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]) ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
+      is_gpu          = local.node_group_status[name].is_gpu
+      is_neuron       = local.node_group_status[name].is_neuron
+      ami_type        = local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
+      release_version = try(local.ami_version_mappings[ng.ami_class].release_version, null)
+      instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
+      labels          = local.node_group_status[name].is_gpu ? merge(local.gpu_labels, ng.labels) : ng.labels
+      taints          = local.node_group_status[name].is_gpu ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
     })
   }
 
@@ -53,8 +75,7 @@ locals {
   ])
 
   node_groups_per_zone = concat(local.multi_zone_node_groups, local.single_zone_node_groups)
-
-  node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
+  node_groups_by_name  = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
 data "aws_ec2_instance_type_offerings" "nodes" {
