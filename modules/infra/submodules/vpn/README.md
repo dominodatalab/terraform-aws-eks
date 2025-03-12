@@ -1,6 +1,42 @@
 # vpn
 
 <!-- BEGIN_TF_DOCS -->
+
+## VPN Connection Types
+
+This module supports two types of VPN connections:
+
+1. `full` (default): Connects the entire VPC to the VPN. Routes will be propagated to all route tables (public, private, and pod).
+2. `public_only`: Connects only the public subnets to the VPN. Routes will be propagated only to public subnet route tables.
+
+### Example Usage
+
+```hcl
+module "vpn" {
+  source = "./submodules/vpn"
+  
+  deploy_id    = "my-deployment"
+  network_info = module.network.info
+  
+  vpn_connections = [
+    {
+      name            = "customer-vpn-full"
+      shared_ip       = "203.0.113.1"
+      cidr_blocks     = ["192.168.1.0/24", "192.168.2.0/24"]
+      connection_type = "full"  # Connect to all subnets (default if omitted)
+    },
+    {
+      name            = "customer-vpn-public"
+      shared_ip       = "203.0.113.2"
+      cidr_blocks     = ["192.168.3.0/24", "192.168.4.0/24"]
+      connection_type = "public_only"  # Connect to public subnets only
+    }
+  ]
+}
+```
+
+The `public_only` option is useful when you want to restrict VPN traffic to only public subnets, while still allowing traffic initiated from private subnets to go through the public subnets and over the VPN to customer networks.
+
 ## Requirements
 
 | Name | Version |

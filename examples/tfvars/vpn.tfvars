@@ -19,14 +19,16 @@ vpn_connections = {
   create = true
   connections = [
     {
-      name        = "vpn_connection_test_1"
-      shared_ip   = "203.0.113.12"
-      cidr_blocks = ["192.168.0.0/16"]
+      name            = "customer-vpn-full"
+      shared_ip       = "203.0.113.1"  # Replace with customer gateway IP
+      cidr_blocks     = ["192.168.1.0/24", "192.168.2.0/24"]
+      connection_type = "full"         # Connect to all subnets (default)
     },
     {
-      name        = "vpn_connection_test_2"
-      shared_ip   = "200.0.110.120"
-      cidr_blocks = ["3.4.5.6/16"]
+      name            = "customer-vpn-public"
+      shared_ip       = "203.0.113.2"  # Replace with customer gateway IP
+      cidr_blocks     = ["192.168.3.0/24", "192.168.4.0/24"]
+      connection_type = "public_only"  # Connect to public subnets only
     }
   ]
 }

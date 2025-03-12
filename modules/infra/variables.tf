@@ -540,14 +540,16 @@ variable "vpn_connections" {
       - name: Name for identification (optional).
       - shared_ip: Customer's shared IP Address (optional).
       - cidr_block: CIDR block for the customer's network (optional).
+      - connection_type: Type of VPN connection - "full" (default) or "public_only".
   EOF
 
   type = object({
     create = optional(bool, false)
     connections = optional(list(object({
-      name        = optional(string, "")
-      shared_ip   = optional(string, "")
-      cidr_blocks = optional(list(string), [])
+      name            = optional(string, "")
+      shared_ip       = optional(string, "")
+      cidr_blocks     = optional(list(string), [])
+      connection_type = optional(string, "full")
     })), [])
   })
 
