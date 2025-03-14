@@ -235,6 +235,7 @@ variable "privatelink" {
         ports     = List of ports exposing the VPC Endpoint Service. i.e [8080, 8081]
         cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
         private_dns = Private DNS for the VPC Endpoint Service.
+        supported_regions = The set of regions from which service consumers can access the service.
       }]
     }
   EOF
@@ -246,10 +247,11 @@ variable "privatelink" {
     monitoring_bucket        = optional(string, null)
     route53_hosted_zone_name = optional(string, null)
     vpc_endpoint_services = optional(list(object({
-      name        = optional(string)
-      ports       = optional(list(number))
-      cert_arn    = optional(string)
-      private_dns = optional(string)
+      name              = optional(string)
+      ports             = optional(list(number))
+      cert_arn          = optional(string)
+      private_dns       = optional(string)
+      supported_regions = optional(set(string))
     })), [])
   })
 
