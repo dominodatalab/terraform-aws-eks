@@ -120,9 +120,7 @@ resource "aws_eks_node_group" "node_groups" {
     version = aws_launch_template.node_groups[each.value.ng_name].latest_version
   }
 
-  labels = merge(each.value.node_group.labels, {
-    "dominodatalab.com/domino-node" = true
-  })
+  labels = each.value.node_group.labels
 
   dynamic "taint" {
     for_each = each.value.node_group.taints

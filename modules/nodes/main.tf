@@ -40,8 +40,13 @@ locals {
       ami_type        = local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
       release_version = try(local.ami_version_mappings[ng.ami_class].release_version, null)
       instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
-      labels          = local.node_group_status[name].is_gpu ? merge(local.gpu_labels, ng.labels) : ng.labels
-      taints          = local.node_group_status[name].is_gpu ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
+      #Omit the karpenter nodegroups to mitigate daemonsets scheduling issues.
+      labels = merge(
+        local.node_group_status[name].is_gpu ? local.gpu_labels : {},
+        ng.labels,
+        lookup(var.karpenter_node_groups, name, null) == null ? { "dominodatalab.com/domino-node" = true } : {}
+      )
+      taints = local.node_group_status[name].is_gpu ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
     })
   }
 
