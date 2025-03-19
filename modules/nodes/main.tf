@@ -44,7 +44,7 @@ locals {
       labels = merge(
         local.node_group_status[name].is_gpu ? local.gpu_labels : {},
         ng.labels,
-        lookup(var.karpenter_node_groups, name, null) == null ? { "dominodatalab.com/domino-node" = true } : {}
+        lookup(coalesce(var.karpenter_node_groups, {}), name, null) == null ? { "dominodatalab.com/domino-node" = true } : {}
       )
       taints = local.node_group_status[name].is_gpu ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
     })
