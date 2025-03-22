@@ -1,4 +1,3 @@
-
 resource "aws_launch_template" "node_groups" {
   for_each                = local.node_groups
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
@@ -146,6 +145,7 @@ resource "aws_eks_node_group" "node_groups" {
   }
 
   depends_on = [aws_eks_addon.pre_compute_addons]
+
 }
 
 locals {

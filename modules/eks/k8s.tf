@@ -13,8 +13,8 @@ module "k8s_setup" {
   use_fips_endpoint = var.use_fips_endpoint
   cluster_name      = var.deploy_id
   karpenter         = var.karpenter
-
-  depends_on = [null_resource.kubeconfig]
+  region            = var.region
+  depends_on        = [null_resource.kubeconfig]
 }
 
 resource "terraform_data" "run_k8s_pre_setup" {

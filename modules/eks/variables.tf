@@ -323,7 +323,7 @@ variable "karpenter" {
   type = object({
     enabled   = optional(bool, false)
     namespace = optional(string, "karpenter")
-    version   = optional(string, "1.3.2")
+    version   = optional(string, "1.3.3")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases
   })

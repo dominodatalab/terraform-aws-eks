@@ -40,7 +40,7 @@ This(`module-update.sh`) script automates the process of updating module version
    5. Attempts to perform corrections needed.
    6. Delete the directory used for the initialization of the new module.
 3. Manual actions required.
-   1. if your EKS cluster has the `vpc-cni` addon installed, you need to edit `${DEPLOY_DIR}/terraform/cluster.tfvars` and to the list of addons. For example:
+   1. if your EKS cluster has the `vpc-cni` addon installed, you need to edit `${DEPLOY_DIR}/terraform/cluster.tfvars` and add to the list of addons. For example:
    ```hcl
     cluster_addons     = ["coredns", "kube-proxy", "vpc-cni"]
    ```
@@ -73,7 +73,7 @@ cd "$DEPLOY_DIR"
 
 
 
-  **if MOD_VERSION >= https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.25.0**
+  **if MOD_VERSION >= [v3.25.0](https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.25.0)**
 
   The EFS mountpoints will be imported using a different index, `module.infra.module.storage.aws_efs_mount_target.eks[0]` -> `module.infra.module.storage.aws_efs_mount_target.eks_cluster["deployid-private-us-west-2a"]`
 
@@ -128,7 +128,7 @@ if there are any errors using the `module-update.sh` to create the `aws_efs_moun
   }
 ```
 
-  **if MOD_VERSION >= https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.6.0**
+  **if MOD_VERSION >= [v3.6.0](https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.6.0)**
 
 ```shell
 # │ Warning: Some objects will no longer be managed by Terraform
@@ -159,7 +159,7 @@ if there are any errors using the `module-update.sh` to create the `aws_efs_moun
    # module.eks.module.k8s_setup[0].local_file.templates["eni_config"] will be destroyed
   ```
 
-  **if MOD_VERSION >= https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.5.0**
+  **if MOD_VERSION >= [v3.5.0](https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.5.0)**
   ```shell
   # │ Warning: Some objects will no longer be managed by Terraform
   # │
@@ -203,7 +203,7 @@ After the `terraform/cluster.tfvars` has been updated run `./tf.sh cluster apply
 
   **Whats expected**
 
-**if MOD_VERSION >= https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.5.0**
+**if MOD_VERSION >= [v3.5.0](https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.5.0)**
 ```shell
 # module.nodes.aws_eks_addon.pre_compute_addons["vpc-cni"] will be updated in-place
 # (imported from "mhekstest1:vpc-cni")
