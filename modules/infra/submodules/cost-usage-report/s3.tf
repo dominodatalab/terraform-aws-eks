@@ -5,11 +5,14 @@ resource "aws_s3_bucket" "athena_result" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "athena_result" {
-
   bucket = aws_s3_bucket.athena_result.id
 
   rule {
     id = "AthenaResultsExpiration"
+
+    filter {
+      prefix = ""
+    }
 
     expiration {
       days = 3
@@ -20,6 +23,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "athena_result" {
 
   rule {
     id = "incomplete_upload"
+
+    filter {
+      prefix = ""
+    }
 
     abort_incomplete_multipart_upload {
       days_after_initiation = 3
@@ -102,11 +109,14 @@ resource "aws_s3_bucket" "cur_report" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "cur_report" {
-
   bucket = aws_s3_bucket.cur_report.id
 
   rule {
     id = "CostUsageReportExpiration"
+
+    filter {
+      prefix = ""
+    }
 
     expiration {
       days = 7
@@ -117,6 +127,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "cur_report" {
 
   rule {
     id = "incomplete_upload"
+
+    filter {
+      prefix = ""
+    }
 
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
