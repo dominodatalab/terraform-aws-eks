@@ -1,8 +1,15 @@
 locals {
   s3_server_side_encryption = var.kms_info.enabled ? "aws:kms" : "AES256"
+  create_s3                 = try(var.storage.s3.create, true)
+}
+
+moved {
+  from = aws_s3_bucket.backups
+  to   = aws_s3_bucket.backups[0]
 }
 
 resource "aws_s3_bucket" "backups" {
+  count               = local.create_s3 ? 1 : 0
   bucket              = "${var.deploy_id}-backups"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
@@ -10,13 +17,18 @@ resource "aws_s3_bucket" "backups" {
   tags = local.backup_tagging
 }
 
+moved {
+  from = data.aws_iam_policy_document.backups
+  to   = data.aws_iam_policy_document.backups[0]
+}
 data "aws_iam_policy_document" "backups" {
+  count = local.create_s3 ? 1 : 0
   statement {
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.backups.bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.backups.bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.backups[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.backups[0].bucket}/*",
     ]
 
     actions = ["s3:*"]
@@ -36,7 +48,7 @@ data "aws_iam_policy_document" "backups" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.backups.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.backups[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -54,7 +66,7 @@ data "aws_iam_policy_document" "backups" {
   statement {
     sid       = "DenyUnEncryptedObjectUploads"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.backups.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.backups[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -70,7 +82,13 @@ data "aws_iam_policy_document" "backups" {
   }
 }
 
+moved {
+  from = aws_s3_bucket.blobs
+  to   = aws_s3_bucket.blobs[0]
+}
+
 resource "aws_s3_bucket" "blobs" {
+  count               = local.create_s3 ? 1 : 0
   bucket              = "${var.deploy_id}-blobs"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
@@ -78,14 +96,19 @@ resource "aws_s3_bucket" "blobs" {
   tags = local.backup_tagging
 }
 
+moved {
+  from = data.aws_s3_bucket.blobs
+  to   = data.aws_s3_bucket.blobs[0]
+}
 data "aws_iam_policy_document" "blobs" {
+  count = local.create_s3 ? 1 : 0
   statement {
 
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.blobs.bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.blobs.bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.blobs[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.blobs[0].bucket}/*",
     ]
 
     actions = ["s3:*"]
@@ -106,7 +129,7 @@ data "aws_iam_policy_document" "blobs" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.blobs.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.blobs[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -124,7 +147,7 @@ data "aws_iam_policy_document" "blobs" {
   statement {
     sid       = "DenyUnEncryptedObjectUploads"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.blobs.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.blobs[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -140,7 +163,13 @@ data "aws_iam_policy_document" "blobs" {
   }
 }
 
+moved {
+  from = aws_s3_bucket.logs
+  to   = aws_s3_bucket.logs[0]
+}
+
 resource "aws_s3_bucket" "logs" {
+  count               = local.create_s3 ? 1 : 0
   bucket              = "${var.deploy_id}-logs"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
@@ -148,14 +177,19 @@ resource "aws_s3_bucket" "logs" {
   tags = local.backup_tagging
 }
 
+moved {
+  from = data.aws_s3_bucket.logs
+  to   = data.aws_s3_bucket.logs[0]
+}
 data "aws_iam_policy_document" "logs" {
+  count = local.create_s3 ? 1 : 0
   statement {
 
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.logs.bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.logs.bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.logs[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.logs[0].bucket}/*",
     ]
 
     actions = ["s3:*"]
@@ -175,7 +209,7 @@ data "aws_iam_policy_document" "logs" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.logs.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.logs[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -193,7 +227,7 @@ data "aws_iam_policy_document" "logs" {
   statement {
     sid       = "DenyUnEncryptedObjectUploads"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.logs.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.logs[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -361,18 +395,30 @@ resource "terraform_data" "set_monitoring_private_acl" {
   depends_on = [aws_s3_bucket.monitoring]
 }
 
+
+moved {
+  from = aws_s3_bucket.registry
+  to   = aws_s3_bucket.registry[0]
+}
+
 resource "aws_s3_bucket" "registry" {
+  count               = local.create_s3 ? 1 : 0
   bucket              = "${var.deploy_id}-registry"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
 
+moved {
+  from = data.aws_s3_bucket.registry
+  to   = data.aws_s3_bucket.registry[0]
+}
 data "aws_iam_policy_document" "registry" {
+  count = local.create_s3 ? 1 : 0
   statement {
     effect = "Deny"
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.registry.bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.registry.bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.registry[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.registry[0].bucket}/*",
     ]
 
     actions = ["s3:*"]
@@ -392,7 +438,7 @@ data "aws_iam_policy_document" "registry" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.registry.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.registry[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -410,7 +456,7 @@ data "aws_iam_policy_document" "registry" {
   statement {
     sid       = "DenyUnEncryptedObjectUploads"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.registry.bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.registry[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {

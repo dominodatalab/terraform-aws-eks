@@ -52,7 +52,8 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
-    create_s3_interface = Create the VPC Interface Endpoint For S3.
+    create_s3_endpoint = Create the VPC Interface Endpoint For S3.
+    create_ecr_endpoint = Create the VPC Endpoint For S3.
   EOF
 
   type = object({
@@ -76,15 +77,25 @@ variable "network" {
     }))
     use_pod_cidr        = optional(bool)
     create_ecr_endpoint = optional(bool, false)
-    create_s3_interface = optional(bool, false)
+    create_s3_endpoint  = optional(bool, true)
   })
 
   validation {
     condition = alltrue([
       for key, bits in coalesce(var.network.network_bits, {}) :
-      bits > tonumber(regex("[^/]*$", var.network.cidrs.vpc)) if var.network.cidrs.vpc != null
+      key != "pod" ?
+      bits > tonumber(regex("[^/]*$", var.network.cidrs.vpc)) : true
+      if var.network.cidrs.vpc != null
     ])
-    error_message = "Each network_bits value must be greater than the VPC CIDR's network bits (e.g., > 19 for '10.0.0.0/19')."
+    error_message = "Private and public network_bits values must be greater than the VPC CIDR's network bits (e.g., > 16 for '10.0.0.0/16')."
+  }
+
+  validation {
+    condition = (
+      var.network.use_pod_cidr != true || var.network.cidrs.pod == null || var.network.network_bits.pod == null ? true :
+      var.network.network_bits.pod > tonumber(regex("[^/]*$", var.network.cidrs.pod))
+    )
+    error_message = "Pod network_bits value must be greater than the Pod CIDR's network bits (e.g., > 16 for '100.64.0.0/16')."
   }
 
   validation {

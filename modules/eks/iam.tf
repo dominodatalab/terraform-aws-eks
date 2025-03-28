@@ -267,7 +267,6 @@ resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
   role       = aws_iam_role.eks_nodes.name
 }
 
-
 resource "aws_eks_identity_provider_config" "this" {
   for_each = { for idp in var.eks.identity_providers : idp.identity_provider_config_name => idp }
 

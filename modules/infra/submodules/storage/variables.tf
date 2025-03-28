@@ -34,7 +34,7 @@ variable "kms_info" {
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(netapp|efs)
+      filesystem_type = File system type(netapp|efs|none)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -131,16 +131,18 @@ variable "storage" {
       }))
     }))
     s3 = optional(object({
+      create                    = optional(bool)
       force_destroy_on_deletion = optional(bool)
     }))
     ecr = optional(object({
+      create                    = optional(bool)
       force_destroy_on_deletion = optional(bool)
     }))
     enable_remote_backup = optional(bool)
     costs_enabled        = optional(bool)
   })
   validation {
-    condition     = contains(["efs", "netapp"], var.storage.filesystem_type)
+    condition     = contains(["efs", "netapp", "none"], var.storage.filesystem_type)
     error_message = "Invalid filesystem type: only 'efs' and 'netapp' are supported for Filesystem storage."
   }
 
@@ -169,7 +171,7 @@ variable "network_info" {
       private = List of private Subnets.
       [{
         name = Subnet name.
-        subnet_id = Subnet ud
+        subnet_id = Subnet id
         az = Subnet availability_zone
         az_id = Subnet availability_zone_id
       }]

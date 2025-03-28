@@ -12,16 +12,75 @@ locals {
     value  = "true"
     effect = "NO_SCHEDULE"
   }]
+
+  node_group_status = {
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    name => {
+      is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
+      is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
+    }
+  }
+
+  node_group_ami_class_types = {
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    name => {
+      ami_class = ng.ami != null ? "custom" : (
+        local.node_group_status[name].is_neuron ? "neuron" :
+        local.node_group_status[name].is_gpu ? "nvidia" :
+        "standard"
+      )
+    }
+  }
+
   node_groups = {
-    for name, ng in
-    merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
     name => merge(ng, {
-      gpu           = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
-      instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
-      labels        = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]) ? merge(local.gpu_labels, ng.labels) : ng.labels
-      taints        = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0]) ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
+      is_gpu          = local.node_group_status[name].is_gpu
+      is_neuron       = local.node_group_status[name].is_neuron
+      ami_type        = local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
+      release_version = try(local.ami_version_mappings[ng.ami_class].release_version, null)
+      instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
+      #Omit the karpenter nodegroups to mitigate daemonsets scheduling issues.
+      labels = merge(
+        local.node_group_status[name].is_gpu ? local.gpu_labels : {},
+        ng.labels,
+        lookup(coalesce(var.karpenter_node_groups, {}), name, null) == null ? { "dominodatalab.com/domino-node" = true } : {}
+      )
+      taints = local.node_group_status[name].is_gpu ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
     })
   }
+
+  multi_zone_node_groups = [
+    for ng_name, ng in local.node_groups : {
+      ng_name            = ng_name
+      sb_name            = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
+      subnet             = { for sb in var.network_info.subnets.private : sb.name => sb if contains(ng.availability_zone_ids, sb.az_id) }
+      availability_zones = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
+      node_group = merge(ng, {
+        availability_zone_ids = [for sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)]
+        availability_zones    = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
+      })
+    }
+    if lookup(ng, "single_nodegroup", false)
+  ]
+
+  single_zone_node_groups = flatten([
+    for ng_name, ng in local.node_groups : [
+      for sb_name, sb in var.network_info.subnets.private : {
+        ng_name = ng_name
+        sb_name = sb.name
+        subnet  = sb
+        node_group = merge(ng, {
+          availability_zone_ids = [sb.az_id]
+          availability_zones    = [sb.az]
+        })
+      }
+      if !lookup(ng, "single_nodegroup", false) && contains(ng.availability_zone_ids, sb.az_id)
+    ]
+  ])
+
+  node_groups_per_zone = concat(local.multi_zone_node_groups, local.single_zone_node_groups)
+  node_groups_by_name  = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
 data "aws_ec2_instance_type_offerings" "nodes" {
@@ -45,41 +104,6 @@ data "aws_ami" "custom" {
     name   = "image-id"
     values = [each.value]
   }
-}
-
-locals {
-  multi_zone_node_groups = [
-    for ng_name, ng in local.node_groups : {
-      ng_name            = ng_name
-      sb_name            = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
-      subnet             = { for sb_name, sb in var.network_info.subnets.private : sb_name => sb if contains(ng.availability_zone_ids, sb.az_id) }
-      availability_zones = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
-      node_group = merge(ng, {
-        availability_zone_ids = [for sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)]
-        availability_zones    = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
-      })
-    }
-    if lookup(ng, "single_nodegroup", false)
-  ]
-
-  single_zone_node_groups = flatten([
-    for ng_name, ng in local.node_groups : [
-      for sb_name, sb in var.network_info.subnets.private : {
-        ng_name = ng_name
-        sb_name = sb_name
-        subnet  = sb
-        node_group = merge(ng, {
-          availability_zone_ids = [sb.az_id]
-          availability_zones    = [sb.az]
-        })
-      }
-      if !lookup(ng, "single_nodegroup", false) && contains(ng.availability_zone_ids, sb.az_id)
-    ]
-  ])
-
-  node_groups_per_zone = concat(local.multi_zone_node_groups, local.single_zone_node_groups)
-
-  node_groups_by_name = { for ngz in local.node_groups_per_zone : "${ngz.ng_name}-${ngz.sb_name}" => ngz }
 }
 
 resource "terraform_data" "calico_setup" {

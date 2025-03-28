@@ -127,6 +127,7 @@ variable "kms_info" {
 
 variable "eks" {
   description = <<EOF
+    run_k8s_setup = Toggle to run the k8s setup.
     service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
@@ -154,6 +155,7 @@ variable "eks" {
   EOF
 
   type = object({
+    run_k8s_setup      = optional(bool, true)
     service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
     k8s_version        = optional(string, "1.27")
@@ -233,6 +235,7 @@ variable "privatelink" {
         ports     = List of ports exposing the VPC Endpoint Service. i.e [8080, 8081]
         cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
         private_dns = Private DNS for the VPC Endpoint Service.
+        supported_regions = The set of regions from which service consumers can access the service.
       }]
     }
   EOF
@@ -244,10 +247,11 @@ variable "privatelink" {
     monitoring_bucket        = optional(string, null)
     route53_hosted_zone_name = optional(string, null)
     vpc_endpoint_services = optional(list(object({
-      name        = optional(string)
-      ports       = optional(list(number))
-      cert_arn    = optional(string)
-      private_dns = optional(string)
+      name              = optional(string)
+      ports             = optional(list(number))
+      cert_arn          = optional(string)
+      private_dns       = optional(string)
+      supported_regions = optional(set(string))
     })), [])
   })
 
@@ -319,7 +323,9 @@ variable "karpenter" {
   type = object({
     enabled   = optional(bool, false)
     namespace = optional(string, "karpenter")
-    version   = optional(string, "1.0.6")
+    version   = optional(string, "1.3.2")
+    #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
+    #https://github.com/aws/karpenter-provider-aws/releases
   })
 
   default = {}

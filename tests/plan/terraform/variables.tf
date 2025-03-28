@@ -59,6 +59,7 @@ variable "ssh_pvt_key_path" {
 
 variable "eks" {
   description = <<EOF
+    run_k8s_setup = Toggle to run the k8s setup.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
     kubeconfig = {
@@ -84,8 +85,9 @@ variable "eks" {
   EOF
 
   type = object({
-    k8s_version  = optional(string, "1.27")
-    nodes_master = optional(bool, false)
+    run_k8s_setup = optional(bool, true)
+    k8s_version   = optional(string, "1.27")
+    nodes_master  = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
       path       = optional(string, null)
@@ -247,8 +249,9 @@ variable "additional_node_groups" {
       value  = optional(string)
       effect = string
     })), [])
-    tags = optional(map(string), {})
-    gpu  = optional(bool, null)
+    tags   = optional(map(string), {})
+    gpu    = optional(bool, null)
+    neuron = optional(bool, null)
     volume = object({
       size = string
       type = string
@@ -279,7 +282,7 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
-    create_s3_interface = Create the VPC Interface Endpoint For S3.
+    create_s3_endpoint = Create the VPC Interface Endpoint For S3.
   EOF
 
   type = object({
@@ -303,7 +306,7 @@ variable "network" {
     }), {})
     use_pod_cidr        = optional(bool, true)
     create_ecr_endpoint = optional(bool, false)
-    create_s3_interface = optional(bool, false)
+    create_s3_endpoint  = optional(bool, false)
   })
 
   default = {}
@@ -334,7 +337,7 @@ variable "bastion" {
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(netapp|efs)
+      filesystem_type = File system type(netapp|efs|none)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -431,9 +434,11 @@ variable "storage" {
       }), {})
     }), {})
     s3 = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {})
     ecr = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {}),
     enable_remote_backup = optional(bool, false)
