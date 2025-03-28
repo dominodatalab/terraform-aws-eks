@@ -32,7 +32,7 @@ module "storage" {
   deploy_id         = var.deploy_id
   network_info      = module.network.info
   kms_info          = local.kms_info
-  storage           = merge(var.storage, { costs_enabled = local.deploy_cur })
+  storage           = var.storage
   use_fips_endpoint = var.use_fips_endpoint
   region            = var.region
 }
