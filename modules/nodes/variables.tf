@@ -348,7 +348,7 @@ variable "karpenter_node_groups" {
     tags = optional(map(string), {})
     gpu  = optional(bool, null)
     volume = optional(object({
-      size       = optional(string, "30")
+      size       = optional(string, "50")
       type       = optional(string, "gp3")
       iops       = optional(number)
       throughput = optional(number, 500)
