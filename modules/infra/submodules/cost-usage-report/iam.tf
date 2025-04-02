@@ -21,7 +21,7 @@ data "aws_iam_policy" "aws_glue_service_role" {
 }
 
 resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
-  name_prefix        = "${var.deploy_id}-crawler_comp_func_role"
+  name_prefix        = substr("${var.deploy_id}-crawler_comp_func_role", 0, 37)
   assume_role_policy = data.aws_iam_policy_document.cur_crawler_component_assume_role_policy.json
 
   tags = var.tags
