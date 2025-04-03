@@ -1,4 +1,4 @@
-# Karpenter Configuration Script
+## Karpenter Configuration Script
 
 This directory contains the configuration files and scripts for setting up Karpenter in your EKS cluster.
 
