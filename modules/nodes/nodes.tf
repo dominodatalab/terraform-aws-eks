@@ -144,7 +144,7 @@ resource "aws_eks_node_group" "node_groups" {
     max_unavailable            = each.value.node_group.max_unavailable
   }
 
-  depends_on = [aws_eks_addon.pre_compute_addons]
+  depends_on = [aws_eks_addon.pre_compute_addons, terraform_data.delete_karpenter_instances]
 
 }
 

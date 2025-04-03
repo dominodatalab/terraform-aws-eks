@@ -3,7 +3,7 @@ eks = {
   creation_role_name = null
   custom_role_maps   = null
   identity_providers = null
-  k8s_version        = null
+  k8s_version        = "1.32"
   kubeconfig = {
     extra_args = null
     path       = null
@@ -41,3 +41,8 @@ irsa_external_dns = {
 irsa_policies     = []
 kms_info          = null
 use_fips_endpoint = false
+
+karpenter = {
+  enabled = true
+  version = "1.3.2"
+}

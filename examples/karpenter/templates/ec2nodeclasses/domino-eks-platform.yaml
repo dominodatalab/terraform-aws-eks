@@ -4,7 +4,7 @@ metadata:
   name: domino-eks-platform
 spec:
   amiSelectorTerms:
-    - alias: al2023@latest
+    - alias: ${AL2023_AMI_ALIAS}
   blockDeviceMappings:
     - deviceName: /dev/xvda
       ebs:
@@ -16,10 +16,10 @@ spec:
     httpProtocolIPv6: disabled
     httpPutResponseHopLimit: 2
     httpTokens: required
-  role: ${EKS_CLUSTER_NAME}-eks-nodes ## TODO: change to the role for the EKS nodes
+  role: ${EKS_CLUSTER_NAME}-eks-nodes
   securityGroupSelectorTerms:
     - tags:
-        karpenter.sh/discovery: ${EKS_CLUSTER_NAME} # TODO: update to the discovery tag for the cluster
+        karpenter.sh/discovery: ${EKS_CLUSTER_NAME}
   subnetSelectorTerms:
     - tags:
-        karpenter.sh/discovery: ${EKS_CLUSTER_NAME} # TODO: update to the discovery tag for the cluster
+        karpenter.sh/discovery: ${EKS_CLUSTER_NAME}
