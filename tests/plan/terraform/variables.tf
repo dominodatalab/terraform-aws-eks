@@ -86,7 +86,7 @@ variable "eks" {
 
   type = object({
     run_k8s_setup = optional(bool, true)
-    k8s_version   = optional(string, "1.30")
+    k8s_version   = optional(string, "1.28")
     nodes_master  = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")

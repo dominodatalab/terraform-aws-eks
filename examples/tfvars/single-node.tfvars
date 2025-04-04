@@ -42,5 +42,5 @@ storage = {
 
 ## The following will ALSO need to be set in the cluster.tfvars
 eks = {
-  k8s_version = "1.30"
+  k8s_version = "1.28"
 }
