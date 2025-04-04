@@ -28,6 +28,7 @@ module "eks" {
   ignore_tags         = local.infra.ignore_tags
   use_fips_endpoint   = var.use_fips_endpoint
   calico              = { image_registry = try(local.infra.storage.ecr.calico_image_registry, null) }
+  karpenter           = var.karpenter
 }
 
 data "aws_caller_identity" "global" {

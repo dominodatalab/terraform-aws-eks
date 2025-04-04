@@ -149,3 +149,22 @@ variable "flyte" {
   })
   default = {}
 }
+
+variable "karpenter" {
+  description = <<EOF
+    karpenter = {
+      enabled = Toggle installation of Karpenter.
+      namespace = Namespace to install Karpenter.
+      version = Configure the version for Karpenter.
+    }
+  EOF
+  type = object({
+    enabled   = optional(bool, false)
+    namespace = optional(string, "karpenter")
+    version   = optional(string, "1.3.3")
+    #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
+    #https://github.com/aws/karpenter-provider-aws/releases
+  })
+
+  default = {}
+}

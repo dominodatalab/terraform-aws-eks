@@ -179,6 +179,43 @@ install_karpenter() {
   install_helm_chart "_install_karpenter_chart"
 }
 
+terminate_karpenter_instances() {
+
+  local INSTANCE_IDS
+  local region="${region}"
+  local cluster_name="${cluster_name}"
+
+  read -ra INSTANCE_IDS <<<"$(aws ec2 describe-instances \
+    --region "$region" \
+    --filters "Name=tag:eks:eks-cluster-name,Values=$cluster_name" "Name=tag-key,Values=karpenter.sh/nodepool" \
+    --query 'Reservations[].Instances[].InstanceId' \
+    --output text 2>/dev/null)"
+
+  if [ $${#INSTANCE_IDS[@]} -eq 0 ]; then
+    printf "$GREEN No Karpenter instances. $EC\n"
+    return 0
+  fi
+
+  printf "$YELLOW Terminating all Karpenter instances: $${INSTANCE_IDS[*]} in region: $region, cluster: $cluster_name $EC\n"
+  aws ec2 terminate-instances \
+    --region "$region" \
+    --instance-ids "$${INSTANCE_IDS[@]}" >/dev/null 2>&1 || {
+    printf "$RED Failed to terminate instances. $EC\n"
+    return 1
+  }
+
+  printf "$YELLOW Waiting for instances to terminate...$EC\n"
+  aws ec2 wait instance-terminated \
+    --region "$region" \
+    --instance-ids "$${INSTANCE_IDS[@]}" >/dev/null 2>&1 || {
+    printf "$RED Error waiting for instances to terminate. $EC\n"
+    return 1
+  }
+
+  printf "$GREEN All instances terminated successfully. $EC\n"
+  return 0
+}
+
 validate_url() {
   local url="$1"
   local log_file="validate-url.log"

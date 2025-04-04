@@ -77,7 +77,7 @@ variable "network" {
     }))
     use_pod_cidr        = optional(bool)
     create_ecr_endpoint = optional(bool, false)
-    create_s3_endpoint  = optional(bool, true)
+    create_s3_endpoint  = optional(bool, false)
   })
 
   validation {

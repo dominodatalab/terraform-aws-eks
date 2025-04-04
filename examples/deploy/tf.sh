@@ -138,6 +138,13 @@ run_tf_command() {
       echo "No state found for $name"
     fi
     ;;
+  output_json)
+    if state_exists "$dir"; then
+      terraform -chdir="$dir" output -state="$state_path" -json
+    else
+      echo "No state found for $name"
+    fi
+    ;;
   roll_nodes)
     if [[ "$name" != "nodes" ]]; then
       echo "Invalid component: ${name} .The 'roll_nodes' command is only applicable to 'nodes'"
@@ -178,6 +185,7 @@ usage() {
   echo -e "  refresh  \t\tUpdate local state with remote resources."
   echo -e "  destroy  \t\tDestroy the Terraform-managed infrastructure."
   echo -e "  output   \t\tDisplay outputs from the Terraform state."
+  echo -e "  output_json\t\tDisplay outputs from the Terraform state in JSON format."
   echo -e "  output <param> \tDisplay a specific output."
   echo -e "  roll_nodes \t\tUpdates the resources 'aws_eks_node_group.node_groups' one at a time."
   echo "Note: This is suitable in case you do not want to update all nodes at the same time."
@@ -193,7 +201,7 @@ component=$1
 command=$2
 
 if [[ "$#" -eq 3 ]]; then
-  if [[ "$command" != "output" ]]; then
+  if [[ "$command" != "output" ]] && [[ "$command" != "output_json" ]]; then
     usage
     exit 1
   fi
