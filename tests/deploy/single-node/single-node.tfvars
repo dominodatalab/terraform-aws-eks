@@ -12,5 +12,5 @@ single_node = {
 }
 
 eks = {
-  k8s_version = "1.28"
+  k8s_version = "1.30"
 }
