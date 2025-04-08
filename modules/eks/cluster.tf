@@ -94,13 +94,6 @@ locals {
 
 }
 
-removed {
-  from = aws_eks_addon.vpc_cni
-  lifecycle {
-    destroy = false
-  }
-}
-
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
     when    = create
