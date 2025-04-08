@@ -81,10 +81,19 @@ install_helm() {
 
 install_hcledit() {
   local hcledit_version="${HCLEDIT_VERSION}"
-  local hcledit_artifact=hcledit_${hcledit_version}_linux_amd64.tar.gz
+  local hcledit_artifact="hcledit_${hcledit_version}_linux_amd64.tar.gz"
   curl -fsSL -o "${hcledit_artifact}" "https://github.com/minamijoyo/hcledit/releases/download/v${hcledit_version}/${hcledit_artifact}"
   tar xvzf "${hcledit_artifact}"
   sudo mv hcledit /usr/local/bin/ && rm "${hcledit_artifact}" && hcledit version
+}
+
+install_opentofu() {
+  local opentofu_version="${OPENTOFU_VERSION}"
+  local opentofu_artifact="tofu_${opentofu_version}_linux_amd64.tar.gz"
+  curl -fsSL -o "${opentofu_artifact}" "https://github.com/opentofu/opentofu/releases/download/v${opentofu_version}/${opentofu_artifact}"
+  tar xvzf "${opentofu_artifact}"
+  sudo mv tofu /usr/local/bin/ && rm "${opentofu_artifact}" && tofu version
+  sudo ln -s /usr/local/bin/tofu /usr/local/bin/terraform && terraform version
 }
 
 set_eks_worker_ami() {
