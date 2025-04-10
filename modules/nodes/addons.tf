@@ -1,10 +1,3 @@
-removed {
-  from = aws_eks_addon.this
-  lifecycle {
-    destroy = false
-  }
-}
-
 moved {
   from = aws_eks_addon.this["coredns"]
   to   = aws_eks_addon.post_compute_addons["coredns"]
