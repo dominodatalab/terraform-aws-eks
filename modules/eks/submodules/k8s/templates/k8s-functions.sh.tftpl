@@ -201,17 +201,17 @@ terminate_karpenter_instances() {
       return 0
     fi
 
-    printf "$YELLOW Attempt $((retry_count + 1)) of $max_retries: Terminating all Karpenter instances: ${INSTANCE_IDS[*]} in region: $region, cluster: $cluster_name $EC\n"
+    printf "$YELLOW Attempt $((retry_count + 1)) of $max_retries: Terminating all Karpenter instances: $${INSTANCE_IDS[*]} in region: $region, cluster: $cluster_name $EC\n"
 
     if aws ec2 terminate-instances \
       --region "$region" \
-      --instance-ids "${INSTANCE_IDS[@]}" >/dev/null 2>&1; then
+      --instance-ids "$${INSTANCE_IDS[@]}" >/dev/null 2>&1; then
 
       printf "$YELLOW Waiting for instances to terminate...$EC\n"
 
       if aws ec2 wait instance-terminated \
         --region "$region" \
-        --instance-ids "${INSTANCE_IDS[@]}" >/dev/null 2>&1; then
+        --instance-ids "$${INSTANCE_IDS[@]}" >/dev/null 2>&1; then
         printf "$GREEN All instances terminated successfully. $EC\n"
         return 0
       fi
