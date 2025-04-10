@@ -1,4 +1,3 @@
-
 resource "aws_launch_template" "node_groups" {
   for_each                = local.node_groups
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
@@ -145,7 +144,8 @@ resource "aws_eks_node_group" "node_groups" {
     max_unavailable            = each.value.node_group.max_unavailable
   }
 
-  depends_on = [aws_eks_addon.pre_compute_addons]
+  depends_on = [aws_eks_addon.pre_compute_addons, terraform_data.delete_karpenter_instances]
+
 }
 
 locals {

@@ -158,7 +158,7 @@ variable "eks" {
     run_k8s_setup      = optional(bool, true)
     service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.27")
+    k8s_version        = optional(string, "1.30")
     nodes_master       = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
@@ -323,7 +323,7 @@ variable "karpenter" {
   type = object({
     enabled   = optional(bool, false)
     namespace = optional(string, "karpenter")
-    version   = optional(string, "1.3.2")
+    version   = optional(string, "1.3.3")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases
   })

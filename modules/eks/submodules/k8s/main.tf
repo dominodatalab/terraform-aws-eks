@@ -29,6 +29,7 @@ locals {
       karpenter_namespace   = var.karpenter.namespace
       karpenter_version     = var.karpenter.version
       cluster_name          = var.cluster_name
+      region                = var.region
     })
   }
 

@@ -126,3 +126,8 @@ variable "karpenter" {
     version   = string
   })
 }
+
+variable "region" {
+  description = "Region of the EKS cluster"
+  type        = string
+}

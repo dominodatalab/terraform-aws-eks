@@ -21,12 +21,14 @@ eks = {
     cidrs   = null
     enabled = null
   }
+  run_k8s_setup      = null
   service_ipv4_cidr  = null
   ssm_log_group_name = null
   vpc_cni            = null
 }
-ignore_tags = []
-kms         = null
+ignore_tags           = []
+karpenter_node_groups = null
+kms                   = null
 network = {
   cidrs = {
     pod = "100.64.0.0/16"
@@ -50,8 +52,9 @@ network = {
 region           = null
 ssh_pvt_key_path = null
 storage = {
-  costs_enabled = true
+  costs_enabled = false
   ecr = {
+    create                    = true
     force_destroy_on_deletion = true
   }
   efs = {
@@ -74,10 +77,12 @@ storage = {
     deployment_type                   = "SINGLE_AZ_1"
     migrate_from_efs = {
       datasync = {
-        enabled  = true
-        schedule = "cron(0 * * * ? *)"
+        enabled     = false
+        schedule    = "cron(0 */4 * * ? *)"
+        target      = "netapp"
+        verify_mode = "ONLY_FILES_TRANSFERRED"
       }
-      enabled = true
+      enabled = false
     }
     storage_capacity = 1024
     storage_capacity_autosizing = {
@@ -96,6 +101,7 @@ storage = {
     }
   }
   s3 = {
+    create                    = true
     force_destroy_on_deletion = true
   }
 }
