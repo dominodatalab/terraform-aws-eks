@@ -196,7 +196,7 @@ terminate_karpenter_instances() {
       --query 'Reservations[].Instances[].InstanceId' \
       --output text 2>/dev/null)"
 
-    if [ ${#INSTANCE_IDS[@]} -eq 0 ]; then
+    if [ $${#INSTANCE_IDS[@]} -eq 0 ]; then
       printf "$GREEN No active Karpenter instances found. $EC\n"
       return 0
     fi
