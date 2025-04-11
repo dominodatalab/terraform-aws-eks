@@ -180,6 +180,11 @@ install_karpenter() {
 }
 
 terminate_karpenter_instances() {
+  if [ "${delete_karpenter_instances_on_destroy}" = "false" ]; then
+    printf "$GREEN Karpenter instances will not be terminated on destroy. $EC \n"
+    return 0
+  fi
+
   local INSTANCE_IDS
   local region="${region}"
   local cluster_name="${cluster_name}"
