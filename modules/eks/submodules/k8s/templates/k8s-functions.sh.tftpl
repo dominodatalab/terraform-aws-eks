@@ -180,40 +180,44 @@ install_karpenter() {
 }
 
 terminate_karpenter_instances() {
+
   if [ "${delete_karpenter_instances_on_destroy}" = "false" ]; then
     printf "$GREEN Karpenter instances will not be terminated on destroy. $EC \n"
     return 0
   fi
 
-  local INSTANCE_IDS
   local region="${region}"
   local cluster_name="${cluster_name}"
-  local max_retries=5
-  local retry_count=0
-  local sleep_time=30
 
-  _terminate_instances() {
-    read -ra INSTANCE_IDS <<<"$(aws ec2 describe-instances \
+  [[ -z "$region" || -z "$cluster_name" ]] && {
+    printf "%sError: region or cluster_name is empty.%s\n" "$RED" "$EC"
+    return 1
+  }
+
+  local max_retries=5 sleep_time=15 attempt=0 INSTANCE_IDS
+
+  while ((attempt < max_retries)); do
+    # shellcheck disable=SC2034
+    read -ra INSTANCE_IDS < <(aws ec2 describe-instances \
       --region "$region" \
       --filters "Name=tag:eks:eks-cluster-name,Values=$cluster_name" \
       "Name=tag-key,Values=karpenter.sh/nodepool" \
-      "Name=instance-state-name,Values=pending,running,shutting-down,stopping,stopped" \
+      "Name=instance-state-name,Values=running,pending,stopped,stopping,shutting-down" \
       --query 'Reservations[].Instances[].InstanceId' \
-      --output text 2>/dev/null)"
+      --output text >/dev/null 2>&1)
 
-    if [ $${#INSTANCE_IDS[@]} -eq 0 ]; then
-      printf "$GREEN No active Karpenter instances found. $EC\n"
+    # shellcheck disable=SC2157
+    if [[ -z "$${INSTANCE_IDS[*]}" ]]; then
+      printf "$GREEN No active Karpenter instances found.$EC\n"
       return 0
     fi
 
-    printf "$YELLOW Attempt $((retry_count + 1)) of $max_retries: Terminating all Karpenter instances: $${INSTANCE_IDS[*]} in region: $region, cluster: $cluster_name $EC\n"
+    printf "$YELLOW Attempt $((attempt + 1))/$max_retries: Terminating instances: %s in region: %s, cluster: %s$EC\n" "$${INSTANCE_IDS[*]}" "$region" "$cluster_name"
 
     if aws ec2 terminate-instances \
       --region "$region" \
       --instance-ids "$${INSTANCE_IDS[@]}" >/dev/null 2>&1; then
-
       printf "$YELLOW Waiting for instances to terminate...$EC\n"
-
       if aws ec2 wait instance-terminated \
         --region "$region" \
         --instance-ids "$${INSTANCE_IDS[@]}" >/dev/null 2>&1; then
@@ -221,22 +225,16 @@ terminate_karpenter_instances() {
         return 0
       fi
     fi
-    return 1
-  }
 
-  while [ $retry_count -lt $max_retries ]; do
-    if _terminate_instances; then
-      return 0
-    fi
-    retry_count=$((retry_count + 1))
-    if [ $retry_count -lt $max_retries ]; then
-      printf "$YELLOW Retry attempt $retry_count failed. Waiting $sleep_time seconds before next attempt...$EC\n"
-      sleep $sleep_time
+    ((attempt++))
+    if ((attempt < max_retries)); then
+      printf "$YELLOW Retry attempt $attempt failed. Waiting $sleep_time seconds...$EC\n"
+      sleep "$sleep_time"
     fi
   done
 
-  printf "$RED Failed to terminate instances after $max_retries attempts. $EC\n"
-  return 1
+  printf "$RED Failed to terminate instances after $max_retries attempts.\nYou can manually terminate the instances using the following command:\naws ec2 terminate-instances --region $region --instance-ids %s $EC\n" "$${INSTANCE_IDS[*]}"
+  return 0
 }
 
 validate_url() {

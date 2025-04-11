@@ -44,6 +44,31 @@ additional_node_groups = {
   }
 }
 
+karpenter_node_groups = {
+  karpenter = {
+    single_nodegroup = true
+    availability_zone_ids = ["usw2-az1,usw2-az3"]
+    ami = "${CUSTOM_AMI}"
+    instance_types = [
+      "m4.2xlarge",
+      "m5.2xlarge",
+      "m5a.2xlarge",
+      "m5ad.2xlarge",
+      "m5d.2xlarge",
+      "m5dn.2xlarge",
+      "m5n.2xlarge",
+      "m5zn.2xlarge",
+      "m6id.2xlarge"
+    ]
+  }
+  gpu = {
+    availability_zone_ids = ["usw2-az2"]
+  }
+  platform = {
+    "availability_zone_ids" = ["usw2-az2"]
+  }
+}
+
 bastion = {
   enabled          = true
   install_binaries = true

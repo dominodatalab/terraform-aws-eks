@@ -161,7 +161,7 @@ variable "karpenter" {
   EOF
   type = object({
     enabled                     = optional(bool, false)
-    delete_instances_on_destroy = optional(bool, false)
+    delete_instances_on_destroy = optional(bool, true)
     namespace                   = optional(string, "karpenter")
     version                     = optional(string, "1.3.3")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
