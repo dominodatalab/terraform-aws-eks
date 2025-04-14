@@ -198,13 +198,13 @@ terminate_karpenter_instances() {
 
   while ((attempt < max_retries)); do
     # shellcheck disable=SC2034
-    read -ra INSTANCE_IDS < <(aws ec2 describe-instances \
+    read -ra INSTANCE_IDS <<<"$(aws ec2 describe-instances \
       --region "$region" \
       --filters "Name=tag:eks:eks-cluster-name,Values=$cluster_name" \
       "Name=tag-key,Values=karpenter.sh/nodepool" \
       "Name=instance-state-name,Values=running,pending,stopped,stopping,shutting-down" \
       --query 'Reservations[].Instances[].InstanceId' \
-      --output text >/dev/null 2>&1)
+      --output text 2>/dev/null)"
 
     # shellcheck disable=SC2157
     if [[ -z "$${INSTANCE_IDS[*]}" ]]; then
