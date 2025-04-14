@@ -347,8 +347,7 @@ karpenter_node_groups = {
 default_node_groups = null
 additional_node_groups = null
 ```
-3
-. Add the following to the `cluster.tfvars`:
+3. Add the following to the `cluster.tfvars`:
 
 ```hcl
 # Consult the karpenter variable for additional options.
@@ -361,4 +360,4 @@ karpenter = {
 ./tf.sh all plan
 ./tf.sh all apply
 ```
-1. See and [karpenter-configurations](./examples/karpenter/MIGRATION.md#3-configure-karpenter-node-classes-and-node-pools) on how to configurate ec2nodeclasses and nodepools.
+5. See and [karpenter-configurations](./examples/karpenter/MIGRATION.md#3-configure-karpenter-node-classes-and-node-pools) on how to configurate ec2nodeclasses and nodepools.

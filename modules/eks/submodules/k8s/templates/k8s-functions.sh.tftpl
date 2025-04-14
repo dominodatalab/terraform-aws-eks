@@ -234,7 +234,7 @@ terminate_karpenter_instances() {
   done
 
   printf "$RED Failed to terminate instances after $max_retries attempts.\nYou can manually terminate the instances using the following command:\naws ec2 terminate-instances --region $region --instance-ids %s $EC\n" "$${INSTANCE_IDS[*]}"
-  return 0
+  return 0 #Best effort
 }
 
 validate_url() {

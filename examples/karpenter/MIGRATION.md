@@ -145,7 +145,39 @@ karpenter = {
 kubectl get pods -n karpenter
 ```
 
-### 3. Configure Karpenter Node Classes and Node Pools
+### 3. Configure Karpenter Node Classes and Node Pools.
+
+#### `al2023` ami alias
+When using the default AL2023 AMI via the `al2023` alias, you'll need at least two separate EC2NodeClasses:
+
+1. `domino-eks-platform` (100Gi EBS volume)
+2. `domino-eks-compute` Compute/GPU/Neuron node pools (1000Gi EBS volume)
+
+While these node types share the same base AMI configuration, they require separate EC2NodeClasses due to their different EBS volume requirements. The compute EC2NodeClass can be used for regular compute, GPU, and Neuron workloads - Karpenter will automatically select the appropriate instance type based on the workload requirements.
+
+In this example, we create 4 distinct EC2NodeClasses (platform, compute, gpu, neuron) all using the same `al2023` AMI alias. While we could consolidate some of these EC2NodeClasses since they share identical configurations (e.g. gpu and compute both use 1000Gi volumes), we maintain them as separate entities for:
+
+1. Clear mapping between NodePools and EC2NodeClasses
+2. Easier to handle future AMI changes per node type
+3. Simpler AMI updates with isolated changes
+
+
+If you have additional node groups with different infrastructure requirements (e.g., different EBS volumes, instance types, etc.), you'll need to create corresponding EC2NodeClasses for those as well.
+
+#### Custom AMI
+Unlike with the `al2023` AMI alias where consolidating EC2NodeClasses is possible, when using custom AMIs you MUST create separate EC2NodeClasses for each AMI variant:
+
+- Standard AMI - Used by platform and compute nodes, requires two separate EC2NodeClasses:
+  - Platform nodes (100Gi EBS volume)
+  - Compute nodes (1000Gi EBS volume)
+- Neuron AMI - Required separate EC2NodeClass for Trainium/Inferentia workloads
+- GPU AMI - Required separate EC2NodeClass for GPU workloads
+
+This separation is mandatory because each node type requires its own specialized AMI with different drivers and configurations. Even when nodes share the same base AMI (like platform and compute using the standard AMI), you still need separate EC2NodeClasses if they have different infrastructure requirements like:
+- EBS volume sizes
+- Instance types
+
+If you do not wish to use the script to create and apply the `ec2nodeclasses` and `nodepools`, you can skip to [Verify Karpenter Setup](#4-verify-karpenter-setup)
 
 1. Copy the `examples/karpenter` folder (this directory) onto your deployment directory.
 
@@ -167,7 +199,7 @@ kubectl get pods -n karpenter
 
    2. Inspect the rendered files in the `karpenter/ec2nodeclasses`:
       - Make sure each `ec2nodeclass` meets your capacity requirements (i.e ebs).
-      - If you want to use a different AMI, keep in mind that `al2023@latest` is not recommended for production environments, instead use a pinned version like `al2023@v20250317`.
+      - If you want to use a different AMI, keep in mind that using `latest` with an alias, i.e `al2023@latest` is not recommended for production environments, instead use a pinned version like `al2023@v20250317`.
       - If you want to use a CUSTOM AMI check the Karpenter [docs](https://karpenter.sh/docs/tasks/managing-amis/#pinning-amis) for additional options.
       - [Optional] If you desire you can add new ec2nodeclasses to the `karpenter/templates/ec2nodeclasses` with the same variables as existing(i.e `AL2023_AMI_ALIAS`) so that you can leverage the script for future AMI upgrades.
 
@@ -185,7 +217,33 @@ kubectl get pods -n karpenter
 ./karpenter/karpenter-configs.sh apply
 ```
 
-### 4. Scale down Cluster Autoscaler
+
+### 4. Verify Karpenter Setup
+
+1. Check Karpenter components:
+
+```bash
+kubectl get pods -n karpenter
+kubectl get ec2nodeclass
+kubectl get nodepool
+```
+
+2. Ensure the `ec2nodeclasses` and `nodepools` are `Ready`:
+
+```bash
+NAME                  READY   AGE
+domino-eks-compute    True    31s
+domino-eks-gpu        True    29s
+domino-eks-platform   True    27s
+
+NAME       NODECLASS             NODES   READY   AGE
+compute    domino-eks-compute    0       True    6m1s
+gpu        domino-eks-gpu        0       True    5m59s
+platform   domino-eks-platform   0       True    5m57s
+```
+
+### 5. Scale down Cluster Autoscaler
+Make sure all Karpenter configurations are applied and ready before proceeding with scaling down the cluster autoscaler. This ensures there is no disruption in node provisioning capabilities.
 
 Scale down autoscaler to avoid collision with karpenter. This is temporary while the nodes are being migrated.
 
@@ -213,11 +271,13 @@ NAME                  READY   AGE
 domino-eks-compute    True    31s
 domino-eks-gpu        True    29s
 domino-eks-platform   True    27s
+domino-eks-neuron   True    32s
 
 NAME       NODECLASS             NODES   READY   AGE
-compute    domino-eks-compute    1       True    6m1s
+compute    domino-eks-compute    0       True    6m1s
 gpu        domino-eks-gpu        0       True    5m59s
-platform   domino-eks-platform   1       True    5m57s
+platform   domino-eks-platform   0       True    5m57s
+trainium   domino-eks-platform   0       True    6m5s
 ```
 
 ### 6. Migrate Nodes
@@ -225,6 +285,8 @@ platform   domino-eks-platform   1       True    5m57s
 1. Get the existing (excluding the `karpenter` ASG) autoscaling groups (Adjust the filter below if necessary):
 
 ```bash
+export EKS_CLUSTER_NAME=$(./tf.sh cluster output_json eks | jq -r '.eks.value.cluster.specs.name')
+export AWS_REGION=$(./tf.sh cluster output_json eks | jq -r '.infra.value.region')
 aws autoscaling describe-auto-scaling-groups \
 --query "AutoScalingGroups[?contains(Tags[?Key=='eks:cluster-name'].Value, \`${EKS_CLUSTER_NAME}\`) && !contains(AutoScalingGroupName, 'eks-karpenter')].AutoScalingGroupName"
 ```
@@ -250,6 +312,8 @@ Example output:
     2. Or, scale down all ASGs at once:
 
     ```bash
+    export EKS_CLUSTER_NAME=$(./tf.sh cluster output_json eks | jq -r '.eks.value.cluster.specs.name')
+    export AWS_REGION=$(./tf.sh cluster output_json eks | jq -r '.infra.value.region')
     for asg in $(aws autoscaling describe-auto-scaling-groups \
         --query "AutoScalingGroups[?contains(Tags[?Key=='eks:cluster-name'].Value, \`${EKS_CLUSTER_NAME}\`) && !contains(AutoScalingGroupName, 'eks-karpenter')].AutoScalingGroupName" \
         --output text); do
