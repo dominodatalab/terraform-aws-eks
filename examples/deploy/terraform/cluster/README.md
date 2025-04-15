@@ -56,4 +56,5 @@
 | <a name="output_external_dns_irsa_role_arn"></a> [external\_dns\_irsa\_role\_arn](#output\_external\_dns\_irsa\_role\_arn) | "External\_dns info"<br/>  {<br/>    irsa\_role = irsa role arn.<br/>    zone\_id   = hosted zone id for external\_dns Iam policy<br/>    zone\_name = hosted zone name for external\_dns Iam policy<br/>  } |
 | <a name="output_flyte"></a> [flyte](#output\_flyte) | Flyte details. |
 | <a name="output_infra"></a> [infra](#output\_infra) | Infra details. |
+| <a name="output_irsa"></a> [irsa](#output\_irsa) | IRSA details |
 <!-- END_TF_DOCS -->
