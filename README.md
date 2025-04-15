@@ -360,4 +360,4 @@ karpenter = {
 ./tf.sh all plan
 ./tf.sh all apply
 ```
-5. See and [karpenter-configurations](./examples/karpenter/MIGRATION.md#3-configure-karpenter-node-classes-and-node-pools) on how to configurate ec2nodeclasses and nodepools.
+5. See and [karpenter-configurations](./examples/karpenter/MIGRATION.md#3-configure-karpenter-node-classes-and-node-pools) on how to configure `ec2nodeclasses` and `nodepools`.
