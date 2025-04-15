@@ -77,14 +77,20 @@ variable "additional_irsa_configs" {
     name                = string
     namespace           = string
     serviceaccount_name = string
-    policy              = string #json
+    policy              = optional(string) #json
+    pod_identity        = optional(bool, false)
   }))
 
   default = []
 
   validation {
-    condition     = alltrue([for i in var.additional_irsa_configs : can(jsondecode(i.policy))])
-    error_message = "Invalid json found in policy"
+    condition = alltrue([
+      for app in var.additional_irsa_configs : (
+        try(jsondecode(app.policy), null) != null ||
+        fileexists("${path.module}/apps-policies/${app.name}.json")
+      )
+    ])
+    error_message = "For each app, either policy must be provided or a corresponding JSON policy file must exist in apps-policies/<name>.json"
   }
 }
 

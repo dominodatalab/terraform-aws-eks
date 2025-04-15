@@ -29,3 +29,8 @@ output "flyte" {
   description = "Flyte details."
   value       = try(module.flyte[0], null)
 }
+
+output "irsa" {
+  description = "IRSA details"
+  value       = module.irsa_policies
+}
