@@ -1,55 +1,25 @@
-eks = {
-  cluster_addons     = null
-  creation_role_name = null
-  custom_role_maps   = null
-  identity_providers = null
-  k8s_version        = "1.30"
-  kubeconfig = {
-    extra_args = null
-    path       = null
+
+irsa_policies = [{
+  name                = "aws-efs-csi-driver-controller"
+  namespace           = "domino-platform"
+  serviceaccount_name = "aws-efs-csi-driver-controller"
+  # policy              = "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"ec2:DescribeAvailabilityZones\", \"ec2:DescribeInstances\", \"ec2:DescribeSnapshots\", \"ec2:DescribeTags\", \"ec2:DescribeVolumes\", \"ec2:DescribeVolumesModifications\" ], \"Resource\": \"*\" }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:CreateSnapshot\", \"ec2:ModifyVolume\" ], \"Resource\": \"arn:aws:ec2:*:*:volume/*\" }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:AttachVolume\", \"ec2:DetachVolume\" ], \"Resource\": [\"arn:aws:ec2:*:*:volume/*\", \"arn:aws:ec2:*:*:instance/*\" ] }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:CreateVolume\", \"ec2:EnableFastSnapshotRestores\" ], \"Resource\": \"arn:aws:ec2:*:*:snapshot/*\" }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:CreateTags\" ], \"Resource\": [\"arn:aws:ec2:*:*:volume/*\", \"arn:aws:ec2:*:*:snapshot/*\" ], \"Condition\": {\"StringEquals\": {\"ec2:CreateAction\": [\"CreateVolume\", \"CreateSnapshot\" ] } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:DeleteTags\" ], \"Resource\": [\"arn:aws:ec2:*:*:volume/*\", \"arn:aws:ec2:*:*:snapshot/*\" ] }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:CreateVolume\" ], \"Resource\": \"arn:aws:ec2:*:*:volume/*\", \"Condition\": {\"StringLike\": {\"aws:RequestTag/ebs.csi.aws.com/cluster\": \"true\" } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:CreateVolume\" ], \"Resource\": \"arn:aws:ec2:*:*:volume/*\", \"Condition\": {\"StringLike\": {\"aws:RequestTag/CSIVolumeName\": \"*\" } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:DeleteVolume\" ], \"Resource\": \"arn:aws:ec2:*:*:volume/*\", \"Condition\": {\"StringLike\": {\"ec2:ResourceTag/ebs.csi.aws.com/cluster\": \"true\" } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:DeleteVolume\" ], \"Resource\": \"arn:aws:ec2:*:*:volume/*\", \"Condition\": {\"StringLike\": {\"ec2:ResourceTag/CSIVolumeName\": \"*\" } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:DeleteVolume\" ], \"Resource\": \"arn:aws:ec2:*:*:volume/*\", \"Condition\": {\"StringLike\": {\"ec2:ResourceTag/kubernetes.io/created-for/pvc/name\": \"*\" } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:CreateSnapshot\" ], \"Resource\": \"arn:aws:ec2:*:*:snapshot/*\", \"Condition\": {\"StringLike\": {\"aws:RequestTag/CSIVolumeSnapshotName\": \"*\" } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:CreateSnapshot\" ], \"Resource\": \"arn:aws:ec2:*:*:snapshot/*\", \"Condition\": {\"StringLike\": {\"aws:RequestTag/ebs.csi.aws.com/cluster\": \"true\" } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:DeleteSnapshot\" ], \"Resource\": \"arn:aws:ec2:*:*:snapshot/*\", \"Condition\": {\"StringLike\": {\"ec2:ResourceTag/CSIVolumeSnapshotName\": \"*\" } } }, {\"Effect\": \"Allow\", \"Action\": [\"ec2:DeleteSnapshot\" ], \"Resource\": \"arn:aws:ec2:*:*:snapshot/*\", \"Condition\": {\"StringLike\": {\"ec2:ResourceTag/ebs.csi.aws.com/cluster\": \"true\" } } } ] }"
+  },
+  {
+    name                = "aws-ebs-csi-driver-controller"
+    namespace           = "domino-platform"
+    serviceaccount_name = "aws-ebs-csi-driver-controller"
+    # policy              = "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"elasticfilesystem:DescribeAccessPoints\", \"elasticfilesystem:DescribeFileSystems\" ], \"Resource\": \"*\" }, {\"Effect\": \"Allow\", \"Action\": [\"elasticfilesystem:CreateAccessPoint\" ], \"Resource\": \"*\", \"Condition\": {\"StringLike\": {\"aws:RequestTag/efs.csi.aws.com/cluster\": \"true\" } } }, {\"Effect\": \"Allow\", \"Action\": \"elasticfilesystem:DeleteAccessPoint\", \"Resource\": \"*\", \"Condition\": {\"StringEquals\": {\"aws:ResourceTag/efs.csi.aws.com/cluster\": \"true\" } } } ]}"
+
+  },
+
+  {
+
+    name                = "cluster-autoscaler"
+    namespace           = "domino-platform"
+    serviceaccount_name = "cluster-autoscaler"
+    pod_identity        = true
+    #     policy              = "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"autoscaling:DescribeAutoScalingGroups\", \"autoscaling:DescribeAutoScalingInstances\", \"autoscaling:DescribeLaunchConfigurations\", \"autoscaling:DescribeScalingActivities\", \"ec2:DescribeInstanceTypes\", \"ec2:DescribeLaunchTemplateVersions\" ], \"Resource\": [\"*\" ] }, {\"Effect\": \"Allow\", \"Action\": [\"autoscaling:SetDesiredCapacity\", \"autoscaling:TerminateInstanceInAutoScalingGroup\" ], \"Resource\": [\"*\" ] } ] }"
+
   }
-  master_role_names = null
-  public_access = {
-    cidrs   = null
-    enabled = null
-  }
-  run_k8s_setup      = null
-  service_ipv4_cidr  = null
-  ssm_log_group_name = null
-  vpc_cni            = null
-}
-external_deployments_operator = {
-  bucket_suffix                   = "external-deployments"
-  enable_assume_any_external_role = true
-  enable_in_account_deployments   = true
-  enabled                         = false
-  namespace                       = "domino-compute"
-  operator_role_suffix            = "external-deployments-operator"
-  operator_service_account_name   = "pham-juno-operator"
-  repository_suffix               = "external-deployments"
-}
-flyte = {
-  compute_namespace         = "domino-compute"
-  enabled                   = false
-  force_destroy_on_deletion = true
-  platform_namespace        = "domino-platform"
-}
-irsa_external_dns = {
-  enabled          = false
-  hosted_zone_name = null
-  namespace        = null
-  rm_role_policy = {
-    detach_from_role = false
-    policy_name      = ""
-    remove           = false
-  }
-  serviceaccount_name = null
-}
-irsa_policies = []
-karpenter = {
-  enabled   = false
-  namespace = "karpenter"
-  version   = "1.3.3"
-}
-kms_info          = null
-use_fips_endpoint = false
+]

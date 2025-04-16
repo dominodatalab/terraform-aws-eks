@@ -34,11 +34,20 @@ resource "aws_iam_role" "this" {
   })
 }
 
+data "aws_partition" "this" {}
+data "aws_caller_identity" "this" {}
+locals {
+  policies_vars = {
+    account_id = data.aws_caller_identity.this.account_id
+    partition  = data.aws_partition.this.partition
+  }
+}
+
 resource "aws_iam_policy" "this" {
   for_each = { for irsa in var.additional_irsa_configs : irsa.name => irsa }
   name     = "${local.name_prefix}-${each.value.name}"
   path     = "/"
-  policy   = each.value.policy != null ? each.value.policy : file("${path.module}/apps-policies/${each.value.name}.json")
+  policy   = each.value.policy != null ? each.value.policy : templatefile("${path.module}/apps-policies/${each.value.name}.json", local.policies_vars)
 }
 
 resource "aws_iam_role_policy_attachment" "this" {

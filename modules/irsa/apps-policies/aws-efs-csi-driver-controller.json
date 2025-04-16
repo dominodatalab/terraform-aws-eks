@@ -19,7 +19,7 @@
         "ec2:CreateSnapshot",
         "ec2:ModifyVolume"
       ],
-      "Resource": "arn:aws:ec2:*:*:volume/*"
+      "Resource": "arn:${partition}:ec2:*:*:volume/*"
     },
     {
       "Effect": "Allow",
@@ -28,8 +28,8 @@
         "ec2:DetachVolume"
       ],
       "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:instance/*"
+        "arn:${partition}:ec2:*:*:volume/*",
+        "arn:${partition}:ec2:*:*:instance/*"
       ]
     },
     {
@@ -38,7 +38,7 @@
         "ec2:CreateVolume",
         "ec2:EnableFastSnapshotRestores"
       ],
-      "Resource": "arn:aws:ec2:*:*:snapshot/*"
+      "Resource": "arn:${partition}:ec2:*:*:snapshot/*"
     },
     {
       "Effect": "Allow",
@@ -46,8 +46,8 @@
         "ec2:CreateTags"
       ],
       "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
+        "arn:${partition}:ec2:*:*:volume/*",
+        "arn:${partition}:ec2:*:*:snapshot/*"
       ],
       "Condition": {
         "StringEquals": {
@@ -64,8 +64,8 @@
         "ec2:DeleteTags"
       ],
       "Resource": [
-        "arn:aws:ec2:*:*:volume/*",
-        "arn:aws:ec2:*:*:snapshot/*"
+        "arn:${partition}:ec2:*:*:volume/*",
+        "arn:${partition}:ec2:*:*:snapshot/*"
       ]
     },
     {
@@ -73,7 +73,7 @@
       "Action": [
         "ec2:CreateVolume"
       ],
-      "Resource": "arn:aws:ec2:*:*:volume/*",
+      "Resource": "arn:${partition}:ec2:*:*:volume/*",
       "Condition": {
         "StringLike": {
           "aws:RequestTag/ebs.csi.aws.com/cluster": "true"
@@ -85,7 +85,7 @@
       "Action": [
         "ec2:CreateVolume"
       ],
-      "Resource": "arn:aws:ec2:*:*:volume/*",
+      "Resource": "arn:${partition}:ec2:*:*:volume/*",
       "Condition": {
         "StringLike": {
           "aws:RequestTag/CSIVolumeName": "*"
@@ -97,7 +97,7 @@
       "Action": [
         "ec2:DeleteVolume"
       ],
-      "Resource": "arn:aws:ec2:*:*:volume/*",
+      "Resource": "arn:${partition}:ec2:*:*:volume/*",
       "Condition": {
         "StringLike": {
           "ec2:ResourceTag/ebs.csi.aws.com/cluster": "true"
@@ -109,7 +109,7 @@
       "Action": [
         "ec2:DeleteVolume"
       ],
-      "Resource": "arn:aws:ec2:*:*:volume/*",
+      "Resource": "arn:${partition}:ec2:*:*:volume/*",
       "Condition": {
         "StringLike": {
           "ec2:ResourceTag/CSIVolumeName": "*"
@@ -121,7 +121,7 @@
       "Action": [
         "ec2:DeleteVolume"
       ],
-      "Resource": "arn:aws:ec2:*:*:volume/*",
+      "Resource": "arn:${partition}:ec2:*:*:volume/*",
       "Condition": {
         "StringLike": {
           "ec2:ResourceTag/kubernetes.io/created-for/pvc/name": "*"
@@ -133,7 +133,7 @@
       "Action": [
         "ec2:CreateSnapshot"
       ],
-      "Resource": "arn:aws:ec2:*:*:snapshot/*",
+      "Resource": "arn:${partition}:ec2:*:*:snapshot/*",
       "Condition": {
         "StringLike": {
           "aws:RequestTag/CSIVolumeSnapshotName": "*"
@@ -145,7 +145,7 @@
       "Action": [
         "ec2:CreateSnapshot"
       ],
-      "Resource": "arn:aws:ec2:*:*:snapshot/*",
+      "Resource": "arn:${partition}:ec2:*:*:snapshot/*",
       "Condition": {
         "StringLike": {
           "aws:RequestTag/ebs.csi.aws.com/cluster": "true"
@@ -157,7 +157,7 @@
       "Action": [
         "ec2:DeleteSnapshot"
       ],
-      "Resource": "arn:aws:ec2:*:*:snapshot/*",
+      "Resource": "arn:${partition}:ec2:*:*:snapshot/*",
       "Condition": {
         "StringLike": {
           "ec2:ResourceTag/CSIVolumeSnapshotName": "*"
@@ -169,7 +169,7 @@
       "Action": [
         "ec2:DeleteSnapshot"
       ],
-      "Resource": "arn:aws:ec2:*:*:snapshot/*",
+      "Resource": "arn:${partition}:ec2:*:*:snapshot/*",
       "Condition": {
         "StringLike": {
           "ec2:ResourceTag/ebs.csi.aws.com/cluster": "true"

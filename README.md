@@ -283,6 +283,52 @@ open_ssh_tunnel_to_k8s_api
 close_ssh_tunnel_to_k8s_api
 ```
 
+## IRSA (IAM Roles for Service Accounts)
+
+The module provides support for IAM Roles for Service Accounts (IRSA) through the `irsa` module. This allows you to assign AWS IAM roles to Kubernetes service accounts, enabling fine-grained access control for your pods.
+
+### Policy Files
+
+Policy files in the `modules/irsa/apps-policies/` directory support variable interpolation for AWS-specific values:
+
+- Use `${partition}` instead of hardcoded `arn:aws` in ARN patterns
+- Use `${account_id}` in place of hardcoded AWS account IDs
+
+For example:
+```json
+{
+  "Resource": "arn:${partition}:ec2:*:*:volume/*"
+}
+```
+
+These variables are automatically interpolated using values from the AWS provider configuration.
+
+### Available IRSA Configurations
+
+1. **Predefined Roles**:
+   - External DNS
+   - NetApp Trident Operator
+   - NetApp Trident Configurator
+
+2. **Custom Roles**:
+   You can define additional IRSA roles using the `additional_irsa_configs` variable:
+
+   ```hcl
+   additional_irsa_configs = [{
+     name                = "my-app"
+     namespace           = "my-namespace"
+     serviceaccount_name = "my-serviceaccount"
+     policy              = null  # Will use the policy from apps-policies/my-app.json
+     pod_identity        = false # Set to true for EKS Pod Identity
+   }]
+   ```
+
+   The policy can be provided inline or loaded from a JSON file in the `apps-policies` directory.
+
+### EKS Pod Identity Support
+
+The module supports both traditional IRSA and the newer EKS Pod Identity. Set `pod_identity = true` in your IRSA configuration to use EKS Pod Identity instead of the OIDC-based approach.
+
 ### Retrieve Configuration Values for `domino.yaml`.
 Run the command below to generate a list of infrastructure values. These values are necessary for configuring the domino.yaml file, which is in turn used for installing the Domino product.
 
