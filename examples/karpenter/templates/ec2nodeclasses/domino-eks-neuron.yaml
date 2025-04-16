@@ -1,7 +1,7 @@
 apiVersion: karpenter.k8s.aws/v1
 kind: EC2NodeClass
 metadata:
-  name: domino-eks-gpu
+  name: domino-eks-neuron
 spec:
   amiSelectorTerms:
     - alias: ${AL2023_AMI_ALIAS}

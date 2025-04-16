@@ -9,7 +9,7 @@ spec:
     - deviceName: /dev/xvda
       ebs:
         encrypted: true
-        volumeSize: 100Gi
+        volumeSize: 1000Gi
         volumeType: gp3
   metadataOptions:
     httpEndpoint: enabled

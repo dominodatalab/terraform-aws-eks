@@ -3,7 +3,7 @@ eks = {
   creation_role_name = null
   custom_role_maps   = null
   identity_providers = null
-  k8s_version        = "1.30"
+  k8s_version        = null
   kubeconfig = {
     extra_args = null
     path       = null
@@ -47,9 +47,10 @@ irsa_external_dns = {
 }
 irsa_policies = []
 karpenter = {
-  enabled   = false
-  namespace = "karpenter"
-  version   = "1.3.3"
+  delete_instances_on_destroy = true
+  enabled                     = false
+  namespace                   = "karpenter"
+  version                     = "1.3.3"
 }
 kms_info          = null
 use_fips_endpoint = false
