@@ -1,10 +1,3 @@
-removed {
-  from = aws_iam_policy.route53
-  lifecycle {
-    destroy = false
-  }
-}
-
 locals {
   create_eks_role_name = coalesce(var.eks.creation_role_name, "${var.deploy_id}-create-eks")
 }
