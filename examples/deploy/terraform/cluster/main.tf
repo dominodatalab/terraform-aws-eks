@@ -56,7 +56,6 @@ module "irsa_external_dns" {
   use_cluster_odc_idp = local.is_eks_account_same
   eks_info            = module.eks.info
   external_dns        = var.irsa_external_dns
-  region = local.infra.region
 
   providers = {
     aws = aws.global
@@ -73,7 +72,6 @@ module "irsa_policies" {
   use_cluster_odc_idp     = true
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
-  region = local.infra.region
 }
 
 module "external_deployments_operator" {
