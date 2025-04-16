@@ -40,6 +40,8 @@ locals {
   policies_vars = {
     account_id = data.aws_caller_identity.this.account_id
     partition  = data.aws_partition.this.partition
+    deploy_id = local.name_prefix
+    region = var.region
   }
 }
 
