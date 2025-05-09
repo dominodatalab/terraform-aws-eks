@@ -57,7 +57,7 @@ module "irsa_external_dns" {
   external_dns = merge(var.irsa_external_dns, { use_cluster_odc_idp = local.is_eks_account_same })
 
   providers = {
-    aws.global = aws.global
+    aws.global = aws
   }
 }
 
@@ -70,6 +70,9 @@ module "irsa_policies" {
   source                  = "./../../../../modules/irsa"
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
+  providers = {
+    aws.global = aws
+  }
 }
 
 module "external_deployments_operator" {

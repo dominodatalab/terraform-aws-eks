@@ -12,7 +12,7 @@ locals {
 }
 
 resource "aws_iam_openid_connect_provider" "this" {
-  count           = var.external_dns.use_cluster_odc_idp ? 1 : 0
+  count           = var.external_dns.use_cluster_odc_idp ? 0 : 1
   provider        = aws.global
   url             = var.eks_info.cluster.oidc.cert.url
   client_id_list  = ["sts.amazonaws.com"]
