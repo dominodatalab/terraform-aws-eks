@@ -9,7 +9,7 @@ output "external_dns" {
     irsa_role                = aws_iam_role.external_dns[0].arn
     zone_id                  = data.aws_route53_zone.hosted[0].zone_id
     zone_name                = data.aws_route53_zone.hosted[0].name
-    external_dns_use_eks_idp = var.use_cluster_odc_idp
+    external_dns_use_eks_idp = var.external_dns.use_cluster_odc_idp
   } : null
 }
 

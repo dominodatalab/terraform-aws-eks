@@ -48,6 +48,10 @@ module "irsa_external_dns" {
     hosted_zone_name = var.route53_hosted_zone_name
   }
   use_fips_endpoint = var.use_fips_endpoint
+
+  providers = {
+    aws.global = aws
+  }
 }
 
 data "aws_iam_policy_document" "mypod_s3" {
@@ -68,6 +72,10 @@ module "irsa_policies" {
     serviceaccount_name = "mypod-s3"
   }]
   use_fips_endpoint = var.use_fips_endpoint
+
+  providers = {
+    aws.global = aws
+  }
 }
 
 module "external_deployments_operator" {

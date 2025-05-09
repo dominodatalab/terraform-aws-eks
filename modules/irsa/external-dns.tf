@@ -38,13 +38,13 @@ resource "aws_iam_role" "external_dns" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = local.oidc_provider_arn
+          Federated = local.external_dns_oidc_provider_arn
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition : {
           StringEquals : {
-            "${trimprefix(local.oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com"
-            "${trimprefix(local.oidc_provider_url, "https://")}:sub" : "system:serviceaccount:${var.external_dns.namespace}:${var.external_dns.serviceaccount_name}"
+            "${trimprefix(local.external_dns_oidc_provider_url, "https://")}:aud" : "sts.amazonaws.com"
+            "${trimprefix(local.external_dns_oidc_provider_url, "https://")}:sub" : "system:serviceaccount:${var.external_dns.namespace}:${var.external_dns.serviceaccount_name}"
           }
         }
       }
