@@ -19,6 +19,7 @@ This module is an opinionated implementation of predefined and custom `irsa` rol
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.0 |
+| <a name="provider_aws.global"></a> [aws.global](#provider\_aws.global) | ~> 5.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
