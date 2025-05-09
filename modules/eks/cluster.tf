@@ -84,7 +84,13 @@ data "tls_certificate" "cluster_tls_certificate" {
   url = aws_eks_cluster.this.identity[0].oidc[0].issuer
 }
 
+moved {
+  from = aws_iam_openid_connect_provider.oidc_provider
+  to   = aws_iam_openid_connect_provider.oidc_provider[0]
+}
+
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
+  count           = var.eks.create_oidc_provider ? 1 : 0
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = data.tls_certificate.cluster_tls_certificate.certificates[*].sha1_fingerprint
   url             = data.tls_certificate.cluster_tls_certificate.url

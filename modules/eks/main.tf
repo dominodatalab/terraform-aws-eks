@@ -260,12 +260,11 @@ locals {
       )
       custom_roles = var.eks.custom_role_maps
       oidc = {
-        arn = aws_iam_openid_connect_provider.oidc_provider.arn
-        url = aws_iam_openid_connect_provider.oidc_provider.url
+        arn = var.eks.create_oidc_provider ? aws_iam_openid_connect_provider.oidc_provider[0].arn : null
+        url = var.eks.create_oidc_provider ? aws_iam_openid_connect_provider.oidc_provider[0].url : null
         cert = {
           thumbprint_list = data.tls_certificate.cluster_tls_certificate.certificates[*].sha1_fingerprint
           url             = data.tls_certificate.cluster_tls_certificate.url
-
         }
       }
     }
