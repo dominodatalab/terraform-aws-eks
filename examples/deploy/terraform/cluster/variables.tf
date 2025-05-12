@@ -25,6 +25,7 @@ variable "eks" {
     vpc_cni            = Configuration for AWS VPC CNI
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
+    oidc_provider = Configuration for OIDC provider.
   }
   EOF
 
@@ -63,6 +64,18 @@ variable "eks" {
       username_claim                = optional(string)
       username_prefix               = optional(string)
     })))
+    oidc_provider = optional(object({
+      create = optional(bool, true)
+      oidc = optional(object({
+        id  = optional(string, null)
+        arn = optional(string, null)
+        url = optional(string, null)
+        cert = optional(object({
+          thumbprint_list = optional(list(string), null)
+          url             = optional(string, null)
+        }), {})
+      }), null)
+    }), {})
   })
 
   default = {}

@@ -81,7 +81,8 @@ resource "aws_eks_cluster" "this" {
 }
 
 data "tls_certificate" "cluster_tls_certificate" {
-  url = aws_eks_cluster.this.identity[0].oidc[0].issuer
+  count = var.eks.oidc_provider.create ? 1 : 0
+  url   = aws_eks_cluster.this.identity[0].oidc[0].issuer
 }
 
 moved {
@@ -90,14 +91,10 @@ moved {
 }
 
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
-  count           = var.eks.create_oidc_provider ? 1 : 0
+  count           = var.eks.oidc_provider.create ? 1 : 0
   client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = data.tls_certificate.cluster_tls_certificate.certificates[*].sha1_fingerprint
-  url             = data.tls_certificate.cluster_tls_certificate.url
-}
-
-locals {
-
+  thumbprint_list = data.tls_certificate.cluster_tls_certificate[0].certificates[*].sha1_fingerprint
+  url             = data.tls_certificate.cluster_tls_certificate[0].url
 }
 
 resource "null_resource" "kubeconfig" {
