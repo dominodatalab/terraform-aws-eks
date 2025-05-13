@@ -50,7 +50,7 @@ karpenter = {
   delete_instances_on_destroy = true
   enabled                     = false
   namespace                   = "karpenter"
-  version                     = "1.3.3"
+  version                     = "1.4.0"
 }
 kms_info          = null
 use_fips_endpoint = false

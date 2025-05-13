@@ -119,10 +119,12 @@ variable "karpenter" {
       namespace = Namespace to install Karpenter.
       version = Configure the version for Karpenter.
       delete_instances_on_destroy = Toggle to delete Karpenter instances on destroy.
+      metrics = Toggle to enable Karpenter metrics.
     }
   EOF
   type = object({
     enabled                     = bool
+    metrics                     = bool
     delete_instances_on_destroy = bool
     namespace                   = string
     version                     = string

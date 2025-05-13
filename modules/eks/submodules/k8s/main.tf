@@ -27,6 +27,7 @@ locals {
       calico_fips_mode                      = var.use_fips_endpoint ? "Enabled" : "Disabled"
       calico_image_registry                 = var.eks_info.calico.image_registry
       karpenter_namespace                   = var.karpenter.namespace
+      karpenter_metrics                     = var.karpenter.metrics
       karpenter_version                     = var.karpenter.version
       delete_karpenter_instances_on_destroy = tostring(var.karpenter.delete_instances_on_destroy)
       cluster_name                          = var.cluster_name

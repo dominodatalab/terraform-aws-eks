@@ -319,13 +319,15 @@ variable "karpenter" {
       namespace = Namespace to install Karpenter.
       version = Configure the version for Karpenter.
       delete_instances_on_destroy = Toggle to delete Karpenter instances on destroy.
+      metrics = Toggle to enable Karpenter metrics.
     }
   EOF
   type = object({
     enabled                     = optional(bool, false)
+    metrics                     = optional(bool, true)
     delete_instances_on_destroy = optional(bool, false)
     namespace                   = optional(string, "karpenter")
-    version                     = optional(string, "1.3.3")
+    version                     = optional(string, "1.4.0")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases
   })
