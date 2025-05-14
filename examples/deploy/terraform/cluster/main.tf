@@ -54,7 +54,7 @@ moved {
 module "irsa_external_dns" {
   source       = "./../../../../modules/irsa"
   eks_info     = module.eks.info
-  external_dns = merge(var.irsa_external_dns, { use_cluster_odc_idp = local.is_eks_account_same })
+  external_dns = merge(var.irsa_external_dns, { use_cluster_oidc_idp = local.is_eks_account_same })
 
   providers = {
     aws.global = aws
