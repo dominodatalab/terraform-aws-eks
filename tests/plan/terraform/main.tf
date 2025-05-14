@@ -50,7 +50,7 @@ module "irsa_external_dns" {
   use_fips_endpoint = var.use_fips_endpoint
 
   providers = {
-    aws.global = aws
+    aws.global = aws.global
   }
 }
 
@@ -74,7 +74,7 @@ module "irsa_policies" {
   use_fips_endpoint = var.use_fips_endpoint
 
   providers = {
-    aws.global = aws
+    aws.global = aws.global
   }
 }
 
