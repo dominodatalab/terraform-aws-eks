@@ -169,6 +169,9 @@ _install_karpenter_chart() {
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=karpenter \
     --set affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey=kubernetes.io/hostname \
+    --set controller.podAnnotations.prometheus\.io/scrape="true" \
+    --set controller.podAnnotations.prometheus\.io/port="8080" \
+    --set controller.podAnnotations.prometheus\.io/path="/metrics" \
     --wait \
     --timeout 10m \
     --create-namespace \
