@@ -38,25 +38,22 @@ variable "eks_info" {
   })
 }
 
-variable "use_cluster_odc_idp" {
-  description = <<EOF
-    Toogle to uset the oidc idp connector in the trust policy.
-    Set to `true` if the cluster and the hosted zone are in different aws accounts.
-    `rm_role_policy` used to facilitiate the cleanup if a node attached policy was used previously.
-  EOF
-  type        = bool
-  default     = true
-}
 
 variable "external_dns" {
-  description = "Config to enable irsa for external-dns"
+  description = <<EOF
+    Config to enable irsa for external-dns
+    use_cluster_oidc_idp = Toogle to set the oidc idp connector in the trust policy.
+    Set to `true` if the cluster and the hosted zone are in different aws accounts.
+    `rm_role_policy` used to facilitate the cleanup if a node attached policy was used previously.
+  EOF
 
   type = object({
-    enabled             = optional(bool, false)
-    hosted_zone_name    = optional(string, null)
-    hosted_zone_private = optional(string, false)
-    namespace           = optional(string, "domino-platform")
-    serviceaccount_name = optional(string, "external-dns")
+    enabled              = optional(bool, false)
+    hosted_zone_name     = optional(string, null)
+    hosted_zone_private  = optional(string, false)
+    namespace            = optional(string, "domino-platform")
+    serviceaccount_name  = optional(string, "external-dns")
+    use_cluster_oidc_idp = optional(bool, true)
     rm_role_policy = optional(object({
       remove           = optional(bool, false)
       detach_from_role = optional(bool, false)

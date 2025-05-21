@@ -1,5 +1,5 @@
 locals {
-  netapp_subnet_ids = startswith(var.storage.netapp.deployment_type, "MULTI") ? slice(local.private_subnet_ids, 0, 2) : [local.private_subnet_ids[0]]
+  netapp_subnet_ids = startswith(var.storage.netapp.deployment_type, "MULTI") ? sort(slice(local.private_subnet_ids, 0, 2)) : sort([local.private_subnet_ids[0]])
 }
 
 resource "aws_security_group" "netapp" {
@@ -193,7 +193,7 @@ resource "aws_fsx_ontap_file_system" "eks" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes        = [storage_capacity]
+    ignore_changes        = [storage_capacity, preferred_subnet_id, subnet_ids]
   }
 
   tags = {

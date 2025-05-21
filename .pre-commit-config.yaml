@@ -20,11 +20,11 @@ repos:
       - id: check-dependabot
       - id: check-github-actions
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.97.0
+    rev: v1.99.0
     hooks:
       - id: terraform_validate
         # See #4 on https://github.com/antonbabenko/pre-commit-terraform#terraform_validate
-        exclude: (modules/eks/[^/]+$|modules/infra/submodules/cost-usage-report)
+        exclude: (modules/eks/[^/]+$|modules/infra/submodules/cost-usage-report|modules/irsa)
         args:
           - "--hook-config=--retry-once-with-cleanup=true"
       - id: terraform_providers_lock
