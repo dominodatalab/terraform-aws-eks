@@ -107,6 +107,15 @@ module "bastion" {
   bastion      = var.bastion
 }
 
+module "ddos" {
+  source    = "./submodules/ddos"
+  deploy_id = var.deploy_id
+  flow_logs = {
+    enabled   = local.create_s3
+    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.arn : null
+  }
+}
+
 locals {
   cost_usage_report_info = var.domino_cur.provision_cost_usage_report && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
   bastion_info           = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
