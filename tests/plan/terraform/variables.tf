@@ -120,15 +120,12 @@ variable "eks" {
       username_prefix               = optional(string, null)
     })), [])
     oidc_provider = optional(object({
-      create = optional(bool, true)
+      create = optional(bool, false)
       oidc = optional(object({
-        id  = optional(string, null)
-        arn = optional(string, null)
-        url = optional(string, null)
-        cert = optional(object({
-          thumbprint_list = optional(list(string), null)
-          url             = optional(string, null)
-        }), {})
+        id              = optional(string, null)
+        arn             = optional(string, null)
+        url             = optional(string, null)
+        thumbprint_list = optional(list(string), null)
       }), null)
     }), {})
   })

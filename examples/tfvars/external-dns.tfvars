@@ -1,7 +1,8 @@
-deploy_id        = "plantest0018"
+deploy_id        = "plantest020"
 region           = "us-west-2"
 ssh_pvt_key_path = "domino.pem"
 
+## The following  (default_node_groups,additional_node_groups) will ALSO need to be set in the nodes.tfvars
 default_node_groups = {
   compute = {
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
@@ -15,11 +16,8 @@ default_node_groups = {
 }
 
 bastion = {
-  enabled = true
+  enabled = false
 }
 
-eks = {
-  oidc_provider = {
-    create = false
-  }
-}
+
+route53_hosted_zone_name = "deploys-delta.domino.tech"

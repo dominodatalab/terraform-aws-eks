@@ -27,12 +27,10 @@ variable "eks_info" {
         account_id = string
       })
       oidc = object({
-        arn = string
-        url = string
-        cert = object({
-          thumbprint_list = list(string)
-          url             = string
-        })
+        arn             = string
+        id              = string
+        url             = string
+        thumbprint_list = list(string)
       })
     })
   })

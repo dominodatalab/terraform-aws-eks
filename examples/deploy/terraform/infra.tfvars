@@ -17,6 +17,10 @@ eks = {
   }
   master_role_names = null
   nodes_master      = false
+  oidc_provider = {
+    create = false
+    oidc   = null
+  }
   public_access = {
     cidrs   = null
     enabled = null
