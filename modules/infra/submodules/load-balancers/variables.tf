@@ -15,8 +15,10 @@ variable "load_balancers" {
     type     = string
     internal = bool
     listeners = list(object({
-      port     = number
-      protocol = string
+      port       = number
+      protocol   = string
+      ssl_policy = optional(string)
+      cert_arn   = optional(string)
     }))
   }))
 }
