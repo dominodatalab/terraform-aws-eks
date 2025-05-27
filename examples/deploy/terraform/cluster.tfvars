@@ -10,7 +10,7 @@ eks = {
   }
   master_role_names = null
   oidc_provider = {
-    create = false
+    create = true
     oidc   = null
   }
   public_access = {
