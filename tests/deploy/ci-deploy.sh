@@ -99,7 +99,7 @@ install_opentofu() {
 install_tfvar() {
   curl -sLO https://github.com/shihanng/tfvar/releases/latest/download/tfvar_linux_amd64.deb
   sudo dpkg -i tfvar_linux_amd64.deb
-  tfvar version
+  tfvar --version
 }
 
 set_eks_worker_ami() {
