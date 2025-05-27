@@ -113,7 +113,7 @@ module "load_balancers" {
   load_balancers = [
     {
       name     = "internal-nlb"
-      type     = "nlb"
+      type     = "network"
       internal = true
       listeners = [
         { port = 80, protocol = "TCP" },
@@ -122,7 +122,7 @@ module "load_balancers" {
     },
     {
       name     = "public-nlb"
-      type     = "nlb"
+      type     = "network"
       internal = false
       listeners = [
         { port = 8080, protocol = "TCP" }
@@ -130,7 +130,7 @@ module "load_balancers" {
     },
     {
       name     = "web-alb"
-      type     = "alb"
+      type     = "application"
       internal = false
       listeners = [
         { port = 80, protocol = "HTTP" },

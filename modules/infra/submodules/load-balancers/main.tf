@@ -1,22 +1,16 @@
 locals {
-  albs = {
+  lbs = {
     for lb in var.load_balancers : lb.name => lb
-    if lower(lb.type) == "alb"
-  }
-
-  nlbs = {
-    for lb in var.load_balancers : lb.name => lb
-    if lower(lb.type) == "nlb"
   }
 }
 
-resource "aws_lb" "alb_lb" {
-  for_each = local.albs
+resource "aws_lb" "load_balancers" {
+  for_each = local.lbs
 
-  name               = "${var.deploy_id}-${each.key}-alb"
+  name               = "${var.deploy_id}-${each.key}"
   internal           = each.value.internal
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_sg[each.key].id]
+  load_balancer_type = each.value.type
+  security_groups    = [aws_security_group.lb_security_groups[each.key].id]
   subnets            = [for subnet in(each.value.internal ? var.network_info.subnets.private : var.network_info.subnets.public) : subnet.subnet_id]
 
   enable_deletion_protection = false
@@ -34,6 +28,6 @@ resource "aws_lb" "alb_lb" {
   }
 
   tags = {
-    Name = "${var.deploy_id}-${each.key}-alb"
+    Name = "${var.deploy_id}-${each.key}"
   }
 }
