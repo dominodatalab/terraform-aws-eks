@@ -8,12 +8,12 @@ variable "deploy_id" {
   }
 }
 
-variable "flow_logs" {
+variable "access_logs" {
   description = <<EOF
-    flow_logs = {
-      enabled   = Enable store for flow logs.
-      s3_bucket = The name of the S3 bucket where flow logs will be stored.
-      s3_prefix = The prefix (folder path) within the S3 bucket for storing logs.
+    access_logs = {
+      enabled   = Enable access logs.
+      s3_bucket = The name of the S3 bucket where access logs will be stored.
+      s3_prefix = The prefix (folder path) within the S3 bucket for access logs.
     }
   EOF
 

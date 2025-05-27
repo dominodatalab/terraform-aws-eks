@@ -107,10 +107,50 @@ module "bastion" {
   bastion      = var.bastion
 }
 
+module "load_balancers" {
+  source    = "./submodules/load-balancers"
+  deploy_id = var.deploy_id
+  access_logs = {
+    enabled   = local.create_s3
+    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
+  }
+  network_info = module.network.info
+
+  load_balancers = [
+    {
+      name     = "internal-nlb"
+      type     = "nlb"
+      internal = true
+      listeners = [
+        { port = 80,  protocol = "TCP" },
+        { port = 443, protocol = "TLS" }
+      ]
+    },
+    {
+      name     = "public-nlb"
+      type     = "nlb"
+      internal = false
+      listeners = [
+        { port = 8080, protocol = "TCP" }
+      ]
+    },
+    {
+      name     = "web-alb"
+      type     = "alb"
+      internal = false
+      listeners = [
+        { port = 80,  protocol = "HTTP" },
+        { port = 443, protocol = "HTTPS" }
+      ]
+    }
+  ]
+  depends_on = [null_resource.debug_ddos]
+}
+
 module "ddos" {
   source    = "./submodules/ddos"
   deploy_id = var.deploy_id
-  flow_logs = {
+  access_logs = {
     enabled   = local.create_s3
     s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
   }
