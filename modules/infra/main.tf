@@ -122,7 +122,7 @@ module "load_balancers" {
       type     = "nlb"
       internal = true
       listeners = [
-        { port = 80,  protocol = "TCP" },
+        { port = 80, protocol = "TCP" },
         { port = 443, protocol = "TLS" }
       ]
     },
@@ -139,7 +139,7 @@ module "load_balancers" {
       type     = "alb"
       internal = false
       listeners = [
-        { port = 80,  protocol = "HTTP" },
+        { port = 80, protocol = "HTTP" },
         { port = 443, protocol = "HTTPS" }
       ]
     }

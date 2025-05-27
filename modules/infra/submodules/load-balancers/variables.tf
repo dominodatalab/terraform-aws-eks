@@ -79,9 +79,9 @@ variable "network_info" {
 variable "load_balancers" {
   description = "Lista de load balancers a crear"
   type = list(object({
-    name      = string
-    type      = string
-    internal  = bool
+    name     = string
+    type     = string
+    internal = bool
     listeners = list(object({
       port     = number
       protocol = string
