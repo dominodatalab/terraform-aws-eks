@@ -6,5 +6,5 @@ resource "aws_lb_target_group" "lb_target_groups" {
   port        = each.value.port
   protocol    = each.value.protocol
   target_type = "instance"
-  vpc_id      = var.vpc_id
+  vpc_id      = var.network_info.vpc_id
 }
