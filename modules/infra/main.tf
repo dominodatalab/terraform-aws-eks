@@ -112,7 +112,7 @@ module "ddos" {
   deploy_id = var.deploy_id
   flow_logs = {
     enabled   = local.create_s3
-    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.arn : null
+    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
   }
 
   depends_on = [null_resource.debug_ddos]
@@ -122,7 +122,7 @@ resource "null_resource" "debug_ddos" {
   provisioner "local-exec" {
     command = <<EOT
       echo -e "enabled is: ${local.create_s3}"
-      echo -e "s3_bucket is: ${module.storage.info.s3.buckets.monitoring.arn}"
+      echo -e "s3_bucket is: ${module.storage.info.s3.buckets.monitoring.bucket_name}"
     EOT
   }
 }
