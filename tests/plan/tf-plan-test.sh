@@ -109,6 +109,8 @@ test_byok_kms() {
 create_eks_oidc_provider() {
   local dir="create-oidc-provider"
 
+  eval $(tfvar --var-file ../../examples/tfvars/oidc-byo.tfvars --env-var ./terraform | grep -E 'region|deploy_id')
+
   printf "\n\033[0;33mCreating OIDC provider\033[0m\n"
   terraform -chdir="$dir" init
   if ! terraform -chdir="$dir" apply --auto-approve; then

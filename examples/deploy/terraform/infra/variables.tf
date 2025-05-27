@@ -427,7 +427,7 @@ variable "eks" {
       username_prefix               = optional(string)
     })))
     oidc_provider = optional(object({
-      create = optional(bool, false)
+      create = optional(bool, true)
       oidc = optional(object({
         id              = optional(string, null)
         arn             = optional(string, null)

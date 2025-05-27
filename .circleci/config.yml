@@ -65,6 +65,13 @@ commands:
           environment:
             HCLEDIT_VERSION: << parameters.hcledit_version >>
           command: bash ci-deploy.sh install_hcledit
+  install_tfvar:
+    description: "Install tfvar"
+    steps:
+      - run:
+          name: Install tfvar
+          working_directory: tests/deploy
+          command: bash ci-deploy.sh install_tfvar
 
   set_mod_source_current:
     description: "Set up module source to current branch."
@@ -243,6 +250,7 @@ commands:
   tf_plan_test:
     steps:
       - set_aws_creds
+      - install_tfvar
       - run:
           name: Terraform plan test
           working_directory: tests/plan
