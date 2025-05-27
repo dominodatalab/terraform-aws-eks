@@ -110,12 +110,6 @@ module "bastion" {
 module "load_balancers" {
   source    = "./submodules/load-balancers"
   deploy_id = var.deploy_id
-  access_logs = {
-    enabled   = local.create_s3
-    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
-  }
-  network_info = module.network.info
-
   load_balancers = [
     {
       name     = "internal-nlb"
@@ -144,6 +138,17 @@ module "load_balancers" {
       ]
     }
   ]
+
+  access_logs = {
+    enabled   = local.create_s3
+    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
+  }
+  connection_logs = {
+    enabled   = local.create_s3
+    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
+  }
+  network_info = module.network.info
+
   depends_on = [null_resource.debug_ddos]
 }
 

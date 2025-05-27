@@ -8,6 +8,19 @@ variable "deploy_id" {
   }
 }
 
+variable "load_balancers" {
+  description = "Lista de load balancers a crear"
+  type = list(object({
+    name     = string
+    type     = string
+    internal = bool
+    listeners = list(object({
+      port     = number
+      protocol = string
+    }))
+  }))
+}
+
 variable "access_logs" {
   description = <<EOF
     access_logs = {
@@ -24,6 +37,22 @@ variable "access_logs" {
   })
 }
 
+variable "connection_logs" {
+  description = <<EOF
+    access_logs = {
+      enabled   = Enable connections logs.
+      s3_bucket = The name of the S3 bucket where connection logs will be stored.
+      s3_prefix = The prefix (folder path) within the S3 bucket for conneciton logs.
+    }
+  EOF
+
+  type = object({
+    enabled   = optional(bool, false)
+    s3_bucket = string
+    s3_prefix = optional(string, "connection_logs/load_balancers")
+  })
+}
+
 variable "network_info" {
   description = <<EOF
     vpc_id = VPC ID.
@@ -36,13 +65,6 @@ variable "network_info" {
         az_id = Subnet availability_zone_id
       }]
       private = List of private Subnets.
-      [{
-        name = Subnet name.
-        subnet_id = Subnet ud
-        az = Subnet availability_zone
-        az_id = Subnet availability_zone_id
-      }]
-      pod = List of pod Subnets.
       [{
         name = Subnet name.
         subnet_id = Subnet ud
@@ -66,25 +88,6 @@ variable "network_info" {
         az        = string
         az_id     = string
       })), [])
-      pod = optional(list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      })), [])
     })
   })
-}
-
-variable "load_balancers" {
-  description = "Lista de load balancers a crear"
-  type = list(object({
-    name     = string
-    type     = string
-    internal = bool
-    listeners = list(object({
-      port     = number
-      protocol = string
-    }))
-  }))
 }
