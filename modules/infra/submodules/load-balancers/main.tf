@@ -17,7 +17,7 @@ resource "aws_lb" "alb_lb" {
   internal           = each.value.internal
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg["${var.deploy_id}-${each.key}-sg"]]
-  subnets            = [for subnet in var.network_info.subnets.private : subnet.subnet_id]
+  subnets            = [for subnet in(each.value.internal ? var.network_info.subnets.private : var.network_info.subnets.public) : subnet.subnet_id]
 
   enable_deletion_protection = false
 
