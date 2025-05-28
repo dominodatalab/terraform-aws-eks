@@ -116,8 +116,7 @@ module "load_balancers" {
       type     = "network"
       internal = true
       listeners = [
-        { port = 80, protocol = "TCP" },
-        { port = 443, protocol = "TLS" }
+        { port = 80, protocol = "TCP" }
       ]
     },
     {
@@ -133,8 +132,7 @@ module "load_balancers" {
       type     = "application"
       internal = false
       listeners = [
-        { port = 80, protocol = "HTTP" },
-        { port = 443, protocol = "HTTPS" }
+        { port = 80, protocol = "HTTP" }
       ]
     }
   ]
