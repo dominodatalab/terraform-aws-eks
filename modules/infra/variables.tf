@@ -619,7 +619,7 @@ variable "waf" {
   type = object({
     enabled         = bool
     override_action = optional(string, "none")
-    rules = list(object({
+    rules = optional(list(object({
       name        = string
       vendor_name = string
       priority    = number
@@ -628,28 +628,16 @@ variable "waf" {
       captcha     = optional(list(string), [])
       challenge   = optional(list(string), [])
       count       = optional(list(string), [])
-    }))
+    })), [])
     rate_limit = object({
-      enabled = bool
-      limit   = number
-      action  = string
+      enabled = optional(bool, false)
+      limit   = optional(number, 1000)
+      action  = optional(string, "block")
     })
     block_forwarder_header = object({
-      enabled = bool
+      enabled = optional(bool, false)
     })
   })
 
-  default = {
-    enabled         = false
-    override_action = "none"
-    rules           = []
-    rate_limit = {
-      enabled = false
-      limit   = 1000
-      action  = "count"
-    }
-    block_forwarder_header = {
-      enabled = false
-    }
-  }
+  default = {}
 }
