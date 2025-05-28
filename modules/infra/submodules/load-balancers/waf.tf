@@ -105,13 +105,11 @@ resource "aws_wafv2_web_acl" "waf" {
     content {
       name     = "GlobalRateLimit"
       priority = length(var.waf.rules) + 1
-      action {
-        count {}
-      }
+
       dynamic "action" {
         for_each = var.waf.rate_limit.action == "allow" ? [1] : []
         content {
-          none {}
+          allow {}
         }
       }
 
