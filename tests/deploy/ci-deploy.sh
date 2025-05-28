@@ -96,12 +96,6 @@ install_opentofu() {
   sudo ln -s /usr/local/bin/tofu /usr/local/bin/terraform && terraform version
 }
 
-install_tfvar() {
-  curl -sLO https://github.com/shihanng/tfvar/releases/latest/download/tfvar_linux_amd64.deb
-  sudo dpkg -i tfvar_linux_amd64.deb
-  tfvar --version
-}
-
 set_eks_worker_ami() {
   # We can potentially test AMI upgrades in CI.
   # 1 is latest.

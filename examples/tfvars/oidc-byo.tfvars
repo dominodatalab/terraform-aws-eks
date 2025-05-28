@@ -24,8 +24,10 @@ kms = {
 }
 
 eks = {
+  #Disables the creation of the OIDC provider.
+  #This is useful when you want to use an existing OIDC provider. See required fields below.
   oidc_provider = {
-    create = true
+    create = false
     oidc = {
       arn             = "_CHANGE_ME_"
       client_id_list  = ["sts.amazonaws.com"]

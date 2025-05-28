@@ -171,7 +171,4 @@ trap finish EXIT ERR INT TERM
 verify_terraform
 verify_aws_creds
 run_terraform_plans
-[ "$test_file_name" == "none" ] && {
-  test_byok_kms
-  test_byo_eks_oidc_provider
-}
+[ "$test_file_name" == "none" ] && test_byok_kms

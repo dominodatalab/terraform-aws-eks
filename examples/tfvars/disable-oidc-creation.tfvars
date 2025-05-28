@@ -18,8 +18,11 @@ bastion = {
   enabled = true
 }
 
+#Disables the creation of the OIDC provider.
+#Note that the OIDC provider is required for IRSA implementations.
 eks = {
   oidc_provider = {
     create = false
+    oidc   = null
   }
 }
