@@ -9,7 +9,21 @@ variable "deploy_id" {
 }
 
 variable "load_balancers" {
-  description = "Lista de load balancers a crear"
+  description = <<EOF
+    List of Load Balancers to create.
+    [{
+      name     = Name of the Load Balancer.
+      type     = Type of Load Balancer (e.g., "application", "network").
+      internal = Whether the Load Balancer is internal (true/false).
+      listeners = List of listeners for the Load Balancer.
+      [{
+        port       = Listener port (e.g., 80, 443).
+        protocol   = Protocol used by the listener (e.g., "HTTP", "HTTPS").
+        ssl_policy = (Optional) SSL policy to use for HTTPS listeners.
+        cert_arn   = (Optional) ARN of the SSL certificate.
+      }]
+    }]
+  EOF
   type = list(object({
     name     = string
     type     = string
@@ -24,6 +38,37 @@ variable "load_balancers" {
 }
 
 variable "waf" {
+  description = <<EOF
+    Web Application Firewall (WAF) configuration.
+    {
+      enabled         = Whether WAF is enabled (true/false).
+      override_action = (Optional) Override action when a rule matches (default: "none").
+
+      rules = List of WAF rules to apply.
+      [{
+        name        = Rule name.
+        vendor_name = Name of the rule vendor (e.g., "AWS").
+        priority    = Rule priority.
+        allow       = (Optional) List of conditions to allow.
+        block       = (Optional) List of conditions to block.
+        captcha     = (Optional) List of CAPTCHA challenge conditions.
+        challenge   = (Optional) List of challenge conditions.
+        count       = (Optional) List of conditions to count (log only).
+      }]
+
+      rate_limit = Rate-based rule configuration.
+      {
+        enabled = Whether rate limiting is enabled (true/false).
+        limit   = Number of requests per 5-minute period before rate limiting.
+        action  = Action to take when limit is exceeded ("block", "count", etc.).
+      }
+
+      block_forwarder_header = Configuration for header injection on blocked requests.
+      {
+        enabled = Whether to inject a block forwarder header (true/false).
+      }
+    }
+  EOF
   type = object({
     enabled         = bool
     override_action = optional(string, "none")
@@ -45,66 +90,6 @@ variable "waf" {
     block_forwarder_header = object({
       enabled = bool
     })
-  })
-
-  default = {
-    enabled = true
-    rules = [
-      {
-        name        = "AWSManagedRulesCommonRuleSet"
-        vendor_name = "AWS"
-        priority    = 0
-      },
-      {
-        name        = "AWSManagedRulesSQLiRuleSet"
-        vendor_name = "AWS"
-        priority    = 1
-      },
-      {
-        name        = "AWSManagedRulesKnownBadInputsRuleSet"
-        vendor_name = "AWS"
-        priority    = 2
-      },
-      {
-        name        = "AWSManagedRulesAmazonIpReputationList"
-        vendor_name = "AWS"
-        priority    = 3
-      },
-      {
-        name        = "AWSManagedRulesAnonymousIpList"
-        vendor_name = "AWS"
-        priority    = 4
-      },
-      {
-        name        = "AWSManagedRulesBotControlRuleSet"
-        vendor_name = "AWS"
-        priority    = 5
-      }
-    ]
-    rate_limit = {
-      enabled = true
-      limit   = 1000
-      action  = "count"
-    }
-    block_forwarder_header = {
-      enabled = true
-    }
-  }
-}
-
-variable "access_logs" {
-  description = <<EOF
-    access_logs = {
-      enabled   = Enable access logs.
-      s3_bucket = The name of the S3 bucket where access logs will be stored.
-      s3_prefix = The prefix (folder path) within the S3 bucket for access logs.
-    }
-  EOF
-
-  type = object({
-    enabled   = optional(bool, false)
-    s3_bucket = string
-    s3_prefix = optional(string, "access_logs/load_balancers")
   })
 }
 

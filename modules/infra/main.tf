@@ -137,6 +137,50 @@ module "load_balancers" {
     }
   ]
 
+  waf = {
+    enabled = true
+    rules = [
+      {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+        priority    = 0
+      },
+      {
+        name        = "AWSManagedRulesSQLiRuleSet"
+        vendor_name = "AWS"
+        priority    = 1
+      },
+      {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+        priority    = 2
+      },
+      {
+        name        = "AWSManagedRulesAmazonIpReputationList"
+        vendor_name = "AWS"
+        priority    = 3
+      },
+      {
+        name        = "AWSManagedRulesAnonymousIpList"
+        vendor_name = "AWS"
+        priority    = 4
+      },
+      {
+        name        = "AWSManagedRulesBotControlRuleSet"
+        vendor_name = "AWS"
+        priority    = 5
+      }
+    ]
+    rate_limit = {
+      enabled = true
+      limit   = 1000
+      action  = "count"
+    }
+    block_forwarder_header = {
+      enabled = true
+    }
+  }
+
   access_logs = {
     enabled   = local.create_s3
     s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
