@@ -25,23 +25,6 @@ variable "load_balancers" {
 
 variable "waf" {
   type = object({
-    enabled = bool
-    rules = list(object({
-      name            = string
-      vendor_name     = string
-      priority        = number
-      override_action = optional(string, "none")
-      allow           = list(string)
-      block           = list(string)
-      captcha         = list(string)
-      challenge       = list(string)
-      count           = list(string)
-    }))
-  })
-}
-
-variable "waf" {
-  type = object({
     enabled         = bool
     override_action = optional(string, "none")
     rules = list(object({
