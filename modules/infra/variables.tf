@@ -581,6 +581,7 @@ variable "load_balancers" {
       cert_arn   = optional(string)
     }))
   }))
+  default = []
 }
 
 variable "waf" {
@@ -637,4 +638,18 @@ variable "waf" {
       enabled = bool
     })
   })
+
+  default = {
+    enabled         = false
+    override_action = "none"
+    rules           = []
+    rate_limit = {
+      enabled = false
+      limit   = 1000
+      action  = "count"
+    }
+    block_forwarder_header = {
+      enabled = false
+    }
+  }
 }

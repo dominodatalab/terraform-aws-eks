@@ -108,10 +108,10 @@ module "bastion" {
 }
 
 module "load_balancers" {
-  source    = "./submodules/load-balancers"
-  deploy_id = var.deploy_id
+  source         = "./submodules/load-balancers"
+  deploy_id      = var.deploy_id
   load_balancers = var.load_balancers
-  waf = var.waf
+  waf            = var.waf
 
   access_logs = {
     enabled   = local.create_s3
