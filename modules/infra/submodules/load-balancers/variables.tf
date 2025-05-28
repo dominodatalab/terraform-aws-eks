@@ -23,6 +23,86 @@ variable "load_balancers" {
   }))
 }
 
+variable "waf" {
+  type = object({
+    enabled = bool
+    rules = list(object({
+      name            = string
+      vendor_name     = string
+      priority        = number
+      override_action = optional(string, "none")
+      allow           = list(string)
+      block           = list(string)
+      captcha         = list(string)
+      challenge       = list(string)
+      count           = list(string)
+    }))
+  })
+}
+
+variable "waf" {
+  type = object({
+    enabled         = bool
+    override_action = optional(string, "none")
+    rules = list(object({
+      name        = string
+      vendor_name = string
+      priority    = number
+      allow       = optional(list(string), [])
+      block       = optional(list(string), [])
+      captcha     = optional(list(string), [])
+      challenge   = optional(list(string), [])
+      count       = optional(list(string), [])
+    }))
+    rate_limit = object({
+      enabled = bool
+      limit   = number
+      action  = string # "none", "count", "allow", etc.
+    })
+  })
+
+  default = {
+    enabled = true
+    rules = [
+      {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+        priority    = 0
+      },
+      {
+        name        = "AWSManagedRulesSQLiRuleSet"
+        vendor_name = "AWS"
+        priority    = 1
+      },
+      {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+        priority    = 2
+      },
+      {
+        name        = "AWSManagedRulesAmazonIpReputationList"
+        vendor_name = "AWS"
+        priority    = 3
+      },
+      {
+        name        = "AWSManagedRulesAnonymousIpList"
+        vendor_name = "AWS"
+        priority    = 4
+      },
+      {
+        name        = "AWSManagedRulesBotControlRuleSet"
+        vendor_name = "AWS"
+        priority    = 5
+      }
+    ]
+    rate_limit = {
+      enabled = true
+      limit   = 1000
+      action  = "count"
+    }
+  }
+}
+
 variable "access_logs" {
   description = <<EOF
     access_logs = {

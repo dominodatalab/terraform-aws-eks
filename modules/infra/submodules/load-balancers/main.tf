@@ -17,7 +17,6 @@ locals {
       ]
     ]) : item.key => item
   }
-
 }
 
 resource "aws_lb" "load_balancers" {
