@@ -93,9 +93,25 @@ variable "waf" {
   })
 }
 
-variable "connection_logs" {
+variable "access_logs" {
   description = <<EOF
     access_logs = {
+      enabled   = Enable access logs.
+      s3_bucket = The name of the S3 bucket where access logs will be stored.
+      s3_prefix = The prefix (folder path) within the S3 bucket for access logs.
+    }
+  EOF
+
+  type = object({
+    enabled   = optional(bool, false)
+    s3_bucket = string
+    s3_prefix = optional(string, "access_logs/load_balancers")
+  })
+}
+
+variable "connection_logs" {
+  description = <<EOF
+    connection_logs = {
       enabled   = Enable connections logs.
       s3_bucket = The name of the S3 bucket where connection logs will be stored.
       s3_prefix = The prefix (folder path) within the S3 bucket for conneciton logs.

@@ -190,8 +190,6 @@ module "load_balancers" {
     s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
   }
   network_info = module.network.info
-
-  depends_on = [null_resource.debug_ddos]
 }
 
 module "ddos" {
@@ -200,17 +198,6 @@ module "ddos" {
   access_logs = {
     enabled   = local.create_s3
     s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
-  }
-
-  depends_on = [null_resource.debug_ddos]
-}
-
-resource "null_resource" "debug_ddos" {
-  provisioner "local-exec" {
-    command = <<EOT
-      echo -e "enabled is: ${local.create_s3}"
-      echo -e "s3_bucket is: ${module.storage.info.s3.buckets.monitoring.bucket_name}"
-    EOT
   }
 }
 
