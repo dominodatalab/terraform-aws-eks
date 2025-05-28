@@ -136,6 +136,41 @@ resource "aws_wafv2_web_acl" "main" {
     }
   }
 
+  dynamic "rule" {
+    for_each = var.waf.block_forwarder_header.enabled ? [1] : []
+
+    content {
+      name     = "BlockXForwardedFor"
+      priority = length(var.waf.rules) + (var.waf.rate_limit.enabled ? 2 : 1)
+
+      action {
+        block {}
+      }
+
+      statement {
+        byte_match_statement {
+          search_string = "."
+          field_to_match {
+            single_header {
+              name = "x-forwarded-for"
+            }
+          }
+          text_transformation {
+            priority = 0
+            type     = "NONE"
+          }
+          positional_constraint = "CONTAINS"
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "BlockXForwardedFor"
+        sampled_requests_enabled   = true
+      }
+    }
+  }
+
   visibility_config {
     cloudwatch_metrics_enabled = true
     metric_name                = "cw-${local.waf_name}-waf-alb"

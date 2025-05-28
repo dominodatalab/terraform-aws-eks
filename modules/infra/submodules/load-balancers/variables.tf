@@ -57,7 +57,10 @@ variable "waf" {
     rate_limit = object({
       enabled = bool
       limit   = number
-      action  = string # "none", "count", "allow", etc.
+      action  = string
+    })
+    block_forwarder_header = object({
+      enabled = bool
     })
   })
 
@@ -99,6 +102,9 @@ variable "waf" {
       enabled = true
       limit   = 1000
       action  = "count"
+    }
+    block_forwarder_header = {
+      enabled = true
     }
   }
 }
