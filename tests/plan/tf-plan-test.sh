@@ -106,51 +106,6 @@ test_byok_kms() {
   tf_plan "$(realpath $vars_file)" && rm "$vars_file"
 }
 
-create_eks_oidc_provider() {
-  local dir="create-oidc-provider"
-
-  eval $(tfvar --var-file ../../examples/tfvars/oidc-byo.tfvars --env-var ./terraform | grep -E 'region|deploy_id')
-
-  printf "\n\033[0;33mCreating OIDC provider\033[0m\n"
-  terraform -chdir="$dir" init
-  if ! terraform -chdir="$dir" apply --auto-approve; then
-    printf "\n\033[0;31mFailed to create OIDC provider!!!\033[0m\n"
-    failed_vars+=("kms")
-  else
-    printf "\n\033[0;32mOIDC provider created successfully\033[0m\n"
-  fi
-
-  OIDC_INFO_VARS_FILE="${SH_DIR}/oidc.json"
-  terraform -chdir="$dir" output -json | jq -r '.eks_oidc_provider.value' >"$OIDC_INFO_VARS_FILE"
-
-  export OIDC_INFO_VARS_FILE
-}
-
-destroy_eks_oidc_provider() {
-  local dir="create-oidc-provider"
-
-  printf "\n\033[0;33mDestroying OIDC provider\033[0m\n"
-  terraform -chdir="$dir" destroy --auto-approve || terraform -chdir="$dir" destroy --auto-approve --refresh=false
-}
-
-test_byo_eks_oidc_provider() {
-  create_eks_oidc_provider
-  if test -z $OIDC_INFO_VARS_FILE; then
-    printf "\033[0;31mERROR Obtaining OIDC_INFO_VARS_FILE \033[0m.\n"
-    exit 1
-  fi
-
-  local OIDC_VARS_FILE="../../examples/tfvars/oidc-byo.tfvars"
-  local vars_file="$(basename $OIDC_VARS_FILE)"
-  local TEST_VARS_FILE="${SH_DIR}/test-${vars_file}"
-
-  tfvar ./terraform --var-file "$OIDC_VARS_FILE" --var-file "$OIDC_INFO_VARS_FILE" >"$TEST_VARS_FILE"
-
-  cat "$TEST_VARS_FILE"
-
-  tf_plan "$TEST_VARS_FILE" && rm "$TEST_VARS_FILE"
-}
-
 finish() {
   destroy_eks_oidc_provider
   destroy_kms_key
