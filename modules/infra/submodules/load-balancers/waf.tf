@@ -182,5 +182,5 @@ resource "aws_wafv2_web_acl_association" "alb_association" {
   for_each = local.albs
 
   resource_arn = aws_lb.load_balancers[each.key].arn
-  web_acl_arn  = aws_wafv2_web_acl.waf.arn
+  web_acl_arn  = aws_wafv2_web_acl.waf[0].arn
 }
