@@ -4,7 +4,7 @@ test_file_name="${1:-none}"
 
 TFVARS_BASE_PATH="../../examples/tfvars/"
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-exclude=("bring-your-vpc.tfvars" "kms-byok.tfvars" "private-link.tfvars" "oidc-byo.tfvars")
+exclude=("bring-your-vpc.tfvars" "kms-byok.tfvars" "private-link.tfvars")
 
 failed_vars=()
 success_vars=()
@@ -107,7 +107,6 @@ test_byok_kms() {
 }
 
 finish() {
-  destroy_eks_oidc_provider
   destroy_kms_key
 
   if [ "${#success_vars[@]}" != "0" ]; then
