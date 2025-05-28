@@ -63,6 +63,7 @@ resource "aws_kms_key" "custom" {
   key_usage                = "ENCRYPT_DECRYPT"
   multi_region             = false
   policy                   = data.aws_iam_policy_document.kms_key_global.json
+  deletion_window_in_days  = 7
   tags = {
     "Name" = var.deploy_id
   }
