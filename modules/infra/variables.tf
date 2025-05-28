@@ -617,7 +617,7 @@ variable "waf" {
     }
   EOF
   type = object({
-    enabled         = bool
+    enabled         = optional(bool, false)
     override_action = optional(string, "none")
     rules = optional(list(object({
       name        = string
@@ -629,14 +629,14 @@ variable "waf" {
       challenge   = optional(list(string), [])
       count       = optional(list(string), [])
     })), [])
-    rate_limit = object({
+    rate_limit = optional(object({
       enabled = optional(bool, false)
       limit   = optional(number, 1000)
       action  = optional(string, "block")
-    })
-    block_forwarder_header = object({
+    }), {})
+    block_forwarder_header = optional(object({
       enabled = optional(bool, false)
-    })
+    }), {})
   })
 
   default = {}
