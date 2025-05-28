@@ -3,6 +3,11 @@ locals {
     for lb in var.load_balancers : lb.name => lb
   }
 
+  albs = {
+    for lb in var.load_balancers : lb.name => lb
+    if lb.type == "application"
+  }
+
   listeners = {
     for item in flatten([
       for lb in var.load_balancers : [

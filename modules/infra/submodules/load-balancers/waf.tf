@@ -2,7 +2,7 @@ locals {
   waf_name = "domino-cloud"
 }
 
-resource "aws_wafv2_web_acl" "main" {
+resource "aws_wafv2_web_acl" "waf" {
   count = var.waf.enabled ? 1 : 0
 
   name  = "${local.waf_name}-waf"
@@ -176,4 +176,11 @@ resource "aws_wafv2_web_acl" "main" {
     metric_name                = "cw-${local.waf_name}-waf-alb"
     sampled_requests_enabled   = true
   }
+}
+
+resource "aws_wafv2_web_acl_association" "alb_association" {
+  for_each = local.albs
+
+  resource_arn = aws_lb[each.key].arn
+  web_acl_arn  = aws_wafv2_web_acl.waf.arn
 }
