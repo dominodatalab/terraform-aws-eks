@@ -7,6 +7,8 @@ locals {
   }
 
   create_global_accelerator = length(local.lbs_with_ddos) > 0
+
+  create_dns_records = local.create_global_accelerator && var.fqdn
 }
 
 data "aws_route53_zone" "selected" {
@@ -57,7 +59,7 @@ resource "aws_globalaccelerator_endpoint_group" "endpoint_group" {
 }
 
 resource "aws_route53_record" "root_record_type_a" {
-  count = local.create_global_accelerator ? 1 : 0
+  count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = var.hosted_zone_name
@@ -70,7 +72,7 @@ resource "aws_route53_record" "root_record_type_a" {
 }
 
 resource "aws_route53_record" "root_record_type_aaaa" {
-  count = local.create_global_accelerator ? 1 : 0
+  count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = var.hosted_zone_name
@@ -84,7 +86,7 @@ resource "aws_route53_record" "root_record_type_aaaa" {
 
 # Record A (wildcard)
 resource "aws_route53_record" "wildcard_record_type_a" {
-  count = local.create_global_accelerator ? 1 : 0
+  count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = "*.${var.hosted_zone_name}"
@@ -98,7 +100,7 @@ resource "aws_route53_record" "wildcard_record_type_a" {
 
 # Record AAAA (wildcard)
 resource "aws_route53_record" "wildcard_record_type_aaaa" {
-  count = local.create_global_accelerator ? 1 : 0
+  count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = "*.${var.hosted_zone_name}"
