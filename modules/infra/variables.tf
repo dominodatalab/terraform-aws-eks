@@ -556,12 +556,12 @@ variable "vpn_connections" {
 
 variable "fqdn" {
   description = "Fully qualified domain name (FQDN) of the Domino instance"
-  type        = optional(string)
+  type        = string
 }
 
 variable "hosted_zone_name" {
   description = "Full name of the hosted zone"
-  type        = optional(string)
+  type        = string
 }
 
 variable "load_balancers" {
