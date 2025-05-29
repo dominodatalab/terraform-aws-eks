@@ -108,6 +108,8 @@ module "bastion" {
 }
 
 module "load_balancers" {
+  count = length(var.load_balancers) > 0 ? 1 : 0
+
   source         = "./submodules/load-balancers"
   deploy_id      = var.deploy_id
   load_balancers = var.load_balancers
