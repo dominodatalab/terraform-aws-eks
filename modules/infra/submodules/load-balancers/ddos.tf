@@ -52,7 +52,7 @@ resource "aws_globalaccelerator_endpoint_group" "endpoint_group" {
   listener_arn = aws_globalaccelerator_listener.listener[each.key].id
 
   endpoint_configuration {
-    endpoint_id                    = aws_lb.main[each.key].arn
+    endpoint_id                    = aws_lb.load_balancers[each.key].arn
     client_ip_preservation_enabled = true
     weight                         = 128
   }
