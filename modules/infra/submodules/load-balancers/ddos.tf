@@ -65,7 +65,7 @@ resource "aws_route53_record" "root_record_type_a" {
   name    = var.hosted_zone_name
   type    = "A"
   alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator.dns_name
+    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
     zone_id                = local.global_accelerator_hosted_zone_id
     evaluate_target_health = true
   }
@@ -78,7 +78,7 @@ resource "aws_route53_record" "root_record_type_aaaa" {
   name    = var.hosted_zone_name
   type    = "AAAA"
   alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator.dns_name
+    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
     zone_id                = local.global_accelerator_hosted_zone_id
     evaluate_target_health = true
   }
@@ -92,7 +92,7 @@ resource "aws_route53_record" "wildcard_record_type_a" {
   name    = "*.${var.hosted_zone_name}"
   type    = "A"
   alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator.dns_name
+    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
     zone_id                = local.global_accelerator_hosted_zone_id
     evaluate_target_health = true
   }
@@ -106,7 +106,7 @@ resource "aws_route53_record" "wildcard_record_type_aaaa" {
   name    = "*.${var.hosted_zone_name}"
   type    = "AAAA"
   alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator.dns_name
+    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
     zone_id                = local.global_accelerator_hosted_zone_id
     evaluate_target_health = true
   }
