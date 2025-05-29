@@ -554,26 +554,38 @@ variable "vpn_connections" {
   default = {}
 }
 
+variable "fqdn" {
+  description = "Fully qualified domain name (FQDN) of the Domino instance"
+  type        = optional(string)
+}
+
+variable "hosted_zone_name" {
+  description = "Full name of the hosted zone"
+  type        = optional(string)
+}
+
 variable "load_balancers" {
   description = <<EOF
     List of Load Balancers to create.
     [{
       name     = Name of the Load Balancer.
       type     = Type of Load Balancer (e.g., "application", "network").
-      internal = Whether the Load Balancer is internal (true/false).
+      internal = (Optional) Whether the Load Balancer is internal. Defaults to true.
+      ddos_protection = (Optional) Whether to enable AWS Shield Standard (DDoS protection). Defaults to true.
       listeners = List of listeners for the Load Balancer.
       [{
         port       = Listener port (e.g., 80, 443).
-        protocol   = Protocol used by the listener (e.g., "HTTP", "HTTPS").
-        ssl_policy = (Optional) SSL policy to use for HTTPS listeners.
+        protocol   = Protocol used by the listener (e.g., "TCP", "TLS", "HTTP", "HTTPS").
+        ssl_policy = (Optional) SSL policy to use for TLS & HTTPS listeners.
         cert_arn   = (Optional) ARN of the SSL certificate.
       }]
     }]
   EOF
   type = list(object({
-    name     = string
-    type     = string
-    internal = bool
+    name            = string
+    type            = string
+    internal        = optional(bool, true)
+    ddos_protection = optional(bool, true)
     listeners = list(object({
       port       = number
       protocol   = string

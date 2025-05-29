@@ -121,16 +121,13 @@ module "load_balancers" {
     enabled   = local.create_s3
     s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
   }
-  network_info = module.network.info
-}
-
-module "ddos" {
-  source    = "./submodules/ddos"
-  deploy_id = var.deploy_id
-  access_logs = {
+  flow_logs = {
     enabled   = local.create_s3
     s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
   }
+  fqdn             = var.fqdn
+  hosted_zone_name = var.hosted_zone_name
+  network_info     = module.network.info
 }
 
 locals {

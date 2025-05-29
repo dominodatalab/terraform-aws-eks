@@ -14,7 +14,8 @@ variable "load_balancers" {
     [{
       name     = Name of the Load Balancer.
       type     = Type of Load Balancer (e.g., "application", "network").
-      internal = Whether the Load Balancer is internal (true/false).
+      internal = (Optional) Whether the Load Balancer is internal. Defaults to true.
+      ddos_protection = (Optional) Whether to enable AWS Shield Standard (DDoS protection). Defaults to true.
       listeners = List of listeners for the Load Balancer.
       [{
         port       = Listener port (e.g., 80, 443).
@@ -25,9 +26,10 @@ variable "load_balancers" {
     }]
   EOF
   type = list(object({
-    name     = string
-    type     = string
-    internal = bool
+    name            = string
+    type            = string
+    internal        = optional(bool, true)
+    ddos_protection = optional(bool, true)
     listeners = list(object({
       port       = number
       protocol   = string
@@ -123,6 +125,32 @@ variable "connection_logs" {
     s3_bucket = string
     s3_prefix = optional(string, "connection_logs/load_balancers")
   })
+}
+
+variable "flow_logs" {
+  description = <<EOF
+    connection_logs = {
+      enabled   = Enable flow logs.
+      s3_bucket = The name of the S3 bucket where flow logs will be stored.
+      s3_prefix = The prefix (folder path) within the S3 bucket for flow logs.
+    }
+  EOF
+
+  type = object({
+    enabled   = optional(bool, false)
+    s3_bucket = string
+    s3_prefix = optional(string, "flow_logs/global_accelerator")
+  })
+}
+
+variable "fqdn" {
+  description = "Fully qualified domain name (FQDN) of the Domino instance"
+  type        = optional(string)
+}
+
+variable "hosted_zone_name" {
+  description = "Full name of the hosted zone"
+  type        = optional(string)
 }
 
 variable "network_info" {
