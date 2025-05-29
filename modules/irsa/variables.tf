@@ -64,6 +64,10 @@ variable "external_dns" {
     condition     = var.external_dns.enabled ? (var.external_dns.hosted_zone_name != null && length(var.external_dns.hosted_zone_name) > 0) : true
     error_message = "Must provide a non-empty `external_dns.hosted_zone_name` if `external_dns.enabled` == true"
   }
+  validation {
+    condition     = !var.external_dns.enabled || (var.eks_info.cluster.oidc != null || !var.external_dns.use_cluster_oidc_idp)
+    error_message = "Must provide `eks_info.cluster.oidc` if `external_dns.enabled` == true or `external_dns.use_cluster_oidc_idp` == false"
+  }
 }
 
 variable "additional_irsa_configs" {

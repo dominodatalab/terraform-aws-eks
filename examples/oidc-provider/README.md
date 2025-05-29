@@ -1,4 +1,5 @@
 # create-oidc-provider
+Example module on what the expected fields are in case OIDC Provider is created outside this module.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements

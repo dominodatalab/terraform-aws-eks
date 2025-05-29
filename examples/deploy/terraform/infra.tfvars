@@ -1,7 +1,14 @@
 additional_node_groups = {}
-bastion                = null
-default_node_groups    = null
-deploy_id              = null
+bastion = {
+  ami_id                   = null
+  authorized_ssh_ip_ranges = null
+  enabled                  = true
+  install_binaries         = null
+  instance_type            = null
+  username                 = null
+}
+default_node_groups = null
+deploy_id           = null
 domino_cur = {
   provision_cost_usage_report = false
 }

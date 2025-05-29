@@ -463,6 +463,8 @@ variable "bastion" {
     username                 = optional(string)
     install_binaries         = optional(bool)
   })
+
+  default = {}
 }
 
 

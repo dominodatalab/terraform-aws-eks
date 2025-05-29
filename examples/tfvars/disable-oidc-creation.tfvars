@@ -10,7 +10,7 @@ default_node_groups = {
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
   platform = {
-    "availability_zone_ids" = ["usw2-az1", "usw2-az2"]
+    availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
 }
 
@@ -18,11 +18,16 @@ bastion = {
   enabled = true
 }
 
+#Set in the cluster.tfvars file.
 #Disables the creation of the OIDC provider.
 #Note that the OIDC provider is required for IRSA implementations.
+#Check the oidc-provider example for how to create the OIDC provider, and what the expected fields below are.
 eks = {
   oidc_provider = {
     create = false
     oidc   = null
   }
 }
+
+
+tags = {}
