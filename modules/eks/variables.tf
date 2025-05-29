@@ -332,3 +332,114 @@ variable "karpenter" {
 
   default = {}
 }
+
+variable "fqdn" {
+  description = "Fully qualified domain name (FQDN) of the Domino instance"
+  type        = string
+  nullable    = false
+  default     = ""
+}
+
+variable "hosted_zone_name" {
+  description = "Full name of the hosted zone"
+  type        = string
+  nullable    = false
+  default     = ""
+}
+
+variable "monitoring_bucket" {
+  description = "S3 bucket for monitoring"
+  type        = string
+  nullable    = true
+  default     = null
+}
+
+variable "load_balancers" {
+  description = <<EOF
+    List of Load Balancers to create.
+    [{
+      name     = Name of the Load Balancer.
+      type     = Type of Load Balancer (e.g., "application", "network").
+      internal = (Optional) Whether the Load Balancer is internal. Defaults to true.
+      ddos_protection = (Optional) Whether to enable AWS Shield Standard (DDoS protection). Defaults to true.
+      listeners = List of listeners for the Load Balancer.
+      [{
+        port       = Listener port (e.g., 80, 443).
+        protocol   = Protocol used by the listener (e.g., "TCP", "TLS", "HTTP", "HTTPS").
+        ssl_policy = (Optional) SSL policy to use for TLS & HTTPS listeners.
+        cert_arn   = (Optional) ARN of the SSL certificate.
+      }]
+    }]
+  EOF
+  type = list(object({
+    name            = string
+    type            = string
+    internal        = optional(bool, true)
+    ddos_protection = optional(bool, true)
+    listeners = list(object({
+      port       = number
+      protocol   = string
+      ssl_policy = optional(string)
+      cert_arn   = optional(string)
+    }))
+  }))
+  default = []
+}
+
+variable "waf" {
+  description = <<EOF
+    Web Application Firewall (WAF) configuration.
+    {
+      enabled         = Whether WAF is enabled (true/false).
+      override_action = (Optional) Override action when a rule matches (default: "none").
+
+      rules = List of WAF rules to apply.
+      [{
+        name        = Rule name.
+        vendor_name = Name of the rule vendor (e.g., "AWS").
+        priority    = Rule priority.
+        allow       = (Optional) List of conditions to allow.
+        block       = (Optional) List of conditions to block.
+        captcha     = (Optional) List of CAPTCHA challenge conditions.
+        challenge   = (Optional) List of challenge conditions.
+        count       = (Optional) List of conditions to count (log only).
+      }]
+
+      rate_limit = Rate-based rule configuration.
+      {
+        enabled = Whether rate limiting is enabled (true/false).
+        limit   = Number of requests per 5-minute period before rate limiting.
+        action  = Action to take when limit is exceeded ("block", "count", etc.).
+      }
+
+      block_forwarder_header = Configuration for header injection on blocked requests.
+      {
+        enabled = Whether to inject a block forwarder header (true/false).
+      }
+    }
+  EOF
+  type = object({
+    enabled         = optional(bool, false)
+    override_action = optional(string, "none")
+    rules = optional(list(object({
+      name        = string
+      vendor_name = string
+      priority    = number
+      allow       = optional(list(string), [])
+      block       = optional(list(string), [])
+      captcha     = optional(list(string), [])
+      challenge   = optional(list(string), [])
+      count       = optional(list(string), [])
+    })), [])
+    rate_limit = optional(object({
+      enabled = optional(bool, false)
+      limit   = optional(number, 1000)
+      action  = optional(string, "block")
+    }), {})
+    block_forwarder_header = optional(object({
+      enabled = optional(bool, false)
+    }), {})
+  })
+
+  default = {}
+}

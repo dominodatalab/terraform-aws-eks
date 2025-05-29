@@ -107,31 +107,6 @@ module "bastion" {
   bastion      = var.bastion
 }
 
-module "load_balancers" {
-  count = length(var.load_balancers) > 0 ? 1 : 0
-
-  source         = "./submodules/load-balancers"
-  deploy_id      = var.deploy_id
-  load_balancers = var.load_balancers
-  waf            = var.waf
-
-  access_logs = {
-    enabled   = local.create_s3
-    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
-  }
-  connection_logs = {
-    enabled   = local.create_s3
-    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
-  }
-  flow_logs = {
-    enabled   = local.create_s3
-    s3_bucket = local.create_s3 ? module.storage.info.s3.buckets.monitoring.bucket_name : null
-  }
-  fqdn             = var.fqdn
-  hosted_zone_name = var.hosted_zone_name
-  network_info     = module.network.info
-}
-
 locals {
   cost_usage_report_info = var.domino_cur.provision_cost_usage_report && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
   bastion_info           = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
