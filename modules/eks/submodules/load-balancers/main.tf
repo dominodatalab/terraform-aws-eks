@@ -72,6 +72,7 @@ resource "aws_lb" "load_balancers" {
 
 resource "aws_lb_listener" "load_balancer_listener" {
   # checkov:skip=CKV_AWS_103:AWS Load Balancer is not using TLS 1.2. ssl_policy is provided as input
+  # checkov:skip=CKV_AWS_2:AWS Elastic Load Balancer v2 (ELBv2) listener that allow connection requests over HTTP. Implement using dynamic
 
   for_each = local.listeners
 
