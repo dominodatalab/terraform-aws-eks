@@ -153,6 +153,11 @@ variable "hosted_zone_name" {
   type        = string
 }
 
+variable "eks_nodes_security_group_id" {
+  description = "Security group used by EKS nodes"
+  type        = string
+}
+
 variable "network_info" {
   description = <<EOF
     vpc_id = VPC ID.

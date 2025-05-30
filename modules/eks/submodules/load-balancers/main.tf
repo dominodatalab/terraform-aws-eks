@@ -8,6 +8,11 @@ locals {
     if lb.type == "application"
   }
 
+  lbs_with_ddos_protection = {
+    for lb in var.load_balancers : lb.name => lb
+    if try(lb.ddos_protection, true)
+  }
+
   listeners = {
     for item in flatten([
       for lb in var.load_balancers : [
