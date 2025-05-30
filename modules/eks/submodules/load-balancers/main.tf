@@ -69,6 +69,8 @@ resource "aws_lb" "load_balancers" {
 }
 
 resource "aws_lb_listener" "load_balancer_listener" {
+  # checkov:skip=CKV_AWS_103:AWS Load Balancer is not using TLS 1.2. ssl_policy is provided as input
+
   for_each = local.listeners
 
   load_balancer_arn = aws_lb.load_balancers[each.value.lb_name].arn
