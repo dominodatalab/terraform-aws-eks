@@ -184,3 +184,40 @@ resource "aws_wafv2_web_acl_association" "alb_association" {
   resource_arn = aws_lb.load_balancers[each.key].arn
   web_acl_arn  = aws_wafv2_web_acl.waf[0].arn
 }
+
+resource "aws_s3_bucket" "waf_logs" {
+  bucket        = "aws-waf-logs-${var.deploy_id}"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_public_access_block" "waf_logs" {
+  bucket                  = aws_s3_bucket.waf_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_cloudwatch_log_group" "waf_logs" {
+  name              = "aws-waf-logs-${var.deploy_id}-blocked" #Note: The Log group must start with aws-waf-logs-
+  retention_in_days = 14
+}
+
+resource "aws_wafv2_web_acl_logging_configuration" "application" {
+  log_destination_configs = [aws_cloudwatch_log_group.waf_logs.arn]
+  resource_arn            = aws_wafv2_web_acl.waf[0].arn
+
+  # Only keep blocked requests to save storage and Insight query costs
+  logging_filter {
+    default_behavior = "DROP"
+
+    filter {
+      behavior    = "KEEP"
+      requirement = "MEETS_ANY"
+
+      condition {
+        action_condition { action = "BLOCK" }
+      }
+    }
+  }
+}
