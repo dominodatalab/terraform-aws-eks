@@ -40,6 +40,8 @@ locals {
 }
 
 resource "aws_lb" "load_balancers" {
+  # checkov:skip=CKV_AWS_131:ALB does not drop HTTP headers. Skipping to avoid breaking changes
+
   for_each = local.lbs
 
   name               = "${var.deploy_id}-${each.key}"
@@ -79,8 +81,29 @@ resource "aws_lb_listener" "load_balancer_listener" {
   ssl_policy        = contains(["HTTPS", "TLS"], each.value.protocol) ? each.value.ssl_policy : null
   certificate_arn   = contains(["HTTPS", "TLS"], each.value.protocol) ? each.value.cert_arn : null
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.lb_target_groups[each.key].arn
+  dynamic "default_action" {
+    for_each = [each.value.protocol]
+
+    content {
+      type = each.value.protocol == "HTTP" ? "redirect" : "forward"
+
+      dynamic "redirect" {
+        for_each = each.value.protocol == "HTTP" ? [1] : []
+
+        content {
+          port        = "443"
+          protocol    = "HTTPS"
+          status_code = "HTTP_301"
+        }
+      }
+
+      dynamic "forward" {
+        for_each = each.value.protocol != "HTTP" ? [1] : []
+
+        content {
+          target_group_arn = aws_lb_target_group.lb_target_groups[each.key].arn
+        }
+      }
+    }
   }
 }
