@@ -41,6 +41,7 @@ module "eks" {
 }
 
 module "irsa_external_dns" {
+  count    = module.eks.info.cluster.oidc != null ? 1 : 0
   source   = "./../../../modules/irsa"
   eks_info = module.eks.info
   external_dns = {
@@ -63,6 +64,7 @@ data "aws_iam_policy_document" "mypod_s3" {
 }
 
 module "irsa_policies" {
+  count    = module.eks.info.cluster.oidc != null ? 1 : 0
   source   = "./../../../modules/irsa"
   eks_info = module.eks.info
   additional_irsa_configs = [{
