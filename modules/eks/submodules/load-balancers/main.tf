@@ -41,6 +41,7 @@ locals {
 
 resource "aws_lb" "load_balancers" {
   # checkov:skip=CKV_AWS_131:ALB does not drop HTTP headers. Skipping to avoid breaking changes
+  # checkov:skip=CKV2_AWS_76:Ensure AWS ALB attached WAFv2 WebACL is configured with AMR for Log4j Vulnerability. WAF has dynamic rules for this
 
   for_each = local.lbs
 
