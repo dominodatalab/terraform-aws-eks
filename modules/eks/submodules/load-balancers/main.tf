@@ -48,7 +48,8 @@ resource "aws_lb" "load_balancers" {
   security_groups    = [aws_security_group.lb_security_groups[each.key].id]
   subnets            = [for subnet in(each.value.internal ? var.network_info.subnets.private : var.network_info.subnets.public) : subnet.subnet_id]
 
-  enable_deletion_protection = false
+  enable_deletion_protection       = false
+  enable_cross_zone_load_balancing = true
 
   access_logs {
     enabled = var.access_logs.enabled
@@ -76,8 +77,26 @@ resource "aws_lb_listener" "load_balancer_listener" {
   ssl_policy        = contains(["HTTPS", "TLS"], each.value.protocol) ? each.value.ssl_policy : null
   certificate_arn   = contains(["HTTPS", "TLS"], each.value.protocol) ? each.value.cert_arn : null
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.lb_target_groups[each.key].arn
+  dynamic "default_action" {
+    for_each = [each.value.protocol]
+    content {
+      type = each.value.protocol == "HTTP" ? "redirect" : "forward"
+
+      dynamic "redirect" {
+        for_each = each.value.protocol == "HTTP" ? [1] : []
+        content {
+          port        = "443"
+          protocol    = "HTTPS"
+          status_code = "HTTP_301"
+        }
+      }
+
+      dynamic "forward" {
+        for_each = each.value.protocol != "HTTP" ? [1] : []
+        content {
+          target_group_arn = aws_lb_target_group.lb_target_groups[each.key].arn
+        }
+      }
+    }
   }
 }
