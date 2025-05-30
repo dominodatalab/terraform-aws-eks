@@ -48,9 +48,9 @@ resource "aws_lb" "load_balancers" {
   security_groups    = [aws_security_group.lb_security_groups[each.key].id]
   subnets            = [for subnet in(each.value.internal ? var.network_info.subnets.private : var.network_info.subnets.public) : subnet.subnet_id]
 
-  enable_deletion_protection = false
+  enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
-  
+
   access_logs {
     enabled = var.access_logs.enabled
     bucket  = var.access_logs.s3_bucket
