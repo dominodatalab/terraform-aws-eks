@@ -3,7 +3,6 @@ locals {
 }
 
 resource "aws_wafv2_web_acl" "waf" {
-  # checkov:skip=CKV_AWS_192:WAF enables message lookup in Log4j2. Rules are configured at deployer level, anyway we are including "AWSManagedRulesKnownBadInputsRuleSet"
   count = var.waf.enabled ? 1 : 0
 
   name  = "${local.waf_name}-waf"
