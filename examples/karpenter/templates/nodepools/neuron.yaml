@@ -6,15 +6,20 @@ spec:
   disruption:
     budgets:
       - nodes: 10%
-    consolidateAfter: 30m
+    consolidateAfter: 5m
     consolidationPolicy: WhenEmpty
   template:
     metadata:
       labels:
+        aws.amazon.com/neuron: "true"
         dominodatalab.com/domino-node: "true"
         dominodatalab.com/node-pool: trainium
     spec:
-      expireAfter: 720h
+      limits:
+        aws.amazon.com/neuron: 10
+        cpu: 80
+        memory: 320Gi
+      expireAfter: Never
       nodeClassRef:
         group: karpenter.k8s.aws
         kind: EC2NodeClass
@@ -36,3 +41,10 @@ spec:
         - key: node.kubernetes.io/instance-type
           operator: In
           values: ["trn1.2xlarge"]
+      startupTaints:
+        - effect: NoExecute
+          key: ebs.csi.aws.com/agent-not-ready
+      taints:
+        - effect: NoSchedule
+          key: aws.amazon.com/neuron
+          value: "true"

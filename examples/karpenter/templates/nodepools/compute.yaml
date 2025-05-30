@@ -6,7 +6,7 @@ spec:
   disruption:
     budgets:
       - nodes: 10%
-    consolidateAfter: 30m
+    consolidateAfter: 5m
     consolidationPolicy: WhenEmpty
   template:
     metadata:
@@ -14,7 +14,10 @@ spec:
         dominodatalab.com/domino-node: "true"
         dominodatalab.com/node-pool: default
     spec:
-      expireAfter: 720h
+      limits:
+        cpu: 240
+        memory: 960Gi
+      expireAfter: Never
       nodeClassRef:
         group: karpenter.k8s.aws
         kind: EC2NodeClass
@@ -36,3 +39,6 @@ spec:
         - key: node.kubernetes.io/instance-type
           operator: In
           values: ["m6i.2xlarge", "m6i.4xlarge"]
+      startupTaints:
+        - effect: NoExecute
+          key: ebs.csi.aws.com/agent-not-ready
