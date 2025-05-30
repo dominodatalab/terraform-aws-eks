@@ -72,7 +72,7 @@ resource "aws_lb" "load_balancers" {
 
 resource "aws_lb_listener" "load_balancer_listener" {
   # checkov:skip=CKV_AWS_103:AWS Load Balancer is not using TLS 1.2. ssl_policy is provided as input
-  # checkov:skip=CKV_AWS_2:AWS Elastic Load Balancer v2 (ELBv2) listener that allow connection requests over HTTP. Implement using dynamic
+  # checkov:skip=CKV_AWS_2:AWS Elastic Load Balancer v2 (ELBv2) listener that allow connection requests over HTTP. Skipping to avoid breaking changes
 
   for_each = local.listeners
 
@@ -82,29 +82,8 @@ resource "aws_lb_listener" "load_balancer_listener" {
   ssl_policy        = contains(["HTTPS", "TLS"], each.value.protocol) ? each.value.ssl_policy : null
   certificate_arn   = contains(["HTTPS", "TLS"], each.value.protocol) ? each.value.cert_arn : null
 
-  dynamic "default_action" {
-    for_each = [each.value.protocol]
-
-    content {
-      type = each.value.protocol == "HTTP" ? "redirect" : "forward"
-
-      dynamic "redirect" {
-        for_each = each.value.protocol == "HTTP" ? [1] : []
-
-        content {
-          port        = "443"
-          protocol    = "HTTPS"
-          status_code = "HTTP_301"
-        }
-      }
-
-      dynamic "forward" {
-        for_each = each.value.protocol != "HTTP" ? [1] : []
-
-        content {
-          target_group_arn = aws_lb_target_group.lb_target_groups[each.key].arn
-        }
-      }
-    }
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.lb_target_groups[each.key].arn
   }
 }
