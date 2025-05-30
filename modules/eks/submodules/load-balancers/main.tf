@@ -12,15 +12,25 @@ locals {
     for item in flatten([
       for lb in var.load_balancers : [
         for listener in lb.listeners : {
-          key        = "${lb.name}.${listener.port}"
-          lb_name    = lb.name
-          port       = listener.port
-          protocol   = listener.protocol
-          ssl_policy = lookup(listener, "ssl_policy", null)
-          cert_arn   = lookup(listener, "cert_arn", null)
+          key             = "${lb.name}.${listener.port}"
+          lb_name         = lb.name
+          ddos_protection = lb.ddos_protection
+          port            = listener.port
+          protocol        = listener.protocol
+          ssl_policy      = lookup(listener, "ssl_policy", null)
+          cert_arn        = lookup(listener, "cert_arn", null)
         }
       ]
     ]) : item.key => item
+  }
+
+  listeners_ddos_protected = {
+    for listener in local.listeners :
+    listener.key => {
+      lb_name = listener.lb_name
+      port    = listener.port
+    }
+    if listener.ddos_protection
   }
 }
 
