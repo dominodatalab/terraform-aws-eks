@@ -9,6 +9,10 @@ eks = {
     path       = null
   }
   master_role_names = null
+  oidc_provider = {
+    create = true
+    oidc   = null
+  }
   public_access = {
     cidrs   = null
     enabled = null
@@ -35,15 +39,17 @@ flyte = {
   platform_namespace        = "domino-platform"
 }
 irsa_external_dns = {
-  enabled          = false
-  hosted_zone_name = null
-  namespace        = null
+  enabled             = false
+  hosted_zone_name    = null
+  hosted_zone_private = "false"
+  namespace           = "domino-platform"
   rm_role_policy = {
     detach_from_role = false
     policy_name      = ""
     remove           = false
   }
-  serviceaccount_name = null
+  serviceaccount_name  = "external-dns"
+  use_cluster_oidc_idp = true
 }
 irsa_policies = []
 karpenter = {
