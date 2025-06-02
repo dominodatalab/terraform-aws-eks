@@ -7,8 +7,8 @@ locals {
   name_prefix       = var.eks_info.cluster.specs.name
 
 
-  external_dns_oidc_provider_url = var.external_dns.use_cluster_oidc_idp ? local.oidc_provider_url : aws_iam_openid_connect_provider.this[0].url
-  external_dns_oidc_provider_arn = var.external_dns.use_cluster_oidc_idp ? local.oidc_provider_arn : aws_iam_openid_connect_provider.this[0].arn
+  external_dns_oidc_provider_url = var.external_dns.use_cluster_oidc_idp ? local.oidc_provider_url : try(aws_iam_openid_connect_provider.this[0].url, null)
+  external_dns_oidc_provider_arn = var.external_dns.use_cluster_oidc_idp ? local.oidc_provider_arn : try(aws_iam_openid_connect_provider.this[0].arn, null)
 }
 
 resource "aws_iam_openid_connect_provider" "this" {
