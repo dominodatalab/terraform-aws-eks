@@ -348,7 +348,8 @@ workflows:
     jobs:
       - test-deploy:
           context: aws-oidc
-          opentofu_version: << pipeline.parameters.opentofu_version >>
+          terraform_version: << pipeline.parameters.terraform_version >>
+          # opentofu_version: << pipeline.parameters.opentofu_version >>
           helm_version: << pipeline.parameters.helm_version >>
 
   test-upgrade-workflow:
