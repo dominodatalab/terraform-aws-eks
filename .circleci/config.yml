@@ -281,14 +281,18 @@ jobs:
     docker:
       - image: cimg/aws:2023.04.1
     parameters:
-      opentofu_version:
+      terraform_version:
         type: string
+      # opentofu_version:
+      #   type: string
       helm_version:
         type: string
     steps:
       - checkout
-      - install_opentofu:
-          opentofu_version: << parameters.opentofu_version >>
+      # - install_opentofu:
+      #     opentofu_version: << parameters.opentofu_version >>
+      - install_tf:
+          terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
       - setup_tf_mods
@@ -344,7 +348,8 @@ workflows:
     jobs:
       - test-deploy:
           context: aws-oidc
-          opentofu_version: << pipeline.parameters.opentofu_version >>
+          terraform_version: << pipeline.parameters.terraform_version >>
+          # opentofu_version: << pipeline.parameters.opentofu_version >>
           helm_version: << pipeline.parameters.helm_version >>
 
   test-upgrade-workflow:
