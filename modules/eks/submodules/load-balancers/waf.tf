@@ -1,5 +1,5 @@
 locals {
-  waf_name = "domino-cloud"
+  waf_name = "${var.deploy_id}-waf"
 }
 
 resource "aws_wafv2_web_acl" "waf" {
@@ -7,7 +7,7 @@ resource "aws_wafv2_web_acl" "waf" {
   # checkov:skip=CKV_AWS_342:WAF rule does not have any actions. Rules are dynamic
   count = var.waf.enabled ? 1 : 0
 
-  name  = "${local.waf_name}-waf"
+  name  = local.waf_name
   scope = "REGIONAL"
 
   default_action {
@@ -173,7 +173,7 @@ resource "aws_wafv2_web_acl" "waf" {
 
   visibility_config {
     cloudwatch_metrics_enabled = true
-    metric_name                = "cw-${local.waf_name}-waf-alb"
+    metric_name                = "cw-${local.waf_name}"
     sampled_requests_enabled   = true
   }
 }
