@@ -42,5 +42,16 @@ data "aws_security_group" "global_accelerator_sg" {
 
   vpc_id = var.network_info.vpc_id
 
-  depends_on = ["aws_globalaccelerator_accelerator.main_accelerator"]
+  depends_on = [null_resource.debug_global_accelerator_sg, aws_globalaccelerator_endpoint_group]
+}
+
+data "aws_region" "current" {}
+
+resource "null_resource" "debug_global_accelerator_sg" {
+  provisioner "local-exec" {
+    command = <<EOT
+      echo -e "VPC Id: ${var.network_info.vpc_id}"
+      echo -e "Region: ${data.aws_region.current.name}"
+    EOT
+  }
 }
