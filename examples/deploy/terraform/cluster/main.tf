@@ -29,6 +29,11 @@ module "eks" {
   use_fips_endpoint   = var.use_fips_endpoint
   calico              = { image_registry = try(local.infra.storage.ecr.calico_image_registry, null) }
   karpenter           = var.karpenter
+  fqdn                = var.fqdn
+  hosted_zone_name    = var.hosted_zone_name
+  monitoring_bucket   = var.monitoring_bucket
+  load_balancers      = var.load_balancers
+  waf                 = var.waf
 }
 
 data "aws_caller_identity" "global" {

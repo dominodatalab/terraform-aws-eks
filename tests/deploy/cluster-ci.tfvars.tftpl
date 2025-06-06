@@ -14,3 +14,108 @@ use_fips_endpoint = true
 karpenter = {
   enabled = true
 }
+
+fqdn = "circleci-${CIRCLE_BUILD_NUM}.deploys-delta.domino.tech"
+hosted_zone_name = "deploys-delta.domino.tech"
+monitoring_bucket = "circleci-${CIRCLE_BUILD_NUM}-monitoring"
+load_balancers = [
+  {
+    ddos_protection = true
+    internal        = true
+    listeners = [
+      {
+        port     = 80
+        protocol = "HTTP"
+      }
+    ]
+    name = "domino"
+    type = "application"
+  },
+  {
+    ddos_protection = true
+    internal        = true
+    listeners = [
+      {
+        port     = 2222
+        protocol = "TCP"
+      }
+    ]
+    name = "domino-connect"
+    type = "network"
+  }
+]
+
+waf = {
+  enabled            = true
+  override_action    = "count"
+  block_forwarder_header = {
+    enabled = true
+  }
+  rate_limit = {
+    enabled = true
+    limit   = 2000
+    action  = "count"
+  }
+  rules = [
+    {
+      name        = "AWSManagedRulesCommonRuleSet"
+      priority    = 0
+      vendor_name = "AWS"
+      allow       = []
+      block       = []
+      captcha     = []
+      challenge   = []
+      count       = []
+    },
+    {
+      name        = "AWSManagedRulesSQLRuleSet"
+      priority    = 1
+      vendor_name = "AWS"
+      allow       = []
+      block       = []
+      captcha     = []
+      challenge   = []
+      count       = []
+    },
+    {
+      name        = "AWSManagedRulesKnownBadInputsRuleSet"
+      priority    = 2
+      vendor_name = "AWS"
+      allow       = []
+      block       = []
+      captcha     = []
+      challenge   = []
+      count       = []
+    },
+    {
+      name        = "AWSManagedRulesAmazonIpReputationList"
+      priority    = 3
+      vendor_name = "AWS"
+      allow       = []
+      block       = []
+      captcha     = []
+      challenge   = []
+      count       = []
+    },
+    {
+      name        = "AWSManagedRulesAnonymousIpList"
+      priority    = 4
+      vendor_name = "AWS"
+      allow       = []
+      block       = []
+      captcha     = []
+      challenge   = []
+      count       = []
+    },
+    {
+      name        = "AWSManagedRulesBotControlRuleSet"
+      priority    = 5
+      vendor_name = "AWS"
+      allow       = []
+      block       = []
+      captcha     = []
+      challenge   = []
+      count       = []
+    }
+  ]
+}
