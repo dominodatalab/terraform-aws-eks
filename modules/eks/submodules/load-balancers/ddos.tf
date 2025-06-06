@@ -62,7 +62,7 @@ resource "aws_route53_record" "root_record_type_a" {
   count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = var.hosted_zone_name
+  name    = var.fqdn
   type    = "A"
   alias {
     name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
@@ -75,7 +75,7 @@ resource "aws_route53_record" "root_record_type_aaaa" {
   count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = var.hosted_zone_name
+  name    = var.fqdn
   type    = "AAAA"
   alias {
     name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
@@ -89,7 +89,7 @@ resource "aws_route53_record" "wildcard_record_type_a" {
   count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = "*.${var.hosted_zone_name}"
+  name    = "*.${var.fqdn}"
   type    = "A"
   alias {
     name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
@@ -103,7 +103,7 @@ resource "aws_route53_record" "wildcard_record_type_aaaa" {
   count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = "*.${var.hosted_zone_name}"
+  name    = "*.${var.fqdn}"
   type    = "AAAA"
   alias {
     name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
