@@ -41,4 +41,6 @@ data "aws_security_group" "global_accelerator_sg" {
   }
 
   vpc_id = var.network_info.vpc_id
+
+  depends_on = ["aws_globalaccelerator_accelerator.main_accelerator"]
 }
