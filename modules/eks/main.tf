@@ -30,10 +30,10 @@ locals {
   policy_arn_prefix = "arn:${data.aws_partition.current.partition}:iam::aws:policy"
   kms_key_arn       = var.kms_info.key_arn
   oidc = var.eks.oidc_provider.create ? {
-    id              = aws_iam_openid_connect_provider.oidc_provider[0].id
-    arn             = aws_iam_openid_connect_provider.oidc_provider[0].arn
-    url             = aws_iam_openid_connect_provider.oidc_provider[0].url
-    thumbprint_list = aws_iam_openid_connect_provider.oidc_provider[0].thumbprint_list
+    id              = try(aws_iam_openid_connect_provider.oidc_provider[0].id, null)
+    arn             = try(aws_iam_openid_connect_provider.oidc_provider[0].arn, null)
+    url             = try(aws_iam_openid_connect_provider.oidc_provider[0].url, null)
+    thumbprint_list = try(aws_iam_openid_connect_provider.oidc_provider[0].thumbprint_list, null)
   } : var.eks.oidc_provider.oidc != null ? var.eks.oidc_provider.oidc : null
 
   eks_cluster_security_group_rules = {
