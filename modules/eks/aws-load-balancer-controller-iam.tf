@@ -1,6 +1,6 @@
 locals {
   oidc_provider_id     = try(local.oidc.id, "")
-  oidc_provider_prefix = replace(oidc_provider_id, "/arn:.*:oidc-provider//", "")
+  oidc_provider_prefix = replace(local.oidc_provider_id, "/arn:.*:oidc-provider//", "")
 }
 
 data "aws_iam_policy_document" "load_balancer_controller" {
@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "load_balancer_controller" {
 
     principals {
       type        = "Federated"
-      identifiers = [oidc_provider_id]
+      identifiers = [local.oidc_provider_id]
     }
   }
 }
