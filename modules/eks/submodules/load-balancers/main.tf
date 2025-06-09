@@ -17,7 +17,7 @@ locals {
     for item in flatten([
       for lb in var.load_balancers : [
         for listener in lb.listeners : {
-          key             = "${lb.name}.${listener.port}"
+          key             = "${lb.name}-${listener.name}"
           lb_name         = lb.name
           ddos_protection = lb.ddos_protection
           port            = listener.port

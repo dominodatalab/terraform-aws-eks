@@ -20,27 +20,29 @@ hosted_zone_name = "deploys-delta.domino.tech"
 monitoring_bucket = "circleci-${CIRCLE_BUILD_NUM}-monitoring"
 load_balancers = [
   {
+    name = "domino"
     ddos_protection = true
     internal        = true
     listeners = [
       {
+        name     = "http"
         port     = 80
         protocol = "HTTP"
       }
     ]
-    name = "domino"
     type = "application"
   },
   {
+    name = "domino-connect"
     ddos_protection = true
     internal        = true
     listeners = [
       {
+        name     = "ssh"
         port     = 2222
         protocol = "TCP"
       }
     ]
-    name = "domino-connect"
     type = "network"
   }
 ]

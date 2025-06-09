@@ -220,6 +220,7 @@ variable "load_balancers" {
       ddos_protection = (Optional) Whether to enable AWS Shield Standard (DDoS protection). Defaults to true.
       listeners = List of listeners for the Load Balancer.
       [{
+        name       = Listener name.
         port       = Listener port (e.g., 80, 443).
         protocol   = Protocol used by the listener (e.g., "TCP", "TLS", "HTTP", "HTTPS").
         ssl_policy = (Optional) SSL policy to use for TLS & HTTPS listeners.
@@ -233,6 +234,7 @@ variable "load_balancers" {
     internal        = optional(bool, true)
     ddos_protection = optional(bool, true)
     listeners = list(object({
+      name       = string
       port       = number
       protocol   = string
       ssl_policy = optional(string)

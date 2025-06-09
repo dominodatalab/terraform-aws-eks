@@ -238,7 +238,6 @@ variable "privatelink" {
   description = <<EOF
     {
       enabled = Enable Private Link connections.
-      namespace = Namespace for IAM Policy conditions.
       monitoring_bucket = Bucket for NLBs monitoring.
       route53_hosted_zone_name = Hosted zone for External DNS zone.
       vpc_endpoint_services = [{
@@ -254,7 +253,6 @@ variable "privatelink" {
 
   type = object({
     enabled                  = optional(bool, false)
-    namespace                = optional(string, "domino-platform")
     monitoring_bucket        = optional(string, null)
     route53_hosted_zone_name = optional(string, null)
     vpc_endpoint_services = optional(list(object({
@@ -278,6 +276,12 @@ variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
+}
+
+variable "aws_load_balancer_controller_namespace" {
+  description = "Controller Namespace"
+  type        = string
+  default     = "domino-platform"
 }
 
 variable "calico" {
@@ -375,6 +379,7 @@ variable "load_balancers" {
       ddos_protection = (Optional) Whether to enable AWS Shield Standard (DDoS protection). Defaults to true.
       listeners = List of listeners for the Load Balancer.
       [{
+        name       = Listener name.
         port       = Listener port (e.g., 80, 443).
         protocol   = Protocol used by the listener (e.g., "TCP", "TLS", "HTTP", "HTTPS").
         ssl_policy = (Optional) SSL policy to use for TLS & HTTPS listeners.
@@ -388,6 +393,7 @@ variable "load_balancers" {
     internal        = optional(bool, true)
     ddos_protection = optional(bool, true)
     listeners = list(object({
+      name       = string
       port       = number
       protocol   = string
       ssl_policy = optional(string)

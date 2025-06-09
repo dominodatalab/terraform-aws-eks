@@ -46,17 +46,10 @@ variable "network_info" {
   })
 }
 
-variable "oidc_provider_id" {
-  type        = string
-  description = "OIDC Provider ID"
-  nullable    = false
-}
-
 variable "privatelink" {
   description = <<EOF
     {
       enabled = Enable Private Link connections.
-      namespace = Namespace for IAM Policy conditions.
       monitoring_bucket = Bucket for NLBs monitoring.
       route53_hosted_zone_name = Hosted zone for External DNS zone.
       vpc_endpoint_services = [{
@@ -72,7 +65,6 @@ variable "privatelink" {
 
   type = object({
     enabled                  = optional(bool, false)
-    namespace                = optional(string, "domino-platform")
     monitoring_bucket        = optional(string, null)
     route53_hosted_zone_name = optional(string, null)
     vpc_endpoint_services = optional(list(object({
