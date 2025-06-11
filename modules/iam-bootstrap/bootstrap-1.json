@@ -52,7 +52,8 @@
         "ec2:MonitorInstances",
         "ec2:StartInstances",
         "ec2:StopInstances",
-        "ec2:TerminateInstances"
+        "ec2:TerminateInstances",
+        "ec2-instance-connect:OpenTunnel"
       ],
       "Resource": "*",
       "Condition": {
