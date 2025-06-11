@@ -462,6 +462,7 @@ variable "bastion" {
     authorized_ssh_ip_ranges = optional(list(string))
     username                 = optional(string)
     install_binaries         = optional(bool)
+    use_instance_connect     = optional(bool, false)
   })
 
   default = {}
