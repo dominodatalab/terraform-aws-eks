@@ -217,6 +217,12 @@ variable "ssh_key" {
   })
 }
 
+variable "ssh_extra_args" {
+  description = "Extra arguments passed to SSH"
+  type        = string
+  default     = ""
+}
+
 variable "create_eks_role_arn" {
   description = "Role arn to assume during the EKS cluster creation."
   type        = string

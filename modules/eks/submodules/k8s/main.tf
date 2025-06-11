@@ -20,6 +20,7 @@ locals {
       k8s_tunnel_port                       = random_integer.port.result
       aws_auth_yaml                         = basename(local.aws_auth_filename)
       ssh_pvt_key_path                      = var.ssh_key.path
+      ssh_extra_args                        = var.ssh_extra_args
       eks_cluster_arn                       = var.eks_info.cluster.arn
       bastion_user                          = var.bastion_info != null ? var.bastion_info.user : ""
       bastion_public_ip                     = var.bastion_info != null ? var.bastion_info.public_ip : ""

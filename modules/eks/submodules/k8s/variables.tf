@@ -24,6 +24,11 @@ variable "ssh_key" {
   })
 }
 
+variable "ssh_extra_args" {
+  description = "Extra arguments passed to SSH"
+  type        = string
+}
+
 variable "eks_info" {
   description = <<EOF
     cluster = {
