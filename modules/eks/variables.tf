@@ -99,6 +99,7 @@ variable "node_iam_policies" {
 
 variable "bastion_info" {
   description = <<EOF
+    instance_id         = Bastion instance id
     user                = Bastion username.
     public_ip           = Bastion public ip.
     security_group_id   = Bastion sg id.
