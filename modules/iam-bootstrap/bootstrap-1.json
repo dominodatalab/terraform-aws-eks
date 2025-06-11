@@ -52,8 +52,7 @@
         "ec2:MonitorInstances",
         "ec2:StartInstances",
         "ec2:StopInstances",
-        "ec2:TerminateInstances",
-        "ec2-instance-connect:OpenTunnel"
+        "ec2:TerminateInstances"
       ],
       "Resource": "*",
       "Condition": {
@@ -126,7 +125,8 @@
         "ec2:RevokeSecurityGroupIngress",
         "ec2:RunInstances",
         "ec2:UpdateSecurityGroupRuleDescriptions*",
-        "ssm:GetParameter"
+        "ssm:GetParameter",
+        "ec2-instance-connect:OpenTunnel"
       ],
       "Resource": ["*"]
     },
