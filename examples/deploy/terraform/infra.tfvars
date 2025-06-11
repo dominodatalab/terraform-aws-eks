@@ -5,6 +5,7 @@ bastion = {
   enabled                  = true
   install_binaries         = null
   instance_type            = null
+  use_instance_connect     = false
   username                 = null
 }
 default_node_groups = null
