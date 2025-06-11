@@ -23,6 +23,8 @@ locals {
       eks_cluster_arn                       = var.eks_info.cluster.arn
       bastion_user                          = var.bastion_info != null ? var.bastion_info.user : ""
       bastion_public_ip                     = var.bastion_info != null ? var.bastion_info.public_ip : ""
+      bastion_instance_id                   = var.bastion_info != null ? var.bastion_info.instance_id : ""
+      use_instance_connect                  = var.bastion_info != null ? tostring(var.bastion_info.use_instance_connect) : "false"
       calico_version                        = var.eks_info.calico.version
       calico_fips_mode                      = var.use_fips_endpoint ? "Enabled" : "Disabled"
       calico_image_registry                 = var.eks_info.calico.image_registry

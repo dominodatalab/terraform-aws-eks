@@ -368,6 +368,7 @@ variable "bastion" {
     authorized_ssh_ip_ranges = List of CIDR ranges permitted for the bastion ssh access.
     username                 = Bastion user.
     install_binaries         = Toggle to install required Domino binaries in the bastion.
+    use_instance_connect     = Enable AWS EC2 Instance Connect for SSH access.
   EOF
 
   type = object({
@@ -377,6 +378,7 @@ variable "bastion" {
     authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
     username                 = optional(string, "ec2-user")
     install_binaries         = optional(bool, false)
+    use_instance_connect     = optional(bool, false)
   })
 
   default = {}

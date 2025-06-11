@@ -16,12 +16,31 @@ open_ssh_tunnel_to_k8s_api() {
     printf "$GREEN Opening k8s tunnel ... $EC \n"
     ssh-keygen -R "${bastion_public_ip}" >/dev/null 2>&1 || true
 
-    chmod 400 "${ssh_pvt_key_path}" || true
-    if ssh -v -q -N -f -M -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -o "ExitOnForwardFailure=yes" -i "${ssh_pvt_key_path}" -D ${k8s_tunnel_port} -S "$TUNNEL_SOCKET_FILE" ${bastion_user}@${bastion_public_ip}; then
-      printf "$GREEN Established k8s ssh tunnel. $EC\n"
+    if [[ "${use_instance_connect}" == "true" && -n "${bastion_instance_id}" ]]; then
+      printf "$GREEN Using EC2 Instance Connect for tunnel... $EC \n"
+
+      if ssh -v -q -N -f -M \
+        -o ProxyCommand="aws ec2-instance-connect open-tunnel --instance-id ${bastion_instance_id}" \
+        -o "IdentitiesOnly=yes" \
+        -o "StrictHostKeyChecking=no" \
+        -o "ExitOnForwardFailure=yes" \
+        -D ${k8s_tunnel_port} \
+        -S "$TUNNEL_SOCKET_FILE" \
+        ${bastion_user}@${bastion_public_ip}; then
+        printf "$GREEN Established k8s ssh tunnel via Instance Connect. $EC\n"
+      else
+        printf "$RED Failed to establish k8s ssh tunnel via Instance Connect. $EC\n"
+        return 1
+      fi
     else
-      printf "$RED Failed to establish k8s ssh tunnel. $EC\n"
-      return 1
+      printf "$GREEN Using traditional SSH key authentication for tunnel... $EC \n"
+      chmod 400 "${ssh_pvt_key_path}" || true
+      if ssh -v -q -N -f -M -o "IdentitiesOnly=yes" -o "StrictHostKeyChecking=no" -o "ExitOnForwardFailure=yes" -i "${ssh_pvt_key_path}" -D ${k8s_tunnel_port} -S "$TUNNEL_SOCKET_FILE" ${bastion_user}@${bastion_public_ip}; then
+        printf "$GREEN Established k8s ssh tunnel. $EC\n"
+      else
+        printf "$RED Failed to establish k8s ssh tunnel. $EC\n"
+        return 1
+      fi
     fi
   else
     printf "$GREEN No bastion, no tunnel needed... $EC\n"
@@ -260,20 +279,20 @@ kubectl_apply() {
 }
 
 helm_cmd() {
-  printf "Running helm $@...\n"
-  helm --kubeconfig "$kubeconfig" $@
+  printf "Running helm %s...\n" "$*"
+  helm --kubeconfig "$kubeconfig" "$@"
   local exit_code=$?
   if [ $exit_code -ne 0 ]; then
-    printf "$RED Error running helm $@ $EC \n"
+    printf "$RED Error running helm %s $EC \n" "$*"
   fi
   return $exit_code
 }
 
 kubectl_cmd() {
-  printf "kubectl $@...\n"
-  kubectl --kubeconfig "$kubeconfig" $@
+  printf "kubectl %s...\n" "$*"
+  kubectl --kubeconfig "$kubeconfig" "$@"
   if [ $? -ne 0 ]; then
-    printf "$RED Error running kubectl $@ $EC \n"
+    printf "$RED Error running kubectl %s $EC \n" "$*"
     exit 1
   fi
 }
