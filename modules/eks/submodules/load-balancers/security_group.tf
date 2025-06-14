@@ -34,6 +34,18 @@ resource "aws_security_group_rule" "allow_all_from_ddos_lb" {
   description              = "Allow traffic from load balancer - ${each.key}"
 }
 
+resource "aws_security_group_rule" "allow_all_egress" {
+  for_each = local.lbs_with_ddos_protection
+
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.lb_security_groups[each.key].id
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow all egress traffic from load balancer - ${each.key}"
+}
+
 data "aws_security_group" "global_accelerator_sg" {
   filter {
     name   = "group-name"
