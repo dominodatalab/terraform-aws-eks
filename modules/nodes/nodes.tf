@@ -101,7 +101,7 @@ resource "aws_eks_node_group" "node_groups" {
   cluster_name         = var.eks_info.cluster.specs.name
   version              = each.value.node_group.ami != null ? null : var.eks_info.cluster.version
   release_version      = each.value.node_group.release_version
-  node_group_name      = each.key
+  node_group_name      = substr(each.key, 0, 63)
   node_role_arn        = var.eks_info.nodes.roles[0].arn
   subnet_ids           = try(lookup(each.value.node_group, "single_nodegroup", false), false) ? [for s in values(each.value.subnet) : s.subnet_id] : [each.value.subnet.subnet_id]
   force_update_version = true
