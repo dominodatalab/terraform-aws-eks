@@ -87,9 +87,9 @@ locals {
   node_groups_by_name = {
     for ng_name, ng in local.node_groups_by_name_pre :
     length(ng_name) <= 63 ? ng_name : (
-      length("${trimsuffix(ng_name, "-${ng.sb_name}")}-${ng.sb_az_id}") <= 63 ?
-      "${trimsuffix(ng_name, "-${ng.sb_name}")}-${ng.sb_az_id}" :
-      substr("${trimsuffix(ng_name, "-${ng.sb_name}")}-${ng.sb_az_id}", 0, 63)
+      length("${ng.ng_name}-${var.eks_info.cluster.specs.name}-${ng.sb_az_id}") <= 63 ?
+      "${ng.ng_name}-${var.eks_info.cluster.specs.name}-${ng.sb_az_id}" :
+      substr("${ng.ng_name}-${var.eks_info.cluster.specs.name}-${ng.sb_az_id}", 0, 63)
     ) => ng
   }
 }
