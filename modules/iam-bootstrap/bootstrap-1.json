@@ -62,6 +62,19 @@
       }
     },
     {
+      "Sid": "Ec2InstanceConnectGated",
+      "Effect": "Allow",
+      "Action": [
+        "ec2-instance-connect:OpenTunnel"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "ec2:ResourceTag/cluster": "${deploy_id}"
+        }
+      }
+    },
+    {
       "Sid": "SingleNodeUnGated",
       "Effect": "Allow",
       "Action": [
