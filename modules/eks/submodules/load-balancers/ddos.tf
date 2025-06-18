@@ -113,7 +113,7 @@ resource "aws_route53_record" "wildcard_record_type_aaaa" {
 }
 
 # Record A (apps)
-resource "aws_route53_record" "wildcard_record_type_a" {
+resource "aws_route53_record" "apps_record_type_a" {
   count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.hosted.zone_id
@@ -127,7 +127,7 @@ resource "aws_route53_record" "wildcard_record_type_a" {
 }
 
 # Record AAAA (apps)
-resource "aws_route53_record" "wildcard_record_type_aaaa" {
+resource "aws_route53_record" "apps_record_type_aaaa" {
   count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.hosted.zone_id
