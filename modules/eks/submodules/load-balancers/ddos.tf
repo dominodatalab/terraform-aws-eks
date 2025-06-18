@@ -111,3 +111,31 @@ resource "aws_route53_record" "wildcard_record_type_aaaa" {
     evaluate_target_health = true
   }
 }
+
+# Record A (apps)
+resource "aws_route53_record" "wildcard_record_type_a" {
+  count = local.create_dns_records ? 1 : 0
+
+  zone_id = data.aws_route53_zone.hosted.zone_id
+  name    = "apps-${var.fqdn}"
+  type    = "A"
+  alias {
+    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
+    zone_id                = local.global_accelerator_hosted_zone_id
+    evaluate_target_health = true
+  }
+}
+
+# Record AAAA (apps)
+resource "aws_route53_record" "wildcard_record_type_aaaa" {
+  count = local.create_dns_records ? 1 : 0
+
+  zone_id = data.aws_route53_zone.hosted.zone_id
+  name    = "apps-${var.fqdn}"
+  type    = "AAAA"
+  alias {
+    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
+    zone_id                = local.global_accelerator_hosted_zone_id
+    evaluate_target_health = true
+  }
+}
