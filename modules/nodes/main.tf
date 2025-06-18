@@ -54,6 +54,7 @@ locals {
     for ng_name, ng in local.node_groups : {
       ng_name            = ng_name
       sb_name            = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
+      sb_az_id           = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
       subnet             = { for sb in var.network_info.subnets.private : sb.name => sb if contains(ng.availability_zone_ids, sb.az_id) }
       availability_zones = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
       node_group = merge(ng, {
@@ -67,9 +68,10 @@ locals {
   single_zone_node_groups = flatten([
     for ng_name, ng in local.node_groups : [
       for sb_name, sb in var.network_info.subnets.private : {
-        ng_name = ng_name
-        sb_name = sb.name
-        subnet  = sb
+        ng_name  = ng_name
+        sb_name  = sb.name
+        sb_az_id = sb.az_id
+        subnet   = sb
         node_group = merge(ng, {
           availability_zone_ids = [sb.az_id]
           availability_zones    = [sb.az]
@@ -80,7 +82,16 @@ locals {
   ])
 
   node_groups_per_zone = concat(local.multi_zone_node_groups, local.single_zone_node_groups)
-  node_groups_by_name  = { for ngz in local.node_groups_per_zone : strcontains("${ngz.ng_name}-${ngz.sb_name}", var.eks_info.cluster.specs.name) ? "${ngz.ng_name}-${ngz.sb_name}" : "${ngz.ng_name}-${var.eks_info.cluster.specs.name}-${ngz.sb_name}" => ngz }
+
+  node_groups_by_name_pre = { for ngz in local.node_groups_per_zone : strcontains("${ngz.ng_name}-${ngz.sb_name}", var.eks_info.cluster.specs.name) ? "${ngz.ng_name}-${ngz.sb_name}" : "${ngz.ng_name}-${var.eks_info.cluster.specs.name}-${ngz.sb_name}" => ngz }
+  node_groups_by_name = {
+    for ng_name, ng in local.node_groups_by_name_pre :
+    length(ng_name) <= 63 ? ng_name : (
+      length("${trimsuffix(ng_name, "-${ng.sb_name}")}-${ng.sb_az_id}") <= 63 ?
+      "${trimsuffix(ng_name, "-${ng.sb_name}")}-${ng.sb_az_id}" :
+      substr("${trimsuffix(ng_name, "-${ng.sb_name}")}-${ng.sb_az_id}", 0, 63)
+    ) => ng
+  }
 }
 
 data "aws_ec2_instance_type_offerings" "nodes" {
