@@ -141,7 +141,7 @@ variable "storage" {
         junction_path     = optional(string)
         name              = optional(string)
         size_in_megabytes = optional(number)
-      })
+      }))
     }))
     s3 = optional(object({
       create                    = optional(bool)
