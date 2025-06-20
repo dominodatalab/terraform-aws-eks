@@ -234,7 +234,7 @@ resource "aws_fsx_ontap_volume" "eks" {
   }
 }
 
-resource "aws_fsx_ontap_volume" "eks" {
+resource "aws_fsx_ontap_staging_volume" "eks" {
   count                      = local.deploy_netapp && var.storage.netapp.staging_volume.create ? 1 : 0
   storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.eks[0].id
   name                       = var.storage.netapp.staging_volume.name

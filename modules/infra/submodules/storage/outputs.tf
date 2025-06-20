@@ -29,8 +29,13 @@ output "info" {
         creds_secret_arn = aws_secretsmanager_secret.netapp["svm"].arn
       }
       filesystem = { id = aws_fsx_ontap_file_system.eks[0].id, security_group_id = aws_security_group.netapp[0].id }
-      volume = {
-        name = aws_fsx_ontap_volume.eks[0].name
+      volumes = {
+        primary = {
+          name = aws_fsx_ontap_volume.eks[0].name
+        }
+        staging = {
+          name = aws_fsx_ontap_staging_volume.eks[0].name
+        }
       }
     } : null
     s3 = {
