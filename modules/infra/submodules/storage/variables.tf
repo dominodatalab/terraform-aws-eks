@@ -75,6 +75,13 @@ variable "storage" {
           storage_efficiency_enabled = Toggle storage_efficiency_enabled
           junction_path              = filesystem junction path
           size_in_megabytes          = The size of the volume
+        }
+        staging_volume = {
+          create = Create a staging volume associated with the filesystem
+          name = The name of the staging volume
+          junction_path = filesystem junction path
+          size_in_megabytes = The size of the staging volume
+        }
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
@@ -129,6 +136,12 @@ variable "storage" {
         junction_path              = optional(string)
         size_in_megabytes          = optional(number)
       }))
+      staging_volume = optional(object({
+        create            = optional(bool)
+        junction_path     = optional(string)
+        name              = optional(string)
+        size_in_megabytes = optional(number)
+      })
     }))
     s3 = optional(object({
       create                    = optional(bool)
