@@ -21,7 +21,7 @@ locals {
     {
       "az_id" = local.zone_id_by_name[local.az_names[i]]
       "az"    = local.az_names[i]
-      "name"  = "${var.deploy_id}-private-${local.az_names[i]}-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" #TODO: REMOVE THIS
+      "name"  = "${var.deploy_id}-private-${local.az_names[i]}"
     }
   } : {}
 
