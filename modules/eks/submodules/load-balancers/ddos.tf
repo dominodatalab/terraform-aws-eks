@@ -1,12 +1,7 @@
 locals {
   global_accelerator_hosted_zone_id = "Z2BJ6XQ5FK7U4H" # Fixed Hosted Zone ID for Global Accelerator
 
-  lbs_with_ddos = {
-    for lb in var.load_balancers :
-    lb.name => lb if lb.ddos_protection
-  }
-
-  create_global_accelerator = length(local.lbs_with_ddos) > 0
+  create_global_accelerator = length(local.lbs_with_ddos_protection) > 0
 
   create_dns_records = local.create_global_accelerator && var.fqdn != ""
 }
@@ -31,7 +26,7 @@ resource "aws_globalaccelerator_accelerator" "main_accelerator" {
 }
 
 resource "aws_globalaccelerator_listener" "listener" {
-  for_each        = local.lbs_with_ddos
+  for_each        = local.lbs_with_ddos_protection
   accelerator_arn = aws_globalaccelerator_accelerator.main_accelerator[0].id
   protocol        = "TCP"
 
@@ -47,7 +42,7 @@ resource "aws_globalaccelerator_listener" "listener" {
 }
 
 resource "aws_globalaccelerator_endpoint_group" "endpoint_group" {
-  for_each = local.lbs_with_ddos
+  for_each = local.lbs_with_ddos_protection
 
   listener_arn = aws_globalaccelerator_listener.listener[each.key].id
 
