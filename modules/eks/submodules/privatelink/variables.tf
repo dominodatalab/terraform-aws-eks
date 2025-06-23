@@ -49,8 +49,8 @@ variable "lb_arns" {
 
     Expected format:
       {
-        service-name-1 = "arn:aws:elasticloadbalancing:region:account-id:loadbalancer/net/my-nlb-1/123..."
-        service-name-2 = "arn:aws:elasticloadbalancing:region:account-id:loadbalancer/net/my-nlb-2/456..."
+        service-name-1 = "<ARN_HERE>"
+        service-name-2 = "<ARN_HERE>"
       }
     Keys must match `name` fields in `privatelink.vpc_endpoint_services`.
   EOF
