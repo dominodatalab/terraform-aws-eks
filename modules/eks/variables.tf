@@ -238,7 +238,6 @@ variable "privatelink" {
   description = <<EOF
     {
       enabled = Enable Private Link connections.
-      monitoring_bucket = Bucket for NLBs monitoring.
       route53_hosted_zone_name = Hosted zone for External DNS zone.
       vpc_endpoint_services = [{
         name      = Name of the VPC Endpoint Service.
@@ -253,12 +252,9 @@ variable "privatelink" {
 
   type = object({
     enabled                  = optional(bool, false)
-    monitoring_bucket        = optional(string, null)
     route53_hosted_zone_name = optional(string, null)
     vpc_endpoint_services = optional(list(object({
       name              = optional(string)
-      ports             = optional(list(number))
-      cert_arn          = optional(string)
       private_dns       = optional(string)
       supported_regions = optional(set(string))
     })), [])

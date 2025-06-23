@@ -8,49 +8,11 @@ variable "deploy_id" {
   }
 }
 
-variable "network_info" {
-  description = <<EOF
-    {
-      vpc_id = VPC Id.
-      subnets = {
-        private = Private subnets.
-        public  = Public subnets.
-        pod     = Pod subnets.
-      }), {})
-    }), {})
-  EOF
-
-  type = object({
-    vpc_id = string
-    subnets = object({
-      private = list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      }))
-      public = list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      }))
-      pod = list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      }))
-    })
-    vpc_cidrs = string
-  })
-}
 
 variable "privatelink" {
   description = <<EOF
     {
       enabled = Enable Private Link connections.
-      monitoring_bucket = Bucket for NLBs monitoring.
       route53_hosted_zone_name = Hosted zone for External DNS zone.
       vpc_endpoint_services = [{
         name      = Name of the VPC Endpoint Service.
@@ -65,12 +27,9 @@ variable "privatelink" {
 
   type = object({
     enabled                  = optional(bool, false)
-    monitoring_bucket        = optional(string, null)
     route53_hosted_zone_name = optional(string, null)
     vpc_endpoint_services = optional(list(object({
       name              = optional(string)
-      ports             = optional(list(number))
-      cert_arn          = optional(string)
       private_dns       = optional(string)
       supported_regions = optional(set(string))
     })), [])
@@ -80,6 +39,23 @@ variable "privatelink" {
     condition     = !var.privatelink.enabled || (var.privatelink.enabled && var.privatelink.route53_hosted_zone_name != null)
     error_message = "Route53 Hosted Zone Name cannot be null"
   }
+
+  default = {}
+}
+
+variable "lb_arns" {
+  description = <<EOF
+    Map of Load Balancer ARNs used by the VPC Endpoint Services.
+
+    Expected format:
+      {
+        service-name-1 = "arn:aws:elasticloadbalancing:region:account-id:loadbalancer/net/my-nlb-1/123..."
+        service-name-2 = "arn:aws:elasticloadbalancing:region:account-id:loadbalancer/net/my-nlb-2/456..."
+      }
+    Keys must match `name` fields in `privatelink.vpc_endpoint_services`.
+  EOF
+
+  type = map(string)
 
   default = {}
 }
