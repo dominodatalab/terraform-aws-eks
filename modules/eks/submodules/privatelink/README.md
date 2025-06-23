@@ -34,7 +34,5 @@ No modules.
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
 No outputs.
 <!-- END_TF_DOCS -->
