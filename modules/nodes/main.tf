@@ -83,7 +83,8 @@ locals {
 
   node_groups_per_zone = concat(local.multi_zone_node_groups, local.single_zone_node_groups)
 
-  node_groups_by_name_pre = { for ngz in local.node_groups_per_zone : strcontains("${ngz.ng_name}-${ngz.sb_name}", var.eks_info.cluster.specs.name) ? "${ngz.ng_name}-${ngz.sb_name}" : "${ngz.ng_name}-${var.eks_info.cluster.specs.name}-${ngz.sb_name}" => ngz }
+  node_groups_by_name_pre = { for ngz in local.node_groups_per_zone : replace(strcontains("${ngz.ng_name}-${ngz.sb_name}", var.eks_info.cluster.specs.name) ? "${ngz.ng_name}-${ngz.sb_name}" : "${ngz.ng_name}-${var.eks_info.cluster.specs.name}-${ngz.sb_name}", " ", "_") => ngz }
+
   node_groups_by_name = {
     for ng_name, ng in local.node_groups_by_name_pre :
     length(ng_name) <= 63 ? ng_name : (
