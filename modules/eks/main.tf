@@ -208,7 +208,7 @@ locals {
       type                          = "ingress"
       source_cluster_security_group = true
     }
-    })
+  })
 
 
   eks_network_config = aws_eks_cluster.this.kubernetes_network_config[0]
