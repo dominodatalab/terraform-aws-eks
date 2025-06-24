@@ -208,16 +208,7 @@ locals {
       type                          = "ingress"
       source_cluster_security_group = true
     }
-    }, var.privatelink.enabled ? {
-    private_link = {
-      description              = "NLB from private link to node ports"
-      protocol                 = "tcp"
-      from_port                = 30000
-      to_port                  = 32767
-      type                     = "ingress"
-      source_security_group_id = module.privatelink[0].info.nlb_sg
-    }
-  } : {})
+    })
 
 
   eks_network_config = aws_eks_cluster.this.kubernetes_network_config[0]
