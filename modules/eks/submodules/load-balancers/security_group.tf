@@ -23,7 +23,7 @@ resource "aws_security_group_rule" "lb_ingress_from_global_accelerator" {
 }
 
 resource "aws_security_group_rule" "allow_all_from_ddos_lb" {
-  for_each = local.lbs_with_ddos_protection
+  for_each = local.lbs
 
   type                     = "ingress"
   from_port                = 0
@@ -35,7 +35,7 @@ resource "aws_security_group_rule" "allow_all_from_ddos_lb" {
 }
 
 resource "aws_security_group_rule" "allow_all_egress" {
-  for_each = local.lbs_with_ddos_protection
+  for_each = local.lbs
 
   type              = "egress"
   from_port         = 0
