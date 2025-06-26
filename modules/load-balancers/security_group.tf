@@ -18,7 +18,7 @@ resource "aws_security_group_rule" "lb_ingress_from_global_accelerator" {
   to_port                  = each.value.port
   protocol                 = "tcp"
   security_group_id        = aws_security_group.lb_security_groups[each.value.lb_name].id
-  source_security_group_id = data.aws_security_group.global_accelerator_sg.id
+  source_security_group_id = data.aws_security_group.global_accelerator_sg[0].id
   description              = "Allow access from Global Accelerator"
 }
 
@@ -47,6 +47,8 @@ resource "aws_security_group_rule" "allow_all_egress" {
 }
 
 data "aws_security_group" "global_accelerator_sg" {
+  count = local.create_global_accelerator ? 1 : 0
+
   filter {
     name   = "group-name"
     values = ["GlobalAccelerator"]
