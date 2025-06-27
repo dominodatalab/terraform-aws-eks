@@ -11,7 +11,7 @@ resource "aws_vpc_endpoint_service" "vpc_endpoint_services" {
   for_each = local.endpoint_services
 
   acceptance_required        = false
-  network_load_balancer_arns = [var.lb_arns[each.key]]
+  network_load_balancer_arns = [var.lb_arns[each.value.lb_name]]
 
   private_dns_name = each.value.private_dns
 

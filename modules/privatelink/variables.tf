@@ -16,6 +16,7 @@ variable "privatelink" {
       route53_hosted_zone_name = Hosted zone for External DNS zone.
       vpc_endpoint_services = [{
         name      = Name of the VPC Endpoint Service.
+        lb_name   = Load Balancer Name associated to this VPC Endpoint Service.
         ports     = List of ports exposing the VPC Endpoint Service. i.e [8080, 8081]
         cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
         private_dns = Private DNS for the VPC Endpoint Service.
@@ -30,6 +31,7 @@ variable "privatelink" {
     route53_hosted_zone_name = optional(string, null)
     vpc_endpoint_services = optional(list(object({
       name              = optional(string)
+      lb_name           = optional(string)
       private_dns       = optional(string)
       supported_regions = optional(set(string))
     })), [])
