@@ -1,5 +1,5 @@
 locals {
-  endpoint_services = { for service in var.privatelink.vpc_endpoint_services : service.name => { private_dns : service.private_dns, supported_regions : service.supported_regions } }
+  endpoint_services = { for service in var.privatelink.vpc_endpoint_services : service.name => { lb_name : service.lb_name, private_dns : service.private_dns, supported_regions : service.supported_regions } }
 }
 
 data "aws_route53_zone" "hosted" {
