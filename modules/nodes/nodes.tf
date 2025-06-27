@@ -101,7 +101,7 @@ resource "aws_eks_node_group" "node_groups" {
   cluster_name         = var.eks_info.cluster.specs.name
   version              = each.value.node_group.ami != null ? null : var.eks_info.cluster.version
   release_version      = each.value.node_group.release_version
-  node_group_name      = substr(each.key, 0, 63)
+  node_group_name      = each.key
   node_role_arn        = var.eks_info.nodes.roles[0].arn
   subnet_ids           = try(lookup(each.value.node_group, "single_nodegroup", false), false) ? [for s in values(each.value.subnet) : s.subnet_id] : [each.value.subnet.subnet_id]
   force_update_version = true
@@ -133,6 +133,14 @@ resource "aws_eks_node_group" "node_groups" {
   tags = each.value.node_group.tags
 
   lifecycle {
+    precondition {
+      condition     = length(keys(local.node_groups_by_name)) == length(toset(keys(local.node_groups_by_name)))
+      error_message = <<-EOM
+        Duplicate node group names detected after applying naming logic. This indicates that the name generation logic failed to create unique names.
+        Generated names: ${jsonencode(sort(keys(local.node_groups_by_name)))}
+        Please check your node group configuration and subnet naming.
+      EOM
+    }
     ignore_changes = [
       scaling_config[0].desired_size,
       scaling_config[0].min_size,
