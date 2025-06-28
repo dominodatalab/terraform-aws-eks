@@ -38,7 +38,7 @@ resource "aws_s3_bucket_policy" "flyte_metadata" {
   policy = data.aws_iam_policy_document.flyte_metadata.json
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "flye_metadata_encryption" {
+resource "aws_s3_bucket_server_side_encryption_configuration" "flyte_metadata_encryption" {
   bucket = aws_s3_bucket.flyte_metadata.bucket
   rule {
     apply_server_side_encryption_by_default {
