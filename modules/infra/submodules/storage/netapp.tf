@@ -234,6 +234,20 @@ resource "aws_fsx_ontap_volume" "eks" {
   }
 }
 
+resource "aws_fsx_ontap_staging_volume" "eks" {
+  count                      = local.deploy_netapp && var.storage.netapp.staging_volume.create ? 1 : 0
+  storage_virtual_machine_id = aws_fsx_ontap_storage_virtual_machine.eks[0].id
+  name                       = var.storage.netapp.staging_volume.name
+  junction_path              = var.storage.netapp.staging_volume.junction_path
+  size_in_megabytes          = var.storage.netapp.staging_volume.size_in_megabytes
+  storage_efficiency_enabled = true
+  security_style             = "UNIX"
+  ontap_volume_type          = "RW"
+  copy_tags_to_backups       = true
+  volume_style               = "FLEXVOL"
+  tags                       = local.backup_tagging
+}
+
 
 resource "aws_cloudformation_stack" "fsx_ontap_scaling" {
   count         = local.deploy_netapp && var.storage.netapp.storage_capacity_autosizing.enabled ? 1 : 0
