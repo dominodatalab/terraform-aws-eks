@@ -15,7 +15,7 @@ locals {
 
   public_lbs_without_ddos_protection = {
     for lb in var.load_balancers : lb.name => lb
-    if try(lb.internal, false) and try(lb.ddos_protection, false)
+    if try(lb.internal, false) && try(lb.ddos_protection, false)
   }
 
   listeners = {
