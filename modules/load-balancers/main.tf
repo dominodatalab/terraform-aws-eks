@@ -13,6 +13,11 @@ locals {
     if try(lb.ddos_protection, false)
   }
 
+  public_lbs_without_ddos_protection = {
+    for lb in var.load_balancers : lb.name => lb
+    if try(lb.internal, false) and try(lb.ddos_protection, false)
+  }
+
   listeners = {
     for item in flatten([
       for lb in var.load_balancers : [
@@ -88,5 +93,33 @@ resource "aws_lb_listener" "load_balancer_listener" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.lb_target_groups[each.key].arn
+  }
+}
+
+# Record A (Public load balancers)
+resource "aws_route53_record" "public_lbs_record_type_a" {
+  for_each = local.public_lbs_without_ddos_protection
+
+  zone_id = data.aws_route53_zone.hosted.zone_id
+  name    = "${var.deploy_id}-${each.key}"
+  type    = "A"
+  alias {
+    name                   = aws_lb.load_balancers[each.key].dns_name
+    zone_id                = aws_lb.load_balancers[each.key].zone_id
+    evaluate_target_health = true
+  }
+}
+
+# Record AAAA (Public load balancers)
+resource "aws_route53_record" "public_lbs_record_type_aaaa" {
+  for_each = local.public_lbs_without_ddos_protection
+
+  zone_id = data.aws_route53_zone.hosted.zone_id
+  name    = "${var.deploy_id}-${each.key}"
+  type    = "AAAA"
+  alias {
+    name                   = aws_lb.load_balancers[each.key].dns_name
+    zone_id                = aws_lb.load_balancers[each.key].zone_id
+    evaluate_target_health = true
   }
 }
