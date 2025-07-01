@@ -64,7 +64,9 @@ moved {
 }
 
 resource "aws_security_group_rule" "efs" {
-  count                    = var.storage_info.efs != null ? 1 : 0
+  count = var.storage_info != null ? (
+    var.storage_info.efs != null ? 1 : 0
+  ) : 0
   security_group_id        = var.storage_info.efs.security_group_id
   protocol                 = "tcp"
   from_port                = 2049
@@ -75,7 +77,9 @@ resource "aws_security_group_rule" "efs" {
 }
 
 resource "aws_security_group_rule" "netapp" {
-  count                    = var.storage_info.netapp != null ? 1 : 0
+  count = var.storage_info != null ? (
+    var.storage_info.netapp != null ? 1 : 0
+  ) : 0
   security_group_id        = var.storage_info.netapp.filesystem.security_group_id
   protocol                 = "-1"
   from_port                = 0
@@ -93,5 +97,16 @@ resource "aws_security_group_rule" "ecr_endpoint" {
   to_port                  = 443
   type                     = "ingress"
   description              = "ECR Endpoint access from EKS nodes."
+  source_security_group_id = aws_security_group.eks_nodes.id
+}
+
+resource "aws_security_group_rule" "s3_endpoint" {
+  count                    = var.network_info.s3_endpoint != null ? 1 : 0
+  security_group_id        = var.network_info.s3_endpoint.security_group_id
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+  type                     = "ingress"
+  description              = "S3 Endpoint access from EKS nodes."
   source_security_group_id = aws_security_group.eks_nodes.id
 }

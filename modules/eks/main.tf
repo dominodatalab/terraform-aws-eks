@@ -29,6 +29,13 @@ locals {
   dns_suffix        = data.aws_partition.current.dns_suffix
   policy_arn_prefix = "arn:${data.aws_partition.current.partition}:iam::aws:policy"
   kms_key_arn       = var.kms_info.key_arn
+  oidc = var.eks.oidc_provider.create ? {
+    id              = try(aws_iam_openid_connect_provider.oidc_provider[0].id, null)
+    arn             = try(aws_iam_openid_connect_provider.oidc_provider[0].arn, null)
+    url             = try(aws_iam_openid_connect_provider.oidc_provider[0].url, null)
+    thumbprint_list = try(aws_iam_openid_connect_provider.oidc_provider[0].thumbprint_list, null)
+  } : var.eks.oidc_provider.oidc != null ? var.eks.oidc_provider.oidc : null
+
   eks_cluster_security_group_rules = {
     ingress_nodes_443 = {
       description              = "Private subnets to ${local.eks_cluster_name} EKS cluster API"
@@ -259,15 +266,7 @@ locals {
         ]
       )
       custom_roles = var.eks.custom_role_maps
-      oidc = {
-        arn = aws_iam_openid_connect_provider.oidc_provider.arn
-        url = aws_iam_openid_connect_provider.oidc_provider.url
-        cert = {
-          thumbprint_list = data.tls_certificate.cluster_tls_certificate.certificates[*].sha1_fingerprint
-          url             = data.tls_certificate.cluster_tls_certificate.url
-
-        }
-      }
+      oidc         = local.oidc
     }
     nodes = {
       nodes_master      = var.eks.nodes_master

@@ -49,6 +49,7 @@ variable "ssh_pvt_key_path" {
 
 variable "eks" {
   description = <<EOF
+    run_k8s_setup = Toggle to run the k8s setup.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
@@ -71,12 +72,13 @@ variable "eks" {
     vpc_cni            = Configuration for AWS VPC CNI
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
-  }
+    oidc_provider =  Configuration for the IAM OIDC Identity Provider.
   EOF
 
   type = object({
+    run_k8s_setup      = optional(bool, true)
     creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.27")
+    k8s_version        = optional(string, "1.30")
     nodes_master       = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
@@ -108,6 +110,15 @@ variable "eks" {
       username_claim                = optional(string, null)
       username_prefix               = optional(string, null)
     })), [])
+    oidc_provider = optional(object({
+      create = optional(bool, true)
+      oidc = optional(object({
+        id              = optional(string, null)
+        arn             = optional(string, null)
+        url             = optional(string, null)
+        thumbprint_list = optional(list(string), null)
+      }), null)
+    }), {})
   })
 
   default = {}
@@ -243,8 +254,9 @@ variable "additional_node_groups" {
       value  = optional(string)
       effect = string
     })), [])
-    tags = optional(map(string), {})
-    gpu  = optional(bool, null)
+    tags   = optional(map(string), {})
+    gpu    = optional(bool, null)
+    neuron = optional(bool, null)
     volume = object({
       size       = string
       type       = string
@@ -286,7 +298,7 @@ variable "karpenter_node_groups" {
     tags = optional(map(string), {})
     gpu  = optional(bool, null)
     volume = optional(object({
-      size       = optional(string, "30")
+      size       = optional(string, "100")
       type       = optional(string, "gp3")
       iops       = optional(number)
       throughput = optional(number, 500)
@@ -318,6 +330,7 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
+    create_s3_endpoint = Create the VPC Endpoint For S3.
   EOF
 
   type = object({
@@ -340,7 +353,8 @@ variable "network" {
       pod = optional(string, "100.64.0.0/16")
     }), {})
     use_pod_cidr        = optional(bool, true)
-    create_ecr_endpoint = optional(bool, false)
+    create_ecr_endpoint = optional(bool, true)
+    create_s3_endpoint  = optional(bool, true)
   })
 
   default = {}
@@ -371,7 +385,7 @@ variable "bastion" {
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(netapp|efs)
+      filesystem_type = File system type(netapp|efs|none)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -468,9 +482,11 @@ variable "storage" {
       }), {})
     }), {})
     s3 = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {})
     ecr = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {}),
     enable_remote_backup = optional(bool, false)

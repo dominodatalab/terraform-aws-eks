@@ -187,8 +187,9 @@ variable "additional_node_groups" {
       value  = optional(string)
       effect = string
     })))
-    tags = optional(map(string))
-    gpu  = optional(bool)
+    tags   = optional(map(string))
+    gpu    = optional(bool)
+    neuron = optional(bool)
     volume = object({
       size = string
       type = string
@@ -198,10 +199,44 @@ variable "additional_node_groups" {
   default = {}
 }
 
+variable "karpenter_node_groups" {
+  description = "Node groups for karpenter."
+  type = map(object({
+    single_nodegroup           = optional(bool, false)
+    ami                        = optional(string, null)
+    bootstrap_extra_args       = optional(string, "")
+    instance_types             = optional(list(string), ["m6a.large"])
+    spot                       = optional(bool, false)
+    min_per_az                 = optional(number, 1)
+    max_per_az                 = optional(number, 3)
+    max_unavailable_percentage = optional(number, 50)
+    max_unavailable            = optional(number)
+    desired_per_az             = optional(number, 1)
+    availability_zone_ids      = list(string)
+    labels = optional(map(string), {
+      "dominodatalab.com/node-pool" = "karpenter"
+    })
+    taints = optional(list(object({
+      key    = string
+      value  = optional(string)
+      effect = string
+    })), [])
+    tags = optional(map(string), {})
+    gpu  = optional(bool, null)
+    volume = optional(object({
+      size       = optional(string, "30")
+      type       = optional(string, "gp3")
+      iops       = optional(number)
+      throughput = optional(number, 500)
+    }), {})
+  }))
+  default = null
+}
+
 variable "storage" {
   description = <<EOF
     storage = {
-      filesystem_type = File system type(netapp|efs)
+      filesystem_type = File system type(netapp|efs|none)
       efs = {
         access_point_path = Filesystem path for efs.
         backup_vault = {
@@ -298,13 +333,15 @@ variable "storage" {
       }), {})
     }), {})
     s3 = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {})
     ecr = optional(object({
+      create                    = optional(bool, true)
       force_destroy_on_deletion = optional(bool, true)
     }), {}),
     enable_remote_backup = optional(bool, false)
-    costs_enabled        = optional(bool, true)
+    costs_enabled        = optional(bool, false)
   })
 
   default = {}
@@ -325,6 +362,7 @@ variable "kms" {
 
 variable "eks" {
   description = <<EOF
+    run_k8s_setup = Toggle to run the k8s setup.
     service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
@@ -348,10 +386,12 @@ variable "eks" {
     vpc_cni            = Configuration for AWS VPC CNI
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
+    oidc_provider = Configuration for OIDC provider.
   }
   EOF
 
   type = object({
+    run_k8s_setup      = optional(bool)
     service_ipv4_cidr  = optional(string)
     creation_role_name = optional(string, null)
     k8s_version        = optional(string)
@@ -386,6 +426,15 @@ variable "eks" {
       username_claim                = optional(string)
       username_prefix               = optional(string)
     })))
+    oidc_provider = optional(object({
+      create = optional(bool, true)
+      oidc = optional(object({
+        id              = optional(string, null)
+        arn             = optional(string, null)
+        url             = optional(string, null)
+        thumbprint_list = optional(list(string), null)
+      }), null)
+    }), {})
   })
 
   default = {}
@@ -414,6 +463,8 @@ variable "bastion" {
     username                 = optional(string)
     install_binaries         = optional(bool)
   })
+
+  default = {}
 }
 
 

@@ -267,7 +267,6 @@ resource "aws_iam_role_policy_attachment" "custom_eks_nodes" {
   role       = aws_iam_role.eks_nodes.name
 }
 
-
 resource "aws_eks_identity_provider_config" "this" {
   for_each = { for idp in var.eks.identity_providers : idp.identity_provider_config_name => idp }
 
@@ -278,7 +277,7 @@ resource "aws_eks_identity_provider_config" "this" {
     groups_claim                  = lookup(each.value, "groups_claim", null)
     groups_prefix                 = lookup(each.value, "groups_prefix", null)
     identity_provider_config_name = each.value.identity_provider_config_name
-    issuer_url                    = try(each.value.issuer_url, aws_iam_openid_connect_provider.oidc_provider.url)
+    issuer_url                    = try(each.value.issuer_url, local.oidc.url)
     required_claims               = lookup(each.value, "required_claims", null)
     username_claim                = lookup(each.value, "username_claim", null)
     username_prefix               = lookup(each.value, "username_prefix", null)

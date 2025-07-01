@@ -2,6 +2,7 @@
 
 variable "eks" {
   description = <<EOF
+    run_k8s_setup = Toggle to run the k8s setup.
     service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
@@ -24,10 +25,12 @@ variable "eks" {
     vpc_cni            = Configuration for AWS VPC CNI
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
+    oidc_provider = Configuration for OIDC provider.
   }
   EOF
 
   type = object({
+    run_k8s_setup      = optional(bool)
     service_ipv4_cidr  = optional(string)
     creation_role_name = optional(string, null)
     k8s_version        = optional(string)
@@ -61,6 +64,15 @@ variable "eks" {
       username_claim                = optional(string)
       username_prefix               = optional(string)
     })))
+    oidc_provider = optional(object({
+      create = optional(bool, true)
+      oidc = optional(object({
+        id              = optional(string, null)
+        arn             = optional(string, null)
+        url             = optional(string, null)
+        thumbprint_list = optional(list(string), null)
+      }), null)
+    }), {})
   })
 
   default = {}
@@ -96,12 +108,20 @@ variable "irsa_policies" {
 }
 
 variable "irsa_external_dns" {
-  description = "Mappings for custom IRSA configurations."
+  description = <<EOF
+    Config to enable irsa for external-dns
+    use_cluster_oidc_idp = Toogle to set the oidc idp connector in the trust policy.
+    Set to `true` if the cluster and the hosted zone are in different aws accounts.
+    `rm_role_policy` used to facilitate the cleanup if a node attached policy was used previously.
+  EOF
+
   type = object({
-    enabled             = optional(bool, false)
-    hosted_zone_name    = optional(string, null)
-    namespace           = optional(string, null)
-    serviceaccount_name = optional(string, null)
+    enabled              = optional(bool, false)
+    hosted_zone_name     = optional(string, null)
+    hosted_zone_private  = optional(string, false)
+    namespace            = optional(string, "domino-platform")
+    serviceaccount_name  = optional(string, "external-dns")
+    use_cluster_oidc_idp = optional(bool, true)
     rm_role_policy = optional(object({
       remove           = optional(bool, false)
       detach_from_role = optional(bool, false)
@@ -145,5 +165,26 @@ variable "flyte" {
     compute_namespace         = optional(string, "domino-compute")
 
   })
+  default = {}
+}
+
+variable "karpenter" {
+  description = <<EOF
+    karpenter = {
+      enabled = Toggle installation of Karpenter.
+      namespace = Namespace to install Karpenter.
+      version = Configure the version for Karpenter.
+      delete_instances_on_destroy = Toggle to delete Karpenter instances on destroy.
+    }
+  EOF
+  type = object({
+    enabled                     = optional(bool, false)
+    delete_instances_on_destroy = optional(bool, true)
+    namespace                   = optional(string, "karpenter")
+    version                     = optional(string, "1.3.3")
+    #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
+    #https://github.com/aws/karpenter-provider-aws/releases
+  })
+
   default = {}
 }

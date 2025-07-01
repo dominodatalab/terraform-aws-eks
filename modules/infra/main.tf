@@ -32,7 +32,7 @@ module "storage" {
   deploy_id         = var.deploy_id
   network_info      = module.network.info
   kms_info          = local.kms_info
-  storage           = merge(var.storage, { costs_enabled = local.deploy_cur })
+  storage           = var.storage
   use_fips_endpoint = var.use_fips_endpoint
   region            = var.region
 }
@@ -51,6 +51,8 @@ locals {
       instance_tags = merge(data.aws_default_tags.this.tags, ng.tags)
     })
   }
+  create_s3  = try(var.storage.s3.create, false)
+  create_ecr = try(var.storage.ecr.create, false)
 }
 
 
@@ -65,7 +67,7 @@ module "network" {
   region              = var.region
   node_groups         = local.node_groups
   network             = var.network
-  flow_log_bucket_arn = { arn = module.storage.info.s3.buckets.monitoring.arn }
+  flow_log_bucket_arn = local.create_s3 ? { arn = module.storage.info.s3.buckets.monitoring.arn } : null
 }
 
 module "vpn" {
@@ -106,8 +108,9 @@ module "bastion" {
 }
 
 locals {
-  cost_usage_report_info    = var.domino_cur.provision_cost_usage_report && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
-  bastion_info              = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
-  node_iam_policies_storage = [module.storage.info.s3.iam_policy_arn, module.storage.info.ecr.iam_policy_arn]
-  node_iam_policies         = local.cost_usage_report_info != null ? concat(local.node_iam_policies_storage, [local.cost_usage_report_info.cur_iam_policy_arn]) : local.node_iam_policies_storage
+  cost_usage_report_info = var.domino_cur.provision_cost_usage_report && length(module.cost_usage_report) > 0 ? module.cost_usage_report[0].info : null
+  bastion_info           = var.bastion.enabled && length(module.bastion) > 0 ? module.bastion[0].info : null
+  add_s3_pol             = [module.storage.info.s3.iam_policy_arn]
+  add_ecr_pol            = local.create_ecr ? concat([module.storage.info.ecr.iam_policy_arn], local.add_s3_pol) : local.add_s3_pol
+  node_iam_policies      = local.cost_usage_report_info != null ? concat(local.add_ecr_pol, [local.cost_usage_report_info.cur_iam_policy_arn]) : local.add_ecr_pol
 }

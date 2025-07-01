@@ -2,6 +2,9 @@
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/dominodatalab/terraform-aws-eks/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/dominodatalab/terraform-aws-eks/tree/main)
 
+:warning: Important: If you are currently using a version of the module <= `v3.24.2`  and want to update to >= `v3.25.0` you should take a look at the `bin/module-update/` utility. There are changes related to the EFS mount_point which may cause downtime if not addressed properly.
+
+
 :warning: Important: If you are currently using a version of the module >= `v3.0.0`  and want to update to >= `v3.5.0` you should take a look at the `bin/module-update/` utility.
 
 :warning: Important: If you have existing infrastructure created with a version of this module < `v3.0.0` you will need to migrate your state before updating the module to versions >= `v3.0.0`. See [state-migration](./bin/state-migration/README.md#terraform-state-migration-guide) for more details.
@@ -322,3 +325,39 @@ module "backups" {
   }
 }
 ```
+
+## Karpenter
+
+This module supports running workloads on [Karpenter](https://karpenter.sh/v1.0/getting-started/) instead of EKS managed node groups.
+
+If you have an existing deployment and want to migrate to using karpenter, see [karpenter-migration](./examples/karpenter/MIGRATION.md).
+
+To create a new deployment that uses Karpenter
+
+1. Complete all standard steps
+2. Add the following to your `infra.tfvars` and `nodes.tfvars`. See Note on selecting AZs  [karpenter-availability_zone_ids](./examples/karpenter/MIGRATION.md#1-create-karpenter-node-groups)
+```hcl
+karpenter_node_groups = {
+  karpenter = {
+    availability_zone_ids = ["usw2-az1", "usw2-az2", "usw2-az3", "usw2-az4"]
+    single_nodegroup = true
+  }
+}
+
+default_node_groups = null
+additional_node_groups = null
+```
+3. Add the following to the `cluster.tfvars`:
+
+```hcl
+# Consult the karpenter variable for additional options.
+karpenter = {
+  enabled = true
+}
+```
+4. Plan and Apply changes
+```bash
+./tf.sh all plan
+./tf.sh all apply
+```
+5. See and [karpenter-configurations](./examples/karpenter/MIGRATION.md#3-configure-karpenter-node-classes-and-node-pools) on how to configure `ec2nodeclasses` and `nodepools`.

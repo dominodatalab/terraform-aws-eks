@@ -2,6 +2,7 @@ locals {
   create_vpc          = var.network.vpc.id == null
   provided_vpc        = var.network.vpc.id != null
   create_ecr_endpoint = local.create_vpc && var.network.create_ecr_endpoint
+  create_s3_endpoint  = local.create_vpc && var.network.create_s3_endpoint
 }
 
 data "aws_subnet" "public" {
@@ -37,7 +38,10 @@ locals {
   private_cidr_blocks = try(data.aws_subnet.private[0].cidr_block, slice(local.subnet_cidr_blocks, local.num_of_azs, length(local.subnet_cidr_blocks)))
   ## Determine cidr blocks for pod network
   base_pod_cidr_network_bits = try(tonumber(regex("[^/]*$", var.network.cidrs.pod)), "")
-  pod_cidr_blocks = try(data.aws_subnet.pod[0].cidr_block,
+
+  pod_cidr_blocks = var.network.vpc.id != null && length(var.network.vpc.subnets.pod) > 0 ? (
+    [for subnet in data.aws_subnet.pod : subnet.cidr_block]
+    ) : (
     !var.network.use_pod_cidr ? [] :
     cidrsubnets(var.network.cidrs.pod,
       [for n in range(0, local.num_of_azs) :
@@ -58,6 +62,7 @@ locals {
     for subnet in data.aws_subnet.private :
     { name = subnet.tags.Name, subnet_id = subnet.id, az = subnet.availability_zone, az_id = subnet.availability_zone_id }
   ]
+
   pod_subnets = local.create_vpc ? [
     for cidr, c in local.pod_cidrs :
     { name = c.name, subnet_id = aws_subnet.pod[cidr].id, az = c.az, az_id = c.az_id }

@@ -56,6 +56,108 @@ EOB
 
 }
 
+set_import() {
+  local mod_dir="$1"
+  local import_file_tmp="$2"
+
+  local import_file="${mod_dir}/imports.tf"
+
+  if [[ ! -f "$import_file" ]] || ! grep -Fqx -f "$import_file_tmp" "$import_file"; then
+    printf "Adding import from %s to %s.\n\n" "$import_file_tmp" "$import_file"
+    printf "Import file:\n"
+    tee -a "$import_file" <"$import_file_tmp"
+  else
+    printf "Import on %s already present on %s.\n" "$import_file" "$import_file_tmp"
+  fi
+
+  rm -f "$import_file_tmp"
+}
+
+set_efs_mount_targets_imports() {
+  local import_file_tmp="${INFRA_DIR}/imports.tf.tmp"
+  local deploy_id
+
+  if [[ ! -f "$INFRA_STATE" ]]; then
+    printf "Error: Terraform state file %s does not exist.\n" "$INFRA_STATE"
+    return 1
+  fi
+
+  if [[ ! -f "$INFRA_VARS" ]]; then
+    printf "Error: Terraform tfvars file %s does not exist.\n" "$INFRA_VARS"
+    return 1
+  fi
+
+  deploy_id=$(hcledit attribute get deploy_id -f "$INFRA_VARS" | jq -r) || {
+    printf "Error: Failed to retrieve deploy_id from %s.\n" "$INFRA_VARS"
+    return 1
+  }
+
+  : >"$import_file_tmp"
+  printf "Generating import blocks for EFS mount targets from Terraform state.\n"
+
+  # Extract filesystem matching deploy_id
+  fs_json=$(jq -r --arg deploy_id "$deploy_id" \
+    '.resources[] | select(.type == "aws_efs_file_system") | .instances[] | select(.attributes.tags.Name == $deploy_id)' "$INFRA_STATE") || {
+    printf "Error: Failed to extract filesystem from state file.\n"
+    return 1
+  }
+
+  # Check if filesystem exists in the tfstate and exit if not(nothing to migrate)
+  if [[ -z "$fs_json" ]]; then
+    printf "No EFS filesystem found with deploy_id:%s in state file.\n" "$deploy_id"
+    return 0
+  fi
+
+  # Extract filesystem ID
+  fs_id=$(echo "$fs_json" | jq -r '.attributes.id')
+
+  if [[ -z "${fs_id// /}" ]]; then
+    printf "Error: Filesystem ID is empty.\n"
+    return 1
+  fi
+
+  printf "Processing filesystem: %s\n" "$fs_id"
+
+  # Extract mount targets for this filesystem where index_key is an integer
+  mount_targets=$(jq -r --arg fs_id "$fs_id" \
+    '.resources[] | select(.type == "aws_efs_mount_target") | .instances[] | select(.attributes.file_system_id == $fs_id and (.index_key | type == "number")) | [.attributes.id, .attributes.subnet_id]' "$INFRA_STATE") || {
+    printf "Error: Failed to extract mount targets.\n"
+    return 1
+  }
+
+  # Check if there are any mount targets with integer index_key
+  if [[ -z "$mount_targets" ]]; then
+    printf "No mount targets with integer index_key found for filesystem %s. No migration needed.\n" "$fs_id"
+    return 0
+  fi
+
+  # Extract subnet mapping from outputs
+  subnet_map=$(jq -r '.outputs.infra.value.network.subnets.private | map({(.subnet_id): .name}) | add' "$INFRA_STATE") || {
+    printf "Error: Failed to extract subnet mapping.\n"
+    return 1
+  }
+
+  # Generate import blocks for each mount target with integer index_key
+  echo "$mount_targets" | jq -c '.' | while read -r mount_point; do
+    mount_target_id=$(echo "$mount_point" | jq -r '.[0]')
+    subnet_id=$(echo "$mount_point" | jq -r '.[1]')
+    subnet_name=$(echo "$subnet_map" | jq -r ".\"$subnet_id\"")
+    if [[ -z "$subnet_name" ]]; then
+      printf "Warning: No subnet name found for subnet_id %s, skipping.\n" "$subnet_id"
+      continue
+    fi
+    cat <<-EOF >>"$import_file_tmp"
+import {
+  to = module.infra.module.storage.aws_efs_mount_target.eks_cluster["$subnet_name"]
+  id = "$mount_target_id"
+}
+EOF
+  done
+
+  printf "Mount targets with integer index_key found(use of count instead of for_each). Migration needed for filesystem %s mount targets.\n" "$fs_id"
+  set_import "$INFRA_DIR" "$import_file_tmp"
+}
+
 set_vpc_cni_import() {
 
   local nodes_main_tf_path="${NODES_DIR}/imports.tf"
@@ -156,6 +258,11 @@ cleanup() {
 
 imports_corrections_deprecations() {
   MOD_VERSION_NUM=${MOD_VERSION#v}
+
+  if [ "$(printf '%s\n' "3.25.0" "$MOD_VERSION_NUM" | sort -V | head -n 1)" = "3.25.0" ]; then
+    # https://github.com/dominodatalab/terraform-aws-eks/releases/tag/3.25.0
+    set_efs_mount_targets_imports
+  fi
 
   if [ "$(printf '%s\n' "3.6.0" "$MOD_VERSION_NUM" | sort -V | head -n 1)" = "3.6.0" ]; then
     # https://github.com/dominodatalab/terraform-aws-eks/releases/tag/v3.6.0

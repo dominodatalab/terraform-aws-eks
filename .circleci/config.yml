@@ -6,7 +6,10 @@ parameters:
     default: "v3.11.2"
   terraform_version:
     type: string
-    default: "1.9.3"
+    default: "1.10.5"
+  opentofu_version:
+    type: string
+    default: "1.9.0"
   hcledit_version:
     type: string
     default: "0.2.9"
@@ -34,6 +37,20 @@ commands:
     steps:
       - terraform/install:
           terraform_version: << parameters.terraform_version >>
+
+  install_opentofu:
+    description: "Install OpenTofu"
+    parameters:
+      opentofu_version:
+        type: string
+        default: "1.9.0"
+    steps:
+      - run:
+          name: Install OpenTofu
+          working_directory: tests/deploy
+          environment:
+            OPENTOFU_VERSION: << parameters.opentofu_version >>
+          command: bash ci-deploy.sh install_opentofu
 
   install_hcledit:
     description: "Install HCL edit"
@@ -264,14 +281,14 @@ jobs:
     docker:
       - image: cimg/aws:2023.04.1
     parameters:
-      terraform_version:
+      opentofu_version:
         type: string
       helm_version:
         type: string
     steps:
       - checkout
-      - install_tf:
-          terraform_version: << parameters.terraform_version >>
+      - install_opentofu:
+          opentofu_version: << parameters.opentofu_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
       - setup_tf_mods
@@ -327,7 +344,7 @@ workflows:
     jobs:
       - test-deploy:
           context: aws-oidc
-          terraform_version: << pipeline.parameters.terraform_version >>
+          opentofu_version: << pipeline.parameters.opentofu_version >>
           helm_version: << pipeline.parameters.helm_version >>
 
   test-upgrade-workflow:
