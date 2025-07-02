@@ -70,6 +70,15 @@ module "load_balancers" {
   }]
   waf = {
     enabled = false
+    rules   = []
+    block_forwarder_header = {
+      enabled = false
+    }
+    rate_limit = {
+      enabled = false
+      limit   = 1000
+      action  = "count"
+    }
   }
   access_logs = {
     enabled   = true
