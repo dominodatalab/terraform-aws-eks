@@ -53,8 +53,8 @@ locals {
   multi_zone_node_groups = [
     for ng_name, ng in local.node_groups : {
       ng_name            = ng_name
-      sb_name            = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
-      sb_az_id           = join("_", [for sb_name, sb in var.network_info.subnets.private : sb.az_id if contains(ng.availability_zone_ids, sb.az_id)])
+      sb_name            = join("_", [for sb_name, sb in var.network_info.subnets.private : split("-", sb.az_id)[length(split("-", sb.az_id)) - 1] if contains(ng.availability_zone_ids, sb.az_id)])
+      sb_az_id           = join("_", [for sb_name, sb in var.network_info.subnets.private : split("-", sb.az_id)[length(split("-", sb.az_id)) - 1] if contains(ng.availability_zone_ids, sb.az_id)])
       subnet             = { for sb in var.network_info.subnets.private : sb.name => sb if contains(ng.availability_zone_ids, sb.az_id) }
       availability_zones = [for sb in var.network_info.subnets.private : sb.az if contains(ng.availability_zone_ids, sb.az_id)]
       node_group = merge(ng, {
@@ -90,7 +90,7 @@ locals {
     length(ng_name) <= 63 ? ng_name : (
       length("${ng.ng_name}-${var.eks_info.cluster.specs.name}-${ng.sb_az_id}") <= 63 ?
       "${ng.ng_name}-${var.eks_info.cluster.specs.name}-${ng.sb_az_id}" :
-      substr("${ng.ng_name}-${var.eks_info.cluster.specs.name}-${ng.sb_az_id}", 0, 63)
+      replace(substr("${ng.ng_name}-${var.eks_info.cluster.specs.name}-${ng.sb_az_id}", 0, 63), "/[^A-Za-z0-9]+$/", "")
     ) => ng
   }
 }
