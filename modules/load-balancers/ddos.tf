@@ -35,7 +35,7 @@ locals {
 
 data "aws_route53_zone" "hosted" {
   name         = var.hosted_zone_name
-  private_zone = false
+  private_zone = var.hosted_zone_private
 }
 
 resource "aws_globalaccelerator_accelerator" "main_accelerator" {

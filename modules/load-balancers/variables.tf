@@ -204,3 +204,9 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+
+variable "hosted_zone_private" {
+  description = "Use private hosted zone"
+  type        = bool
+  default     = false
+}
