@@ -45,8 +45,8 @@ jobs:
           retry_wait_seconds: 20
           retry_on: error
           command: |
-            wget https://github.com/aquasecurity/trivy/releases/download/v0.63.0/trivy_0.63.0_linux-arm64.tar.gz
-            tar -zxvf trivy_0.63.0_linux-arm64.tar.gz
+            wget https://github.com/aquasecurity/trivy/releases/download/v0.63.0/trivy_0.63.0_Linux-64bit.tar.gz
+            tar -zxvf trivy_0.63.0_Linux-64bit.tar.gz
             sudo mv trivy /usr/local/bin/
             trivy version
       - uses: pre-commit/action@v3.0.1
