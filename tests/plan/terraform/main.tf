@@ -36,38 +36,11 @@ module "eks" {
 }
 
 module "load_balancers" {
-  source    = "./../../../modules/load-balancers"
-  deploy_id = var.deploy_id
-  load_balancers = [{
-    name            = "vault"
-    type            = "network"
-    internal        = true
-    ddos_protection = false
-    listeners = [
-      {
-        name     = "tls"
-        port     = 8200
-        protocol = "TCP"
-      }
-    ]
-    }, {
-    name            = "rabbitmq"
-    type            = "network"
-    internal        = true
-    ddos_protection = false
-    listeners = [
-      {
-        name     = "tls"
-        port     = 5552
-        protocol = "TCP"
-      },
-      {
-        name     = "stream-tls"
-        port     = 5672
-        protocol = "TCP"
-      }
-    ]
-  }]
+  count = length(var.load_balancers) > 0 ? 1 : 0
+
+  source         = "./../../../modules/load-balancers"
+  deploy_id      = var.deploy_id
+  load_balancers = var.load_balancers
   waf = {
     enabled = false
     rules   = []
@@ -99,6 +72,8 @@ module "load_balancers" {
 }
 
 module "privatelink" {
+  count = var.enable_private_link ? 1 : 0
+
   source    = "./../../../modules/privatelink"
   deploy_id = var.deploy_id
   privatelink = {
