@@ -81,7 +81,7 @@ module "load_balancers" {
     enabled   = true
     s3_bucket = module.infra.monitoring_bucket
   }
-  fqdn                        = "${var.deploy_id}.${var.route53_hosted_zone_name}"
+  fqdn                        = "${var.deploy_id}${var.route53_hosted_zone_name != null ? "." + var.route53_hosted_zone_name : ""}"
   hosted_zone_name            = var.route53_hosted_zone_name
   network_info                = module.infra.network
   eks_nodes_security_group_id = module.eks.info.eks_nodes_security_group_id
