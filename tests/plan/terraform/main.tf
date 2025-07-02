@@ -81,7 +81,7 @@ module "privatelink" {
     monitoring_bucket        = module.infra.monitoring_bucket
     route53_hosted_zone_name = var.route53_hosted_zone_name
   }
-  lb_arns = module.load_balancers.info.lb_arns
+  lb_arns = module.load_balancers[0].info.lb_arns
 }
 
 module "irsa_external_dns" {
