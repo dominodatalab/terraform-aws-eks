@@ -1,5 +1,4 @@
 ## NOTE: Changes(rename/add/delete) to pre-commit ids need to be replicated in .github/workflows/terraform-checks.yml(GHA).
-default_stages: [commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -20,7 +19,7 @@ repos:
       - id: check-dependabot
       - id: check-github-actions
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.99.4
+    rev: v1.99.0
     hooks:
       - id: terraform_validate
         # See #4 on https://github.com/antonbabenko/pre-commit-terraform#terraform_validate
