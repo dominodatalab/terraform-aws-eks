@@ -5,7 +5,7 @@ locals {
 
   create_dns_records = local.create_global_accelerator && var.fqdn != ""
 
-  lb_dns_records = [
+  lb_dns_records = local.create_dns_records ? [
     {
       name = var.fqdn
       type = "A"
@@ -30,7 +30,7 @@ locals {
       name = "apps-${var.fqdn}"
       type = "AAAA"
     }
-  ]
+  ] : []
 }
 
 data "aws_route53_zone" "hosted" {
@@ -80,10 +80,8 @@ resource "aws_globalaccelerator_endpoint_group" "endpoint_group" {
   }
 }
 
-resource "aws_route53_record" "multi_dns" {
+resource "aws_route53_record" "lbs_dns_records" {
   for_each = { for idx, rec in local.lb_dns_records : "${rec.name}_${rec.type}" => rec }
-
-  count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.hosted.zone_id
   name    = each.value.name
