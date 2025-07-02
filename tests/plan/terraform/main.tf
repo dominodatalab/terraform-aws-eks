@@ -35,6 +35,69 @@ module "eks" {
   use_fips_endpoint   = var.use_fips_endpoint
 }
 
+module "load_balancers" {
+  source    = "./../../../modules/load-balancers"
+  deploy_id = var.deploy_id
+  load_balancers = [{
+    name            = "vault"
+    type            = "network"
+    internal        = true
+    ddos_protection = false
+    listeners = [
+      {
+        name     = "tls"
+        port     = 8200
+        protocol = "TCP"
+      }
+    ]
+    }, {
+    name            = "rabbitmq"
+    type            = "network"
+    internal        = true
+    ddos_protection = false
+    listeners = [
+      {
+        name     = "tls"
+        port     = 5552
+        protocol = "TCP"
+      },
+      {
+        name     = "stream-tls"
+        port     = 5672
+        protocol = "TCP"
+      }
+    ]
+  }]
+  waf = false
+  access_logs = {
+    enabled   = true
+    s3_bucket = module.infra.monitoring_bucket
+  }
+  connection_logs = {
+    enabled   = true
+    s3_bucket = module.infra.monitoring_bucket
+  }
+  flow_logs = {
+    enabled   = true
+    s3_bucket = module.infra.monitoring_bucket
+  }
+  fqdn                        = "${var.deploy_id}.${var.route53_hosted_zone_name}"
+  hosted_zone_name            = var.route53_hosted_zone_name
+  network_info                = module.infra.network
+  eks_nodes_security_group_id = module.eks.info.eks_nodes_security_group_id
+}
+
+module "privatelink" {
+  source    = "./../../../modules/privatelink"
+  deploy_id = var.deploy_id
+  privatelink = {
+    enabled                  = var.enable_private_link
+    monitoring_bucket        = module.infra.monitoring_bucket
+    route53_hosted_zone_name = var.route53_hosted_zone_name
+  }
+  lb_arns = module.load_balancers.info.lb_arns
+}
+
 module "irsa_external_dns" {
   count    = module.eks.info.cluster.oidc != null ? 1 : 0
   source   = "./../../../modules/irsa"
