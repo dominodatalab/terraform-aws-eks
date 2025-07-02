@@ -68,7 +68,9 @@ module "load_balancers" {
       }
     ]
   }]
-  waf = false
+  waf = {
+    enabled = false
+  }
   access_logs = {
     enabled   = true
     s3_bucket = module.infra.monitoring_bucket
