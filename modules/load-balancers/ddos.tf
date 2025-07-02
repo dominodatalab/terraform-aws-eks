@@ -1,9 +1,36 @@
 locals {
-  global_accelerator_hosted_zone_id = "Z2BJ6XQ5FK7U4H" # Fixed Hosted Zone ID for Global Accelerator
+  global_accelerator_hosted_zone_id = var.use_fips_endpoint ? "Z2BJ6XQ5FK7U4H" : "Z018824593QZ67JH632G" # Fixed Hosted Zone ID for Global Accelerator
 
   create_global_accelerator = length(local.lbs_with_ddos_protection) > 0
 
   create_dns_records = local.create_global_accelerator && var.fqdn != ""
+
+  lb_dns_records = [
+    {
+      name = var.fqdn
+      type = "A"
+    },
+    {
+      name = var.fqdn
+      type = "AAAA"
+    },
+    {
+      name = "*.${var.fqdn}"
+      type = "A"
+    },
+    {
+      name = "*.${var.fqdn}"
+      type = "AAAA"
+    },
+    {
+      name = "apps-${var.fqdn}"
+      type = "A"
+    },
+    {
+      name = "apps-${var.fqdn}"
+      type = "AAAA"
+    }
+  ]
 }
 
 data "aws_route53_zone" "hosted" {
@@ -53,81 +80,15 @@ resource "aws_globalaccelerator_endpoint_group" "endpoint_group" {
   }
 }
 
-resource "aws_route53_record" "root_record_type_a" {
+resource "aws_route53_record" "multi_dns" {
+  for_each = { for idx, rec in local.lb_dns_records : "${rec.name}_${rec.type}" => rec }
+
   count = local.create_dns_records ? 1 : 0
 
   zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = var.fqdn
-  type    = "A"
-  alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
-    zone_id                = local.global_accelerator_hosted_zone_id
-    evaluate_target_health = true
-  }
-}
+  name    = each.value.name
+  type    = each.value.type
 
-resource "aws_route53_record" "root_record_type_aaaa" {
-  count = local.create_dns_records ? 1 : 0
-
-  zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = var.fqdn
-  type    = "AAAA"
-  alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
-    zone_id                = local.global_accelerator_hosted_zone_id
-    evaluate_target_health = true
-  }
-}
-
-# Record A (wildcard)
-resource "aws_route53_record" "wildcard_record_type_a" {
-  count = local.create_dns_records ? 1 : 0
-
-  zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = "*.${var.fqdn}"
-  type    = "A"
-  alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
-    zone_id                = local.global_accelerator_hosted_zone_id
-    evaluate_target_health = true
-  }
-}
-
-# Record AAAA (wildcard)
-resource "aws_route53_record" "wildcard_record_type_aaaa" {
-  count = local.create_dns_records ? 1 : 0
-
-  zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = "*.${var.fqdn}"
-  type    = "AAAA"
-  alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
-    zone_id                = local.global_accelerator_hosted_zone_id
-    evaluate_target_health = true
-  }
-}
-
-# Record A (apps)
-resource "aws_route53_record" "apps_record_type_a" {
-  count = local.create_dns_records ? 1 : 0
-
-  zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = "apps-${var.fqdn}"
-  type    = "A"
-  alias {
-    name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
-    zone_id                = local.global_accelerator_hosted_zone_id
-    evaluate_target_health = true
-  }
-}
-
-# Record AAAA (apps)
-resource "aws_route53_record" "apps_record_type_aaaa" {
-  count = local.create_dns_records ? 1 : 0
-
-  zone_id = data.aws_route53_zone.hosted.zone_id
-  name    = "apps-${var.fqdn}"
-  type    = "AAAA"
   alias {
     name                   = aws_globalaccelerator_accelerator.main_accelerator[0].dns_name
     zone_id                = local.global_accelerator_hosted_zone_id
