@@ -1,5 +1,5 @@
 locals {
-  global_accelerator_hosted_zone_id = var.use_fips_endpoint ? "Z2BJ6XQ5FK7U4H" : "Z018824593QZ67JH632G" # Fixed Hosted Zone ID for Global Accelerator
+  global_accelerator_hosted_zone_id = var.use_fips_endpoint ? "Z018824593QZ67JH632G" : "Z2BJ6XQ5FK7U4H" # Fixed Hosted Zone ID for Global Accelerator
 
   create_global_accelerator = length(local.lbs_with_ddos_protection) > 0
 
