@@ -8,59 +8,15 @@ variable "deploy_id" {
   }
 }
 
-variable "network_info" {
-  description = <<EOF
-    {
-      vpc_id = VPC Id.
-      subnets = {
-        private = Private subnets.
-        public  = Public subnets.
-        pod     = Pod subnets.
-      }), {})
-    }), {})
-  EOF
-
-  type = object({
-    vpc_id = string
-    subnets = object({
-      private = list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      }))
-      public = list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      }))
-      pod = list(object({
-        name      = string
-        subnet_id = string
-        az        = string
-        az_id     = string
-      }))
-    })
-    vpc_cidrs = string
-  })
-}
-
-variable "oidc_provider_id" {
-  type        = string
-  description = "OIDC Provider ID"
-  nullable    = false
-}
 
 variable "privatelink" {
   description = <<EOF
     {
       enabled = Enable Private Link connections.
-      namespace = Namespace for IAM Policy conditions.
-      monitoring_bucket = Bucket for NLBs monitoring.
       route53_hosted_zone_name = Hosted zone for External DNS zone.
       vpc_endpoint_services = [{
         name      = Name of the VPC Endpoint Service.
+        lb_name   = Load Balancer Name associated to this VPC Endpoint Service.
         ports     = List of ports exposing the VPC Endpoint Service. i.e [8080, 8081]
         cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
         private_dns = Private DNS for the VPC Endpoint Service.
@@ -72,13 +28,10 @@ variable "privatelink" {
 
   type = object({
     enabled                  = optional(bool, false)
-    namespace                = optional(string, "domino-platform")
-    monitoring_bucket        = optional(string, null)
     route53_hosted_zone_name = optional(string, null)
     vpc_endpoint_services = optional(list(object({
       name              = optional(string)
-      ports             = optional(list(number))
-      cert_arn          = optional(string)
+      lb_name           = optional(string)
       private_dns       = optional(string)
       supported_regions = optional(set(string))
     })), [])
@@ -90,4 +43,27 @@ variable "privatelink" {
   }
 
   default = {}
+}
+
+variable "lb_arns" {
+  description = <<EOF
+    Map of Load Balancer ARNs used by the VPC Endpoint Services.
+
+    Expected format:
+      {
+        service-name-1 = "<ARN_HERE>"
+        service-name-2 = "<ARN_HERE>"
+      }
+    Keys must match `name` fields in `privatelink.vpc_endpoint_services`.
+  EOF
+
+  type = map(string)
+
+  default = {}
+}
+
+variable "hosted_zone_private" {
+  description = "Use private hosted zone"
+  type        = bool
+  default     = false
 }
