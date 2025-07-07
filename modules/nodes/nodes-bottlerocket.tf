@@ -1,39 +1,36 @@
-resource "aws_launch_template" "node_groups" {
-  for_each                = { for k,v in local.node_groups: k => v if k[v].use_bottlerocket == false }
+resource "aws_launch_template" "node_groups_bottlerocket" {
+  for_each                = { for k,v in local.node_groups: k => v if k[v].use_bottlerocket == true }
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_key.key_pair_name
-  user_data = each.value.ami == null ? null : base64encode(templatefile(
-    "${path.module}/templates/linux_user_data.tpl",
+  user_data               = base64encode(templatefile(
+    "${path.module}/templates/bottlerocket_user_data.tpl",
     {
-      # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-custom-ami
+      # https://bottlerocket.dev/en/os/1.39.x/api/settings/kubernetes/#tag-required-eks
       # Required to bootstrap node
       cluster_name        = var.eks_info.cluster.specs.name
       cluster_endpoint    = var.eks_info.cluster.specs.endpoint
       cluster_auth_base64 = var.eks_info.cluster.specs.certificate_authority[0].data
-      # Optional
-      cluster_service_ipv4_cidr = var.eks_info.cluster.specs.kubernetes_network_config.service_ipv4_cidr != null ? var.eks_info.cluster.specs.kubernetes_network_config.service_ipv4_cidr : ""
-      bootstrap_extra_args      = each.value.bootstrap_extra_args
-      pre_bootstrap_user_data   = ""
-      post_bootstrap_user_data  = ""
   }))
   vpc_security_group_ids = [var.eks_info.nodes.security_group_id]
-  image_id               = each.value.ami
+  image_id               = data.aws_ssm_parameter.bottlerocket_ami[each.value.ami_type].value
 
-  block_device_mappings {
-    device_name = try(data.aws_ami.custom[each.value.ami].root_device_name, "/dev/xvda")
-
-    ebs {
-      delete_on_termination = true
-      encrypted             = true
-      volume_size           = each.value.volume.size
-      volume_type           = each.value.volume.type
-      kms_key_id            = var.kms_info.enabled ? var.kms_info.key_arn : null
-      iops                  = each.value.volume.iops
-      throughput            = each.value.volume.throughput
+  dynamic "block_device_mappings" {
+      for_each = each.value[block_device_map]
+    content {
+      device_name = block_device_mappings.value.device_name
+      ebs {
+        delete_on_termination = block_device_mappings.value.delete_on_termination
+        encrypted             = block_device_mappings.value.encrypted
+        volume_size           = block_device_mappings.value.volume_size
+        volume_type           = block_device_mappings.value.volume_type
+        iops                  = block_device_mappings.value.iops
+        throughput            = block_device_mappings.value.throughput
+        kms_key_id            = block_device_mappings.value.kms_key_id
+      }
     }
-
-  }
+  } 
+  
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -67,39 +64,9 @@ resource "aws_launch_template" "node_groups" {
   }
 }
 
-locals {
-  ami_type_map = {
-    standard = {
-      ami_type      = "AL2023_x86_64_STANDARD"
-      ssm_ami_param = "standard"
-    }
-    neuron = {
-      ami_type      = "AL2023_x86_64_NEURON"
-      ssm_ami_param = "neuron"
-    }
-    nvidia = {
-      ami_type      = "AL2023_x86_64_NVIDIA"
-      ssm_ami_param = "nvidia"
-    }
-    custom = {
-      ami_type      = "CUSTOM"
-      ssm_ami_param = null
-    }
-    bottlerocket = {
-      ami_type      = "BOTTLEROCKET"
-      ssm_ami_param = null
-    }
-    bottlerocket_nvidia = {
-      ami_type      = "BOTTLEROCKET"
-      ssm_ami_param = "nvidia"
-    }
-  }
-  ami_version_mappings = { for k, v in local.ami_type_map : k => merge(v, { "release_version" = try(data.aws_ssm_parameter.eks_amis[k].value, null) }) }
-}
-
-data "aws_ssm_parameter" "eks_amis" {
-  for_each = { for k, v in local.ami_type_map : k => v if v.ssm_ami_param != null }
-  name     = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/${each.value.ssm_ami_param}/recommended/release_version"
+data "aws_ssm_parameter" "bottlerocket_ami" {
+  for_each = { for k, v in local.ami_type_map : k => v if v.ami_type == "BOTTLEROCKET" }
+  name     = "/aws/service/bottlerocket/aws-k8s-${var.eks_info.cluster.version}%{if each.value.ssm_ami_param != null}-${each.value.ssm_ami_param}%{endif}/x86_64/latest/image_id"
 }
 
 

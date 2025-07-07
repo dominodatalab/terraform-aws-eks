@@ -27,6 +27,8 @@ locals {
       ami_class = ng.ami != null ? "custom" : (
         local.node_group_status[name].is_neuron ? "neuron" :
         local.node_group_status[name].is_gpu ? "nvidia" :
+        ng.use_bottlerocket ? "bottlerocket" :
+        ng.use_bottlerocket && local.node_group_status[name].is_gpu ? "bottlerocket_nvidia" :
         "standard"
       )
     }
@@ -40,6 +42,25 @@ locals {
       ami_type        = local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
       release_version = try(local.ami_version_mappings[ng.ami_class].release_version, null)
       instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
+      block_device_map = ng.use_bottlerocket == false ? null: [{
+          device_name = "/dev/xvda"
+          delete_on_termination = true
+          encrypted             = true
+          volume_type           = each.value.volume.type
+          kms_key_id            = var.kms_info.enabled ? var.kms_info.key_arn : null
+          iops                  = each.value.volume.iops
+          throughput            = each.value.volume.throughput
+      },
+      {          
+          device_name = "/dev/xvdb"
+          delete_on_termination = true
+          encrypted             = true
+          volume_size           = each.value.volume.size
+          volume_type           = each.value.volume.type
+          kms_key_id            = var.kms_info.enabled ? var.kms_info.key_arn : null
+          iops                  = each.value.volume.iops
+          throughput            = each.value.volume.throughput
+      }]
       #Omit the karpenter nodegroups to mitigate daemonsets scheduling issues.
       labels = merge(
         local.node_group_status[name].is_gpu ? local.gpu_labels : {},
