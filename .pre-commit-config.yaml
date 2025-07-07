@@ -1,5 +1,4 @@
 ## NOTE: Changes(rename/add/delete) to pre-commit ids need to be replicated in .github/workflows/terraform-checks.yml(GHA).
-default_stages: [commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
