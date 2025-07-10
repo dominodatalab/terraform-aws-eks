@@ -1,3 +1,20 @@
+locals {
+  # See `Subnet requirements for clusters` on https://docs.aws.amazon.com/eks/latest/userguide/network-reqs.html
+  eks_unsupported_az_ids = ["use1-az3", "usw1-az2", "cac1-az3"]
+
+  eks_supported_subnets = {
+    for s in var.network_info.subnets.private : s.az_id => s
+    if !contains(local.eks_unsupported_az_ids, s.az_id)
+  }
+
+  eks_number_of_subnets = length(local.eks_supported_subnets) >= 3 ? 3 : 2
+
+  eks_control_plane_subnet_ids = [
+    for az_id in slice(sort(keys(local.eks_supported_subnets)), 0, local.eks_number_of_subnets) :
+    local.eks_supported_subnets[az_id].subnet_id
+  ]
+}
+
 resource "aws_security_group" "eks_cluster" {
   name        = "${local.eks_cluster_name}-cluster"
   description = "EKS cluster security group"
@@ -61,7 +78,7 @@ resource "aws_eks_cluster" "this" {
     endpoint_public_access  = var.eks.public_access.enabled
     public_access_cidrs     = var.eks.public_access.cidrs
     security_group_ids      = [aws_security_group.eks_cluster.id]
-    subnet_ids              = [for s in var.network_info.subnets.private : s.subnet_id]
+    subnet_ids              = local.eks_control_plane_subnet_ids
   }
 
   depends_on = [
@@ -81,24 +98,20 @@ resource "aws_eks_cluster" "this" {
 }
 
 data "tls_certificate" "cluster_tls_certificate" {
-  url = aws_eks_cluster.this.identity[0].oidc[0].issuer
+  count = var.eks.oidc_provider.create ? 1 : 0
+  url   = aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
+moved {
+  from = aws_iam_openid_connect_provider.oidc_provider
+  to   = aws_iam_openid_connect_provider.oidc_provider[0]
 }
 
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
+  count           = var.eks.oidc_provider.create ? 1 : 0
   client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = data.tls_certificate.cluster_tls_certificate.certificates[*].sha1_fingerprint
-  url             = data.tls_certificate.cluster_tls_certificate.url
-}
-
-locals {
-
-}
-
-removed {
-  from = aws_eks_addon.vpc_cni
-  lifecycle {
-    destroy = false
-  }
+  thumbprint_list = data.tls_certificate.cluster_tls_certificate[0].certificates[*].sha1_fingerprint
+  url             = data.tls_certificate.cluster_tls_certificate[0].url
 }
 
 resource "null_resource" "kubeconfig" {

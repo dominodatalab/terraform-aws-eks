@@ -1,0 +1,25 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: domino-eks-compute
+spec:
+  amiSelectorTerms:
+    - alias: ${AL2023_AMI_ALIAS}
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        encrypted: true
+        volumeSize: 500Gi
+        volumeType: gp3
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 2
+    httpTokens: required
+  role: ${EKS_CLUSTER_NAME}-eks-nodes
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: ${EKS_CLUSTER_NAME}
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: ${EKS_CLUSTER_NAME}

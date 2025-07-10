@@ -1,4 +1,3 @@
-
 resource "aws_launch_template" "node_groups" {
   for_each                = local.node_groups
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
@@ -55,7 +54,7 @@ resource "aws_launch_template" "node_groups" {
 
   lifecycle {
     precondition {
-      condition     = length(setsubtract(each.value.availability_zone_ids, data.aws_ec2_instance_type_offerings.nodes[each.key].locations)) == 0
+      condition     = (lookup(each.value, "single_nodegroup", false) && length(setintersection(each.value.availability_zone_ids, data.aws_ec2_instance_type_offerings.nodes[each.key].locations)) > 0) || length(setsubtract(each.value.availability_zone_ids, data.aws_ec2_instance_type_offerings.nodes[each.key].locations)) == 0
       error_message = <<-EOM
         Instance type(s) ${jsonencode(each.value.instance_types)} for node group ${format("%q", each.key)} are not available in all the given zones:
         given = ${jsonencode(each.value.availability_zone_ids)}
@@ -134,6 +133,14 @@ resource "aws_eks_node_group" "node_groups" {
   tags = each.value.node_group.tags
 
   lifecycle {
+    precondition {
+      condition     = length(keys(local.node_groups_by_name)) == length(toset(keys(local.node_groups_by_name)))
+      error_message = <<-EOM
+        Duplicate node group names detected after applying naming logic. This indicates that the name generation logic failed to create unique names.
+        Generated names: ${jsonencode(sort(keys(local.node_groups_by_name)))}
+        Please check your node group configuration and subnet naming.
+      EOM
+    }
     ignore_changes = [
       scaling_config[0].desired_size,
       scaling_config[0].min_size,
@@ -145,7 +152,8 @@ resource "aws_eks_node_group" "node_groups" {
     max_unavailable            = each.value.node_group.max_unavailable
   }
 
-  depends_on = [aws_eks_addon.pre_compute_addons]
+  depends_on = [aws_eks_addon.pre_compute_addons, terraform_data.delete_karpenter_instances]
+
 }
 
 locals {

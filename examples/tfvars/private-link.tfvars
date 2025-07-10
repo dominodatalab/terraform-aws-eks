@@ -21,3 +21,34 @@ bastion = {
 }
 
 enable_private_link = true
+
+load_balancers = [{
+  name            = "vault"
+  type            = "network"
+  internal        = true
+  ddos_protection = false
+  listeners = [
+    {
+      name     = "tls"
+      port     = 8200
+      protocol = "TCP"
+    }
+  ]
+  }, {
+  name            = "rabbitmq"
+  type            = "network"
+  internal        = true
+  ddos_protection = false
+  listeners = [
+    {
+      name     = "tls"
+      port     = 5552
+      protocol = "TCP"
+    },
+    {
+      name     = "stream-tls"
+      port     = 5672
+      protocol = "TCP"
+    }
+  ]
+}]

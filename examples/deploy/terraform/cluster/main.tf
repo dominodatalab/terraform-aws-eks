@@ -28,6 +28,7 @@ module "eks" {
   ignore_tags         = local.infra.ignore_tags
   use_fips_endpoint   = var.use_fips_endpoint
   calico              = { image_registry = try(local.infra.storage.ecr.calico_image_registry, null) }
+  karpenter           = var.karpenter
 }
 
 data "aws_caller_identity" "global" {
@@ -51,13 +52,12 @@ moved {
 # the following annotation to the `external-dns` service account:
 # `eks.amazonaws.com/role-arn: <<module.irsa_external_dns.irsa_role>>`
 module "irsa_external_dns" {
-  source              = "./../../../../modules/irsa"
-  use_cluster_odc_idp = local.is_eks_account_same
-  eks_info            = module.eks.info
-  external_dns        = var.irsa_external_dns
+  source       = "./../../../../modules/irsa"
+  eks_info     = module.eks.info
+  external_dns = merge(var.irsa_external_dns, { use_cluster_oidc_idp = local.is_eks_account_same })
 
   providers = {
-    aws = aws.global
+    aws.global = aws.global
   }
 }
 
@@ -68,9 +68,11 @@ moved {
 
 module "irsa_policies" {
   source                  = "./../../../../modules/irsa"
-  use_cluster_odc_idp     = true
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
+  providers = {
+    aws.global = aws.global
+  }
 }
 
 module "external_deployments_operator" {

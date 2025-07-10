@@ -72,13 +72,13 @@ variable "eks" {
     vpc_cni            = Configuration for AWS VPC CNI
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
-  }
+    oidc_provider =  Configuration for the IAM OIDC Identity Provider.
   EOF
 
   type = object({
     run_k8s_setup      = optional(bool, true)
     creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.27")
+    k8s_version        = optional(string, "1.30")
     nodes_master       = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
@@ -110,6 +110,15 @@ variable "eks" {
       username_claim                = optional(string, null)
       username_prefix               = optional(string, null)
     })), [])
+    oidc_provider = optional(object({
+      create = optional(bool, true)
+      oidc = optional(object({
+        id              = optional(string, null)
+        arn             = optional(string, null)
+        url             = optional(string, null)
+        thumbprint_list = optional(list(string), null)
+      }), null)
+    }), {})
   })
 
   default = {}

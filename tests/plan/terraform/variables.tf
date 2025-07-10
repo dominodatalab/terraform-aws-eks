@@ -81,12 +81,13 @@ variable "eks" {
     vpc_cni            = Configuration for AWS VPC CNI
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
+    oidc_provider = Configuration for OIDC provider.
   }
   EOF
 
   type = object({
     run_k8s_setup = optional(bool, true)
-    k8s_version   = optional(string, "1.27")
+    k8s_version   = optional(string, "1.30")
     nodes_master  = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
@@ -118,6 +119,15 @@ variable "eks" {
       username_claim                = optional(string, null)
       username_prefix               = optional(string, null)
     })), [])
+    oidc_provider = optional(object({
+      create = optional(bool, true)
+      oidc = optional(object({
+        id              = optional(string, null)
+        arn             = optional(string, null)
+        url             = optional(string, null)
+        thumbprint_list = optional(list(string), null)
+      }), null)
+    }), {})
   })
 
   default = {}
@@ -559,4 +569,39 @@ variable "vpn_connections" {
   })
 
   default = {}
+}
+
+variable "load_balancers" {
+  description = <<EOF
+    List of Load Balancers to create.
+    [{
+      name     = Name of the Load Balancer.
+      type     = Type of Load Balancer (e.g., "application", "network").
+      internal = (Optional) Whether the Load Balancer is internal. Defaults to true.
+      ddos_protection = (Optional) Whether to enable AWS Shield Standard (DDoS protection). Defaults to true.
+      listeners = List of listeners for the Load Balancer.
+      [{
+        name       = Listener name.
+        port       = Listener port (e.g., 80, 443).
+        protocol   = Protocol used by the listener (e.g., "HTTP", "HTTPS").
+        ssl_policy = (Optional) SSL policy to use for HTTPS listeners.
+        cert_arn   = (Optional) ARN of the SSL certificate.
+      }]
+    }]
+  EOF
+  type = list(object({
+    name            = string
+    type            = string
+    internal        = optional(bool, true)
+    ddos_protection = optional(bool, true)
+    listeners = list(object({
+      name       = string
+      port       = number
+      protocol   = string
+      ssl_policy = optional(string)
+      cert_arn   = optional(string)
+    }))
+  }))
+
+  default = []
 }

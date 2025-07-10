@@ -169,6 +169,7 @@ _install_karpenter_chart() {
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=karpenter \
     --set affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey=kubernetes.io/hostname \
+    --set-json 'podAnnotations={"prometheus.io/scrape":"true","prometheus.io/port":"8080","prometheus.io/path":"/metrics"}' \
     --wait \
     --timeout 10m \
     --create-namespace \
@@ -177,6 +178,64 @@ _install_karpenter_chart() {
 
 install_karpenter() {
   install_helm_chart "_install_karpenter_chart"
+}
+
+terminate_karpenter_instances() {
+
+  if [ "${delete_karpenter_instances_on_destroy}" = "false" ]; then
+    printf "$GREEN Karpenter instances will not be terminated on destroy. $EC \n"
+    return 0
+  fi
+
+  local region="${region}"
+  local cluster_name="${cluster_name}"
+
+  [[ -z "$region" || -z "$cluster_name" ]] && {
+    printf "%sError: region or cluster_name is empty.%s\n" "$RED" "$EC"
+    return 1
+  }
+
+  local max_retries=5 sleep_time=15 attempt=0 INSTANCE_IDS
+
+  while ((attempt < max_retries)); do
+    # shellcheck disable=SC2034
+    read -ra INSTANCE_IDS <<<"$(aws ec2 describe-instances \
+      --region "$region" \
+      --filters "Name=tag:eks:eks-cluster-name,Values=$cluster_name" \
+      "Name=tag-key,Values=karpenter.sh/nodepool" \
+      "Name=instance-state-name,Values=running,pending,stopped,stopping,shutting-down" \
+      --query 'Reservations[].Instances[].InstanceId' \
+      --output text 2>/dev/null)"
+
+    # shellcheck disable=SC2157
+    if [[ -z "$${INSTANCE_IDS[*]}" ]]; then
+      printf "$GREEN No active Karpenter instances found.$EC\n"
+      return 0
+    fi
+
+    printf "$YELLOW Attempt $((attempt + 1))/$max_retries: Terminating instances: %s in region: %s, cluster: %s$EC\n" "$${INSTANCE_IDS[*]}" "$region" "$cluster_name"
+
+    if aws ec2 terminate-instances \
+      --region "$region" \
+      --instance-ids "$${INSTANCE_IDS[@]}" >/dev/null 2>&1; then
+      printf "$YELLOW Waiting for instances to terminate...$EC\n"
+      if aws ec2 wait instance-terminated \
+        --region "$region" \
+        --instance-ids "$${INSTANCE_IDS[@]}" >/dev/null 2>&1; then
+        printf "$GREEN All instances terminated successfully. $EC\n"
+        return 0
+      fi
+    fi
+
+    ((attempt++))
+    if ((attempt < max_retries)); then
+      printf "$YELLOW Retry attempt $attempt failed. Waiting $sleep_time seconds...$EC\n"
+      sleep "$sleep_time"
+    fi
+  done
+
+  printf "$RED Failed to terminate instances after $max_retries attempts.\nYou can manually terminate the instances using the following command:\naws ec2 terminate-instances --region $region --instance-ids %s $EC\n" "$${INSTANCE_IDS[*]}"
+  return 0 #Best effort
 }
 
 validate_url() {

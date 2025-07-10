@@ -32,15 +32,60 @@ module "eks" {
   bastion_info        = module.infra.bastion
   create_eks_role_arn = module.infra.create_eks_role_arn
   tags                = module.infra.tags
+  use_fips_endpoint   = var.use_fips_endpoint
+}
+
+module "load_balancers" {
+  count = length(var.load_balancers) > 0 ? 1 : 0
+
+  source         = "./../../../modules/load-balancers"
+  deploy_id      = var.deploy_id
+  load_balancers = var.load_balancers
+  waf = {
+    enabled = false
+    rules   = []
+    block_forwarder_header = {
+      enabled = false
+    }
+    rate_limit = {
+      enabled = false
+      limit   = 1000
+      action  = "count"
+    }
+  }
+  access_logs = {
+    enabled   = true
+    s3_bucket = module.infra.monitoring_bucket
+  }
+  connection_logs = {
+    enabled   = true
+    s3_bucket = module.infra.monitoring_bucket
+  }
+  flow_logs = {
+    enabled   = true
+    s3_bucket = module.infra.monitoring_bucket
+  }
+  fqdn                        = "${var.deploy_id}${var.route53_hosted_zone_name != null ? "." + var.route53_hosted_zone_name : ""}"
+  hosted_zone_name            = var.route53_hosted_zone_name
+  network_info                = module.infra.network
+  eks_nodes_security_group_id = module.eks.info.eks_nodes_security_group_id
+}
+
+module "privatelink" {
+  count = var.enable_private_link ? 1 : 0
+
+  source    = "./../../../modules/privatelink"
+  deploy_id = var.deploy_id
   privatelink = {
     enabled                  = var.enable_private_link
     monitoring_bucket        = module.infra.monitoring_bucket
     route53_hosted_zone_name = var.route53_hosted_zone_name
   }
-  use_fips_endpoint = var.use_fips_endpoint
+  lb_arns = module.load_balancers[0].info.lb_arns
 }
 
 module "irsa_external_dns" {
+  count    = module.eks.info.cluster.oidc != null ? 1 : 0
   source   = "./../../../modules/irsa"
   eks_info = module.eks.info
   external_dns = {
@@ -48,6 +93,10 @@ module "irsa_external_dns" {
     hosted_zone_name = var.route53_hosted_zone_name
   }
   use_fips_endpoint = var.use_fips_endpoint
+
+  providers = {
+    aws.global = aws.global
+  }
 }
 
 data "aws_iam_policy_document" "mypod_s3" {
@@ -59,6 +108,7 @@ data "aws_iam_policy_document" "mypod_s3" {
 }
 
 module "irsa_policies" {
+  count    = module.eks.info.cluster.oidc != null ? 1 : 0
   source   = "./../../../modules/irsa"
   eks_info = module.eks.info
   additional_irsa_configs = [{
@@ -68,6 +118,10 @@ module "irsa_policies" {
     serviceaccount_name = "mypod-s3"
   }]
   use_fips_endpoint = var.use_fips_endpoint
+
+  providers = {
+    aws.global = aws.global
+  }
 }
 
 module "external_deployments_operator" {

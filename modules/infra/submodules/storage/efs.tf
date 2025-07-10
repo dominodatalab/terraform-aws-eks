@@ -73,12 +73,3 @@ moved {
   from = aws_efs_mount_target.eks
   to   = aws_efs_mount_target.eks[0]
 }
-
-
-removed {
-  from = aws_efs_mount_target.eks
-
-  lifecycle {
-    destroy = false
-  }
-}

@@ -151,6 +151,8 @@ variable "eks" {
     vpc_cni = Configuration for AWS VPC CNI
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
+    create_oidc_provider = Toggle to create the IAM OIDC Identity Provider.
+    oidc_provider = Configuration for the IAM OIDC Identity Provider.
   }
   EOF
 
@@ -158,7 +160,7 @@ variable "eks" {
     run_k8s_setup      = optional(bool, true)
     service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.27")
+    k8s_version        = optional(string, "1.30")
     nodes_master       = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
@@ -190,6 +192,15 @@ variable "eks" {
       username_claim                = optional(string, null)
       username_prefix               = optional(string, null)
     })), []),
+    oidc_provider = optional(object({
+      create = optional(bool, true)
+      oidc = optional(object({
+        id              = optional(string, null)
+        arn             = optional(string, null)
+        url             = optional(string, null)
+        thumbprint_list = optional(list(string), null)
+      }), null)
+    }), {})
   })
 
   default = {}
@@ -223,50 +234,16 @@ variable "ignore_tags" {
   default     = []
 }
 
-variable "privatelink" {
-  description = <<EOF
-    {
-      enabled = Enable Private Link connections.
-      namespace = Namespace for IAM Policy conditions.
-      monitoring_bucket = Bucket for NLBs monitoring.
-      route53_hosted_zone_name = Hosted zone for External DNS zone.
-      vpc_endpoint_services = [{
-        name      = Name of the VPC Endpoint Service.
-        ports     = List of ports exposing the VPC Endpoint Service. i.e [8080, 8081]
-        cert_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.
-        private_dns = Private DNS for the VPC Endpoint Service.
-        supported_regions = The set of regions from which service consumers can access the service.
-      }]
-    }
-  EOF
-
-
-  type = object({
-    enabled                  = optional(bool, false)
-    namespace                = optional(string, "domino-platform")
-    monitoring_bucket        = optional(string, null)
-    route53_hosted_zone_name = optional(string, null)
-    vpc_endpoint_services = optional(list(object({
-      name              = optional(string)
-      ports             = optional(list(number))
-      cert_arn          = optional(string)
-      private_dns       = optional(string)
-      supported_regions = optional(set(string))
-    })), [])
-  })
-
-  validation {
-    condition     = !var.privatelink.enabled || (var.privatelink.enabled && var.privatelink.route53_hosted_zone_name != null)
-    error_message = "Route53 Hosted Zone Name cannot be null"
-  }
-
-  default = {}
-}
-
 variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
+}
+
+variable "aws_load_balancer_controller_namespace" {
+  description = "Controller Namespace"
+  type        = string
+  default     = "domino-platform"
 }
 
 variable "calico" {
@@ -318,12 +295,14 @@ variable "karpenter" {
       enabled = Toggle installation of Karpenter.
       namespace = Namespace to install Karpenter.
       version = Configure the version for Karpenter.
+      delete_instances_on_destroy = Toggle to delete Karpenter instances on destroy.
     }
   EOF
   type = object({
-    enabled   = optional(bool, false)
-    namespace = optional(string, "karpenter")
-    version   = optional(string, "1.3.2")
+    enabled                     = optional(bool, false)
+    delete_instances_on_destroy = optional(bool, false)
+    namespace                   = optional(string, "karpenter")
+    version                     = optional(string, "1.3.3")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases
   })

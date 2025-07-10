@@ -325,3 +325,39 @@ module "backups" {
   }
 }
 ```
+
+## Karpenter
+
+This module supports running workloads on [Karpenter](https://karpenter.sh/v1.0/getting-started/) instead of EKS managed node groups.
+
+If you have an existing deployment and want to migrate to using karpenter, see [karpenter-migration](./examples/karpenter/MIGRATION.md).
+
+To create a new deployment that uses Karpenter
+
+1. Complete all standard steps
+2. Add the following to your `infra.tfvars` and `nodes.tfvars`. See Note on selecting AZs  [karpenter-availability_zone_ids](./examples/karpenter/MIGRATION.md#1-create-karpenter-node-groups)
+```hcl
+karpenter_node_groups = {
+  karpenter = {
+    availability_zone_ids = ["usw2-az1", "usw2-az2", "usw2-az3", "usw2-az4"]
+    single_nodegroup = true
+  }
+}
+
+default_node_groups = null
+additional_node_groups = null
+```
+3. Add the following to the `cluster.tfvars`:
+
+```hcl
+# Consult the karpenter variable for additional options.
+karpenter = {
+  enabled = true
+}
+```
+4. Plan and Apply changes
+```bash
+./tf.sh all plan
+./tf.sh all apply
+```
+5. See and [karpenter-configurations](./examples/karpenter/MIGRATION.md#3-configure-karpenter-node-classes-and-node-pools) on how to configure `ec2nodeclasses` and `nodepools`.

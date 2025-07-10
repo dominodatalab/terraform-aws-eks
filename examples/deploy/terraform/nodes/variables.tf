@@ -120,3 +120,38 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+
+
+variable "karpenter_node_groups" {
+  description = "Node groups for karpenter."
+  type = map(object({
+    single_nodegroup           = optional(bool, false)
+    ami                        = optional(string, null)
+    bootstrap_extra_args       = optional(string, "")
+    instance_types             = optional(list(string), ["m6a.large"])
+    spot                       = optional(bool, false)
+    min_per_az                 = optional(number, 1)
+    max_per_az                 = optional(number, 3)
+    max_unavailable_percentage = optional(number, 50)
+    max_unavailable            = optional(number)
+    desired_per_az             = optional(number, 1)
+    availability_zone_ids      = list(string)
+    labels = optional(map(string), {
+      "dominodatalab.com/node-pool" = "karpenter"
+    })
+    taints = optional(list(object({
+      key    = string
+      value  = optional(string)
+      effect = string
+    })), [])
+    tags = optional(map(string), {})
+    gpu  = optional(bool, null)
+    volume = optional(object({
+      size       = optional(string, "30")
+      type       = optional(string, "gp3")
+      iops       = optional(number)
+      throughput = optional(number, 500)
+    }), {})
+  }))
+  default = null
+}

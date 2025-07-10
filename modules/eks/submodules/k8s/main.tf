@@ -16,19 +16,21 @@ locals {
   k8s_functions_sh = {
     filename = local.k8s_functions_sh_filename
     content = templatefile("${local.templates_dir}/${local.k8s_functions_sh_template}", {
-      kubeconfig_path       = var.eks_info.kubeconfig.path
-      k8s_tunnel_port       = random_integer.port.result
-      aws_auth_yaml         = basename(local.aws_auth_filename)
-      ssh_pvt_key_path      = var.ssh_key.path
-      eks_cluster_arn       = var.eks_info.cluster.arn
-      bastion_user          = var.bastion_info != null ? var.bastion_info.user : ""
-      bastion_public_ip     = var.bastion_info != null ? var.bastion_info.public_ip : ""
-      calico_version        = var.eks_info.calico.version
-      calico_fips_mode      = var.use_fips_endpoint ? "Enabled" : "Disabled"
-      calico_image_registry = var.eks_info.calico.image_registry
-      karpenter_namespace   = var.karpenter.namespace
-      karpenter_version     = var.karpenter.version
-      cluster_name          = var.cluster_name
+      kubeconfig_path                       = var.eks_info.kubeconfig.path
+      k8s_tunnel_port                       = random_integer.port.result
+      aws_auth_yaml                         = basename(local.aws_auth_filename)
+      ssh_pvt_key_path                      = var.ssh_key.path
+      eks_cluster_arn                       = var.eks_info.cluster.arn
+      bastion_user                          = var.bastion_info != null ? var.bastion_info.user : ""
+      bastion_public_ip                     = var.bastion_info != null ? var.bastion_info.public_ip : ""
+      calico_version                        = var.eks_info.calico.version
+      calico_fips_mode                      = var.use_fips_endpoint ? "Enabled" : "Disabled"
+      calico_image_registry                 = var.eks_info.calico.image_registry
+      karpenter_namespace                   = var.karpenter.namespace
+      karpenter_version                     = var.karpenter.version
+      delete_karpenter_instances_on_destroy = tostring(var.karpenter.delete_instances_on_destroy)
+      cluster_name                          = var.cluster_name
+      region                                = var.region
     })
   }
 
