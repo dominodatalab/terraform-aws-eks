@@ -23,11 +23,11 @@ locals {
       type = "AAAA"
     },
     {
-      name = "apps-${var.fqdn}"
+      name = "apps.${var.fqdn}"
       type = "A"
     },
     {
-      name = "apps-${var.fqdn}"
+      name = "apps.${var.fqdn}"
       type = "AAAA"
     }
   ] : []
