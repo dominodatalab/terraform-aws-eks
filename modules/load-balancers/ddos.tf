@@ -21,14 +21,6 @@ locals {
     {
       name = "*.${var.fqdn}"
       type = "AAAA"
-    },
-    {
-      name = "apps-${var.fqdn}"
-      type = "A"
-    },
-    {
-      name = "apps-${var.fqdn}"
-      type = "AAAA"
     }
   ] : []
 }
