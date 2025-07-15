@@ -147,6 +147,46 @@
         "datasync:*"
       ],
       "Resource": ["*"]
-    }
+    },
+    {
+      "Sid": "GlobalAcceleratorUngated",
+      "Effect": "Allow",
+      "Action": [
+        "globalaccelerator:CreateAccelerator",
+        "globalaccelerator:DeleteAccelerator",
+        "globalaccelerator:UpdateAccelerator",
+        "globalaccelerator:DescribeAccelerator",
+        "globalaccelerator:CreateListener",
+        "globalaccelerator:DeleteListener",
+        "globalaccelerator:UpdateListener",
+        "globalaccelerator:DescribeListener",
+        "globalaccelerator:CreateEndpointGroup",
+        "globalaccelerator:DeleteEndpointGroup",
+        "globalaccelerator:UpdateEndpointGroup",
+        "globalaccelerator:DescribeEndpointGroup",
+        "globalaccelerator:ListAccelerators",
+        "globalaccelerator:ListListeners",
+        "globalaccelerator:ListEndpointGroups"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "WAFUngated",
+      "Effect": "Allow",
+      "Action": [
+        "wafv2:CreateWebACL",
+        "wafv2:DeleteWebACL",
+        "wafv2:UpdateWebACL",
+        "wafv2:GetWebACL",
+        "wafv2:AssociateWebACL",
+        "wafv2:DisassociateWebACL",
+        "wafv2:PutLoggingConfiguration",
+        "wafv2:DeleteLoggingConfiguration",
+        "wafv2:GetLoggingConfiguration",
+        "wafv2:ListWebACLs",
+        "wafv2:ListResourcesForWebACL"
+      ],
+      "Resource": "*"
+    },
   ]
 }
