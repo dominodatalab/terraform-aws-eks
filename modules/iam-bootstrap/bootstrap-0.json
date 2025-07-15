@@ -39,7 +39,7 @@
         "s3:PutEncryptionConfiguration",
         "s3:PutLifecycleConfiguration"
       ],
-      "Resource": ["arn:${partition}:s3:::${deploy_id}-*"]
+      "Resource": ["arn:${partition}:s3:::${deploy_id}-*", "arn:${partition}:s3:::aws-waf-logs-${deploy_id}"]
     },
     {
       "Sid": "S3Ungated",
