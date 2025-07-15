@@ -21,6 +21,7 @@ variable "load_balancers" {
         name       = Listener name.
         port       = Listener port (e.g., 80, 443).
         protocol   = Protocol used by the listener (e.g., "HTTP", "HTTPS").
+        tg_protocol   = Protocol used by the target group (e.g., "HTTP", "HTTPS").
         ssl_policy = (Optional) SSL policy to use for HTTPS listeners.
         cert_arn   = (Optional) ARN of the SSL certificate.
       }]
@@ -32,11 +33,12 @@ variable "load_balancers" {
     internal        = optional(bool, true)
     ddos_protection = optional(bool, true)
     listeners = list(object({
-      name       = string
-      port       = number
-      protocol   = string
-      ssl_policy = optional(string)
-      cert_arn   = optional(string)
+      name        = string
+      port        = number
+      protocol    = string
+      tg_protocol = string
+      ssl_policy  = optional(string)
+      cert_arn    = optional(string)
     }))
   }))
 }
