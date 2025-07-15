@@ -9,10 +9,10 @@ resource "aws_lb_target_group" "lb_target_groups" {
   vpc_id      = var.network_info.vpc_id
 
   dynamic "health_check" {
-    for_each = contains(["HTTP", "HTTPS"], each.value.protocol) ? [1] : []
+    for_each = contains(["HTTP", "HTTPS"], each.value.tg_protocol) ? [1] : []
     content {
       path     = "/healthz"
-      protocol = each.value.protocol
+      protocol = each.value.tg_protocol
       matcher  = "200"
     }
   }
