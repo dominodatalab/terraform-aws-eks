@@ -37,7 +37,6 @@ variable "load_balancers" {
       port        = number
       protocol    = string
       tg_protocol = string
-      tg_protocol = string
       ssl_policy  = optional(string)
       cert_arn    = optional(string)
     }))
