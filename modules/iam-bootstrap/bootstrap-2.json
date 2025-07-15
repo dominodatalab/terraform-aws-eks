@@ -168,6 +168,7 @@
         "globalaccelerator:ListListeners",
         "globalaccelerator:ListEndpointGroups",
         "globalaccelerator:TagResource",
+        "globalaccelerator:DescribeAcceleratorAttributes",
         "globalaccelerator:UpdateAcceleratorAttributes"
       ],
       "Resource": "*"
