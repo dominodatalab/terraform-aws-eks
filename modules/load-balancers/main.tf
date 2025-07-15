@@ -26,7 +26,7 @@ locals {
           lb_name         = lb.name
           ddos_protection = lb.ddos_protection
           port            = listener.port
-          protocol        = listener.protocol
+          tg_protocol     = listener.tg_protocol
           ssl_policy      = lookup(listener, "ssl_policy", null)
           cert_arn        = lookup(listener, "cert_arn", null)
         }
