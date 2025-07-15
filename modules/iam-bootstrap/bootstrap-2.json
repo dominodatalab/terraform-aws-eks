@@ -187,6 +187,6 @@
         "wafv2:ListResourcesForWebACL"
       ],
       "Resource": "*"
-    },
+    }
   ]
 }
