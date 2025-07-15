@@ -211,7 +211,10 @@
         "elasticloadbalancing:DescribeListeners",
         "elasticloadbalancing:DeleteListener",
         "elasticloadbalancing:AddTags",
-        "elasticloadbalancing:DescribeTags"
+        "elasticloadbalancing:DescribeTags",
+        "elasticloadbalancing:ModifyListener",
+        "elasticloadbalancing:ModifyTargetGroup",
+        "elasticloadbalancing:DescribeListenerAttributes"
       ],
       "Resource": "*"
     },

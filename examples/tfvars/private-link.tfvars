@@ -29,9 +29,10 @@ load_balancers = [{
   ddos_protection = false
   listeners = [
     {
-      name     = "tls"
-      port     = 8200
-      protocol = "TCP"
+      name        = "tls"
+      port        = 8200
+      protocol    = "TCP"
+      tg_protocol = "TCP"
     }
   ]
   }, {
@@ -41,14 +42,16 @@ load_balancers = [{
   ddos_protection = false
   listeners = [
     {
-      name     = "tls"
-      port     = 5552
-      protocol = "TCP"
+      name        = "tls"
+      port        = 5552
+      protocol    = "TCP"
+      tg_protocol = "TCP"
     },
     {
-      name     = "stream-tls"
-      port     = 5672
-      protocol = "TCP"
+      name        = "stream-tls"
+      port        = 5672
+      protocol    = "TCP"
+      tg_protocol = "TCP"
     }
   ]
 }]

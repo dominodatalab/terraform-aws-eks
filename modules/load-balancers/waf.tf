@@ -186,12 +186,14 @@ resource "aws_wafv2_web_acl_association" "alb_association" {
 }
 
 resource "aws_s3_bucket" "waf_logs" {
+  count = var.waf.enabled ? 1 : 0
+
   bucket        = "aws-waf-logs-${var.deploy_id}"
   force_destroy = true
 }
 
 resource "aws_s3_bucket_public_access_block" "waf_logs" {
-  bucket                  = aws_s3_bucket.waf_logs.id
+  bucket                  = aws_s3_bucket.waf_logs[0].id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
