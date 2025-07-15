@@ -166,7 +166,8 @@
         "globalaccelerator:DescribeEndpointGroup",
         "globalaccelerator:ListAccelerators",
         "globalaccelerator:ListListeners",
-        "globalaccelerator:ListEndpointGroups"
+        "globalaccelerator:ListEndpointGroups",
+        "globalaccelerator:TagResource"
       ],
       "Resource": "*"
     },
@@ -184,7 +185,8 @@
         "wafv2:DeleteLoggingConfiguration",
         "wafv2:GetLoggingConfiguration",
         "wafv2:ListWebACLs",
-        "wafv2:ListResourcesForWebACL"
+        "wafv2:ListResourcesForWebACL",
+        "wafv2:TagResource"
       ],
       "Resource": "*"
     }
