@@ -183,6 +183,7 @@
         "wafv2:DeleteWebACL",
         "wafv2:UpdateWebACL",
         "wafv2:GetWebACL",
+        "wafv2:DeleteWebACL",
         "wafv2:AssociateWebACL",
         "wafv2:DisassociateWebACL",
         "wafv2:PutLoggingConfiguration",
@@ -201,8 +202,13 @@
       "Effect": "Allow",
       "Action": [
         "logs:CreateLogStream",
+        "logs:DeleteLogStream",
+        "logs:DescribeLogStreams",
         "logs:PutLogEvents",
+        "logs:GetLogEvents",
+        "logs:FilterLogEvents",
         "logs:PutResourcePolicy",
+        "logs:DeleteResourcePolicy",
         "logs:DescribeResourcePolicies"
       ],
       "Resource": "*"
