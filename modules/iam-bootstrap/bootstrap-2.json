@@ -170,7 +170,8 @@
         "globalaccelerator:TagResource",
         "globalaccelerator:DescribeAcceleratorAttributes",
         "globalaccelerator:UpdateAcceleratorAttributes",
-        "globalaccelerator:ListTagsForResource"
+        "globalaccelerator:ListTagsForResource",
+        "globalaccelerator:ListCrossAccountResources",
       ],
       "Resource": "*"
     },
@@ -189,7 +190,8 @@
         "wafv2:GetLoggingConfiguration",
         "wafv2:ListWebACLs",
         "wafv2:ListResourcesForWebACL",
-        "wafv2:TagResource"
+        "wafv2:TagResource",
+        "wafv2:ListTagsForResource"
       ],
       "Resource": "*"
     }
