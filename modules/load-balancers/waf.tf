@@ -193,6 +193,8 @@ resource "aws_s3_bucket" "waf_logs" {
 }
 
 resource "aws_s3_bucket_public_access_block" "waf_logs" {
+  count = var.waf.enabled ? 1 : 0
+
   bucket                  = aws_s3_bucket.waf_logs[0].id
   block_public_acls       = true
   block_public_policy     = true
