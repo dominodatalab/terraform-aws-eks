@@ -200,7 +200,8 @@
       "Sid": "WAFLoggingUngated",
       "Effect": "Allow",
       "Action": [
-        "logs:PutResourcePolicy"
+        "logs:PutResourcePolicy",
+        "logs:DescribeResourcePolicies"
       ],
       "Resource": "*"
     }
