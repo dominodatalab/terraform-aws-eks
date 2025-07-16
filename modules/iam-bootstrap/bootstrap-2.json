@@ -200,6 +200,8 @@
       "Sid": "WAFLoggingUngated",
       "Effect": "Allow",
       "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
         "logs:PutResourcePolicy",
         "logs:DescribeResourcePolicies"
       ],
