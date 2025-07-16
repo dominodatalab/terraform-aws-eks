@@ -249,7 +249,7 @@ data "aws_iam_policy_document" "waf_log_group_policy_document" {
     resources = ["${aws_cloudwatch_log_group.waf_logs.arn}:*"]
     condition {
       test     = "ArnLike"
-      values   = ["arn:${data.aws_partition.current.partition}:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:*"]
+      values   = ["arn:${data.aws_partition.current.partition}:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
       variable = "aws:SourceArn"
     }
     condition {
