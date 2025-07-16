@@ -189,6 +189,7 @@
         "logs:DeleteLogDelivery",
         "logs:DeleteLogGroup",
         "logs:UntagLogGroup",
+        "logs:PutResourcePolicy",
         "s3:DeleteObjectVersion"
       ],
       "Resource": "*"
