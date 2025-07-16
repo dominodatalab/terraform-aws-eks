@@ -195,6 +195,14 @@
         "wafv2:GetWebACLForResource"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "WAFLoggingUngated",
+      "Effect": "Allow",
+      "Action": [
+        "logs:PutResourcePolicy"
+      ],
+      "Resource": "*"
     }
   ]
 }
