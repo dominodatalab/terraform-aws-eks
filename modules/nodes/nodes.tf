@@ -17,8 +17,7 @@ resource "aws_launch_template" "node_groups" {
       pre_bootstrap_user_data   = ""
       post_bootstrap_user_data  = ""
   }))
-  vpc_security_group_ids = [var.eks_info.nodes.security_group_id]
-  image_id               = each.value.ami
+  image_id = each.value.ami
 
   block_device_mappings {
     device_name = try(data.aws_ami.custom[each.value.ami].root_device_name, "/dev/xvda")
@@ -50,6 +49,11 @@ resource "aws_launch_template" "node_groups" {
         "Name" = "${var.eks_info.cluster.specs.name}-${each.key}"
       })
     }
+  }
+
+  network_interfaces {
+    associate_public_ip_address = false
+    security_groups             = [var.eks_info.nodes.security_group_id]
   }
 
   lifecycle {
