@@ -212,6 +212,14 @@
         "logs:DescribeResourcePolicies"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "LoadBalancerUngated",
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:SetSecurityGroups"
+      ],
+      "Resource": "*"
     }
   ]
 }
