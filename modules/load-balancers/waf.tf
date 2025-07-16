@@ -225,7 +225,15 @@ resource "aws_wafv2_web_acl_logging_configuration" "application" {
       requirement = "MEETS_ANY"
 
       condition {
-        action_condition { action = "BLOCK" }
+        action_condition {
+          action = "BLOCK"
+        }
+      }
+
+      condition {
+        action_condition {
+          action = "COUNT"
+        }
       }
     }
   }
