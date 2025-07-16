@@ -193,6 +193,8 @@ resource "aws_s3_bucket" "waf_logs" {
 }
 
 resource "aws_s3_bucket_public_access_block" "waf_logs" {
+  count = var.waf.enabled ? 1 : 0
+
   bucket                  = aws_s3_bucket.waf_logs[0].id
   block_public_acls       = true
   block_public_policy     = true
@@ -203,6 +205,11 @@ resource "aws_s3_bucket_public_access_block" "waf_logs" {
 resource "aws_cloudwatch_log_group" "waf_logs" {
   name              = "aws-waf-logs-${var.deploy_id}-blocked" #Note: The Log group must start with aws-waf-logs-
   retention_in_days = 14
+}
+
+resource "aws_cloudwatch_log_resource_policy" "waf_log_group_policy" {
+  policy_document = data.aws_iam_policy_document.waf_log_group_policy_document.json
+  policy_name     = "${var.deploy_id}-waf_log_group_policy"
 }
 
 resource "aws_wafv2_web_acl_logging_configuration" "application" {
@@ -220,8 +227,45 @@ resource "aws_wafv2_web_acl_logging_configuration" "application" {
       requirement = "MEETS_ANY"
 
       condition {
-        action_condition { action = "BLOCK" }
+        action_condition {
+          action = "BLOCK"
+        }
       }
+
+      condition {
+        action_condition {
+          action = "COUNT"
+        }
+      }
+    }
+  }
+}
+
+data "aws_partition" "current" {}
+
+data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
+
+data "aws_iam_policy_document" "waf_log_group_policy_document" {
+  version = "2012-10-17"
+  statement {
+    effect = "Allow"
+    principals {
+      identifiers = ["delivery.logs.amazonaws.com"]
+      type        = "Service"
+    }
+    actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.waf_logs.arn}:*"]
+    condition {
+      test     = "ArnLike"
+      values   = ["arn:${data.aws_partition.current.partition}:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
+      variable = "aws:SourceArn"
+    }
+    condition {
+      test     = "StringEquals"
+      values   = [tostring(data.aws_caller_identity.current.account_id)]
+      variable = "aws:SourceAccount"
     }
   }
 }

@@ -214,7 +214,8 @@
         "elasticloadbalancing:DescribeTags",
         "elasticloadbalancing:ModifyListener",
         "elasticloadbalancing:ModifyTargetGroup",
-        "elasticloadbalancing:DescribeListenerAttributes"
+        "elasticloadbalancing:DescribeListenerAttributes",
+        "elasticloadbalancing:SetWebACL"
       ],
       "Resource": "*"
     },
