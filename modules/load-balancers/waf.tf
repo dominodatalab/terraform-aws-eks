@@ -231,6 +231,8 @@ resource "aws_wafv2_web_acl_logging_configuration" "application" {
   }
 }
 
+data "aws_partition" "current" {}
+
 data "aws_region" "current" {}
 
 data "aws_caller_identity" "current" {}
