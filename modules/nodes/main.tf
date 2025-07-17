@@ -46,7 +46,7 @@ locals {
       # NOTE: Bottlerocket AMIs support a double-disk configuration in which the root disk (xvda) contains the base OS,
       # and the second disk (xvdb) is used to store container images and logs. The root disk size can be static, so we shift the value of the volume size
       # to the second disk (xvdb). Both will use the same volume type, iops, throughput, and KMS key.
-      block_device_map = ng.use_bottlerocket == false ? null: [
+      block_device_map = ng.use_bottlerocket == false ? null : [
         {
           device_name           = "/dev/xvda"
           delete_on_termination = true
