@@ -186,3 +186,10 @@ By setting `use_fips_endpoint: true` , the modules will:
 * Set the Terraform AWS provider [use_fips_endpoint](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#use_fips_endpoint) attribute, ensuring API calls to AWS are made via the FIPS endpoints.
 * Set the shell environment variable `AWS_USE_FIPS_ENDPOINT=true` on `local-exec` resources.
 * Enable FIPS mode (fipsMode: enabled) during the installation of Calico (see [documentation](https://docs.tigera.io/calico/latest/operations/fips)).
+
+
+## AWS Bottlerocket Support
+
+You can utilize [AWS Bottlerocket](https://github.com/bottlerocket-os/bottlerocket) by setting the `use_bottlerocket` value to `true` as part of your node group variable values. This can be set for platform nodes, compute nodes, or GPU nodes (for supported instance types - check [here](https://github.com/bottlerocket-os/bottlerocket?tab=readme-ov-file#nvidia-gpus-support) before attempting this).
+
+**WARNING**: Support for Bottlerocket-based nodes has **NOT** been officially tested or validated by Domino. **USE THIS AT YOUR OWN RISK: Domino Support cannot assist with this configuration**.
