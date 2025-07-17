@@ -212,6 +212,19 @@
         "logs:DescribeResourcePolicies"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "ElasticGated",
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:SetSecurityGroups"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/deploy_id": "${deploy_id}"
+        }
+      }
     }
   ]
 }
