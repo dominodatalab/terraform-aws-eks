@@ -1,5 +1,5 @@
 resource "aws_launch_template" "node_groups" {
-  for_each                = { for name,ng in local.node_groups: name => ng if !ng.use_bottlerocket }
+  for_each                = { for name, ng in local.node_groups: name => ng if !ng.use_bottlerocket }
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_key.key_pair_name

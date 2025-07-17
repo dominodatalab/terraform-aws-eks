@@ -48,7 +48,7 @@ locals {
       # to the second disk (xvdb). Both will use the same volume type, iops, throughput, and KMS key.
       block_device_map = ng.use_bottlerocket == false ? null: [
         {
-          device_name = "/dev/xvda"
+          device_name           = "/dev/xvda"
           delete_on_termination = true
           encrypted             = true
           volume_size           = 20
@@ -58,7 +58,7 @@ locals {
           throughput            = ng.volume.throughput
         },
         {
-          device_name = "/dev/xvdb"
+          device_name           = "/dev/xvdb"
           delete_on_termination = true
           encrypted             = true
           volume_size           = ng.volume.size

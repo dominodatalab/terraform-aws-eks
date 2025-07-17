@@ -1,9 +1,9 @@
 resource "aws_launch_template" "node_groups_bottlerocket" {
-  for_each                = { for name,ng in local.node_groups: name => ng if ng.use_bottlerocket }
+  for_each                = { for name, ng in local.node_groups: name => ng if ng.use_bottlerocket }
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_key.key_pair_name
-  user_data               = base64encode(templatefile(
+  user_data = base64encode(templatefile(
     "${path.module}/templates/bottlerocket_user_data.tpl",
     {
       # https://bottlerocket.dev/en/os/1.39.x/api/settings/kubernetes/#tag-required-eks
@@ -17,7 +17,7 @@ resource "aws_launch_template" "node_groups_bottlerocket" {
   image_id               = each.value.ami
 
   dynamic "block_device_mappings" {
-      for_each = each.value.block_device_map
+    for_each = each.value.block_device_map
     content {
       device_name = block_device_mappings.value.device_name
       ebs {
