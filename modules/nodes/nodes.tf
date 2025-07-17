@@ -96,7 +96,7 @@ locals {
     bottlerocket_fips = {
       ami_type      = "BOTTLEROCKET_x86_64_FIPS"
       ssm_ami_param = null
-    }    
+    }
   }
   ami_version_mappings = { for k, v in local.ami_type_map : k => merge(v, { "release_version" = try(data.aws_ssm_parameter.eks_amis[k].value, null) }) }
 }

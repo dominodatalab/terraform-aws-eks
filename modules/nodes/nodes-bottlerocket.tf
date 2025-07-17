@@ -30,8 +30,8 @@ resource "aws_launch_template" "node_groups_bottlerocket" {
         kms_key_id            = block_device_mappings.value.kms_key_id
       }
     }
-  } 
-  
+  }
+
 
   metadata_options {
     http_endpoint               = "enabled"
