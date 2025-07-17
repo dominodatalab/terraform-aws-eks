@@ -214,7 +214,7 @@
       "Resource": "*"
     },
     {
-      "Sid": "ElasticUngated",
+      "Sid": "ElasticGated",
       "Effect": "Allow",
       "Action": [
         "elasticloadbalancing:SetSecurityGroups"
