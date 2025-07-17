@@ -219,7 +219,12 @@
       "Action": [
         "elasticloadbalancing:SetSecurityGroups"
       ],
-      "Resource": "*"
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/deploy_id": "${deploy_id}"
+        }
+      }
     }
   ]
 }
