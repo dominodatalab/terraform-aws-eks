@@ -1,5 +1,5 @@
 resource "aws_launch_template" "node_groups" {
-  for_each                = { for k,v in local.node_groups: k => v if k[v].use_bottlerocket == false }
+  for_each                = { for name,ng in local.node_groups: name => ng if !ng.use_bottlerocket }
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_key.key_pair_name
@@ -86,13 +86,17 @@ locals {
       ssm_ami_param = null
     }
     bottlerocket = {
-      ami_type      = "BOTTLEROCKET"
+      ami_type      = "BOTTLEROCKET_x86_64"
       ssm_ami_param = null
     }
     bottlerocket_nvidia = {
-      ami_type      = "BOTTLEROCKET"
-      ssm_ami_param = "nvidia"
+      ami_type      = "BOTTLEROCKET_x86_64_NVIDIA"
+      ssm_ami_param = null
     }
+    bottlerocket_fips = {
+      ami_type      = "BOTTLEROCKET_x86_64_FIPS"
+      ssm_ami_param = null
+    }    
   }
   ami_version_mappings = { for k, v in local.ami_type_map : k => merge(v, { "release_version" = try(data.aws_ssm_parameter.eks_amis[k].value, null) }) }
 }
@@ -107,7 +111,7 @@ resource "aws_eks_node_group" "node_groups" {
   for_each             = local.node_groups_by_name
   cluster_name         = var.eks_info.cluster.specs.name
   version              = each.value.node_group.ami != null ? null : var.eks_info.cluster.version
-  release_version      = each.value.node_group.release_version
+  release_version      = each.value.node_group.use_bottlerocket == false ? each.value.node_group.release_version : null
   node_group_name      = each.key
   node_role_arn        = var.eks_info.nodes.roles[0].arn
   subnet_ids           = try(lookup(each.value.node_group, "single_nodegroup", false), false) ? [for s in values(each.value.subnet) : s.subnet_id] : [each.value.subnet.subnet_id]
@@ -122,8 +126,8 @@ resource "aws_eks_node_group" "node_groups" {
   capacity_type  = each.value.node_group.spot ? "SPOT" : "ON_DEMAND"
   instance_types = each.value.node_group.instance_types
   launch_template {
-    id      = aws_launch_template.node_groups[each.value.ng_name].id
-    version = aws_launch_template.node_groups[each.value.ng_name].latest_version
+    id      = each.value.node_group.use_bottlerocket == false ? aws_launch_template.node_groups[each.value.ng_name].id : aws_launch_template.node_groups_bottlerocket[each.value.ng_name].id
+    version = each.value.node_group.use_bottlerocket == false ? aws_launch_template.node_groups[each.value.ng_name].latest_version : aws_launch_template.node_groups_bottlerocket[each.value.ng_name].latest_version
   }
 
   labels = each.value.node_group.labels

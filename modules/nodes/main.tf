@@ -26,9 +26,10 @@ locals {
     name => {
       ami_class = ng.ami != null ? "custom" : (
         local.node_group_status[name].is_neuron ? "neuron" :
-        local.node_group_status[name].is_gpu ? "nvidia" :
+        local.node_group_status[name].is_gpu && !ng.use_bottlerocket ? "nvidia" :
+        local.node_group_status[name].is_gpu && ng.use_bottlerocket ? "bottlerocket_nvidia" :
+        var.use_fips_endpoint && ng.use_bottlerocket ? "bottlerocket_fips" :
         ng.use_bottlerocket ? "bottlerocket" :
-        ng.use_bottlerocket && local.node_group_status[name].is_gpu ? "bottlerocket_nvidia" :
         "standard"
       )
     }
@@ -42,25 +43,31 @@ locals {
       ami_type        = local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
       release_version = try(local.ami_version_mappings[ng.ami_class].release_version, null)
       instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
-      block_device_map = ng.use_bottlerocket == false ? null: [{
+      # NOTE: Bottlerocket AMIs support a double-disk configuration in which the root disk (xvda) contains the base OS,
+      # and the second disk (xvdb) is used to store container images and logs. The root disk size can be static, so we shift the value of the volume size
+      # to the second disk (xvdb). Both will use the same volume type, iops, throughput, and KMS key.
+      block_device_map = ng.use_bottlerocket == false ? null: [
+        {
           device_name = "/dev/xvda"
           delete_on_termination = true
           encrypted             = true
-          volume_type           = each.value.volume.type
+          volume_size           = 20
+          volume_type           = ng.volume.type
           kms_key_id            = var.kms_info.enabled ? var.kms_info.key_arn : null
-          iops                  = each.value.volume.iops
-          throughput            = each.value.volume.throughput
-      },
-      {          
+          iops                  = ng.volume.iops
+          throughput            = ng.volume.throughput
+        },
+        {
           device_name = "/dev/xvdb"
           delete_on_termination = true
           encrypted             = true
-          volume_size           = each.value.volume.size
-          volume_type           = each.value.volume.type
+          volume_size           = ng.volume.size
+          volume_type           = ng.volume.type
           kms_key_id            = var.kms_info.enabled ? var.kms_info.key_arn : null
-          iops                  = each.value.volume.iops
-          throughput            = each.value.volume.throughput
-      }]
+          iops                  = ng.volume.iops
+          throughput            = ng.volume.throughput
+        }
+      ]
       #Omit the karpenter nodegroups to mitigate daemonsets scheduling issues.
       labels = merge(
         local.node_group_status[name].is_gpu ? local.gpu_labels : {},
