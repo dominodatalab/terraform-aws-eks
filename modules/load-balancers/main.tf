@@ -24,6 +24,7 @@ locals {
         for listener in lb.listeners : {
           key             = "${lb.name}-${listener.name}"
           lb_name         = lb.name
+          lb_internal     = lb.internal
           ddos_protection = lb.ddos_protection
           port            = listener.port
           protocol        = listener.protocol
@@ -41,7 +42,17 @@ locals {
       lb_name = listener.lb_name
       port    = listener.port
     }
-    if listener.ddos_protection
+    if try(listener.ddos_protection, false)
+  }
+
+  listeners_public_without_ddos_protection = {
+    for listener in local.listeners :
+    listener.key => {
+      lb_name  = listener.lb_name
+      port     = listener.port
+      protocol = listener.protocol
+    }
+    if !try(listener.lb_internal, false) && !try(listener.ddos_protection, false)
   }
 }
 
