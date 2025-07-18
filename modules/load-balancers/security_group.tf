@@ -28,7 +28,7 @@ resource "aws_security_group_rule" "lb_ingress_from_anywhere_for_public_without_
   type              = "ingress"
   from_port         = each.value.port
   to_port           = each.value.port
-  protocol          = each.value.protocol
+  protocol          = "-1"
   security_group_id = aws_security_group.lb_security_groups[each.value.lb_name].id
   cidr_blocks       = ["0.0.0.0/0"]
   description       = "Allow access from anywhere for ${each.value.protocol} protocol in port ${each.value.port}"
