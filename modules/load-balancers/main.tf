@@ -44,15 +44,6 @@ locals {
     }
     if try(listener.ddos_protection, false)
   }
-
-  listeners_public_without_ddos_protection = {
-    for listener in local.listeners :
-    listener.key => {
-      lb_name = listener.lb_name
-      port    = listener.port
-    }
-    if !try(listener.lb_internal, false) && !try(listener.ddos_protection, false)
-  }
 }
 
 resource "aws_lb" "load_balancers" {

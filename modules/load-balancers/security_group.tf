@@ -22,16 +22,16 @@ resource "aws_security_group_rule" "lb_ingress_from_global_accelerator" {
   description              = "Allow access from Global Accelerator"
 }
 
-resource "aws_security_group_rule" "lb_ingress_from_anywhere_for_public_without_ddos_protection" {
-  for_each = local.listeners_public_without_ddos_protection
+resource "aws_security_group_rule" "lb_ingress_for_public_lbs_without_ddos_protection" {
+  for_each = local.public_lbs_without_ddos_protection
 
   type              = "ingress"
-  from_port         = each.value.port
-  to_port           = each.value.port
+  from_port         = 0
+  to_port           = 0
   protocol          = "-1"
   security_group_id = aws_security_group.lb_security_groups[each.value.lb_name].id
   cidr_blocks       = ["0.0.0.0/0"]
-  description       = "Allow access from anywhere for port ${each.value.port}"
+  description       = "Allow access from anywhere for public NLB"
 }
 
 resource "aws_security_group_rule" "allow_all_from_ddos_lb" {
