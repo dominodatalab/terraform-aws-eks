@@ -110,9 +110,14 @@ variable "access_logs" {
 
   type = object({
     enabled   = optional(bool, false)
-    s3_bucket = string
+    s3_bucket = optional(string, null)
     s3_prefix = optional(string, "access_logs/load_balancers")
   })
+
+  validation {
+    condition     = !var.access_logs.enabled || (var.access_logs.s3_bucket != null && var.access_logs.s3_bucket != "")
+    error_message = "S3 bucket must be provided when access_logs.enabled is true."
+  }
 }
 
 variable "connection_logs" {
@@ -126,9 +131,14 @@ variable "connection_logs" {
 
   type = object({
     enabled   = optional(bool, false)
-    s3_bucket = string
+    s3_bucket = optional(string, null)
     s3_prefix = optional(string, "connection_logs/load_balancers")
   })
+
+  validation {
+    condition     = !var.connection_logs.enabled || (var.connection_logs.s3_bucket != null && var.connection_logs.s3_bucket != "")
+    error_message = "S3 bucket must be provided when connection_logs.enabled is true."
+  }
 }
 
 variable "flow_logs" {
@@ -142,9 +152,14 @@ variable "flow_logs" {
 
   type = object({
     enabled   = optional(bool, false)
-    s3_bucket = string
+    s3_bucket = optional(string, null)
     s3_prefix = optional(string, "flow_logs/global_accelerator")
   })
+
+  validation {
+    condition     = !var.flow_logs.enabled || (var.flow_logs.s3_bucket != null && var.flow_logs.s3_bucket != "")
+    error_message = "S3 bucket must be provided when flow_logs.enabled is true."
+  }
 }
 
 variable "fqdn" {
