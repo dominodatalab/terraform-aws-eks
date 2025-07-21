@@ -75,7 +75,7 @@ output "create_eks_role_arn" {
 
 output "monitoring_bucket" {
   description = "Monitoring Bucket"
-  value       = var.storage != null ? (var.storage.s3.create ? module.storage.info.s3.buckets.monitoring.bucket_name : null) : null
+  value       = try(module.storage.info.s3.buckets.monitoring.bucket_name, null)
 }
 
 output "cost_usage_report" {
