@@ -69,7 +69,7 @@ resource "aws_iam_role_policy_attachment" "external_dns" {
 
 resource "aws_iam_role_policy_attachment" "external_dns_extra_role" {
   provider   = aws.global
-  count      = (var.external_dns.enabled && var.external_dns.extra_role) ? 1 : 0
+  count      = (var.external_dns.enabled && var.external_dns.extra_role != null) ? 1 : 0
   role       = var.external_dns.extra_role
   policy_arn = aws_iam_policy.external_dns[0].arn
 }
