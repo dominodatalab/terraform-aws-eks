@@ -42,6 +42,7 @@ variable "external_dns" {
     Config to enable irsa for external-dns
     use_cluster_oidc_idp = Toogle to set the oidc idp connector in the trust policy.
     Set to `true` if the cluster and the hosted zone are in different aws accounts.
+    `extra_role` attaches policy to provided role (optional)
     `rm_role_policy` used to facilitate the cleanup if a node attached policy was used previously.
   EOF
 
@@ -52,6 +53,7 @@ variable "external_dns" {
     namespace            = optional(string, "domino-platform")
     serviceaccount_name  = optional(string, "external-dns")
     use_cluster_oidc_idp = optional(bool, true)
+    extra_role           = optional(string, null)
     rm_role_policy = optional(object({
       remove           = optional(bool, false)
       detach_from_role = optional(bool, false)
