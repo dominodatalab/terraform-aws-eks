@@ -159,7 +159,8 @@ _install_karpenter_chart() {
     --version "${karpenter_version}" \
     --kubeconfig "$kubeconfig" \
     --namespace "${karpenter_namespace}" \
-    --set "settings.clusterName=${cluster_name}" \
+    --set settings.clusterName="${cluster_name}" \
+    --set settings.vmMemoryOverheadPercent="${karpenter_vm_memory_overhead_percent}" \
     --set controller.resources.requests.cpu=1 \
     --set controller.resources.requests.memory=1Gi \
     --set controller.resources.limits.cpu=1 \
