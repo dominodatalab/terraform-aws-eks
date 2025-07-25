@@ -28,6 +28,7 @@ locals {
       calico_image_registry                 = var.eks_info.calico.image_registry
       karpenter_namespace                   = var.karpenter.namespace
       karpenter_version                     = var.karpenter.version
+      karpenter_vm_memory_overhead_percent  = var.karpenter.vm_memory_overhead_percent
       delete_karpenter_instances_on_destroy = tostring(var.karpenter.delete_instances_on_destroy)
       cluster_name                          = var.cluster_name
       region                                = var.region
