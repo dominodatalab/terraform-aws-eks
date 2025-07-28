@@ -286,6 +286,11 @@ variable "default_node_groups" {
       })
   })
   default = { platform = { availability_zone_ids = [] }, compute = { availability_zone_ids = [] }, gpu = { availability_zone_ids = [] } }
+
+  validation {
+    condition     = alltrue([for node_group in var.default_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
+    error_message = "Default node groups must have update_strategy set to DEFAULT or MINIMAL."
+  }
 }
 
 variable "additional_node_groups" {
@@ -324,6 +329,12 @@ variable "additional_node_groups" {
       throughput = optional(number, 500)
     })
   }))
+
+  validation {
+    condition     = alltrue([for node_group in var.additional_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
+    error_message = "Additional node groups must have update_strategy set to DEFAULT or MINIMAL."
+  }
+
   default = {}
 }
 
@@ -339,6 +350,7 @@ variable "karpenter_node_groups" {
     max_per_az                 = optional(number, 3)
     max_unavailable_percentage = optional(number, null)
     max_unavailable            = optional(number, 1)
+    update_strategy            = optional(string, "MINIMAL")
     desired_per_az             = optional(number, 1)
     availability_zone_ids      = list(string)
     labels = optional(map(string), {
@@ -359,6 +371,11 @@ variable "karpenter_node_groups" {
     }), {})
   }))
   default = null
+
+  validation {
+    condition     = alltrue([for node_group in var.karpenter_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
+    error_message = "Karpenter node groups must have update_strategy set to DEFAULT or MINIMAL."
+  }
 }
 
 variable "tags" {
