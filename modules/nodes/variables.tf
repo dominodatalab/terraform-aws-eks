@@ -288,7 +288,7 @@ variable "default_node_groups" {
   default = { platform = { availability_zone_ids = [] }, compute = { availability_zone_ids = [] }, gpu = { availability_zone_ids = [] } }
 
   validation {
-    condition     = alltrue([for node_group in var.default_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
+    condition     = var.default_node_groups == null || alltrue([for node_group in var.default_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
     error_message = "Default node groups must have update_strategy set to DEFAULT or MINIMAL."
   }
 }
@@ -331,7 +331,7 @@ variable "additional_node_groups" {
   }))
 
   validation {
-    condition     = alltrue([for node_group in var.additional_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
+    condition     = var.additional_node_groups == null || alltrue([for node_group in var.additional_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
     error_message = "Additional node groups must have update_strategy set to DEFAULT or MINIMAL."
   }
 
@@ -373,7 +373,7 @@ variable "karpenter_node_groups" {
   default = null
 
   validation {
-    condition     = alltrue([for node_group in var.karpenter_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
+    condition     = var.karpenter_node_groups == null || alltrue([for node_group in var.karpenter_node_groups : contains(["DEFAULT", "MINIMAL"], node_group.update_strategy)])
     error_message = "Karpenter node groups must have update_strategy set to DEFAULT or MINIMAL."
   }
 }
