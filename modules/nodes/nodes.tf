@@ -158,19 +158,13 @@ resource "aws_eks_node_group" "node_groups" {
 
 resource "terraform_data" "node_group_update_strategy" {
   for_each = local.node_groups_by_name
-  triggers_replace = [
-    lookup(each.value.node_group, "update_strategy", "NONE")
-  ]
-
   provisioner "local-exec" {
     command     = <<EOT
-      if [ "${lookup(each.value.node_group, "update_strategy", "NONE")}" != "NONE" ]; then
-        echo "Updating node group ${each.key} with update strategy: ${each.value.node_group.update_strategy}"
-        aws eks update-nodegroup-config --region ${var.region} \
-          --cluster-name ${var.eks_info.cluster.specs.name} \
-          --nodegroup-name ${each.key} \
-          --update-config updateStrategy=${each.value.node_group.update_strategy}
-      fi
+      echo "Updating node group ${each.key} with update strategy: ${each.value.node_group.update_strategy}"
+      aws eks update-nodegroup-config --region ${var.region} \
+        --cluster-name ${var.eks_info.cluster.specs.name} \
+        --nodegroup-name ${each.key} \
+        --update-config updateStrategy=${each.value.node_group.update_strategy}
     EOT
     interpreter = ["/bin/bash", "-c"]
   }
