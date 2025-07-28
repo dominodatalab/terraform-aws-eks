@@ -81,6 +81,7 @@ variable "default_node_groups" {
           max_unavailable_percentage = optional(number, 50)
           max_unavailable            = optional(number, null)
           desired_per_az             = optional(number, 0)
+          update_strategy            = optional(string, "DEFAULT")
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default"
@@ -112,6 +113,7 @@ variable "default_node_groups" {
           max_unavailable_percentage = optional(number, null)
           max_unavailable            = optional(number, 1)
           desired_per_az             = optional(number, 1)
+          update_strategy            = optional(string, "DEFAULT")
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "platform"
@@ -143,6 +145,7 @@ variable "default_node_groups" {
           max_unavailable_percentage = optional(number, 50)
           max_unavailable            = optional(number, null)
           desired_per_az             = optional(number, 0)
+          update_strategy            = optional(string, "DEFAULT")
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
             "dominodatalab.com/node-pool" = "default-gpu"
@@ -180,6 +183,7 @@ variable "additional_node_groups" {
     max_unavailable_percentage = optional(number, 50)
     max_unavailable            = optional(number)
     desired_per_az             = number
+    update_strategy            = optional(string, "DEFAULT")
     availability_zone_ids      = list(string)
     labels                     = map(string)
     taints = optional(list(object({
@@ -209,8 +213,8 @@ variable "karpenter_node_groups" {
     spot                       = optional(bool, false)
     min_per_az                 = optional(number, 1)
     max_per_az                 = optional(number, 3)
-    max_unavailable_percentage = optional(number, 50)
-    max_unavailable            = optional(number)
+    max_unavailable_percentage = optional(number, null)
+    max_unavailable            = optional(number, 1)
     desired_per_az             = optional(number, 1)
     availability_zone_ids      = list(string)
     labels = optional(map(string), {
