@@ -118,8 +118,8 @@ commands:
     description: "Sets short-lived creds"
     steps:
       - aws-cli/setup:
-          role-arn: "${AWS_IAM_ROLE}"
-          session-duration: "900"
+          role_arn: "${AWS_IAM_ROLE}"
+          session_duration: "900"
 
   set_tf_vars:
     description: "Sets Terraform variables"
@@ -225,8 +225,8 @@ commands:
     description: "Terraform deploy"
     steps:
       - aws-cli/setup:
-          role-arn: "${AWS_IAM_ROLE}"
-          session-duration: "43200"
+          role_arn: "${AWS_IAM_ROLE}"
+          session_duration: "43200"
       - tf_deploy_infra
       - tf_deploy_cluster
       - tf_deploy_nodes
