@@ -120,6 +120,7 @@ commands:
       - aws-cli/setup:
           role_arn: "${AWS_IAM_ROLE}"
           session_duration: "900"
+          override_installed: true
 
   set_tf_vars:
     description: "Sets Terraform variables"
@@ -227,6 +228,7 @@ commands:
       - aws-cli/setup:
           role_arn: "${AWS_IAM_ROLE}"
           session_duration: "43200"
+          override_installed: true
       - tf_deploy_infra
       - tf_deploy_cluster
       - tf_deploy_nodes
