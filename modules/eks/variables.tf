@@ -296,7 +296,7 @@ variable "karpenter" {
       namespace = Namespace to install Karpenter.
       version = Configure the version for Karpenter.
       delete_instances_on_destroy = Toggle to delete Karpenter instances on destroy.
-      vm_memory_overhead_percent  = Configure the vm memory overhead percent for Karpenter.
+      vm_memory_overhead_percent  = Configure the vm memory overhead percent for Karpenter, represented in decimal form (%/100), i.e 7.5% = 0.075.
     }
   EOF
   type = object({
@@ -308,6 +308,11 @@ variable "karpenter" {
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases
   })
+
+  validation {
+    condition     = var.karpenter.vm_memory_overhead_percent != null && tonumber(var.karpenter.vm_memory_overhead_percent) >= 0 && tonumber(var.karpenter.vm_memory_overhead_percent) <= 0.1
+    error_message = "Karpenter vm_memory_overhead_percent represented in decimal form (%/100, i.e 7.5% = 0.075), must be between 0 and 0.1 (0-10%)"
+  }
 
   default = {}
 }
