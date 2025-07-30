@@ -169,6 +169,10 @@ resource "terraform_data" "node_group_update_strategy" {
     interpreter = ["/bin/bash", "-c"]
   }
 
+  triggers_replace = [
+    each.value.node_group.update_strategy
+  ]
+
   depends_on = [aws_eks_node_group.node_groups]
 
 }
