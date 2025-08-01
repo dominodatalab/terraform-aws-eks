@@ -72,16 +72,22 @@ resource "aws_lb" "load_balancers" {
   enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
 
-  access_logs {
-    enabled = var.access_logs.enabled
-    bucket  = var.access_logs.s3_bucket
-    prefix  = var.access_logs.s3_prefix
+  dynamic "access_logs" {
+    for_each = var.access_logs.enabled ? [1] : []
+    content {
+      enabled = true
+      bucket  = var.access_logs.s3_bucket
+      prefix  = var.access_logs.s3_prefix
+    }
   }
 
-  connection_logs {
-    enabled = var.connection_logs.enabled
-    bucket  = var.connection_logs.s3_bucket
-    prefix  = var.connection_logs.s3_prefix
+  dynamic "connection_logs" {
+    for_each = var.connection_logs.enabled && each.value.type == "application" ? [1] : []
+    content {
+      enabled = true
+      bucket  = var.connection_logs.s3_bucket
+      prefix  = var.connection_logs.s3_prefix
+    }
   }
 
   tags = {
