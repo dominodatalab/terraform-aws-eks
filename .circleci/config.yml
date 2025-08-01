@@ -24,9 +24,9 @@ parameters:
     default: ""
 
 orbs:
-  terraform: circleci/terraform@3.2.0
-  aws-cli: circleci/aws-cli@3.1
-  envsubst: sawadashota/envsubst@1.1.0
+  terraform: circleci/terraform@3.6.0
+  aws-cli: circleci/aws-cli@5.4.1
+  envsubst: sawadashota/envsubst@1.4.3
 
 commands:
   install_tf:
@@ -118,8 +118,9 @@ commands:
     description: "Sets short-lived creds"
     steps:
       - aws-cli/setup:
-          role-arn: "${AWS_IAM_ROLE}"
-          session-duration: "900"
+          role_arn: "${AWS_IAM_ROLE}"
+          session_duration: "900"
+          override_installed: true
 
   set_tf_vars:
     description: "Sets Terraform variables"
@@ -225,8 +226,9 @@ commands:
     description: "Terraform deploy"
     steps:
       - aws-cli/setup:
-          role-arn: "${AWS_IAM_ROLE}"
-          session-duration: "43200"
+          role_arn: "${AWS_IAM_ROLE}"
+          session_duration: "43200"
+          override_installed: true
       - tf_deploy_infra
       - tf_deploy_cluster
       - tf_deploy_nodes

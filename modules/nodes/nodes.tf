@@ -156,6 +156,26 @@ resource "aws_eks_node_group" "node_groups" {
 
 }
 
+resource "terraform_data" "node_group_update_strategy" {
+  for_each = local.node_groups_by_name
+  provisioner "local-exec" {
+    command     = <<EOT
+      echo "Updating node group ${each.key} with update strategy: ${each.value.node_group.update_strategy}"
+      aws eks update-nodegroup-config --region ${var.region} \
+        --cluster-name ${var.eks_info.cluster.specs.name} \
+        --nodegroup-name ${each.key} \
+        --update-config updateStrategy=${each.value.node_group.update_strategy}
+    EOT
+    interpreter = ["/bin/bash", "-c"]
+  }
+
+  triggers_replace = [
+    each.value.node_group.update_strategy
+  ]
+
+  depends_on = [aws_eks_node_group.node_groups]
+
+}
 locals {
 
   asg_tags = flatten([for name, v in local.node_groups_by_name : [
