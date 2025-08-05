@@ -202,26 +202,6 @@ commands:
           working_directory: tests/deploy
           command: bash ci-deploy.sh deploy_nodes
 
-  tf_deploy_single_node:
-    description: "Terraform deploy single-node"
-    steps:
-      - run:
-          name: Setup single-node module
-          working_directory: tests/deploy
-          command: bash ci-deploy.sh setup_single_node_tf
-      - run:
-          name: Deploy single-node
-          working_directory: tests/deploy
-          command: bash ci-deploy.sh deploy_single_node
-
-  tf_destroy_single_node:
-    description: "Terraform destroy single-node"
-    steps:
-      - run:
-          name: Destroy single-node
-          working_directory: tests/deploy
-          command: bash ci-deploy.sh destroy_single_node
-
   tf_deploy:
     description: "Terraform deploy"
     steps:
@@ -298,8 +278,7 @@ jobs:
       - set_mod_source_current
       - tf_deploy
       - store_deploy_artifacts
-      - tf_deploy_single_node
-      - tf_destroy_single_node
+
       - tf_destroy
       - store_artifacts:
           path: /tmp/artifacts/
