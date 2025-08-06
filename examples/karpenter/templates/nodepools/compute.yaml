@@ -14,9 +14,9 @@ spec:
         dominodatalab.com/domino-node: "true"
         dominodatalab.com/node-pool: default
     spec:
-      limits:
-        cpu: 240
-        memory: 960Gi
+#      limits:
+#        cpu: 240
+#        memory: 960Gi
       expireAfter: Never
       nodeClassRef:
         group: karpenter.k8s.aws
