@@ -203,19 +203,22 @@ resource "aws_s3_bucket_public_access_block" "waf_logs" {
 }
 
 resource "aws_cloudwatch_log_group" "waf_logs" {
+  count = var.waf.enabled ? 1 : 0
+
   name              = "aws-waf-logs-${var.deploy_id}-blocked" #Note: The Log group must start with aws-waf-logs-
   retention_in_days = 14
 }
 
 resource "aws_cloudwatch_log_resource_policy" "waf_log_group_policy" {
-  policy_document = data.aws_iam_policy_document.waf_log_group_policy_document.json
+  count           = var.waf.enabled ? 1 : 0
+  policy_document = data.aws_iam_policy_document.waf_log_group_policy_document[0].json
   policy_name     = "${var.deploy_id}-waf_log_group_policy"
 }
 
 resource "aws_wafv2_web_acl_logging_configuration" "application" {
   count = var.waf.enabled ? 1 : 0
 
-  log_destination_configs = [aws_cloudwatch_log_group.waf_logs.arn]
+  log_destination_configs = [aws_cloudwatch_log_group.waf_logs[0].arn]
   resource_arn            = aws_wafv2_web_acl.waf[0].arn
 
   # Only keep blocked requests to save storage and Insight query costs
@@ -248,6 +251,8 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "waf_log_group_policy_document" {
+  count = var.waf.enabled ? 1 : 0
+
   version = "2012-10-17"
   statement {
     effect = "Allow"
@@ -256,7 +261,7 @@ data "aws_iam_policy_document" "waf_log_group_policy_document" {
       type        = "Service"
     }
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.waf_logs.arn}:*"]
+    resources = ["${aws_cloudwatch_log_group.waf_logs[0].arn}:*"]
     condition {
       test     = "ArnLike"
       values   = ["arn:${data.aws_partition.current.partition}:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
