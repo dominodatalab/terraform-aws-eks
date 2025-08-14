@@ -8,22 +8,23 @@ locals {
   has_apps_prefix = var.apps_prefix != null
 
   lb_dns_records = local.create_dns_records ? flatten([
-    {
-      name = var.fqdn
-      type = "A"
-    },
-    {
-      name = var.fqdn
-      type = "AAAA"
-    },
-    {
-      name = "*.${var.fqdn}"
-      type = "A"
-    },
-    {
-      name = "*.${var.fqdn}"
-      type = "AAAA"
-    }
+    [
+      {
+        name = var.fqdn
+        type = "A"
+      },
+      {
+        name = var.fqdn
+        type = "AAAA"
+      },
+      {
+        name = "*.${var.fqdn}"
+        type = "A"
+      },
+      {
+        name = "*.${var.fqdn}"
+        type = "AAAA"
+      }
     ],
     local.has_apps_prefix ? [
       {
@@ -35,7 +36,7 @@ locals {
         type = "AAAA"
       }
     ] : []
-  ) : []
+  ]) : []
 }
 
 data "aws_route53_zone" "hosted" {
