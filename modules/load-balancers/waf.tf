@@ -1,3 +1,8 @@
+moved {
+  from = aws_cloudwatch_log_group.waf_logs
+  to   = aws_cloudwatch_log_group.waf_logs[0]
+}
+
 locals {
   waf_name = "${var.deploy_id}-waf"
 }
