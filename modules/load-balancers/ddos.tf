@@ -5,7 +5,9 @@ locals {
 
   create_dns_records = local.create_global_accelerator && var.fqdn != ""
 
-  lb_dns_records = local.create_dns_records ? [
+  has_apps_prefix = var.apps_prefix != null
+
+  lb_dns_records = local.create_dns_records ? flatten([
     {
       name = var.fqdn
       type = "A"
@@ -22,7 +24,18 @@ locals {
       name = "*.${var.fqdn}"
       type = "AAAA"
     }
-  ] : []
+    ],
+    local.has_apps_prefix ? [
+      {
+        name = "${var.apps_prefix}${var.fqdn}"
+        type = "A"
+      },
+      {
+        name = "${var.apps_prefix}${var.fqdn}"
+        type = "AAAA"
+      }
+    ] : []
+  ) : []
 }
 
 data "aws_route53_zone" "hosted" {
