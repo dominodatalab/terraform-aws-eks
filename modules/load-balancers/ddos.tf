@@ -5,38 +5,40 @@ locals {
 
   create_dns_records = local.create_global_accelerator && var.fqdn != ""
 
-  has_apps_prefix = var.apps_prefix != null
+  has_apps_prefix = length(var.apps_prefixes) > 0
 
   lb_dns_records = local.create_dns_records ? flatten([
-    [
+  [
+    {
+      name = var.fqdn
+      type = "A"
+    },
+    {
+      name = var.fqdn
+      type = "AAAA"
+    },
+    {
+      name = "*.${var.fqdn}"
+      type = "A"
+    },
+    {
+      name = "*.${var.fqdn}"
+      type = "AAAA"
+    }
+  ],
+  local.has_apps_prefix ? flatten([
+    for prefix in var.apps_prefixes : [
       {
-        name = var.fqdn
+        name = "${prefix}${var.fqdn}"
         type = "A"
       },
       {
-        name = var.fqdn
-        type = "AAAA"
-      },
-      {
-        name = "*.${var.fqdn}"
-        type = "A"
-      },
-      {
-        name = "*.${var.fqdn}"
+        name = "${prefix}${var.fqdn}"
         type = "AAAA"
       }
-    ],
-    local.has_apps_prefix ? [
-      {
-        name = "${var.apps_prefix}${var.fqdn}"
-        type = "A"
-      },
-      {
-        name = "${var.apps_prefix}${var.fqdn}"
-        type = "AAAA"
-      }
-    ] : []
+    ]
   ]) : []
+]) : []
 }
 
 data "aws_route53_zone" "hosted" {
