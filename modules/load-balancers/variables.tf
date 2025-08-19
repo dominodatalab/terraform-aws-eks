@@ -8,11 +8,16 @@ variable "deploy_id" {
   }
 }
 
-variable "apps_prefixes" {
-  type        = list(string)
-  description = "List of prefixes for application DNS records (optional). Each will be prepended directly before fqdn without a dot."
+variable "apps_prefix" {
+  type        = string
+  description = "Prefix for application DNS records (optional). Will be prepended directly before fqdn without a dot."
 
-  default = []
+  default = null
+
+  validation {
+    condition     = var.apps_prefix == null || var.apps_prefix != ""
+    error_message = "Argument apps_prefix must be null or a non-empty string."
+  }
 }
 
 variable "load_balancers" {
