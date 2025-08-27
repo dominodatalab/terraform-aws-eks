@@ -1,7 +1,7 @@
 locals {
   encryption_type = var.kms_info.enabled ? "KMS" : "AES256"
   create_ecr      = try(var.storage.ecr.create, true)
-  ecr_repos       = local.create_ecr ? toset(["model", "environment"]) : []
+  ecr_repos       = local.create_ecr ? toset(["model", "environment", "genai-model"]) : []
 
   # FIPS, GovCloud and China don't support pull through cache fully yet
   # https://docs.aws.amazon.com/AmazonECR/latest/userguide/pull-through-cache.html#pull-through-cache-considerations
