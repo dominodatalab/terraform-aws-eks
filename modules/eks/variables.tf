@@ -117,11 +117,15 @@ variable "kms_info" {
     key_id  = KMS key id.
     key_arn = KMS key arn.
     enabled = KMS key is enabled
+    key_policy_arn = KMS Policy ARN when key is provided
+    provided_key = If KMS Key was provided
   EOF
   type = object({
-    key_id  = string
-    key_arn = string
-    enabled = bool
+    key_id         = optional(string, null)
+    key_arn        = optional(string, null)
+    enabled        = optional(bool, true)
+    key_policy_arn = optional(string, null)
+    provided_key   = optional(bool, false)
   })
 }
 
@@ -251,14 +255,18 @@ variable "calico" {
     calico = {
       version = Configure the version for Calico
       image_registry = Configure the image registry for Calico
+      node_selector = Configure the node selector for Calico control plane components
     }
   EOF
 
   type = object({
     image_registry = optional(string, "quay.io")
     version        = optional(string, "v3.28.2")
+    node_selector = optional(object({
+      key   = optional(string, "dominodatalab.com/calico-controlplane")
+      value = optional(string, "true")
+    }), {})
   })
-
   default = {}
 }
 
@@ -303,7 +311,7 @@ variable "karpenter" {
     enabled                     = optional(bool, false)
     delete_instances_on_destroy = optional(bool, false)
     namespace                   = optional(string, "karpenter")
-    version                     = optional(string, "1.3.3")
+    version                     = optional(string, "1.6.3")
     vm_memory_overhead_percent  = optional(string, "0.075")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases

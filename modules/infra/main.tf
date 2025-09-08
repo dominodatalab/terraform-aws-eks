@@ -3,11 +3,14 @@ data "aws_partition" "current" {}
 data "aws_caller_identity" "aws_account" {}
 
 locals {
-  kms_key = var.kms.key_id != null ? data.aws_kms_key.key[0] : aws_kms_key.domino[0]
+  kms_key        = var.kms.key_id != null ? data.aws_kms_key.key[0] : aws_kms_key.domino[0]
+  key_policy_arn = var.kms.key_id != null ? aws_iam_policy.provided_key_policy[0].arn : null
   kms_info = {
-    key_id  = local.kms_key.id
-    key_arn = local.kms_key.arn
-    enabled = var.kms.enabled
+    key_id         = local.kms_key.id
+    key_arn        = local.kms_key.arn
+    enabled        = var.kms.enabled
+    key_policy_arn = local.key_policy_arn
+    provided_key   = var.kms.key_id != null
   }
   deploy_cur = !strcontains(var.region, "us-gov") && var.domino_cur.provision_cost_usage_report
 }

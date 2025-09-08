@@ -283,3 +283,9 @@ resource "aws_eks_identity_provider_config" "this" {
     username_prefix               = lookup(each.value, "username_prefix", null)
   }
 }
+
+resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_cluster" {
+  count      = var.kms_info.provided_key ? 1 : 0
+  role       = aws_iam_role.eks_cluster.name
+  policy_arn = local.kms_key_policy_arn
+}
