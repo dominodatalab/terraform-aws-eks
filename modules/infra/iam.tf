@@ -49,14 +49,25 @@ data "aws_iam_policy_document" "create_eks_role" {
   dynamic "statement" {
     for_each = local.provided_key == 1 ? [1] : []
     content {
-      sid    = "EKSDeployerKMSProvided"
+      sid    = "AllowDescribeExternalKMSKey"
       effect = "Allow"
       actions = [
         "kms:DescribeKey",
-        "kms:CreateGrant",
         "kms:ListGrants",
       ]
-      resources = [var.kms.key_id]
+      resources = [var.kms.key_arn]
+    }
+  }
+
+  dynamic "statement" {
+    for_each = local.provided_key == 1 ? [1] : []
+    content {
+      sid    = "AllowCreateGrantForAWSResourceOnExternalKey"
+      effect = "Allow"
+      actions = [
+        "kms:CreateGrant",
+      ]
+      resources = [var.kms.key_arn]
 
       condition {
         test     = "Bool"
