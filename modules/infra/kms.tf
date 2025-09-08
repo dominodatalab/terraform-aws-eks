@@ -108,6 +108,6 @@ resource "aws_kms_alias" "domino" {
 
 data "aws_kms_key" "key" {
   provider = aws.kms
-  count  = local.provided_key
-  key_id = var.kms.key_id
+  count    = local.provided_key
+  key_id   = var.kms.key_id
 }
