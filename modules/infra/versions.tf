@@ -46,7 +46,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = locals.kms_region
+  region = local.kms_region
   alias  = "kms"
   default_tags {
     tags = var.tags
