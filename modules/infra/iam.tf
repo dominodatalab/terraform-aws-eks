@@ -55,7 +55,7 @@ data "aws_iam_policy_document" "create_eks_role" {
         "kms:DescribeKey",
         "kms:ListGrants",
       ]
-      resources = [var.kms.key_arn]
+      resources = [var.kms.key_id]
     }
   }
 
@@ -67,7 +67,7 @@ data "aws_iam_policy_document" "create_eks_role" {
       actions = [
         "kms:CreateGrant",
       ]
-      resources = [var.kms.key_arn]
+      resources = [var.kms.key_id]
 
       condition {
         test     = "Bool"
