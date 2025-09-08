@@ -45,6 +45,26 @@ data "aws_iam_policy_document" "create_eks_role" {
     resources = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/aws-service-role/*"]
     effect    = "Allow"
   }
+
+  dynamic "statement" {
+    for_each = local.provided_key == 1 ? [1] : []
+    content {
+      sid    = "EKSDeployerKMSProvided"
+      effect = "Allow"
+      actions = [
+        "kms:DescribeKey",
+        "kms:CreateGrant",
+        "kms:ListGrants",
+      ]
+      resources = [var.kms.key_id]
+
+      condition {
+        test     = "Bool"
+        variable = "kms:GrantIsForAWSResource"
+        values   = ["true"]
+      }
+    }
+  }
 }
 
 resource "aws_iam_policy" "create_eks_role" {
