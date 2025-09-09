@@ -142,6 +142,12 @@ _install_calico_chart() {
     --set installation.registry="${calico_image_registry}/" \
     --set installation.fipsMode="${calico_fips_mode}" \
     --set tigeraOperator.registry="${calico_image_registry}" \
+    --set-json 'installation.controlPlaneTolerations=[{"key":"node.kubernetes.io/unschedulable","operator":"Equal","effect":"NoSchedule"}]' \
+    --set-json 'tolerations=[{"key":"node.kubernetes.io/unschedulable","operator":"Equal","effect":"NoSchedule"}]' \
+    %{~ if calico_karpenter_node_selector == "true" ~}
+    --set-json 'installation.controlPlaneNodeSelector={"dominodatalab.com/node-pool":"karpenter"}' \
+    --set-json 'nodeSelector={"dominodatalab.com/node-pool":"karpenter"}' \
+    %{~ endif ~}
     --wait \
     --timeout 10m \
     --create-namespace \
