@@ -146,7 +146,7 @@ _install_calico_chart() {
     --set-json 'tolerations=[{"key":"node.kubernetes.io/unschedulable","operator":"Equal","effect":"NoSchedule"}]' \
     --set-json 'installation.controlPlaneNodeSelector={"dominodatalab.com/node-pool":"${calico_karpenter_node_selector}"}' \
     --set-json 'nodeSelector={"dominodatalab.com/node-pool":"${calico_karpenter_node_selector}"}' \
-    --set-json 'installation.typhaDeployment={"spec":"template":{"spec":{"nodeSelector":{"dominodatalab.com/node-pool":"${calico_karpenter_node_selector}"}}}}' \
+    --set-json 'installation.typhaDeployment={"spec":{"template":{"spec":{"nodeSelector":{"dominodatalab.com/node-pool":"${calico_karpenter_node_selector}"}}}}}' \
     --wait \
     --timeout 10m \
     --create-namespace \
