@@ -83,7 +83,6 @@ data "aws_iam_policy_document" "kms_key_global" {
 locals {
   create_kms_key = var.kms.key_id == null ? 1 : 0
   provided_key   = var.kms.key_id != null ? 1 : 0
-  kms_region     = var.kms.key_id != null ? split(":", var.kms.key_id)[3] : var.region
 }
 
 resource "aws_kms_key" "domino" {
@@ -107,7 +106,21 @@ resource "aws_kms_alias" "domino" {
 }
 
 data "aws_kms_key" "key" {
-  provider = aws.kms
-  count    = local.provided_key
-  key_id   = var.kms.key_id
+  count  = local.provided_key
+  key_id = var.kms.key_id
+}
+
+data "aws_iam_policy_document" "provided_key_policy_document" {
+  count = local.provided_key
+  source_policy_documents = [
+    templatefile("${path.module}/provided_key_policy_document.json", {
+      partition = data.aws_partition.current.partition
+    })
+  ]
+}
+
+resource "aws_iam_policy" "provided_key_policy" {
+  count  = local.provided_key
+  name   = "${var.deploy_id}-provided-key-policy"
+  policy = data.aws_iam_policy_document.provided_key_policy_document[0].json
 }

@@ -44,16 +44,3 @@ provider "aws" {
 
   use_fips_endpoint = var.use_fips_endpoint
 }
-
-provider "aws" {
-  region = local.kms_region
-  alias  = "kms"
-  default_tags {
-    tags = var.tags
-  }
-  ignore_tags {
-    keys = var.ignore_tags
-  }
-
-  use_fips_endpoint = var.use_fips_endpoint
-}

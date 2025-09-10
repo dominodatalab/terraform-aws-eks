@@ -117,11 +117,13 @@ variable "kms_info" {
     key_id  = KMS key id.
     key_arn = KMS key arn.
     enabled = KMS key is enabled
+    key_policy_arn = KMS Policy ARN when key is provided
   EOF
   type = object({
-    key_id  = string
-    key_arn = string
-    enabled = bool
+    key_id         = string
+    key_arn        = string
+    enabled        = bool
+    key_policy_arn = string
   })
 }
 

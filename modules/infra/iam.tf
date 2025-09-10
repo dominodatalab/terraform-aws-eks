@@ -45,37 +45,6 @@ data "aws_iam_policy_document" "create_eks_role" {
     resources = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/aws-service-role/*"]
     effect    = "Allow"
   }
-
-  dynamic "statement" {
-    for_each = local.provided_key == 1 ? [1] : []
-    content {
-      sid    = "AllowDescribeExternalKMSKey"
-      effect = "Allow"
-      actions = [
-        "kms:DescribeKey",
-        "kms:ListGrants",
-      ]
-      resources = [var.kms.key_id]
-    }
-  }
-
-  dynamic "statement" {
-    for_each = local.provided_key == 1 ? [1] : []
-    content {
-      sid    = "AllowCreateGrantForAWSResourceOnExternalKey"
-      effect = "Allow"
-      actions = [
-        "kms:CreateGrant",
-      ]
-      resources = [var.kms.key_id]
-
-      condition {
-        test     = "Bool"
-        variable = "kms:GrantIsForAWSResource"
-        values   = ["true"]
-      }
-    }
-  }
 }
 
 resource "aws_iam_policy" "create_eks_role" {
@@ -111,4 +80,10 @@ resource "aws_iam_role_policy_attachment" "create_eks_role" {
 resource "time_sleep" "create_eks_role_30_seconds" {
   create_duration = "30s"
   depends_on      = [aws_iam_role_policy_attachment.create_eks_role]
+}
+
+resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_create_eks_role" {
+  count      = local.provided_key
+  role       = aws_iam_role.create_eks_role.name
+  policy_arn = aws_iam_policy.provided_key_policy.arn
 }
