@@ -114,7 +114,7 @@ data "aws_iam_policy_document" "provided_key_policy_document" {
   count = local.provided_key
   source_policy_documents = [
     templatefile("${path.module}/provided_key_policy_document.json", {
-      partition = data.aws_partition.current.partition
+      kms_key = data.aws_kms_key.key[0]
     })
   ]
 }
