@@ -285,7 +285,7 @@ resource "aws_eks_identity_provider_config" "this" {
 }
 
 resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_cluster" {
-  count      = vars.kms_info.key_policy_arn != null ? 1 : 0
+  count      = local.kms_key_policy_arn != null ? 1 : 0
   role       = aws_iam_role.eks_cluster.name
-  policy_arn = vars.kms_info.key_policy_arn
+  policy_arn = local.kms_key_policy_arn
 }
