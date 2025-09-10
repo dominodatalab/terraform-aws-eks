@@ -144,9 +144,9 @@ _install_calico_chart() {
     --set tigeraOperator.registry="${calico_image_registry}" \
     --set-json 'installation.controlPlaneTolerations=[{"key":"node.kubernetes.io/unschedulable","operator":"Equal","effect":"NoSchedule"}]' \
     --set-json 'tolerations=[{"key":"node.kubernetes.io/unschedulable","operator":"Equal","effect":"NoSchedule"}]' \
-    --set-json 'installation.controlPlaneNodeSelector={"dominodatalab.com/node-pool":"${calico_karpenter_node_selector}"}' \
-    --set-json 'nodeSelector={"dominodatalab.com/node-pool":"${calico_karpenter_node_selector}"}' \
-    --set-json 'installation.typhaDeployment={"spec":{"template":{"spec":{"nodeSelector":{"dominodatalab.com/node-pool":"${calico_karpenter_node_selector}"}}}}}' \
+    --set-json 'installation.controlPlaneNodeSelector={"${calico_node_selector.key}":"${calico_node_selector.value}"}' \
+    --set-json 'nodeSelector={"${calico_node_selector.key}":"${calico_node_selector.value}"}' \
+    --set-json 'installation.typhaDeployment={"spec":{"template":{"spec":{"nodeSelector":{"${calico_node_selector.key}":"${calico_node_selector.value}"}}}}}' \
     --wait \
     --timeout 10m \
     --create-namespace \

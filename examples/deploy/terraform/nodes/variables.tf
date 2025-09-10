@@ -142,7 +142,8 @@ variable "karpenter_node_groups" {
     desired_per_az             = optional(number, 1)
     availability_zone_ids      = list(string)
     labels = optional(map(string), {
-      "dominodatalab.com/node-pool" = "karpenter"
+      "dominodatalab.com/node-pool"           = "karpenter"
+      "dominodatalab.com/calico-controlplane" = "true"
     })
     taints = optional(list(object({
       key    = string

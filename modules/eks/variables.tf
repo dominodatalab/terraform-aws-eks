@@ -251,14 +251,18 @@ variable "calico" {
     calico = {
       version = Configure the version for Calico
       image_registry = Configure the image registry for Calico
+      node_selector = Configure the node selector for Calico control plane components
     }
   EOF
 
   type = object({
     image_registry = optional(string, "quay.io")
     version        = optional(string, "v3.28.2")
+    node_selector = optional(object({
+      key   = optional(string, "dominodatalab.com/calico-controlplane")
+      value = optional(string, "true")
+    }), {})
   })
-
   default = {}
 }
 

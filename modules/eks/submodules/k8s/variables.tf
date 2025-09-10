@@ -59,6 +59,7 @@ variable "eks_info" {
     calico = {
       version = Configuration the version for Calico
       image_registry = Configure the image registry for Calico
+      node_selector = Configure the node selector for Calico control plane components
     }
   EOF
   type = object({
@@ -96,6 +97,10 @@ variable "eks_info" {
     calico = object({
       version        = string
       image_registry = string
+      node_selector = object({
+        key   = string
+        value = string
+      })
     })
   })
 }
