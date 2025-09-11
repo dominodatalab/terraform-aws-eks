@@ -12,7 +12,7 @@
                 "kms:DescribeKey",
                 "kms:CreateGrant"
             ],
-            "Resource": "${kms_key}"
+            "Resource": "${kms_key_arn}"
         }
     ]
 }
