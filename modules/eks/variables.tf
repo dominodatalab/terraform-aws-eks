@@ -253,6 +253,7 @@ variable "calico" {
     calico = {
       version = Configure the version for Calico
       image_registry = Configure the image registry for Calico
+      node_selector = Configure the node selector for Calico control plane components
     }
   EOF
 
@@ -264,7 +265,6 @@ variable "calico" {
       value = optional(string, "true")
     }), {})
   })
-
   default = {}
 }
 
