@@ -123,7 +123,7 @@ variable "kms_info" {
     key_id         = string
     key_arn        = string
     enabled        = bool
-    key_policy_arn = string
+    key_policy_arn = optional(string, null)
   })
 }
 
