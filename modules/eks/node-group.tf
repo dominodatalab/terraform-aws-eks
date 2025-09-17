@@ -113,13 +113,13 @@ resource "aws_security_group_rule" "s3_endpoint" {
 
 resource "null_resource" "debug_kms_info" {
   provisioner "local-exec" {
-    command = "echo ${var.kms_info}"  
+    command = "echo ${var.kms_info}"
   }
 }
 
 resource "null_resource" "debug_storage_info" {
   provisioner "local-exec" {
-    command = "echo ${var.storage_info}"  
+    command = "echo ${var.storage_info}"
   }
 }
 
