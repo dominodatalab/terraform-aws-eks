@@ -111,6 +111,32 @@ resource "aws_security_group_rule" "s3_endpoint" {
   source_security_group_id = aws_security_group.eks_nodes.id
 }
 
+resource "null_resource" "debug_kms_info" {
+  triggers = {
+    kms_info = jsonencode(var.kms_info)
+  }
+
+  provisioner "local-exec" {
+    command = "echo KMS_INFO='${KMS_INFO}'"
+    environment = {
+      KMS_INFO = jsonencode(var.kms_info)
+    }
+  }
+}
+
+resource "null_resource" "debug_storage_info" {
+  triggers = {
+    storage_info = jsonencode(var.storage_info)
+  }
+
+  provisioner "local-exec" {
+    command = "echo STORAGE_INFO='${STORAGE_INFO}'"
+    environment = {
+      STORAGE_INFO = jsonencode(var.storage_info)
+    }
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_nodes" {
   count = (
     var.kms_info != null && var.kms_info.key_policy_arn != null && var.kms_info.key_policy_arn != ""
