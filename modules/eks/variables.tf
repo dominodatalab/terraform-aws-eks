@@ -126,7 +126,7 @@ variable "kms_info" {
     key_policy_arn = optional(string, "")
   })
 
-  default = {}
+  default = null
 }
 
 variable "eks" {
