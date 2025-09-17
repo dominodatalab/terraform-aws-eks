@@ -65,7 +65,7 @@ run_terraform_plans() {
       tf_plan "$(realpath $tfvars)"
     done
   else
-    tf_plan "$(realpath "${TFVARS_BASE_PATH}/${test_file_name}.tfvars")"
+   [ "$test_file_name" != "kms-byok" ] && tf_plan "$(realpath "${TFVARS_BASE_PATH}/${test_file_name}.tfvars")"
   fi
 }
 
@@ -125,4 +125,6 @@ trap finish EXIT ERR INT TERM
 verify_terraform
 verify_aws_creds
 run_terraform_plans
-[ "$test_file_name" == "none" ] && test_byok_kms
+ if [ "$test_file_name" == "none" ] || [ "$test_file_name" == "kms-byok" ]; then
+  test_byok_kms
+ fi

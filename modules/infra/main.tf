@@ -10,6 +10,7 @@ locals {
     key_arn        = local.kms_key.arn
     enabled        = var.kms.enabled
     key_policy_arn = local.key_policy_arn
+    provided_key   = var.kms.key_id != null
   }
   deploy_cur = !strcontains(var.region, "us-gov") && var.domino_cur.provision_cost_usage_report
 }

@@ -130,7 +130,7 @@ resource "null_resource" "debug_storage_info" {
 }
 
 resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_nodes" {
-  count      = local.kms_key_policy_arn != null ? 1 : 0
+  count      = var.kms_info.provided_key ? 1 : 0
   role       = aws_iam_role.eks_nodes.name
   policy_arn = local.kms_key_policy_arn
 }

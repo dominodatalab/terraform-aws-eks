@@ -124,10 +124,12 @@ variable "kms_info" {
     key_arn        = optional(string, null)
     enabled        = optional(bool, true)
     key_policy_arn = optional(string, null)
+    provided_key   = optional(bool, false)
   })
 
   default = {}
 }
+
 
 variable "eks" {
   description = <<EOF
