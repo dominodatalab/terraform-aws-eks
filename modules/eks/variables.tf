@@ -120,10 +120,10 @@ variable "kms_info" {
     key_policy_arn = KMS Policy ARN when key is provided
   EOF
   type = object({
-    key_id         = optional(string, null)
-    key_arn        = optional(string, null)
+    key_id         = optional(string, "")
+    key_arn        = optional(string, "")
     enabled        = optional(bool, true)
-    key_policy_arn = optional(string, null)
+    key_policy_arn = optional(string, "")
   })
 
   default = {}
