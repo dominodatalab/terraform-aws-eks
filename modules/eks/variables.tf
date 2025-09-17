@@ -125,6 +125,8 @@ variable "kms_info" {
     enabled        = bool
     key_policy_arn = string
   })
+
+  default = {}
 }
 
 variable "eks" {
