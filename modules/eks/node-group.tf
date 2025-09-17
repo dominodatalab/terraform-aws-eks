@@ -112,28 +112,14 @@ resource "aws_security_group_rule" "s3_endpoint" {
 }
 
 resource "null_resource" "debug_kms_info" {
-  triggers = {
-    kms_info = jsonencode(var.kms_info)
-  }
-
   provisioner "local-exec" {
-    command = "echo KMS_INFO='${KMS_INFO}'"
-    environment = {
-      KMS_INFO = jsonencode(var.kms_info)
-    }
+    command = "echo ${var.kms_info}"  
   }
 }
 
 resource "null_resource" "debug_storage_info" {
-  triggers = {
-    storage_info = jsonencode(var.storage_info)
-  }
-
   provisioner "local-exec" {
-    command = "echo STORAGE_INFO='${STORAGE_INFO}'"
-    environment = {
-      STORAGE_INFO = jsonencode(var.storage_info)
-    }
+    command = "echo ${var.storage_info}"  
   }
 }
 
