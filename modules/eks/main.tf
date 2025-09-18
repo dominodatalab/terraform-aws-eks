@@ -24,11 +24,12 @@ locals {
     path       = local.kubeconfig_path
     extra_args = local.kubeconfig_args
   })
-  eks_cluster_name  = var.deploy_id
-  aws_account_id    = data.aws_caller_identity.aws_account.account_id
-  dns_suffix        = data.aws_partition.current.dns_suffix
-  policy_arn_prefix = "arn:${data.aws_partition.current.partition}:iam::aws:policy"
-  kms_key_arn       = var.kms_info.key_arn
+  eks_cluster_name   = var.deploy_id
+  aws_account_id     = data.aws_caller_identity.aws_account.account_id
+  dns_suffix         = data.aws_partition.current.dns_suffix
+  policy_arn_prefix  = "arn:${data.aws_partition.current.partition}:iam::aws:policy"
+  kms_key_arn        = var.kms_info.key_arn
+  kms_key_policy_arn = var.kms_info.key_policy_arn
   oidc = var.eks.oidc_provider.create ? {
     id              = try(aws_iam_openid_connect_provider.oidc_provider[0].id, null)
     arn             = try(aws_iam_openid_connect_provider.oidc_provider[0].arn, null)
