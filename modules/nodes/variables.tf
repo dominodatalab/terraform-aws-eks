@@ -160,7 +160,7 @@ variable "default_node_groups" {
       compute = object(
         {
           ami                        = optional(string, null)
-          bootstrap_extra_args       = optional(string, "")
+          bootstrap_extra_args       = optional(string, "--kubelet-extra-args '--event-qps=300 --event-burst=600 --v=5'")
           instance_types             = optional(list(string), ["m6i.2xlarge"])
           spot                       = optional(bool, false)
           min_per_az                 = optional(number, 0)
@@ -202,7 +202,7 @@ variable "default_node_groups" {
       platform = object(
         {
           ami                        = optional(string, null)
-          bootstrap_extra_args       = optional(string, "")
+          bootstrap_extra_args       = optional(string, "--kubelet-extra-args '--event-qps=300 --event-burst=600 --v=5'")
           instance_types             = optional(list(string), ["m7i-flex.2xlarge"])
           spot                       = optional(bool, false)
           min_per_az                 = optional(number, 1)
