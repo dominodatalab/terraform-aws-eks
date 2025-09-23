@@ -63,6 +63,24 @@ locals {
       regional_domain_name      = aws_s3_bucket.costs[0].bucket_regional_domain_name
       fips_regional_domain_name = replace(aws_s3_bucket.costs[0].bucket_regional_domain_name, ".s3.", ".s3-fips.")
     } : {}
+    workspace_audit_1 = var.storage.workspace_audit.enabled ? {
+      bucket_name               = aws_s3_bucket.workspace_audit_1[0].bucket
+      id                        = aws_s3_bucket.workspace_audit_1[0].id
+      policy_json               = data.aws_iam_policy_document.workspace_audit_1[0].json
+      arn                       = aws_s3_bucket.workspace_audit_1[0].arn
+      domain_name               = aws_s3_bucket.workspace_audit_1[0].bucket_domain_name
+      regional_domain_name      = aws_s3_bucket.workspace_audit_1[0].bucket_regional_domain_name
+      fips_regional_domain_name = replace(aws_s3_bucket.workspace_audit_1[0].bucket_regional_domain_name, ".s3.", ".s3-fips.")
+    } : {}
+    workspace_audit_2 = var.storage.workspace_audit.enabled ? {
+      bucket_name               = aws_s3_bucket.workspace_audit_2[0].bucket
+      id                        = aws_s3_bucket.workspace_audit_2[0].id
+      policy_json               = data.aws_iam_policy_document.workspace_audit_2[0].json
+      arn                       = aws_s3_bucket.workspace_audit_2[0].arn
+      domain_name               = aws_s3_bucket.workspace_audit_2[0].bucket_domain_name
+      regional_domain_name      = aws_s3_bucket.workspace_audit_2[0].bucket_regional_domain_name
+      fips_regional_domain_name = replace(aws_s3_bucket.workspace_audit_2[0].bucket_regional_domain_name, ".s3.", ".s3-fips.")
+    } : {}
   } : k => v if contains(keys(v), "bucket_name") }
 
   backup_tagging = var.storage.enable_remote_backup ? {

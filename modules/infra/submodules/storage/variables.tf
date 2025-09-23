@@ -84,6 +84,11 @@ variable "storage" {
       }
       enable_remote_backup = Enable tagging required for cross-account backups
       costs_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage
+      workspace_audit = {
+        enabled = Determines whether to provision workspace audit buckets
+        bucket_1 = bucket 1 name
+        bucket_2 = bucket 2 name
+      }
     }
   }
   EOF
@@ -140,6 +145,11 @@ variable "storage" {
     }))
     enable_remote_backup = optional(bool)
     costs_enabled        = optional(bool)
+    workspace_audit = optional(object({
+      enabled  = optional(bool)
+      bucket_1 = optional(string)
+      bucket_2 = optional(string)
+    }))
   })
   validation {
     condition     = contains(["efs", "netapp", "none"], var.storage.filesystem_type)
