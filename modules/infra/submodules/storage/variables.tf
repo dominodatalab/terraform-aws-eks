@@ -86,8 +86,8 @@ variable "storage" {
       costs_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage
       workspace_audit = {
         enabled = Determines whether to provision workspace audit buckets
-        bucket_1 = bucket 1 name
-        bucket_2 = bucket 2 name
+        events_bucket_name = workspace-events bucket name
+        events_archive_bucket_name = workspace-events-archive bucket name
       }
     }
   }
@@ -146,9 +146,9 @@ variable "storage" {
     enable_remote_backup = optional(bool)
     costs_enabled        = optional(bool)
     workspace_audit = optional(object({
-      enabled  = optional(bool)
-      bucket_1 = optional(string)
-      bucket_2 = optional(string)
+      enabled                    = optional(bool)
+      events_bucket_name         = optional(string)
+      events_archive_bucket_name = optional(string)
     }))
   })
   validation {
