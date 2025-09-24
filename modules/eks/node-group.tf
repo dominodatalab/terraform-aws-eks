@@ -110,3 +110,9 @@ resource "aws_security_group_rule" "s3_endpoint" {
   description              = "S3 Endpoint access from EKS nodes."
   source_security_group_id = aws_security_group.eks_nodes.id
 }
+
+resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_nodes" {
+  count      = var.kms_info.provided_key ? 1 : 0
+  role       = aws_iam_role.eks_nodes.name
+  policy_arn = local.kms_key_policy_arn
+}

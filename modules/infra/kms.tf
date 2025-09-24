@@ -109,3 +109,18 @@ data "aws_kms_key" "key" {
   count  = local.provided_key
   key_id = var.kms.key_id
 }
+
+data "aws_iam_policy_document" "provided_key_policy_document" {
+  count = local.provided_key
+  source_policy_documents = [
+    templatefile("${path.module}/provided_key_policy_document.json", {
+      kms_key_arn = data.aws_kms_key.key[0].arn
+    })
+  ]
+}
+
+resource "aws_iam_policy" "provided_key_policy" {
+  count  = local.provided_key
+  name   = "${var.deploy_id}-provided-key-policy"
+  policy = data.aws_iam_policy_document.provided_key_policy_document[0].json
+}
