@@ -22,7 +22,7 @@ default_node_groups = {
 storage = {
   workspace_audit = {
     enabled                    = true
-    events_bucket_name         = "workspace-events"
-    events_archive_bucket_name = "workspace-events-archive"
+    events_bucket_name         = "workspace-audit-events-working"
+    events_archive_bucket_name = "workspace-audit-events-archive"
   }
 }

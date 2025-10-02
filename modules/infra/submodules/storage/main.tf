@@ -63,14 +63,14 @@ locals {
       regional_domain_name      = aws_s3_bucket.costs[0].bucket_regional_domain_name
       fips_regional_domain_name = replace(aws_s3_bucket.costs[0].bucket_regional_domain_name, ".s3.", ".s3-fips.")
     } : {}
-    workspace_audit_events = var.storage.workspace_audit.enabled ? {
-      bucket_name               = aws_s3_bucket.workspace_audit_events[0].bucket
-      id                        = aws_s3_bucket.workspace_audit_events[0].id
-      policy_json               = data.aws_iam_policy_document.workspace_audit_events[0].json
-      arn                       = aws_s3_bucket.workspace_audit_events[0].arn
-      domain_name               = aws_s3_bucket.workspace_audit_events[0].bucket_domain_name
-      regional_domain_name      = aws_s3_bucket.workspace_audit_events[0].bucket_regional_domain_name
-      fips_regional_domain_name = replace(aws_s3_bucket.workspace_audit_events[0].bucket_regional_domain_name, ".s3.", ".s3-fips.")
+    workspace_audit_events_working = var.storage.workspace_audit.enabled ? {
+      bucket_name               = aws_s3_bucket.workspace_audit_events_working[0].bucket
+      id                        = aws_s3_bucket.workspace_audit_events_working[0].id
+      policy_json               = data.aws_iam_policy_document.workspace_audit_events_working[0].json
+      arn                       = aws_s3_bucket.workspace_audit_events_working[0].arn
+      domain_name               = aws_s3_bucket.workspace_audit_events_working[0].bucket_domain_name
+      regional_domain_name      = aws_s3_bucket.workspace_audit_events_working[0].bucket_regional_domain_name
+      fips_regional_domain_name = replace(aws_s3_bucket.workspace_audit_events_working[0].bucket_regional_domain_name, ".s3.", ".s3-fips.")
     } : {}
     workspace_audit_events_archive = var.storage.workspace_audit.enabled ? {
       bucket_name               = aws_s3_bucket.workspace_audit_events_archive[0].bucket

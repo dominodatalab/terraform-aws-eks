@@ -505,8 +505,8 @@ variable "storage" {
     costs_enabled        = optional(bool, true)
     workspace_audit = optional(object({
       enabled                    = optional(bool, false)
-      events_bucket_name         = optional(string, "workspace-events")
-      events_archive_bucket_name = optional(string, "workspace-events-archive")
+      events_bucket_name         = optional(string, "workspace-audit-events-working")
+      events_archive_bucket_name = optional(string, "workspace-audit-events-archive")
     }), {})
   })
 

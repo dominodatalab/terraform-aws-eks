@@ -605,7 +605,7 @@ data "aws_iam_policy_document" "costs" {
 }
 
 
-resource "aws_s3_bucket" "workspace_audit_events" {
+resource "aws_s3_bucket" "workspace_audit_events_working" {
   count               = local.create_s3 && var.storage.workspace_audit.enabled ? 1 : 0
   bucket              = "${var.deploy_id}-${var.storage.workspace_audit.events_bucket_name}"
   force_destroy       = var.storage.s3.force_destroy_on_deletion
@@ -624,15 +624,15 @@ resource "aws_s3_bucket" "workspace_audit_events_archive" {
 }
 
 
-data "aws_iam_policy_document" "workspace_audit_events" {
+data "aws_iam_policy_document" "workspace_audit_events_working" {
   count = local.create_s3 && var.storage.workspace_audit.enabled ? 1 : 0
   statement {
 
     effect = "Deny"
 
     resources = [
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.workspace_audit_events[0].bucket}",
-      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.workspace_audit_events[0].bucket}/*",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.workspace_audit_events_working[0].bucket}",
+      "arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.workspace_audit_events_working[0].bucket}/*",
     ]
 
     actions = ["s3:*"]
@@ -653,7 +653,7 @@ data "aws_iam_policy_document" "workspace_audit_events" {
   statement {
     sid       = "DenyIncorrectEncryptionHeader"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.workspace_audit_events[0].bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.workspace_audit_events_working[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
@@ -671,7 +671,7 @@ data "aws_iam_policy_document" "workspace_audit_events" {
   statement {
     sid       = "DenyUnEncryptedObjectUploads"
     effect    = "Deny"
-    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.workspace_audit_events[0].bucket}/*"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${aws_s3_bucket.workspace_audit_events_working[0].bucket}/*"]
     actions   = ["s3:PutObject"]
 
     condition {
