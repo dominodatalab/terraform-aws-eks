@@ -14,7 +14,7 @@ default_node_groups = {
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
   platform = {
-    "availability_zone_ids" = ["usw2-az1", "usw2-az2"]
+    availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
 }
 
