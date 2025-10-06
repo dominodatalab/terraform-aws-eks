@@ -140,6 +140,7 @@ variable "default_node_groups" {
     {
       compute = object(
         {
+          single_nodegroup           = optional(bool, false)
           ami                        = optional(string, null)
           bootstrap_extra_args       = optional(string, "")
           instance_types             = optional(list(string), ["m6i.2xlarge"])
@@ -172,6 +173,7 @@ variable "default_node_groups" {
       }),
       platform = object(
         {
+          single_nodegroup           = optional(bool, false)
           ami                        = optional(string, null)
           bootstrap_extra_args       = optional(string, "")
           instance_types             = optional(list(string), ["m7i-flex.2xlarge"])
@@ -205,6 +207,7 @@ variable "default_node_groups" {
       }),
       gpu = object(
         {
+          single_nodegroup           = optional(bool, false)
           ami                        = optional(string, null)
           bootstrap_extra_args       = optional(string, "")
           instance_types             = optional(list(string), ["g5.2xlarge"])
@@ -247,6 +250,7 @@ variable "default_node_groups" {
 variable "additional_node_groups" {
   description = "Additional EKS managed node groups definition."
   type = map(object({
+    single_nodegroup           = optional(bool, false)
     ami                        = optional(string, null)
     bootstrap_extra_args       = optional(string, "")
     instance_types             = list(string)
