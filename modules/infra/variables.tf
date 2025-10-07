@@ -446,6 +446,11 @@ variable "storage" {
       }
       enable_remote_backup = Enable tagging required for cross-account backups
       costs_enabled = Determines whether to provision domino cost related infrastructures, ie, long term storage
+      workspace_audit = {
+        enabled = Determines whether to provision workspace audit buckets
+        events_bucket_name = workspace-events bucket name
+        events_archive_bucket_name = workspace-events-archive bucket name
+      }
     }
   }
   EOF
@@ -502,6 +507,11 @@ variable "storage" {
     }), {}),
     enable_remote_backup = optional(bool, false)
     costs_enabled        = optional(bool, true)
+    workspace_audit = optional(object({
+      enabled                    = optional(bool, false)
+      events_bucket_name         = optional(string, "workspace-audit-events-working")
+      events_archive_bucket_name = optional(string, "workspace-audit-events-archive")
+    }), {})
   })
 
   default = {}
