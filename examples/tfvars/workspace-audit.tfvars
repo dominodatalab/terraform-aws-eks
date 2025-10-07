@@ -1,8 +1,11 @@
-deploy_id        = "plantest0014"
+deploy_id        = "plantest019"
 region           = "us-west-2"
 ssh_pvt_key_path = "domino.pem"
 
-## The following  (default_node_groups,additional_node_groups) will ALSO need to be set in the nodes.tfvars
+bastion = {
+  enabled = true
+}
+
 default_node_groups = {
   compute = {
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
@@ -15,15 +18,11 @@ default_node_groups = {
   }
 }
 
-storage = {
-  filesystem_type = "netapp"
-  netapp = {
-    migrate_from_efs = {
-      enabled = true
-    }
-    storage_capacity_autosizing = {
-      enabled = true
-    }
-  }
 
+storage = {
+  workspace_audit = {
+    enabled                    = true
+    events_bucket_name         = "workspace-audit-events-working"
+    events_archive_bucket_name = "workspace-audit-events-archive"
+  }
 }
