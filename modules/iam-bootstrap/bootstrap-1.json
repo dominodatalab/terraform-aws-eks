@@ -125,7 +125,6 @@
         "ec2:RevokeSecurityGroupIngress",
         "ec2:RunInstances",
         "ec2:UpdateSecurityGroupRuleDescriptions*",
-        "ec2:CreateVpcEndpointServiceConfiguration",
         "ssm:GetParameter"
       ],
       "Resource": ["*"]

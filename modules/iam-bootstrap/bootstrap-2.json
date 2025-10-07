@@ -225,6 +225,14 @@
           "aws:ResourceTag/deploy_id": "${deploy_id}"
         }
       }
+    },
+    {
+      "Sid": "EC2VpcEndpointServiceUngated",
+      "Effect": "Allow",
+      "Action": [        
+        "ec2:CreateVpcEndpointServiceConfiguration"
+      ],
+      "Resource": ["*"]
     }
   ]
 }
