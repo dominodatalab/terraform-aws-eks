@@ -72,7 +72,7 @@ install_helm() {
     exit 1
   fi
   echo "Installing Helm version: ${HELM_VERSION}"
-  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors -o get_helm.sh  https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
   chmod +x get_helm.sh
   ./get_helm.sh --version "${HELM_VERSION}"
   rm ./get_helm.sh
