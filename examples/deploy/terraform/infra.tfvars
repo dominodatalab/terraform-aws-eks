@@ -110,6 +110,12 @@ storage = {
       size_in_megabytes          = 1099511
       storage_efficiency_enabled = true
     }
+    staging_volume = {
+      create            = true
+      junction_path     = "/trident_domino_staging_vol"
+      name              = trident_domino_staging_vol
+      size_in_megabytes = 1099511
+    }
   }
   s3 = {
     create                    = true
