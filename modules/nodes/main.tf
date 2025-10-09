@@ -37,8 +37,8 @@ locals {
     name => merge(ng, {
       is_gpu          = local.node_group_status[name].is_gpu
       is_neuron       = local.node_group_status[name].is_neuron
-      ami_type        = local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
-      release_version = try(local.ami_version_mappings[ng.ami_class].release_version, null)
+      ami_type        = ng.ami_type != null ? ng.ami_type : (ng.ami != null ? null : local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type)
+      release_version = ng.ami != null ? null : try(local.ami_version_mappings[local.node_group_ami_class_types[name].ami_class].release_version, null)
       instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
       #Omit the karpenter nodegroups to mitigate daemonsets scheduling issues.
       labels = merge(

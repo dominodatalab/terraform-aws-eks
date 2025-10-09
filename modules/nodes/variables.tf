@@ -161,6 +161,7 @@ variable "default_node_groups" {
         {
           single_nodegroup           = optional(bool, false)
           ami                        = optional(string, null)
+          ami_type                   = optional(string, null)
           bootstrap_extra_args       = optional(string, "")
           instance_types             = optional(list(string), ["m6i.2xlarge"])
           spot                       = optional(bool, false)
@@ -204,6 +205,7 @@ variable "default_node_groups" {
         {
           single_nodegroup           = optional(bool, false)
           ami                        = optional(string, null)
+          ami_type                   = optional(string, null)
           bootstrap_extra_args       = optional(string, "")
           instance_types             = optional(list(string), ["m7i-flex.2xlarge"])
           spot                       = optional(bool, false)
@@ -243,6 +245,7 @@ variable "default_node_groups" {
         {
           single_nodegroup           = optional(bool, false)
           ami                        = optional(string, null)
+          ami_type                   = optional(string, null)
           bootstrap_extra_args       = optional(string, "")
           instance_types             = optional(list(string), ["g5.2xlarge"])
           spot                       = optional(bool, false)
@@ -297,6 +300,7 @@ variable "additional_node_groups" {
   type = map(object({
     single_nodegroup           = optional(bool, false)
     ami                        = optional(string, null)
+    ami_type                   = optional(string, null)
     bootstrap_extra_args       = optional(string, "")
     instance_types             = list(string)
     spot                       = optional(bool, false)
@@ -338,6 +342,7 @@ variable "karpenter_node_groups" {
   type = map(object({
     single_nodegroup           = optional(bool, false)
     ami                        = optional(string, null)
+    ami_type                   = optional(string, null)
     bootstrap_extra_args       = optional(string, "")
     instance_types             = optional(list(string), ["m6a.large"])
     spot                       = optional(bool, false)
