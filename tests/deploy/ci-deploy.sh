@@ -39,7 +39,7 @@ deploy() {
 set_ci_branch_name() {
   if [[ "$CIRCLE_BRANCH" =~ ^pull/[0-9]+/head$ ]]; then
     PR_NUMBER=$(echo "$CIRCLE_BRANCH" | sed -n 's/^pull\/\([0-9]*\)\/head/\1/p')
-    ci_branch_name=$(curl -s \
+    ci_branch_name=$(curl -s --retry 5 --retry-delay 2 --retry-all-errors \
       "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" |
       jq -r .head.ref)
   else
@@ -65,6 +65,7 @@ setup_modules_ci_branch() {
 }
 
 setup_modules_latest_rel() {
+  get_latest_release_tag
   setup_module "$DEPLOY_DIR" "$LATEST_REL_TAG"
 }
 
@@ -351,6 +352,7 @@ set_mod_src_local() {
 }
 
 set_mod_src_latest_rel() {
+  get_latest_release_tag
   echo "Updating module source to the latest published release: ${LATEST_REL_TAG}"
   set_all_mod_src "$LATEST_REL_TAG"
 }
