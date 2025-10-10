@@ -16,7 +16,13 @@ fi
 # remote module vars
 BASE_REMOTE_SRC="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 BASE_REMOTE_MOD_SRC="${BASE_REMOTE_SRC}//modules"
-LATEST_REL_TAG="$(curl -sSfL -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
+
+get_latest_release_tag() {
+  if [ -z "${LATEST_REL_TAG:-}" ]; then
+    LATEST_REL_TAG="$(curl -sSfL --retry 5 --retry-delay 2 --retry-all-errors -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
+    export LATEST_REL_TAG
+  fi
+}
 
 deploy() {
   component=${1:-all}
