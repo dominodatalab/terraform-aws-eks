@@ -3,15 +3,13 @@ resource "aws_launch_template" "node_groups" {
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_key.key_pair_name
-  user_data = each.value.ami != null && each.value.ami_type == null ? base64encode(templatefile(
-    "${path.module}/templates/linux_user_data.tpl",
+  user_data = each.value.ami != null ? base64encode(templatefile(local.user_data_templates[each.value.user_data_type],
     {
       # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-custom-ami
       # Required to bootstrap node
-      cluster_name        = var.eks_info.cluster.specs.name
-      cluster_endpoint    = var.eks_info.cluster.specs.endpoint
-      cluster_auth_base64 = var.eks_info.cluster.specs.certificate_authority[0].data
-      # Optional
+      cluster_name              = var.eks_info.cluster.specs.name
+      cluster_endpoint          = var.eks_info.cluster.specs.endpoint
+      cluster_auth_base64       = var.eks_info.cluster.specs.certificate_authority[0].data
       cluster_service_ipv4_cidr = var.eks_info.cluster.specs.kubernetes_network_config.service_ipv4_cidr != null ? var.eks_info.cluster.specs.kubernetes_network_config.service_ipv4_cidr : ""
       bootstrap_extra_args      = each.value.bootstrap_extra_args
       pre_bootstrap_user_data   = ""
@@ -99,7 +97,7 @@ data "aws_ssm_parameter" "eks_amis" {
 resource "aws_eks_node_group" "node_groups" {
   for_each             = local.node_groups_by_name
   cluster_name         = var.eks_info.cluster.specs.name
-  version              = each.value.node_group.ami != null ? null : var.eks_info.cluster.version
+  version              = each.value.node_group.version
   release_version      = each.value.node_group.release_version
   node_group_name      = each.key
   node_role_arn        = var.eks_info.nodes.roles[0].arn
@@ -111,7 +109,7 @@ resource "aws_eks_node_group" "node_groups" {
     desired_size = each.value.node_group.desired_per_az
   }
 
-  ami_type       = each.value.node_group.ami_type
+  ami_type       = each.value.node_group.ami_type_aws
   capacity_type  = each.value.node_group.spot ? "SPOT" : "ON_DEMAND"
   instance_types = each.value.node_group.instance_types
   launch_template {

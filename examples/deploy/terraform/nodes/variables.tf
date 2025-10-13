@@ -8,7 +8,7 @@ variable "default_node_groups" {
         {
           single_nodegroup           = optional(bool, false)
           ami                        = optional(string)
-          ami_type                   = optional(string)
+          user_data_type             = optional(string)
           bootstrap_extra_args       = optional(string)
           instance_types             = optional(list(string))
           spot                       = optional(bool)
@@ -37,7 +37,7 @@ variable "default_node_groups" {
         {
           single_nodegroup           = optional(bool, false)
           ami                        = optional(string)
-          ami_type                   = optional(string)
+          user_data_type             = optional(string)
           bootstrap_extra_args       = optional(string)
           instance_types             = optional(list(string))
           spot                       = optional(bool)
@@ -65,7 +65,7 @@ variable "default_node_groups" {
         {
           single_nodegroup           = optional(bool, false)
           ami                        = optional(string)
-          ami_type                   = optional(string)
+          user_data_type             = optional(string)
           bootstrap_extra_args       = optional(string)
           instance_types             = optional(list(string))
           spot                       = optional(bool)
@@ -98,7 +98,7 @@ variable "additional_node_groups" {
   type = map(object({
     single_nodegroup           = optional(bool, false)
     ami                        = optional(string)
-    ami_type                   = optional(string)
+    user_data_type             = optional(string)
     bootstrap_extra_args       = optional(string)
     instance_types             = list(string)
     spot                       = optional(bool)
@@ -139,7 +139,7 @@ variable "karpenter_node_groups" {
   type = map(object({
     single_nodegroup           = optional(bool, false)
     ami                        = optional(string, null)
-    ami_type                   = optional(string, null)
+    user_data_type             = optional(string, null)
     bootstrap_extra_args       = optional(string, "")
     instance_types             = optional(list(string), ["m6a.large"])
     spot                       = optional(bool, false)
