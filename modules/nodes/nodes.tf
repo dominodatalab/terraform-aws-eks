@@ -109,7 +109,7 @@ resource "aws_eks_node_group" "node_groups" {
     desired_size = each.value.node_group.desired_per_az
   }
 
-  ami_type       = each.value.node_group.ami_type_aws
+  ami_type       = each.value.node_group.ami_type
   capacity_type  = each.value.node_group.spot ? "SPOT" : "ON_DEMAND"
   instance_types = each.value.node_group.instance_types
   launch_template {
