@@ -99,7 +99,7 @@ data "aws_ssm_parameter" "eks_amis" {
 resource "aws_eks_node_group" "node_groups" {
   for_each             = local.node_groups_by_name
   cluster_name         = var.eks_info.cluster.specs.name
-  version              = each.value.node_group.ami != null && each.value.node_group.ami_type == null ? null : var.eks_info.cluster.version
+  version              = each.value.node_group.ami != null ? null : var.eks_info.cluster.version
   release_version      = each.value.node_group.release_version
   node_group_name      = each.key
   node_role_arn        = var.eks_info.nodes.roles[0].arn
