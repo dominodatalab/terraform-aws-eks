@@ -32,7 +32,6 @@ locals {
     }
   }
 
-
   user_data_templates = {
     AL2    = "${path.module}/templates/linux_user_data_al2.tpl"
     AL2023 = "${path.module}/templates/linux_user_data_al2023.tpl"
@@ -41,13 +40,10 @@ locals {
   node_groups = {
     for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
     name => merge(ng, {
-      is_gpu    = local.node_group_status[name].is_gpu
-      is_neuron = local.node_group_status[name].is_neuron
-      # user_data_type: determines which bootstrap template to use (AL2 or AL2023)
-      user_data_type = ng.ami != null ? coalesce(ng.user_data_type, "AL2") : null
-      # AWS API ami_type: CUSTOM for all custom AMIs, otherwise derived from gpu/neuron
-      ami_type_aws = ng.ami != null ? "CUSTOM" : local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
-      # EKS cluster version: null for custom AMIs (version is in the AMI), otherwise use cluster version
+      is_gpu          = local.node_group_status[name].is_gpu
+      is_neuron       = local.node_group_status[name].is_neuron
+      user_data_type  = ng.ami != null ? ng.user_data_type : null
+      ami_type        = ng.ami != null ? "CUSTOM" : local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
       version         = ng.ami != null ? null : var.eks_info.cluster.version
       release_version = ng.ami != null ? null : try(nonsensitive(local.ami_version_mappings[local.node_group_ami_class_types[name].ami_class].release_version), null)
       instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
