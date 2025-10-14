@@ -1,7 +1,8 @@
 resource "aws_lb_target_group" "lb_target_groups" {
   for_each = local.listeners
 
-  name = "${var.deploy_id}-${substr(each.value.lb_name, 0, 9)}-${each.value.port}-${each.value.tg_protocol_version}"
+  // Note to self: htf to deal with low 32 character name limit
+  name = "${var.deploy_id}-${substr(each.value.lb_name, 0, 9)}-${each.value.port}${each.value.tg_protocol_version != null ? "-${each.value.tg_protocol_version}" : ""}"
 
   port             = each.value.port
   protocol         = each.value.tg_protocol
