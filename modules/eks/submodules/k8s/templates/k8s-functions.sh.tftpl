@@ -133,7 +133,7 @@ install_helm_chart() {
 _update_calico_crds() {
   printf "$GREEN Updating Calico CRDs... $EC\n"
   kubectl_cmd_with_retry apply --server-side --force-conflicts \
-    -f "https://raw.githubusercontent.com/projectcalico/calico/v${calico_version}/manifests/operator-crds.yaml"
+    -f "https://raw.githubusercontent.com/projectcalico/calico/${calico_version}/manifests/operator-crds.yaml"
 }
 
 _install_calico_chart() {
