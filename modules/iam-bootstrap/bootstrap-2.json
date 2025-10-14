@@ -229,8 +229,14 @@
     {
       "Sid": "EC2VpcEndpointServiceUngated",
       "Effect": "Allow",
-      "Action": [        
-        "ec2:CreateVpcEndpointServiceConfiguration"
+      "Action": [
+        "ec2:CreateVpcEndpointServiceConfiguration",
+        "ec2:ModifyVpcEndpointServiceConfiguration",
+        "ec2:DeleteVpcEndpointServiceConfigurations",
+        "ec2:DescribeVpcEndpointServices",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets",
+        "vpce:AllowMultiRegion"
       ],
       "Resource": ["*"]
     }
