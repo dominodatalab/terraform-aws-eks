@@ -32,15 +32,22 @@ locals {
     }
   }
 
+  user_data_templates = {
+    AL2    = "${path.module}/templates/linux_user_data_al2.tpl"
+    AL2023 = "${path.module}/templates/linux_user_data_al2023.tpl"
+  }
+
   node_groups = {
     for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
     name => merge(ng, {
       is_gpu          = local.node_group_status[name].is_gpu
       is_neuron       = local.node_group_status[name].is_neuron
-      ami_type        = local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
-      release_version = try(local.ami_version_mappings[ng.ami_class].release_version, null)
+      user_data_type  = ng.ami != null ? ng.user_data_type : null
+      ami_type        = ng.ami != null ? "CUSTOM" : local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
+      version         = ng.ami != null ? null : var.eks_info.cluster.version
+      release_version = ng.ami != null ? null : try(nonsensitive(local.ami_version_mappings[local.node_group_ami_class_types[name].ami_class].release_version), null)
       instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
-      #Omit the karpenter nodegroups to mitigate daemonsets scheduling issues.
+      # Omit the karpenter nodegroups to mitigate daemonsets scheduling issues.
       labels = merge(
         local.node_group_status[name].is_gpu ? local.gpu_labels : {},
         ng.labels,
