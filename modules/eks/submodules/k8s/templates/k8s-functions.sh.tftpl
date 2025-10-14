@@ -314,8 +314,10 @@ kubectl_cmd_with_retry() {
   for i in $(seq 1 $max_retries); do
     echo "Attempt $i of $max_retries..."
 
+    set +e
     kubectl_cmd "$@"
     local exit_code=$?
+    set -e
 
     if [ $exit_code -eq 0 ]; then
       printf "$GREEN kubectl command succeeded. $EC \n"
