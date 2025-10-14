@@ -130,6 +130,12 @@ install_helm_chart() {
   done
 }
 
+_update_calico_crds() {
+  printf "$GREEN Updating Calico CRDs... $EC\n"
+  kubectl_cmd_with_retry apply --server-side --force-conflicts \
+    -f "https://raw.githubusercontent.com/projectcalico/calico/v${calico_version}/manifests/operator-crds.yaml"
+}
+
 _install_calico_chart() {
   helm_cmd upgrade "calico-tigera-operator" \
     tigera-operator \
@@ -155,7 +161,21 @@ _install_calico_chart() {
 
 install_calico() {
   check_remove_calico
+  _update_calico_crds
   install_helm_chart "_install_calico_chart"
+}
+
+_install_karpenter_crd_chart() {
+  helm_cmd upgrade "karpenter-crd" \
+    oci://public.ecr.aws/karpenter/karpenter-crd \
+    --version "${karpenter_version}" \
+    --kubeconfig "$kubeconfig" \
+    --namespace "${karpenter_namespace}" \
+    --wait \
+    --timeout 10m \
+    --create-namespace \
+    --install \
+    --take-ownership
 }
 
 _install_karpenter_chart() {
@@ -184,6 +204,7 @@ _install_karpenter_chart() {
 }
 
 install_karpenter() {
+  install_helm_chart "_install_karpenter_crd_chart"
   install_helm_chart "_install_karpenter_chart"
 }
 
@@ -279,10 +300,38 @@ helm_cmd() {
 kubectl_cmd() {
   printf "kubectl $@...\n"
   kubectl --kubeconfig "$kubeconfig" $@
-  if [ $? -ne 0 ]; then
+  local exit_code=$?
+  if [ $exit_code -ne 0 ]; then
     printf "$RED Error running kubectl $@ $EC \n"
-    exit 1
   fi
+  return $exit_code
+}
+
+kubectl_cmd_with_retry() {
+  local max_retries=5
+  local sleep_duration=10
+
+  for i in $(seq 1 $max_retries); do
+    echo "Attempt $i of $max_retries..."
+
+    kubectl_cmd "$@"
+    local exit_code=$?
+
+    if [ $exit_code -eq 0 ]; then
+      printf "$GREEN kubectl command succeeded. $EC \n"
+      return 0
+    else
+      printf "$YELLOW kubectl attempt $i failed. $EC \n"
+
+      if [ $i -lt $max_retries ]; then
+        printf "Retrying in $sleep_duration s...\n"
+        sleep $sleep_duration
+      else
+        printf "$RED Maximum attempts reached. Exiting. $EC \n"
+        exit 1
+      fi
+    fi
+  done
 }
 
 
