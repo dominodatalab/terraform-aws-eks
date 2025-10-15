@@ -152,7 +152,10 @@ _install_calico_chart() {
     --set-json 'tolerations=[{"key":"node.kubernetes.io/unschedulable","operator":"Equal","effect":"NoSchedule"}]' \
     --set-json 'installation.controlPlaneNodeSelector={"${calico_node_selector.key}":"${calico_node_selector.value}"}' \
     --set-json 'nodeSelector={"${calico_node_selector.key}":"${calico_node_selector.value}"}' \
-    --set-json 'installation.typhaDeployment={"spec":{"template":{"spec":{"nodeSelector":{"${calico_node_selector.key}":"${calico_node_selector.value}"}}}}}' \
+    --set tigeraOperator.podAnnotations.crd-version="${calico_version}" \
+    --set installation.calicoNodeDaemonSet.spec.template.metadata.annotations.crd-version="${calico_version}" \
+    --set installation.calicoKubeControllersDeployment.spec.template.metadata.annotations.crd-version="${calico_version}" \
+    --set-json 'installation.typhaDeployment={"spec":{"template":{"metadata":{"annotations":{"crd-version":"${calico_version}"}},"spec":{"nodeSelector":{"${calico_node_selector.key}":"${calico_node_selector.value}"}}}}}' \
     --wait \
     --timeout 10m \
     --create-namespace \
@@ -196,7 +199,7 @@ _install_karpenter_chart() {
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=karpenter \
     --set affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey=kubernetes.io/hostname \
-    --set-json 'podAnnotations={"prometheus.io/scrape":"true","prometheus.io/port":"8080","prometheus.io/path":"/metrics"}' \
+    --set-json 'podAnnotations={"crd-version":"${karpenter_version}","prometheus.io/scrape":"true","prometheus.io/port":"8080","prometheus.io/path":"/metrics"}' \
     --wait \
     --timeout 10m \
     --create-namespace \
