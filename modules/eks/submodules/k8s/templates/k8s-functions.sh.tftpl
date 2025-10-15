@@ -152,10 +152,12 @@ _install_calico_chart() {
     --set-json 'tolerations=[{"key":"node.kubernetes.io/unschedulable","operator":"Equal","effect":"NoSchedule"}]' \
     --set-json 'installation.controlPlaneNodeSelector={"${calico_node_selector.key}":"${calico_node_selector.value}"}' \
     --set-json 'nodeSelector={"${calico_node_selector.key}":"${calico_node_selector.value}"}' \
-    --set tigeraOperator.podAnnotations.crd-version="${calico_version}" \
-    --set installation.calicoNodeDaemonSet.spec.template.metadata.annotations.crd-version="${calico_version}" \
-    --set installation.calicoKubeControllersDeployment.spec.template.metadata.annotations.crd-version="${calico_version}" \
-    --set-json 'installation.typhaDeployment={"spec":{"template":{"metadata":{"annotations":{"crd-version":"${calico_version}"}},"spec":{"nodeSelector":{"${calico_node_selector.key}":"${calico_node_selector.value}"}}}}}' \
+    --set podAnnotations.crd-version="${calico_version}" \
+    --set installation.calicoNodeDaemonSet.metadata.annotations.crd-version="${calico_version}" \
+    --set installation.calicoKubeControllersDeployment.metadata.annotations.crd-version="${calico_version}" \
+    --set installation.csiNodeDriverDaemonSet.metadata.annotations.crd-version="${calico_version}" \
+    --set apiServer.apiServerDeployment.metadata.annotations.crd-version="${calico_version}" \
+    --set-json 'installation.typhaDeployment={"spec":{"template":{"metadata":{"annotations":{"crd-version":"'${calico_version}'"}},"spec":{"nodeSelector":{"${calico_node_selector.key}":"${calico_node_selector.value}"}}}}}' \
     --wait \
     --timeout 10m \
     --create-namespace \
