@@ -40,9 +40,9 @@ Always refer to each section's respective README or documentation for detailed i
 ## Prerequisites
 * A host with `ssh-keygen` installed
 * [awscli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) >= 2.23.6
-* [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started#install-terraform) >= v1.3.0
-* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) cli >= 1.25.0
-* [helm](https://helm.sh/docs/intro/install/) >= 3.9
+* [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started#install-terraform) >= v1.10.5
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) cli >= 1.32.0
+* [helm](https://helm.sh/docs/intro/install/) >= 3.17
 * [hcledit](https://github.com/minamijoyo/hcledit)
 * bash >= 4.0
 
