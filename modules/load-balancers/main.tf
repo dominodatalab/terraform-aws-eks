@@ -22,15 +22,16 @@ locals {
     for item in flatten([
       for lb in var.load_balancers : [
         for listener in lb.listeners : {
-          key             = "${lb.name}-${listener.name}"
-          lb_name         = lb.name
-          lb_internal     = lb.internal
-          ddos_protection = lb.ddos_protection
-          port            = listener.port
-          protocol        = listener.protocol
-          tg_protocol     = listener.tg_protocol
-          ssl_policy      = lookup(listener, "ssl_policy", null)
-          cert_arn        = lookup(listener, "cert_arn", null)
+          key                 = "${lb.name}-${listener.name}"
+          lb_name             = lb.name
+          lb_internal         = lb.internal
+          ddos_protection     = lb.ddos_protection
+          port                = listener.port
+          protocol            = listener.protocol
+          tg_protocol         = listener.tg_protocol
+          tg_protocol_version = listener.tg_protocol_version
+          ssl_policy          = lookup(listener, "ssl_policy", null)
+          cert_arn            = lookup(listener, "cert_arn", null)
         }
       ]
     ]) : item.key => item
@@ -110,6 +111,10 @@ resource "aws_lb_listener" "load_balancer_listener" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.lb_target_groups[each.key].arn
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 

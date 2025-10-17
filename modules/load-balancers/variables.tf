@@ -45,12 +45,13 @@ variable "load_balancers" {
     internal        = optional(bool, true)
     ddos_protection = optional(bool, true)
     listeners = list(object({
-      name        = string
-      port        = number
-      protocol    = string
-      tg_protocol = string
-      ssl_policy  = optional(string)
-      cert_arn    = optional(string)
+      name                = string
+      port                = number
+      protocol            = string
+      tg_protocol         = string
+      tg_protocol_version = optional(string)
+      ssl_policy          = optional(string)
+      cert_arn            = optional(string)
     }))
   }))
 }
