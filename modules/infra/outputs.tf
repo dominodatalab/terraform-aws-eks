@@ -25,7 +25,7 @@ output "storage" {
 
 output "tags" {
   description = "Deployment tags."
-  value       = var.tags
+  value       = merge(var.tags, var.partner_tags)
 }
 
 output "deploy_id" {
