@@ -38,6 +38,12 @@ variable "ignore_tags" {
   default     = []
 }
 
+variable "partner_tags" {
+  type        = map(string)
+  description = "Domino AWS partner tags"
+  default     = { "aws-apn-id" : "pc:2umrgw02q6y8t2te66fgdx6sk" }
+}
+
 variable "ssh_pvt_key_path" {
   type        = string
   description = "SSH private key filepath."
