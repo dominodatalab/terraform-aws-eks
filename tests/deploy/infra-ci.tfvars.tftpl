@@ -84,12 +84,13 @@ kms = {
 }
 
 tags = {
-  deploy_id             = "circleci-${CIRCLE_BUILD_NUM}"
-  CIRCLE_BUILD_URL      = "${CIRCLE_BUILD_URL}"
-  CIRCLE_BRANCH         = "${CIRCLE_BRANCH}"
-  CIRCLE_JOB            = "${CIRCLE_JOB}"
-  CIRCLE_REPOSITORY_URL = "${CIRCLE_REPOSITORY_URL}"
-  CIRCLE_BUILD_NUM      = "${CIRCLE_BUILD_NUM}"
+  deploy_id                      = "circleci-${CIRCLE_BUILD_NUM}"
+  ci_safe_to_delete_after_date   = "$(date -u -d '+4 hours' +%Y-%m-%dT%H:%M:%SZ)"
+  CIRCLE_BUILD_URL               = "${CIRCLE_BUILD_URL}"
+  CIRCLE_BRANCH                  = "${CIRCLE_BRANCH}"
+  CIRCLE_JOB                     = "${CIRCLE_JOB}"
+  CIRCLE_REPOSITORY_URL          = "${CIRCLE_REPOSITORY_URL}"
+  CIRCLE_BUILD_NUM               = "${CIRCLE_BUILD_NUM}"
 }
 
 ignore_tags       = ["my-ignored-tag"]
