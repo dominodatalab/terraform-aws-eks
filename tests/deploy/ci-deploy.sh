@@ -126,7 +126,10 @@ set_tf_vars() {
 
   [ -f "$PVT_KEY" ] || { ssh-keygen -q -P '' -t rsa -b 4096 -m PEM -f "$PVT_KEY" && chmod 600 "$PVT_KEY"; }
 
-  export CUSTOM_AMI PVT_KEY
+  # Set safe-to-delete timestamp (4 hours from now in UTC)
+  CI_SAFE_DELETE_AFTER=$(date -u -d '+4 hours' +%Y-%m-%dT%H:%M:%SZ)
+
+  export CUSTOM_AMI PVT_KEY CI_SAFE_DELETE_AFTER
 
   printf "\nInfra vars:\n"
   envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS"

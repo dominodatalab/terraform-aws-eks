@@ -85,7 +85,7 @@ kms = {
 
 tags = {
   deploy_id                      = "circleci-${CIRCLE_BUILD_NUM}"
-  ci_safe_to_delete_after_date   = "$(date -u -d '+4 hours' +%Y-%m-%dT%H:%M:%SZ)"
+  ci_safe_to_delete_after_date   = "${CI_SAFE_DELETE_AFTER}"
   CIRCLE_BUILD_URL               = "${CIRCLE_BUILD_URL}"
   CIRCLE_BRANCH                  = "${CIRCLE_BRANCH}"
   CIRCLE_JOB                     = "${CIRCLE_JOB}"
