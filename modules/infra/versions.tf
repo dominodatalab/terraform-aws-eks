@@ -23,7 +23,7 @@ terraform {
 provider "aws" {
   region = var.region
   default_tags {
-    tags = var.tags
+    tags = merge(var.tags, var.partner_tags)
   }
   ignore_tags {
     keys = var.ignore_tags
@@ -36,7 +36,7 @@ provider "aws" {
   region = strcontains(var.region, "us-gov") ? "us-gov-east-1" : "us-east-1"
   alias  = "us-east-1"
   default_tags {
-    tags = var.tags
+    tags = merge(var.tags, var.partner_tags)
   }
   ignore_tags {
     keys = var.ignore_tags
