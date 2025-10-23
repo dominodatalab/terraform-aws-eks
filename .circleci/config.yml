@@ -24,7 +24,7 @@ parameters:
     default: ""
 
 orbs:
-  terraform: circleci/terraform@3.6.0
+  terraform: circleci/terraform@3.7.0
   aws-cli: circleci/aws-cli@5.4.1
   envsubst: sawadashota/envsubst@1.4.3
 
@@ -170,14 +170,6 @@ commands:
             HELM_VERSION: << parameters.helm_version >>
           command: bash ci-deploy.sh install_helm
 
-  tf_init_apply:
-    description: "Terraform Init, Validate, Apply"
-    steps:
-      - run:
-          name: Terraform init/validate/apply
-          working_directory: tests/deploy
-          command: bash ci-deploy.sh deploy
-
   tf_deploy_infra:
     description: "Terraform deploy Infra"
     steps:
@@ -249,7 +241,7 @@ commands:
 jobs:
   tf-plan-test:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2025.01.1
     parameters:
       terraform_version:
         type: string
@@ -261,7 +253,7 @@ jobs:
 
   test-deploy:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2025.01.1
     parameters:
       opentofu_version:
         type: string
@@ -285,7 +277,7 @@ jobs:
 
   test-upgrade:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2025.01.1
     parameters:
       terraform_version:
         type: string

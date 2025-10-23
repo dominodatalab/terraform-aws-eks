@@ -17,9 +17,27 @@ fi
 BASE_REMOTE_SRC="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 BASE_REMOTE_MOD_SRC="${BASE_REMOTE_SRC}//modules"
 
+github_api_curl() {
+  local url="$1"
+  local curl_args=(
+    -sSfL
+    --retry 15
+    --retry-delay 5
+    --retry-all-errors
+    -H "X-GitHub-Api-Version: 2022-11-28"
+    -H "Accept: application/vnd.github+json"
+  )
+
+  if [ -n "${GITHUB_TOKEN:-}" ]; then
+    curl_args+=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+  fi
+
+  curl "${curl_args[@]}" "$url"
+}
+
 get_latest_release_tag() {
   if [ -z "${LATEST_REL_TAG:-}" ]; then
-    LATEST_REL_TAG="$(curl -sSfL --retry 5 --retry-delay 2 --retry-all-errors -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
+    LATEST_REL_TAG="$(github_api_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
     export LATEST_REL_TAG
   fi
 }
@@ -39,9 +57,7 @@ deploy() {
 set_ci_branch_name() {
   if [[ "$CIRCLE_BRANCH" =~ ^pull/[0-9]+/head$ ]]; then
     PR_NUMBER=$(echo "$CIRCLE_BRANCH" | sed -n 's/^pull\/\([0-9]*\)\/head/\1/p')
-    ci_branch_name=$(curl -s --retry 5 --retry-delay 2 --retry-all-errors \
-      "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" |
-      jq -r .head.ref)
+    ci_branch_name=$(github_api_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .head.ref)
   else
     ci_branch_name="$CIRCLE_BRANCH"
   fi
@@ -89,7 +105,7 @@ install_helm() {
 install_hcledit() {
   local hcledit_version="${HCLEDIT_VERSION}"
   local hcledit_artifact="hcledit_${hcledit_version}_linux_amd64.tar.gz"
-  curl -fsSL -o "${hcledit_artifact}" "https://github.com/minamijoyo/hcledit/releases/download/v${hcledit_version}/${hcledit_artifact}"
+  curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors -o "${hcledit_artifact}" "https://github.com/minamijoyo/hcledit/releases/download/v${hcledit_version}/${hcledit_artifact}"
   tar xvzf "${hcledit_artifact}"
   sudo mv hcledit /usr/local/bin/ && rm "${hcledit_artifact}" && hcledit version
 }
@@ -97,7 +113,7 @@ install_hcledit() {
 install_opentofu() {
   local opentofu_version="${OPENTOFU_VERSION}"
   local opentofu_artifact="tofu_${opentofu_version}_linux_amd64.tar.gz"
-  curl -fsSL -o "${opentofu_artifact}" "https://github.com/opentofu/opentofu/releases/download/v${opentofu_version}/${opentofu_artifact}"
+  curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors -o "${opentofu_artifact}" "https://github.com/opentofu/opentofu/releases/download/v${opentofu_version}/${opentofu_artifact}"
   tar xvzf "${opentofu_artifact}"
   sudo mv tofu /usr/local/bin/ && rm "${opentofu_artifact}" && tofu version
   sudo ln -s /usr/local/bin/tofu /usr/local/bin/terraform && terraform version
@@ -107,13 +123,21 @@ set_eks_worker_ami() {
   # We can potentially test AMI upgrades in CI.
   # 1 is latest.
   local precedence="$1"
-  local k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
+  local k8s_version
+  local ami_pattern
+
+  k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
+  ami_pattern="amazon-eks-node-al2023-x86_64-standard-${k8s_version// /}*"
+  AMI_USER_DATA_TYPE="AL2023"
+
   if ! aws sts get-caller-identity; then
     echo "Incorrect AWS credentials."
     exit 1
   fi
-  CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=amazon-eks-node-${k8s_version// /}*" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
-  export CUSTOM_AMI
+
+  CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=${ami_pattern}" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
+
+  export CUSTOM_AMI AMI_USER_DATA_TYPE
 }
 
 set_tf_vars() {

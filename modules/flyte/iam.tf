@@ -56,6 +56,15 @@ resource "aws_iam_role_policy_attachment" "flyte_controlplane" {
   policy_arn = aws_iam_policy.flyte_controlplane.arn
 }
 
+resource "random_id" "server" {
+  keepers = {
+    # Generate a new id each time there's a new deploy id (which should never occur)
+    deploy_id = local.deploy_id
+  }
+
+  byte_length = 8
+}
+
 resource "aws_iam_role" "flyte_dataplane" {
   name = "${local.deploy_id}-flyte-dataplane"
   assume_role_policy = jsonencode({
@@ -88,6 +97,18 @@ resource "aws_iam_role" "flyte_dataplane" {
             "${trimprefix(local.oidc_provider_url, "https://")}:sub" : [
               "system:serviceaccount:${var.platform_namespace}:${var.serviceaccount_names.flyteadmin}",
             ]
+          }
+        }
+      },
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = "accounts.google.com"
+        }
+        Condition : {
+          StringEquals : {
+            "accounts.google.com:oaud" : "${local.deploy_id}-flyte-gcp-${random_id.server.hex}"
           }
         }
       },
