@@ -112,6 +112,18 @@ resource "aws_iam_role" "flyte_dataplane" {
           }
         }
       },
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:${data.aws_partition.current.partition}:iam::<AWS Account ID>:oidc-provider/sts.windows.net/<Microsoft Entra Tenant ID>/"
+        }
+        Condition : {
+          StringEquals : {
+            "sts.windows.net/<Microsoft Entra Tenant ID>/:aud": "${local.deploy_id}-flyte-azure-${random_id.server.hex}"
+          }
+        }
+      },
     ]
   })
 }
