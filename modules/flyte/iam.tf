@@ -108,7 +108,7 @@ resource "aws_iam_role" "flyte_dataplane" {
         }
         Condition : {
           StringEquals : {
-            "accounts.google.com:aud" : "${local.deploy_id}-flyte-gcp-${random_id.server.hex}"
+            "accounts.google.com:oaud" : "${local.deploy_id}-flyte-gcp-${random_id.server.hex}"
           }
         }
       },
