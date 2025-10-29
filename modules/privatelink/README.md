@@ -30,8 +30,12 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
 | <a name="input_hosted_zone_private"></a> [hosted\_zone\_private](#input\_hosted\_zone\_private) | Use private hosted zone | `bool` | `false` | no |
+| <a name="input_ignore_tags"></a> [ignore\_tags](#input\_ignore\_tags) | Tag keys to be ignored by the aws provider. | `list(string)` | `[]` | no |
 | <a name="input_lb_arns"></a> [lb\_arns](#input\_lb\_arns) | Map of Load Balancer ARNs used by the VPC Endpoint Services.<br/><br/>    Expected format:<br/>      {<br/>        service-name-1 = "<ARN\_HERE>"<br/>        service-name-2 = "<ARN\_HERE>"<br/>      }<br/>    Keys must match `name` fields in `privatelink.vpc_endpoint_services`. | `map(string)` | `{}` | no |
+| <a name="input_partner_tags"></a> [partner\_tags](#input\_partner\_tags) | Domino AWS partner tags | `map(string)` | <pre>{<br/>  "aws-apn-id": "pc:2umrgw02q6y8t2te66fgdx6sk"<br/>}</pre> | no |
 | <a name="input_privatelink"></a> [privatelink](#input\_privatelink) | {<br/>      enabled = Enable Private Link connections.<br/>      route53\_hosted\_zone\_name = Hosted zone for External DNS zone.<br/>      vpc\_endpoint\_services = [{<br/>        name      = Name of the VPC Endpoint Service.<br/>        lb\_name   = Load Balancer Name associated to this VPC Endpoint Service.<br/>        ports     = List of ports exposing the VPC Endpoint Service. i.e [8080, 8081]<br/>        cert\_arn  = Certificate ARN used by the NLB associated for the given VPC Endpoint Service.<br/>        private\_dns = Private DNS for the VPC Endpoint Service.<br/>        supported\_regions = The set of regions from which service consumers can access the service.<br/>      }]<br/>    } | <pre>object({<br/>    enabled                  = optional(bool, false)<br/>    route53_hosted_zone_name = optional(string, null)<br/>    vpc_endpoint_services = optional(list(object({<br/>      name              = optional(string)<br/>      lb_name           = optional(string)<br/>      private_dns       = optional(string)<br/>      supported_regions = optional(set(string))<br/>    })), [])<br/>  })</pre> | `{}` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | Deployment tags. | `map(string)` | `{}` | no |
+| <a name="input_use_fips_endpoint"></a> [use\_fips\_endpoint](#input\_use\_fips\_endpoint) | Use aws FIPS endpoints | `bool` | `false` | no |
 
 ## Outputs
 

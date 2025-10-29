@@ -32,8 +32,12 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_ignore_tags"></a> [ignore\_tags](#input\_ignore\_tags) | Tag keys to be ignored by the aws provider. | `list(string)` | `[]` | no |
 | <a name="input_instance_capacity"></a> [instance\_capacity](#input\_instance\_capacity) | Creates a capacity reservation for each instance\_type on each zone.<br/>    instance\_types        = List of instance types to create a capacity reservation for.<br/>    capacity              = Number of instances to reserve<br/>    availability\_zone\_ids = List of azs to create a capacity reservation in.<br/>    } | <pre>map(object({<br/>    instance_types        = list(string)<br/>    capacity              = number<br/>    availability_zone_ids = list(string)<br/>  }))</pre> | `{}` | no |
+| <a name="input_partner_tags"></a> [partner\_tags](#input\_partner\_tags) | Domino AWS partner tags | `map(string)` | <pre>{<br/>  "aws-apn-id": "pc:2umrgw02q6y8t2te66fgdx6sk"<br/>}</pre> | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | Deployment tags. | `map(string)` | `{}` | no |
+| <a name="input_use_fips_endpoint"></a> [use\_fips\_endpoint](#input\_use\_fips\_endpoint) | Use aws FIPS endpoints | `bool` | `false` | no |
 
 ## Outputs
 
