@@ -10,6 +10,9 @@ terraform {
 
 provider "aws" {
   region = var.region
+  default_tags {
+    tags = merge(var.tags, var.partner_tags)
+  }
   ignore_tags {
     keys = var.ignore_tags
   }

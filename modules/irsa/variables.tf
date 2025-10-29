@@ -122,3 +122,21 @@ variable "netapp_trident_configurator" {
 
   default = {}
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "Deployment tags."
+  default     = {}
+}
+
+variable "ignore_tags" {
+  type        = list(string)
+  description = "Tag keys to be ignored by the aws provider."
+  default     = []
+}
+
+variable "partner_tags" {
+  type        = map(string)
+  description = "Domino AWS partner tags"
+  default     = { "aws-apn-id" : "pc:2umrgw02q6y8t2te66fgdx6sk" }
+}
