@@ -40,6 +40,9 @@ module "nodes" {
 
 provider "aws" {
   region            = local.infra.region
+  default_tags {
+    tags = local.infra.tags
+  }
   use_fips_endpoint = var.use_fips_endpoint
 }
 

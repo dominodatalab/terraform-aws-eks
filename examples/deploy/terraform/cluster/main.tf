@@ -105,6 +105,9 @@ module "flyte" {
 provider "aws" {
   alias = "global"
   # profile = "global"
+  default_tags {
+    tags = local.infra.tags
+  }
   ignore_tags {
     keys = local.infra.ignore_tags
   }
@@ -113,6 +116,9 @@ provider "aws" {
 
 provider "aws" {
   region = local.infra.region
+  default_tags {
+    tags = local.infra.tags
+  }
   ignore_tags {
     keys = local.infra.ignore_tags
   }
