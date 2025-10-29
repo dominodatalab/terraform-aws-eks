@@ -39,7 +39,7 @@ module "nodes" {
 }
 
 provider "aws" {
-  region            = local.infra.region
+  region = local.infra.region
   default_tags {
     tags = local.infra.tags
   }
