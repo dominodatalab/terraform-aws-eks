@@ -6,7 +6,7 @@ default_node_groups = {
   compute = {
     availability_zone_ids = ["usw2-az1"]
     ami = "${CUSTOM_AMI}"
-    user_data_type = "AL2023"
+    user_data_type = "${AMI_USER_DATA_TYPE}"
     instance_types = [
       "m4.2xlarge",
       "m5.2xlarge",
@@ -50,7 +50,7 @@ karpenter_node_groups = {
     single_nodegroup = true
     availability_zone_ids = ["usw2-az1","usw2-az3"]
     ami = "${CUSTOM_AMI}"
-    user_data_type = "AL2023"
+    user_data_type = "${AMI_USER_DATA_TYPE}"
     instance_types = [
       "m4.2xlarge",
       "m5.2xlarge",

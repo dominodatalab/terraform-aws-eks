@@ -107,14 +107,39 @@ set_eks_worker_ami() {
   # We can potentially test AMI upgrades in CI.
   # 1 is latest.
   local precedence="$1"
-  local k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
+  local k8s_version
+  local ami_pattern
+  local user_data_type
+
+  if [ -n "${INFRA_VARS:-}" ] && [ -f "$INFRA_VARS" ]; then
+    # Extract k8s_version from deployed module
+    k8s_version="$(hcledit attribute get k8s_version -f "$INFRA_VARS" | tr -d '"')"
+    # If null or empty, default to 1.30
+    [ "$k8s_version" = "null" ] || [ -z "$k8s_version" ] && k8s_version="1.30"
+    # Check if deployed module has user_data_type set
+    user_data_type="$(hcledit attribute get user_data_type -f "$INFRA_VARS" 2>/dev/null | tr -d '"')"
+  else
+    k8s_version="$(hcledit attribute get k8s_version -f "$INFRA_VARS_TPL" | tr -d '"')"
+    user_data_type=""
+  fi
+
+  if [ "$user_data_type" = "AL2023" ]; then
+    ami_pattern="amazon-eks-node-al2023-x86_64-standard-${k8s_version// /}*"
+  else
+    ami_pattern="amazon-eks-node-${k8s_version// /}*"
+    user_data_type="AL2"
+  fi
+
   if ! aws sts get-caller-identity; then
     echo "Incorrect AWS credentials."
     exit 1
   fi
-  CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=amazon-eks-node-al2023-x86_64-standard-${k8s_version// /}*" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
+
+  # Query for AMI using the determined pattern
+  CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=${ami_pattern}" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
 
   export CUSTOM_AMI
+  export AMI_USER_DATA_TYPE="$user_data_type"
 }
 
 set_tf_vars() {
