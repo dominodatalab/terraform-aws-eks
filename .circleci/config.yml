@@ -126,7 +126,6 @@ commands:
     description: "Sets Terraform variables"
     steps:
       - envsubst/install
-      - install_hcledit
       - set_aws_creds
       - run:
           name: Bootstrap terraform vars
@@ -265,6 +264,7 @@ jobs:
           opentofu_version: << parameters.opentofu_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
+      - install_hcledit
       - setup_tf_mods
       - set_mod_source_current
       - set_tf_vars
@@ -291,6 +291,7 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
+      - install_hcledit
       - setup_tf_mods_latest_rel
       - set_mod_source_latest_rel
       - set_tf_vars
