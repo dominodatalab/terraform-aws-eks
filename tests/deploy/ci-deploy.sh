@@ -151,13 +151,13 @@ get_branch_being_deployed() {
     echo "BRANCH_BEING_DEPLOYED is not set."
     exit 1
   fi
+  echo "BRANCH_BEING_DEPLOYED: $BRANCH_BEING_DEPLOYED"
   export BRANCH_BEING_DEPLOYED
 }
 
   # Using modules/eks/variables.tf as the source of truth for the k8s version.
   # Allows for the upgrade flow to test k8s upgrades.
 get_k8s_version() {
-  get_branch_being_deployed
   echo "Getting k8s version"
   K8S_VERSION=$(github_curl "https://raw.githubusercontent.com/dominodatalab/terraform-aws-eks/${BRANCH_BEING_DEPLOYED}/modules/eks/variables.tf" | \
   awk '/k8s_version.*optional.*string/ {match($0, /"[0-9.]+"/); print substr($0, RSTART+1, RLENGTH-2)}')
@@ -166,6 +166,7 @@ get_k8s_version() {
     echo "K8S_VERSION is not set."
     exit 1
   fi
+  echo "K8S_VERSION: $K8S_VERSION"
   export K8S_VERSION
 }
 
