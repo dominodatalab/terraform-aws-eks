@@ -126,7 +126,7 @@ set_eks_worker_ami() {
   local k8s_version
   local ami_pattern
 
-  k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
+  k8s_version="$(grep 'k8s_version' $CLUSTER_VARS_TPL | awk -F'"' '{print $2}')"
   ami_pattern="amazon-eks-node-al2023-x86_64-standard-${k8s_version// /}*"
   AMI_USER_DATA_TYPE="AL2023"
 
