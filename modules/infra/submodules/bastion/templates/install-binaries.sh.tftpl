@@ -2,6 +2,21 @@
 
 set -eu -o pipefail
 
+github_curl() {
+  local url="$$1"
+  shift
+  local curl_args=(
+    --silent
+    "$$@"
+  )
+
+  if [ -n "$${GITHUB_READONLY_TOKEN:-}" ]; then
+    curl_args+=(-H "Authorization: Bearer $${GITHUB_READONLY_TOKEN}")
+  fi
+
+  curl "$${curl_args[@]}" "$$url"
+}
+
 # Install the AWS CLI
 echo "Installing AWS CLI"
 curl --silent 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' -o awscliv2.zip
@@ -20,8 +35,8 @@ echo '---------------'
 
 # Install kubectl
 echo "Installing kubectl"
-version=$(curl -s https://api.github.com/repos/kubernetes/kubernetes/releases | grep -oE "v${k8s_version}\.[0-9]+(\.[0-9]+)*" | sort -rV | head -n 1)
-curl --silent -LO "https://dl.k8s.io/release/$version/bin/linux/amd64/kubectl"
+version=$(github_curl https://api.github.com/repos/kubernetes/kubernetes/releases | grep -oE "v${k8s_version}\.[0-9]+(\.[0-9]+)*" | sort -rV | head -n 1)
+github_curl "https://dl.k8s.io/release/$$version/bin/linux/amd64/kubectl" -LO
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
 kubectl version --client=true --short=true
