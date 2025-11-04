@@ -266,8 +266,8 @@ jobs:
       - install_helm:
           helm_version: << parameters.helm_version >>
       - setup_tf_mods
-      - set_tf_vars
       - set_mod_source_current
+      - set_tf_vars
       - tf_deploy
       - store_deploy_artifacts
 
@@ -292,13 +292,13 @@ jobs:
       - install_helm:
           helm_version: << parameters.helm_version >>
       - setup_tf_mods_latest_rel
-      - set_tf_vars
       - set_mod_source_latest_rel
+      - set_tf_vars
       - tf_deploy
       - store_deploy_artifacts
       - setup_tf_mods_upgrade
-      - set_tf_vars
       - set_mod_source_current
+      - set_tf_vars
       - pre_upgrade_updates
       - set_infra_imports
       - set_cluster_imports
@@ -316,7 +316,9 @@ workflows:
       equal: ["test-deploy-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - test-deploy:
-          context: aws-oidc
+          context:
+            - aws-oidc
+            - github-readonly
           opentofu_version: << pipeline.parameters.opentofu_version >>
           helm_version: << pipeline.parameters.helm_version >>
 
@@ -325,7 +327,9 @@ workflows:
       equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - test-upgrade:
-          context: aws-oidc
+          context:
+            - aws-oidc
+            - github-readonly
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
           hcledit_version: << pipeline.parameters.hcledit_version >>
