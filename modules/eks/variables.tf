@@ -164,7 +164,7 @@ variable "eks" {
     run_k8s_setup      = optional(bool, true)
     service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.32")
+    k8s_version        = optional(string, "1.33")
     nodes_master       = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string, "")
