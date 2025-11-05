@@ -11,7 +11,7 @@ sed -i.bak -E "s/(k8s_version[[:space:]]*=[[:space:]]*optional\(string,[[:space:
   modules/infra/variables.tf \
   tests/plan/terraform/variables.tf
 
-sed -i.bak -E "s/(k8s_version[[:space:]]*=[[:space:]]*\")[0-9.]+(\"))/\1$DEFAULT_K8S_VERSION\2/" \
+sed -i.bak -E "s/(k8s_version[[:space:]]*=[[:space:]]*\")[0-9.]+(\")/\1$DEFAULT_K8S_VERSION\2/" \
   examples/tfvars/nodes-custom-ami.tfvars
 
 sed -i.bak -E "s/(kubectl.*>= )[0-9.]+/\1$DEFAULT_K8S_VERSION/" \
