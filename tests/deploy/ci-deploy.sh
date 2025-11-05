@@ -17,9 +17,29 @@ fi
 BASE_REMOTE_SRC="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 BASE_REMOTE_MOD_SRC="${BASE_REMOTE_SRC}//modules"
 
+github_curl() {
+  local url="$1"
+  shift
+  local curl_args=(
+    -fsSL
+    --retry 15
+    --retry-delay 5
+    --retry-all-errors
+    -H "X-GitHub-Api-Version: 2022-11-28"
+    -H "Accept: application/vnd.github+json"
+  )
+
+  if [ -n "${GITHUB_READONLY_TOKEN:-}" ]; then
+    curl_args+=(-H "Authorization: Bearer ${GITHUB_READONLY_TOKEN}")
+  fi
+
+  curl_args+=("$@")
+  curl "${curl_args[@]}" "$url"
+}
+
 get_latest_release_tag() {
   if [ -z "${LATEST_REL_TAG:-}" ]; then
-    LATEST_REL_TAG="$(curl -sSfL --retry 5 --retry-delay 2 --retry-all-errors -H "X-GitHub-Api-Version: 2022-11-28" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
+    LATEST_REL_TAG="$(github_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
     export LATEST_REL_TAG
   fi
 }
@@ -39,9 +59,7 @@ deploy() {
 set_ci_branch_name() {
   if [[ "$CIRCLE_BRANCH" =~ ^pull/[0-9]+/head$ ]]; then
     PR_NUMBER=$(echo "$CIRCLE_BRANCH" | sed -n 's/^pull\/\([0-9]*\)\/head/\1/p')
-    ci_branch_name=$(curl -s --retry 5 --retry-delay 2 --retry-all-errors \
-      "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" |
-      jq -r .head.ref)
+    ci_branch_name=$(github_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .head.ref)
   else
     ci_branch_name="$CIRCLE_BRANCH"
   fi
@@ -79,7 +97,7 @@ install_helm() {
     exit 1
   fi
   echo "Installing Helm version: ${HELM_VERSION}"
-  curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors -o get_helm.sh  https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  github_curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 -o get_helm.sh
   chmod +x get_helm.sh
   ./get_helm.sh --version "${HELM_VERSION}"
   rm ./get_helm.sh
@@ -89,7 +107,7 @@ install_helm() {
 install_hcledit() {
   local hcledit_version="${HCLEDIT_VERSION}"
   local hcledit_artifact="hcledit_${hcledit_version}_linux_amd64.tar.gz"
-  curl -fsSL -o "${hcledit_artifact}" "https://github.com/minamijoyo/hcledit/releases/download/v${hcledit_version}/${hcledit_artifact}"
+  github_curl "https://github.com/minamijoyo/hcledit/releases/download/v${hcledit_version}/${hcledit_artifact}" -o "${hcledit_artifact}"
   tar xvzf "${hcledit_artifact}"
   sudo mv hcledit /usr/local/bin/ && rm "${hcledit_artifact}" && hcledit version
 }
@@ -97,7 +115,7 @@ install_hcledit() {
 install_opentofu() {
   local opentofu_version="${OPENTOFU_VERSION}"
   local opentofu_artifact="tofu_${opentofu_version}_linux_amd64.tar.gz"
-  curl -fsSL -o "${opentofu_artifact}" "https://github.com/opentofu/opentofu/releases/download/v${opentofu_version}/${opentofu_artifact}"
+  github_curl "https://github.com/opentofu/opentofu/releases/download/v${opentofu_version}/${opentofu_artifact}" -o "${opentofu_artifact}"
   tar xvzf "${opentofu_artifact}"
   sudo mv tofu /usr/local/bin/ && rm "${opentofu_artifact}" && tofu version
   sudo ln -s /usr/local/bin/tofu /usr/local/bin/terraform && terraform version
@@ -107,20 +125,60 @@ set_eks_worker_ami() {
   # We can potentially test AMI upgrades in CI.
   # 1 is latest.
   local precedence="$1"
-  local k8s_version="$(grep 'k8s_version' $INFRA_VARS_TPL | awk -F'"' '{print $2}')"
+  local ami_pattern
+
+  ami_pattern="amazon-eks-node-al2023-x86_64-standard-${K8S_VERSION// /}*"
+  AMI_USER_DATA_TYPE="AL2023"
+
   if ! aws sts get-caller-identity; then
     echo "Incorrect AWS credentials."
     exit 1
   fi
-  CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=amazon-eks-node-${k8s_version// /}*" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
-  export CUSTOM_AMI
+
+  CUSTOM_AMI="$(aws ec2 describe-images --region us-west-2 --owners '602401143452' --filters "Name=owner-alias,Values=amazon" "Name=architecture,Values=x86_64" "Name=name,Values=${ami_pattern}" --query "sort_by(Images, &CreationDate) | [-${precedence}].ImageId" --output text)"
+
+  export CUSTOM_AMI AMI_USER_DATA_TYPE
+}
+
+get_branch_being_deployed() {
+  echo "Getting branch being deployed"
+  BRANCH_BEING_DEPLOYED=$(tr -d '\n' < "$DEPLOYMENT_BRANCH_TRACKING_FILE")
+  if [ -z "$BRANCH_BEING_DEPLOYED" ]; then
+    echo "BRANCH_BEING_DEPLOYED is not set."
+    exit 1
+  fi
+  echo "BRANCH_BEING_DEPLOYED: $BRANCH_BEING_DEPLOYED"
+  export BRANCH_BEING_DEPLOYED
+}
+
+  # Using modules/eks/variables.tf as the source of truth for the k8s version.
+  # Allows for the upgrade flow to test k8s upgrades.
+get_k8s_version() {
+  echo "Getting k8s version"
+  K8S_VERSION=$(github_curl "https://raw.githubusercontent.com/dominodatalab/terraform-aws-eks/${BRANCH_BEING_DEPLOYED}/modules/eks/variables.tf" | \
+  awk '/k8s_version.*optional.*string/ {match($0, /"[0-9.]+"/); print substr($0, RSTART+1, RLENGTH-2)}')
+
+  if [ -z "$K8S_VERSION" ]; then
+    echo "K8S_VERSION is not set."
+    exit 1
+  fi
+  echo "K8S_VERSION: $K8S_VERSION"
+  export K8S_VERSION
 }
 
 set_tf_vars() {
+  get_branch_being_deployed
+
+  get_k8s_version
+
   set_eks_worker_ami '1'
   if [ -z $CUSTOM_AMI ]; then
     echo 'CUSTOM_AMI is not set.'
     # We want to test passing an ami.
+    exit 1
+  fi
+  if [ -z "$AMI_USER_DATA_TYPE" ]; then
+    echo "AMI_USER_DATA_TYPE is not set."
     exit 1
   fi
 
@@ -129,14 +187,16 @@ set_tf_vars() {
   # Set safe-to-delete timestamp (4 hours from now in UTC)
   CI_SAFE_DELETE_AFTER=$(date -u -d '+4 hours' +%Y-%m-%dT%H:%M:%SZ)
 
-  export CUSTOM_AMI PVT_KEY CI_SAFE_DELETE_AFTER
+  export CUSTOM_AMI AMI_USER_DATA_TYPE PVT_KEY CI_SAFE_DELETE_AFTER
 
   printf "\nInfra vars:\n"
   envsubst <"$INFRA_VARS_TPL" | tee "$INFRA_VARS"
 
-  export DEFAULT_NODES=$(hcledit attribute get default_node_groups -f "$INFRA_VARS")
-  export ADDITIONAL_NODES=$(hcledit attribute get additional_node_groups -f "$INFRA_VARS")
-  export KARPENTER_NODES=$(hcledit attribute get karpenter_node_groups -f "$INFRA_VARS")
+  DEFAULT_NODES=$(hcledit attribute get default_node_groups -f "$INFRA_VARS")
+  ADDITIONAL_NODES=$(hcledit attribute get additional_node_groups -f "$INFRA_VARS")
+  KARPENTER_NODES=$(hcledit attribute get karpenter_node_groups -f "$INFRA_VARS")
+
+  export DEFAULT_NODES ADDITIONAL_NODES KARPENTER_NODES
 
   printf "\nCluster vars:\n"
   envsubst <"$CLUSTER_VARS_TPL" | tee "$CLUSTER_VARS"
@@ -328,8 +388,6 @@ set_all_mod_src() {
   done
 }
 
-
-
 deploy_infra() {
   deploy "infra"
 }
@@ -342,11 +400,17 @@ deploy_nodes() {
   deploy "nodes"
 }
 
-
+# Need to track whats the branch being deployed in order to grab the default k8s version.
+track_deployment_branch() {
+  local branch="$1"
+  echo "Updating ${DEPLOYMENT_BRANCH_TRACKING_FILE}: ${branch}"
+  echo "${branch}" > "$DEPLOYMENT_BRANCH_TRACKING_FILE"
+}
 
 set_mod_src_circle_branch() {
   set_ci_branch_name
   set_all_mod_src "$CI_BRANCH_NAME"
+  track_deployment_branch "$CI_BRANCH_NAME"
 }
 
 set_mod_src_local() {
@@ -358,6 +422,7 @@ set_mod_src_latest_rel() {
   get_latest_release_tag
   echo "Updating module source to the latest published release: ${LATEST_REL_TAG}"
   set_all_mod_src "$LATEST_REL_TAG"
+  track_deployment_branch "$LATEST_REL_TAG"
 }
 
 for arg in "$@"; do

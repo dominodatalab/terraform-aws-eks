@@ -5,6 +5,7 @@ SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 CI_DEPLOY="true"
 DEPLOY_DIR="${SH_DIR}/deploy-test"
 PVT_KEY="${DEPLOY_DIR}/domino.pem"
+DEPLOYMENT_BRANCH_TRACKING_FILE="${DEPLOY_DIR}/deployment-tracking.txt"
 
 INFRA_VARS_TPL="${SH_DIR}/infra-ci.tfvars.tftpl"
 CLUSTER_VARS_TPL="${SH_DIR}/cluster-ci.tfvars.tftpl"
@@ -28,4 +29,5 @@ export SH_DIR \
   CLUSTER_VARS_TPL \
   NODES_VARS_TPL \
   COMP_MODS \
-  MOD_ADD
+  MOD_ADD \
+  DEPLOYMENT_BRANCH_TRACKING_FILE

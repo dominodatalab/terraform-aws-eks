@@ -24,7 +24,7 @@ parameters:
     default: ""
 
 orbs:
-  terraform: circleci/terraform@3.6.0
+  terraform: circleci/terraform@3.7.0
   aws-cli: circleci/aws-cli@5.4.1
   envsubst: sawadashota/envsubst@1.4.3
 
@@ -126,7 +126,6 @@ commands:
     description: "Sets Terraform variables"
     steps:
       - envsubst/install
-      - install_hcledit
       - set_aws_creds
       - run:
           name: Bootstrap terraform vars
@@ -169,14 +168,6 @@ commands:
           environment:
             HELM_VERSION: << parameters.helm_version >>
           command: bash ci-deploy.sh install_helm
-
-  tf_init_apply:
-    description: "Terraform Init, Validate, Apply"
-    steps:
-      - run:
-          name: Terraform init/validate/apply
-          working_directory: tests/deploy
-          command: bash ci-deploy.sh deploy
 
   tf_deploy_infra:
     description: "Terraform deploy Infra"
@@ -249,7 +240,7 @@ commands:
 jobs:
   tf-plan-test:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2025.01.1
     parameters:
       terraform_version:
         type: string
@@ -261,7 +252,7 @@ jobs:
 
   test-deploy:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2025.01.1
     parameters:
       opentofu_version:
         type: string
@@ -273,9 +264,10 @@ jobs:
           opentofu_version: << parameters.opentofu_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
+      - install_hcledit
       - setup_tf_mods
-      - set_tf_vars
       - set_mod_source_current
+      - set_tf_vars
       - tf_deploy
       - store_deploy_artifacts
 
@@ -285,7 +277,7 @@ jobs:
 
   test-upgrade:
     docker:
-      - image: cimg/aws:2023.04.1
+      - image: cimg/aws:2025.01.1
     parameters:
       terraform_version:
         type: string
@@ -299,14 +291,15 @@ jobs:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
           helm_version: << parameters.helm_version >>
+      - install_hcledit
       - setup_tf_mods_latest_rel
-      - set_tf_vars
       - set_mod_source_latest_rel
+      - set_tf_vars
       - tf_deploy
       - store_deploy_artifacts
       - setup_tf_mods_upgrade
-      - set_tf_vars
       - set_mod_source_current
+      - set_tf_vars
       - pre_upgrade_updates
       - set_infra_imports
       - set_cluster_imports
@@ -324,7 +317,9 @@ workflows:
       equal: ["test-deploy-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - test-deploy:
-          context: aws-oidc
+          context:
+            - aws-oidc
+            - github-readonly
           opentofu_version: << pipeline.parameters.opentofu_version >>
           helm_version: << pipeline.parameters.helm_version >>
 
@@ -333,7 +328,9 @@ workflows:
       equal: ["test-upgrade-workflow", << pipeline.parameters.GHA_Action >>]
     jobs:
       - test-upgrade:
-          context: aws-oidc
+          context:
+            - aws-oidc
+            - github-readonly
           terraform_version: << pipeline.parameters.terraform_version >>
           helm_version: << pipeline.parameters.helm_version >>
           hcledit_version: << pipeline.parameters.hcledit_version >>
