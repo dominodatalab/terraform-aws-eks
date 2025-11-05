@@ -41,7 +41,7 @@ Always refer to each section's respective README or documentation for detailed i
 * A host with `ssh-keygen` installed
 * [awscli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) >= 2.23.6
 * [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started#install-terraform) >= v1.10.5
-* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) cli >= 1.31.0
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/) cli >= 1.32
 * [helm](https://helm.sh/docs/intro/install/) >= 3.17
 * [hcledit](https://github.com/minamijoyo/hcledit)
 * bash >= 4.0
@@ -361,3 +361,14 @@ karpenter = {
 ./tf.sh all apply
 ```
 5. See and [karpenter-configurations](./examples/karpenter/MIGRATION.md#3-configure-karpenter-node-classes-and-node-pools) on how to configure `ec2nodeclasses` and `nodepools`.
+
+
+## Updating the default K8s version for this module
+
+Run the update script with the desired Kubernetes version:
+
+```bash
+./bin/update-default-k8s-version.sh 1.32
+```
+
+This updates the default `k8s_version` across all module variable definitions, examples, and documentation.
