@@ -22,9 +22,11 @@ github_curl() {
   shift
   local curl_args=(
     -fsSL
-    --retry 5
-    --retry-delay 2
+    --retry 15
+    --retry-delay 5
     --retry-all-errors
+    -H "X-GitHub-Api-Version: 2022-11-28"
+    -H "Accept: application/vnd.github+json"
   )
 
   if [ -n "${GITHUB_READONLY_TOKEN:-}" ]; then
@@ -37,10 +39,7 @@ github_curl() {
 
 get_latest_release_tag() {
   if [ -z "${LATEST_REL_TAG:-}" ]; then
-    LATEST_REL_TAG="$(github_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" \
-      --retry 15 --retry-delay 5 \
-      -H "X-GitHub-Api-Version: 2022-11-28" \
-      -H "Accept: application/vnd.github+json" | jq -r '.tag_name')"
+    LATEST_REL_TAG="$(github_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
     export LATEST_REL_TAG
   fi
 }
@@ -60,10 +59,7 @@ deploy() {
 set_ci_branch_name() {
   if [[ "$CIRCLE_BRANCH" =~ ^pull/[0-9]+/head$ ]]; then
     PR_NUMBER=$(echo "$CIRCLE_BRANCH" | sed -n 's/^pull\/\([0-9]*\)\/head/\1/p')
-    ci_branch_name=$(github_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" \
-      --retry 15 --retry-delay 5 \
-      -H "X-GitHub-Api-Version: 2022-11-28" \
-      -H "Accept: application/vnd.github+json" | jq -r .head.ref)
+    ci_branch_name=$(github_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${PR_NUMBER}" | jq -r .head.ref)
   else
     ci_branch_name="$CIRCLE_BRANCH"
   fi
@@ -392,8 +388,6 @@ set_all_mod_src() {
   done
 }
 
-
-
 deploy_infra() {
   deploy "infra"
 }
@@ -423,7 +417,6 @@ set_mod_src_local() {
   echo "Updating module source to local."
   set_all_mod_src "local"
 }
-
 
 set_mod_src_latest_rel() {
   get_latest_release_tag
