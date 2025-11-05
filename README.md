@@ -361,3 +361,14 @@ karpenter = {
 ./tf.sh all apply
 ```
 5. See and [karpenter-configurations](./examples/karpenter/MIGRATION.md#3-configure-karpenter-node-classes-and-node-pools) on how to configure `ec2nodeclasses` and `nodepools`.
+
+
+## Updating the default K8s version for this module
+
+Run the update script with the desired Kubernetes version:
+
+```bash
+./bin/update-default-k8s-version.sh 1.32
+```
+
+This updates the default `k8s_version` across all module variable definitions, examples, and documentation.
