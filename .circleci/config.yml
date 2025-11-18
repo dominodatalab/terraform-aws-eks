@@ -3,16 +3,16 @@ version: 2.1
 parameters:
   helm_version:
     type: string
-    default: "v3.18.6"
+    default: "v3.19.2"
   terraform_version:
     type: string
-    default: "1.10.5"
+    default: "1.13.5"
   opentofu_version:
     type: string
-    default: "1.9.0"
+    default: "1.10.7"
   hcledit_version:
     type: string
-    default: "0.2.9"
+    default: "0.2.17"
   GHA_Actor:
     type: string
     default: ""
@@ -43,7 +43,7 @@ commands:
     parameters:
       opentofu_version:
         type: string
-        default: "1.9.0"
+        default: "1.10.7"
     steps:
       - run:
           name: Install OpenTofu
@@ -57,7 +57,7 @@ commands:
     parameters:
       hcledit_version:
         type: string
-        default: "0.2.9"
+        default: "0.2.17"
     steps:
       - run:
           name: Install HCL edit
