@@ -91,7 +91,7 @@ run_tf_command() {
 
   case $cmd in
   init)
-    terraform -chdir="$dir" init
+    terraform -chdir="$dir" init -upgrade
     ;;
   plan)
     check_dependencies $name
@@ -177,7 +177,7 @@ usage() {
   echo "Note: If an unlisted component is provided, the script will attempt to execute the given command, assuming the corresponding directory is properly configured."
 
   echo -e "\nCommands:"
-  echo -e "  init     \t\tInitialize the working directory."
+  echo -e "  init     \t\tInitialize the working directory and upgrade providers."
   echo -e "  validate \t\tCheck the syntax and validate the configuration."
   echo -e "  plan     \t\tGenerate an execution plan."
   echo -e "  plan_out \t\tGenerate a plan and save it to a file."
