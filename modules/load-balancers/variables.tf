@@ -28,6 +28,7 @@ variable "load_balancers" {
       type     = Type of Load Balancer (e.g., "application", "network").
       internal = (Optional) Whether the Load Balancer is internal. Defaults to true.
       ddos_protection = (Optional) Whether to enable AWS Shield Standard (DDoS protection). Defaults to true.
+      idle_timeout    = (Optional) Connect idle timeout, only used with type "application". Default is 3600.
       listeners = List of listeners for the Load Balancer.
       [{
         name        = Listener name.

@@ -72,7 +72,7 @@ resource "aws_lb" "load_balancers" {
 
   enable_deletion_protection       = false
   enable_cross_zone_load_balancing = true
-  idle_timeout                     = each.value.idle_timeout
+  idle_timeout                     = each.value.type == "application" ? each.value.idle_timeout : null
 
   dynamic "access_logs" {
     for_each = var.access_logs.enabled ? [1] : []
