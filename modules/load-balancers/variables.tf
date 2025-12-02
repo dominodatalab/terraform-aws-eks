@@ -44,6 +44,7 @@ variable "load_balancers" {
     type            = string
     internal        = optional(bool, true)
     ddos_protection = optional(bool, true)
+    idle_timeout    = optional(number, 3600)
     listeners = list(object({
       name                = string
       port                = number
