@@ -39,7 +39,7 @@ github_curl() {
 
 get_latest_release_tag() {
   if [ -z "${LATEST_REL_TAG:-}" ]; then
-    LATEST_REL_TAG="$(github_curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/releases/latest" | jq -r '.tag_name')"
+    LATEST_REL_TAG="v3.40.4"
     export LATEST_REL_TAG
   fi
 }
