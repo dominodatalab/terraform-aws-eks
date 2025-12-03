@@ -1,7 +1,7 @@
 ## NOTE: Changes(rename/add/delete) to pre-commit ids need to be replicated in .github/workflows/terraform-checks.yml(GHA).
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-merge-conflict
       - id: end-of-file-fixer
@@ -13,13 +13,13 @@ repos:
       - id: circleci-validate
         args: [--org-slug, github/cerebrotech]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.1
+    rev: 0.35.0
     hooks:
       - id: check-github-workflows
       - id: check-dependabot
       - id: check-github-actions
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.99.5
+    rev: v1.103.0
     hooks:
       - id: terraform_validate
         # See #4 on https://github.com/antonbabenko/pre-commit-terraform#terraform_validate
