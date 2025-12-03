@@ -63,7 +63,7 @@ render_templates() {
   export AWS_REGION=$(./tf.sh cluster output_json eks | jq -r '.infra.value.region')
 
   AL2023_AMI_ALIAS_VERSION="$(aws ssm get-parameter \
-    --name /aws/service/eks/optimized-ami/1.34/amazon-linux-2023/x86_64/standard/recommended/image_name \
+    --name /aws/service/eks/optimized-ami/1.33/amazon-linux-2023/x86_64/standard/recommended/image_name \
     --query 'Parameter.Value' \
     --output text | awk -F'-' '{print $NF}')"
 
