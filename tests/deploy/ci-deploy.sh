@@ -39,7 +39,7 @@ github_curl() {
 
 get_latest_release_tag() {
   if [ -z "${LATEST_REL_TAG:-}" ]; then
-    LATEST_REL_TAG="v3.40.4"
+    LATEST_REL_TAG="v3.40.8"
     export LATEST_REL_TAG
   fi
 }
