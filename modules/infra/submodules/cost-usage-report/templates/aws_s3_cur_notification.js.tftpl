@@ -1,25 +1,50 @@
-const AWS = require('aws-sdk');
+const { S3Client, PutBucketNotificationConfigurationCommand } = require('@aws-sdk/client-s3');
 const response = require('./cfn-response');
-exports.handler = async function(event, context) {
-    const s3 = new AWS.S3();
+exports.handler = function (event, context, callback) {
+    const s3 = new S3Client();
+    const putConfigRequest = function (notificationConfiguration) {
+        return new Promise(function (resolve, reject) {
+            const input = {
+                Bucket: event.ResourceProperties.BucketName,
+                NotificationConfiguration: notificationConfiguration,
+            };
+            const command = new PutBucketNotificationConfigurationCommand(input);
+            s3.send(command, function (err, data) {
+                if (err)
+                    reject({
+                        msg: this.httpResponse.body.toString(),
+                        error: err,
+                        data: data,
+                    });
+                else resolve(data);
+            });
+        });
+    };
     const newNotificationConfig = {};
     if (event.RequestType !== 'Delete') {
-        newNotificationConfig.LambdaFunctionConfigurations = [{
-            Events: [ 's3:ObjectCreated:*' ],
-            LambdaFunctionArn: event.ResourceProperties.TargetLambdaArn || 'missing arn',
-            Filter: { Key: { FilterRules: [ { Name: 'prefix', Value: event.ResourceProperties.ReportKey } ] } }
-        }];
+        newNotificationConfig.LambdaFunctionConfigurations = [
+            {
+                Events: ['s3:ObjectCreated:*'],
+                LambdaFunctionArn:
+                    event.ResourceProperties.TargetLambdaArn || 'missing arn',
+                Filter: {
+                    Key: {
+                        FilterRules: [
+                            { Name: 'prefix', Value: event.ResourceProperties.ReportKey },
+                        ],
+                    },
+                },
+            },
+        ];
     }
-    try {
-        const result = await s3.putBucketNotificationConfiguration({
-            Bucket: event.ResourceProperties.BucketName,
-            NotificationConfiguration: newNotificationConfig
-        }).promise();
-        response.send(event, context, response.SUCCESS, result);
-        return result;
-    } catch (error) {
-        response.send(event, context, response.FAILED, error);
-        console.log(error);
-        throw error;
-    }
+    putConfigRequest(newNotificationConfig)
+        .then(function (result) {
+            response.send(event, context, response.SUCCESS, result);
+            callback(null, result);
+        })
+        .catch(function (error) {
+            response.send(event, context, response.FAILED, error);
+            console.log(error);
+            callback(error);
+        });
 };

@@ -26,7 +26,7 @@ resource "aws_lambda_function" "cur_lambda_initializer" {
   source_code_hash = data.archive_file.cur_initializer_zip.output_base64sha256
   handler          = "index.handler"
   timeout          = 30
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs22.x"
 
   reserved_concurrent_executions = 1
   kms_key_arn                    = local.kms_key_arn
@@ -119,7 +119,7 @@ resource "aws_lambda_function" "aws_s3_cur_notification" {
   source_code_hash = data.archive_file.aws_s3_cur_notification_zip.output_base64sha256
   handler          = "index.handler"
   timeout          = 30
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs22.x"
 
   reserved_concurrent_executions = 1
 
