@@ -24,10 +24,14 @@ spec:
 %{ if length(cluster_service_ipv4_cidr) > 0 ~}
     cidr: ${cluster_service_ipv4_cidr}
 %{ endif ~}
-%{ if length(bootstrap_extra_args) > 0 ~}
   kubelet:
+    config:
+      # Configured through UserData since unavailable in `spec.kubelet`
+      registryPullQPS: 12
+      registryBurst: 40
+    %{ if length(bootstrap_extra_args) > 0 ~}
     flags:
     ${bootstrap_extra_args}
-%{ endif ~}
+    %{ endif ~}
 
 --BOUNDARY--
