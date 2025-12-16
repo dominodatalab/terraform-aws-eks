@@ -1,7 +1,11 @@
 data "aws_default_tags" "this" {}
 
+locals {
+  default_node_groups_filtered = { for k, v in var.default_node_groups : k => v if v != null }
+}
+
 data "aws_ec2_instance_type" "all" {
-  for_each      = toset(flatten([for ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
+  for_each      = toset(flatten([for ng in merge(var.karpenter_node_groups, var.additional_node_groups, local.default_node_groups_filtered) : ng.instance_types]))
   instance_type = each.value
 }
 
@@ -14,7 +18,7 @@ locals {
   }]
 
   node_group_status = {
-    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, local.default_node_groups_filtered) :
     name => {
       is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
@@ -22,7 +26,7 @@ locals {
   }
 
   node_group_ami_class_types = {
-    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, local.default_node_groups_filtered) :
     name => {
       ami_class = ng.ami != null ? "custom" : (
         local.node_group_status[name].is_neuron ? "neuron" :
@@ -38,7 +42,7 @@ locals {
   }
 
   node_groups = {
-    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, local.default_node_groups_filtered) :
     name => merge(ng, {
       is_gpu          = local.node_group_status[name].is_gpu
       is_neuron       = local.node_group_status[name].is_neuron
