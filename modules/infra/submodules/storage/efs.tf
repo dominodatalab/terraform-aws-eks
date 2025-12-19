@@ -1,9 +1,9 @@
 resource "aws_efs_file_system" "eks" {
   count                           = local.deploy_efs ? 1 : 0
   encrypted                       = true
-  performance_mode                = "generalPurpose"
-  provisioned_throughput_in_mibps = "0"
-  throughput_mode                 = "bursting"
+  performance_mode                = var.storage.efs.performance_mode
+  provisioned_throughput_in_mibps = var.storage.efs.provisioned_throughput_in_mibps
+  throughput_mode                 = var.storage.efs.throughput_mode
   kms_key_id                      = local.kms_key_arn
 
   tags = merge(local.backup_tagging, {
