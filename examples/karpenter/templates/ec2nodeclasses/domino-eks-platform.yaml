@@ -27,6 +27,8 @@ spec:
   userData: |
     kind: NodeConfig
     spec:
+      featureGates:
+        FastImagePull: true
       kubelet:
         config:
           registryPullQPS: 10

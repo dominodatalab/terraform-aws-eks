@@ -27,6 +27,11 @@ spec:
   userData: |
     kind: NodeConfig
     spec:
+      soci_snapshotter:
+        max_concurrent_downloads_per_image: 10
+        max_concurrent_unpacks_per_image: 10
+      featureGates:
+        FastImagePull: true
       kubelet:
         config:
           registryPullQPS: 12
