@@ -37,6 +37,9 @@ variable "storage" {
       filesystem_type = File system type(netapp|efs|none)
       efs = {
         access_point_path = Filesystem path for efs.
+        throughput_mode = EFS throughput mode (bursting, provisioned, or elastic).
+        performance_mode = EFS performance mode (generalPurpose or maxIO).
+        provisioned_throughput_in_mibps = Provisioned throughput in MiB/s (only used when throughput_mode is provisioned).
         backup_vault = {
           create        = Create backup vault for EFS toggle.
           force_destroy = Toggle to allow automatic destruction of all backups when destroying.
@@ -95,7 +98,10 @@ variable "storage" {
   type = object({
     filesystem_type = string
     efs = optional(object({
-      access_point_path = optional(string)
+      access_point_path               = optional(string)
+      throughput_mode                 = optional(string)
+      performance_mode                = optional(string)
+      provisioned_throughput_in_mibps = optional(string)
       backup_vault = optional(object({
         create        = optional(bool)
         force_destroy = optional(bool)
