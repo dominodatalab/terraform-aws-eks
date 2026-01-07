@@ -14,10 +14,10 @@ resource "aws_launch_template" "node_groups" {
       bootstrap_extra_args      = each.value.bootstrap_extra_args
       pre_bootstrap_user_data   = ""
       post_bootstrap_user_data  = ""
-      registry_pull_qps         = coalesce(try(var.eks_info.nodes.kubelet.registry_pull_qps, null), 12)
-      registry_burst            = coalesce(try(var.eks_info.nodes.kubelet.registry_burst, null), 40)
-      feature_gates             = try(var.eks_info.nodes.feature_gates, { FastImagePull = true })
-      soci_snapshotter          = try(var.eks_info.nodes.soci_snapshotter, {})
+      registry_pull_qps         = var.eks_info.nodes.kubelet.registry_pull_qps
+      registry_burst            = var.eks_info.nodes.kubelet.registry_burst
+      feature_gates             = var.eks_info.nodes.feature_gates
+      soci_snapshotter          = var.eks_info.nodes.soci_snapshotter
   })) : null
   vpc_security_group_ids = [var.eks_info.nodes.security_group_id]
   image_id               = each.value.ami
