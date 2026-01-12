@@ -3,6 +3,7 @@ kind: EC2NodeClass
 metadata:
   name: domino-eks-platform
 spec:
+  amiFamily: AL2023
   amiSelectorTerms:
     - alias: ${AL2023_AMI_ALIAS}
   blockDeviceMappings:
@@ -23,3 +24,15 @@ spec:
   subnetSelectorTerms:
     - tags:
         karpenter.sh/discovery: ${EKS_CLUSTER_NAME}
+  userData: |
+    kind: NodeConfig
+    spec:
+      soci_snapshotter:
+        max_concurrent_downloads_per_image: 10
+        max_concurrent_unpacks_per_image: 10
+      featureGates:
+        FastImagePull: true
+      kubelet:
+        config:
+          registryPullQPS: 10
+          registryBurst: 30

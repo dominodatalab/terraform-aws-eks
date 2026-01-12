@@ -94,8 +94,14 @@ variable "eks_info" {
         name = string
         arn  = string
       }
+      soci_snapshotter = SOCI snapshotter configuration
+      kubelet = {
+        registry_pull_qps = number
+        registry_burst    = number
+      }
+      feature_gates = Feature gates map
     }
-    kubeconfig = Kubeconfig details.{
+    kubeconfig = {
       path       = string
       extra_args = string
     }
@@ -145,6 +151,15 @@ variable "eks_info" {
         name = string
         arn  = string
       }))
+      soci_snapshotter = optional(object({
+        max_concurrent_downloads_per_image = optional(number, 10)
+        max_concurrent_unpacks_per_image   = optional(number, 10)
+      }), {})
+      kubelet = optional(object({
+        registry_pull_qps = optional(number, 12)
+        registry_burst    = optional(number, 40)
+      }), {})
+      feature_gates = optional(object({ FastImagePull = bool }), { FastImagePull = true })
     })
     kubeconfig = object({
       path       = string
