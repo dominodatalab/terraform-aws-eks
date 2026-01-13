@@ -1,7 +1,7 @@
 data "aws_default_tags" "this" {}
 
 locals {
-  default_node_groups_filtered = { for k, v in var.default_node_groups : k => v if v != null }
+  default_node_groups_filtered = { for k, v in coalesce(var.default_node_groups, {}) : k => v if v != null }
 }
 
 data "aws_ec2_instance_type" "all" {
