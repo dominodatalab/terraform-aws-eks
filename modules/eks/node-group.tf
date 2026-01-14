@@ -7,6 +7,11 @@ data "aws_iam_policy_document" "eks_nodes" {
       type        = "Service"
       identifiers = ["ec2.${local.dns_suffix}"]
     }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/${var.deploy_id}-eks-nodes"]
+    }
   }
 }
 
