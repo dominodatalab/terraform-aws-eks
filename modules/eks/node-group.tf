@@ -1,5 +1,25 @@
 ## EKS Nodes
-data "aws_iam_policy_document" "eks_nodes" {
+data "aws_iam_policy_document" "eks_nodes_initial" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.${local.dns_suffix}"]
+    }
+  }
+}
+
+resource "aws_iam_role" "eks_nodes" {
+  name               = "${local.eks_cluster_name}-eks-nodes"
+  assume_role_policy = data.aws_iam_policy_document.eks_nodes_initial.json
+
+  lifecycle {
+    ignore_changes = [assume_role_policy]
+  }
+}
+
+data "aws_iam_policy_document" "eks_nodes_full" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -10,14 +30,25 @@ data "aws_iam_policy_document" "eks_nodes" {
 
     principals {
       type        = "AWS"
-      identifiers = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/${var.deploy_id}-eks-nodes"]
+      identifiers = [aws_iam_role.eks_nodes.arn]
     }
   }
 }
 
-resource "aws_iam_role" "eks_nodes" {
-  name               = "${local.eks_cluster_name}-eks-nodes"
-  assume_role_policy = data.aws_iam_policy_document.eks_nodes.json
+resource "terraform_data" "update_assume_role_policy" {
+  triggers_replace = {
+    policy = data.aws_iam_policy_document.eks_nodes_full.json
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      aws iam update-assume-role-policy \
+        --role-name ${aws_iam_role.eks_nodes.name} \
+        --policy-document '${jsonencode(jsondecode(data.aws_iam_policy_document.eks_nodes_full.json))}'
+    EOT
+  }
+
+  depends_on = [aws_iam_role.eks_nodes]
 }
 
 resource "aws_security_group" "eks_nodes" {
