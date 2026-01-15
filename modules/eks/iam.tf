@@ -308,7 +308,7 @@ resource "aws_iam_role" "eks_nodes_assumable" {
 }
 
 resource "aws_iam_role_policy_attachment" "aws_eks_nodes_assumable" {
-  for_each   = toset(var.node_iam_policies)
-  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/${each.key}"
+  count      = length(var.node_iam_policies)
+  policy_arn = element(var.node_iam_policies, count.index)
   role       = aws_iam_role.eks_nodes_assumable.name
 }
