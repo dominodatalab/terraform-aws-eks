@@ -289,3 +289,26 @@ resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_clu
   role       = aws_iam_role.eks_cluster.name
   policy_arn = local.kms_key_policy_arn
 }
+
+# Assumable eks nodes role, used to de-privilege the nodes role
+resource "aws_iam_role" "eks_nodes_assumable" {
+  name = "${var.deploy_id}-eks-nodes-assumable"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          AWS = ["arn:${data.aws_partition.current.partition}:iam::${local.aws_account_id}:role/${var.deploy_id}-eks-nodes"]
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "aws_eks_nodes" {
+  for_each   = toset(var.node_iam_policies)
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/${each.key}"
+  role       = aws_iam_role.eks_nodes_assumable.name
+}
