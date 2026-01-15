@@ -112,6 +112,13 @@ resource "aws_iam_role" "flyte_dataplane" {
           }
         }
       },
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          AWS = ["arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.aws_account.account_id}:role/${local.deploy_id}-eks-nodes"]
+        }
+      },
     ]
   })
 }
