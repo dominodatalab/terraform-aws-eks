@@ -270,5 +270,8 @@ locals {
     }
     kubeconfig = local.kubeconfig
     calico     = var.calico
+    karpenter = {
+      enabled = var.karpenter.enabled
+    }
   }
 }

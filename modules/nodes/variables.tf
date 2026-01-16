@@ -105,6 +105,9 @@ variable "eks_info" {
       path       = string
       extra_args = string
     }
+    karpenter = {
+      enabled = Toggle for Karpenter installation.
+    }
   EOF
   type = object({
     k8s_pre_setup_sh_file = string
@@ -165,6 +168,9 @@ variable "eks_info" {
       path       = string
       extra_args = string
     })
+    karpenter = optional(object({
+      enabled = optional(bool, false)
+    }), {})
   })
 }
 

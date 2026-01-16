@@ -147,7 +147,7 @@ resource "terraform_data" "calico_setup" {
 }
 
 resource "terraform_data" "karpenter_setup" {
-  count = length(local.karpenter_tag_node_groups) > 0 && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = var.eks_info.karpenter.enabled && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
 
   triggers_replace = [
     filemd5(var.eks_info.k8s_pre_setup_sh_file)
@@ -163,7 +163,7 @@ resource "terraform_data" "karpenter_setup" {
 }
 
 resource "terraform_data" "delete_karpenter_instances" {
-  count = length(local.karpenter_tag_node_groups) > 0 && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = var.eks_info.karpenter.enabled && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
 
   input = {
     k8s_pre_setup_sh_file = basename(var.eks_info.k8s_pre_setup_sh_file)
@@ -179,7 +179,7 @@ resource "terraform_data" "delete_karpenter_instances" {
 }
 
 locals {
-  karpenter_tag_node_groups = local.system_node_group_map
+  karpenter_tag_node_groups = var.eks_info.karpenter.enabled ? local.system_node_group_map : {}
   karpenter_az_ids          = length(local.karpenter_tag_node_groups) > 0 ? flatten([for ng in local.karpenter_tag_node_groups : ng.availability_zone_ids]) : []
   karpenter_subnets         = length(local.karpenter_tag_node_groups) > 0 ? flatten([for ng in local.karpenter_tag_node_groups : [for sb in var.network_info.subnets.private : sb.subnet_id if contains(local.karpenter_az_ids, sb.az_id)]]) : []
   karpenter_tag_resources   = length(local.karpenter_tag_node_groups) > 0 ? flatten([var.eks_info.nodes.security_group_id, local.karpenter_subnets]) : []
