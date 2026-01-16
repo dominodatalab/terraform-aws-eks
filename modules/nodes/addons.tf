@@ -44,9 +44,11 @@ locals {
   }
 
   vpc_cni_configuration_values = merge({ env = local.vpc_cni_env }, local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {})
-  coredns_configuration_values = {
-    nodeSelector = var.system_node_group.node_selector
-  }
+  coredns_configuration_values = var.system_node_group != null ? {
+    nodeSelector = {
+      "dominodatalab.com/node-pool" = "system"
+    }
+  } : {}
 
   addons_config_values = {
     vpc-cni = local.vpc_cni_configuration_values

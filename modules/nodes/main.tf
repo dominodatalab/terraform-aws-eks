@@ -2,10 +2,11 @@ data "aws_default_tags" "this" {}
 
 locals {
   default_node_groups_filtered = { for k, v in coalesce(var.default_node_groups, {}) : k => v if v != null }
+  system_node_group_map        = var.system_node_group != null ? { system = var.system_node_group.system } : {}
 }
 
 data "aws_ec2_instance_type" "all" {
-  for_each      = toset(flatten([for ng in merge(var.system_node_group, var.additional_node_groups, local.default_node_groups_filtered) : ng.instance_types]))
+  for_each      = toset(flatten([for ng in merge(local.system_node_group_map, var.additional_node_groups, local.default_node_groups_filtered) : ng.instance_types]))
   instance_type = each.value
 }
 
@@ -18,7 +19,7 @@ locals {
   }]
 
   node_group_status = {
-    for name, ng in merge(var.system_node_group, var.additional_node_groups, local.default_node_groups_filtered) :
+    for name, ng in merge(local.system_node_group_map, var.additional_node_groups, local.default_node_groups_filtered) :
     name => {
       is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
@@ -26,7 +27,7 @@ locals {
   }
 
   node_group_ami_class_types = {
-    for name, ng in merge(var.system_node_group, var.additional_node_groups, local.default_node_groups_filtered) :
+    for name, ng in merge(local.system_node_group_map, var.additional_node_groups, local.default_node_groups_filtered) :
     name => {
       ami_class = ng.ami != null ? "custom" : (
         local.node_group_status[name].is_neuron ? "neuron" :
@@ -42,7 +43,7 @@ locals {
   }
 
   node_groups = {
-    for name, ng in merge(var.system_node_group, var.additional_node_groups, local.default_node_groups_filtered) :
+    for name, ng in merge(local.system_node_group_map, var.additional_node_groups, local.default_node_groups_filtered) :
     name => merge(ng, {
       is_gpu          = local.node_group_status[name].is_gpu
       is_neuron       = local.node_group_status[name].is_neuron
@@ -55,7 +56,7 @@ locals {
       labels = merge(
         local.node_group_status[name].is_gpu ? local.gpu_labels : {},
         ng.labels,
-        lookup(coalesce(var.system_node_group, {}), name, null) == null ? { "dominodatalab.com/domino-node" = true } : {}
+        { "dominodatalab.com/domino-node" = true }
       )
       taints = local.node_group_status[name].is_gpu ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
     })
@@ -178,7 +179,7 @@ resource "terraform_data" "delete_karpenter_instances" {
 }
 
 locals {
-  karpenter_tag_node_groups = coalesce(var.system_node_group, {})
+  karpenter_tag_node_groups = local.system_node_group_map
   karpenter_az_ids          = length(local.karpenter_tag_node_groups) > 0 ? flatten([for ng in local.karpenter_tag_node_groups : ng.availability_zone_ids]) : []
   karpenter_subnets         = length(local.karpenter_tag_node_groups) > 0 ? flatten([for ng in local.karpenter_tag_node_groups : [for sb in var.network_info.subnets.private : sb.subnet_id if contains(local.karpenter_az_ids, sb.az_id)]]) : []
   karpenter_tag_resources   = length(local.karpenter_tag_node_groups) > 0 ? flatten([var.eks_info.nodes.security_group_id, local.karpenter_subnets]) : []
