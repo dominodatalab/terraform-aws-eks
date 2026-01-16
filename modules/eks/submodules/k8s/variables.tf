@@ -125,6 +125,7 @@ variable "karpenter" {
       version = Configure the version for Karpenter.
       delete_instances_on_destroy = Toggle to delete Karpenter instances on destroy.
       vm_memory_overhead_percent  = Configure the vm memory overhead percent for Karpenter, represented in decimal form (%/100), i.e 7.5% = 0.075.
+      node_selector = Configure the node selector for Karpenter components.
     }
   EOF
   type = object({
@@ -133,6 +134,10 @@ variable "karpenter" {
     namespace                   = string
     version                     = string
     vm_memory_overhead_percent  = optional(string, "0.075")
+    node_selector = object({
+      key   = string
+      value = string
+    })
   })
 }
 

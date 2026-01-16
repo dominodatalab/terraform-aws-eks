@@ -29,7 +29,7 @@ module "nodes" {
   ssh_key                = local.infra.ssh_key
   default_node_groups    = var.default_node_groups
   additional_node_groups = var.additional_node_groups
-  karpenter_node_groups  = var.karpenter_node_groups
+  system_node_group      = var.system_node_group
   eks_info               = local.eks
   network_info           = local.infra.network
   kms_info               = local.infra.kms

@@ -205,8 +205,8 @@ variable "calico" {
     image_registry = optional(string, "quay.io")
     version        = optional(string, "v3.28.2")
     node_selector = optional(object({
-      key   = optional(string, "dominodatalab.com/calico-controlplane")
-      value = optional(string, "true")
+      key   = optional(string, "dominodatalab.com/node-pool")
+      value = optional(string, "system")
     }), null)
   })
 

@@ -120,8 +120,7 @@ variable "default_node_groups" {
           update_strategy            = optional(string, "DEFAULT")
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
-            "dominodatalab.com/node-pool"           = "platform"
-            "dominodatalab.com/calico-controlplane" = "true"
+            "dominodatalab.com/node-pool" = "platform"
           })
           taints = optional(list(object({
             key    = string
@@ -139,6 +138,40 @@ variable "default_node_groups" {
             }
           )
       }),
+      platform_jobs = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string, null)
+          user_data_type             = optional(string, null)
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["m7i-flex.xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 0)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
+          desired_per_az             = optional(number, 0)
+          update_strategy            = optional(string, "DEFAULT")
+          availability_zone_ids      = list(string)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "platform-jobs"
+          })
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })), [])
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
+          volume = optional(object({
+            size = optional(number, 100)
+            type = optional(string, "gp3")
+            }), {
+            size = 100
+            type = "gp3"
+            }
+          )
+      })),
       gpu = object(
         {
           single_nodegroup           = optional(bool, false)
@@ -212,40 +245,41 @@ variable "additional_node_groups" {
   default = {}
 }
 
-variable "karpenter_node_groups" {
-  description = "Node groups for karpenter."
-  type = map(object({
-    single_nodegroup           = optional(bool, false)
-    ami                        = optional(string, null)
-    user_data_type             = optional(string, null)
-    bootstrap_extra_args       = optional(string, "")
-    instance_types             = optional(list(string), ["m6a.large"])
-    spot                       = optional(bool, false)
-    min_per_az                 = optional(number, 1)
-    max_per_az                 = optional(number, 3)
-    max_unavailable_percentage = optional(number, null)
-    max_unavailable            = optional(number, 1)
-    update_strategy            = optional(string, "MINIMAL")
-    desired_per_az             = optional(number, 1)
-    availability_zone_ids      = list(string)
-    labels = optional(map(string), {
-      "dominodatalab.com/node-pool"           = "karpenter"
-      "dominodatalab.com/calico-controlplane" = "true"
+variable "system_node_group" {
+  description = "System node groups for cluster components (Calico, Karpenter)."
+  type = object({
+    system = object({
+      single_nodegroup           = optional(bool, true)
+      ami                        = optional(string, null)
+      user_data_type             = optional(string, null)
+      bootstrap_extra_args       = optional(string, "")
+      instance_types             = optional(list(string), ["m6a.large", "m6a.xlarge", "m6a.2xlarge", "m6i.large", "m6i.xlarge", "m6i.2xlarge", "m7i.large", "m7i.xlarge", "m7i.2xlarge", "m7i-flex.large", "m7i-flex.xlarge", "m7i-flex.2xlarge"])
+      spot                       = optional(bool, false)
+      min_per_az                 = optional(number, 1)
+      max_per_az                 = optional(number, 5)
+      max_unavailable_percentage = optional(number, null)
+      max_unavailable            = optional(number, 1)
+      update_strategy            = optional(string, "MINIMAL")
+      desired_per_az             = optional(number, 1)
+      availability_zone_ids      = list(string)
+      labels = optional(map(string), {
+        "dominodatalab.com/node-pool" = "system"
+      })
+      taints = optional(list(object({
+        key    = string
+        value  = optional(string)
+        effect = string
+      })), [])
+      tags = optional(map(string), {})
+      gpu  = optional(bool, null)
+      volume = optional(object({
+        size       = optional(string, "50")
+        type       = optional(string, "gp3")
+        iops       = optional(number)
+        throughput = optional(number, 500)
+      }), {})
     })
-    taints = optional(list(object({
-      key    = string
-      value  = optional(string)
-      effect = string
-    })), [])
-    tags = optional(map(string), {})
-    gpu  = optional(bool, null)
-    volume = optional(object({
-      size       = optional(string, "30")
-      type       = optional(string, "gp3")
-      iops       = optional(number)
-      throughput = optional(number, 500)
-    }), {})
-  }))
+  })
   default = null
 }
 

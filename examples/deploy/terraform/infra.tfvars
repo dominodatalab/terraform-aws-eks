@@ -8,6 +8,7 @@ bastion = {
   username                 = null
 }
 default_node_groups = null
+system_node_group   = null
 deploy_id           = null
 domino_cur = {
   provision_cost_usage_report = false
@@ -37,9 +38,8 @@ eks = {
   ssm_log_group_name = null
   vpc_cni            = null
 }
-ignore_tags           = []
-karpenter_node_groups = null
-kms                   = null
+ignore_tags = []
+kms         = null
 network = {
   cidrs = {
     pod = "100.64.0.0/16"

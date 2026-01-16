@@ -45,8 +45,8 @@ additional_node_groups = {
   }
 }
 
-karpenter_node_groups = {
-  karpenter = {
+system_node_group = {
+  system = {
     single_nodegroup = true
     availability_zone_ids = ["usw2-az1","usw2-az3"]
     ami = "${CUSTOM_AMI}"
@@ -62,12 +62,6 @@ karpenter_node_groups = {
       "m5zn.2xlarge",
       "m6id.2xlarge"
     ]
-  }
-  gpu = {
-    availability_zone_ids = ["usw2-az2"]
-  }
-  platform = {
-    availability_zone_ids= ["usw2-az2"]
   }
 }
 

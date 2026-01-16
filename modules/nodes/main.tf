@@ -1,7 +1,12 @@
 data "aws_default_tags" "this" {}
 
+locals {
+  default_node_groups_filtered = { for k, v in coalesce(var.default_node_groups, {}) : k => v if v != null }
+  system_node_group_map        = var.system_node_group != null ? { system = var.system_node_group.system } : {}
+}
+
 data "aws_ec2_instance_type" "all" {
-  for_each      = toset(flatten([for ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) : ng.instance_types]))
+  for_each      = toset(flatten([for ng in merge(local.system_node_group_map, var.additional_node_groups, local.default_node_groups_filtered) : ng.instance_types]))
   instance_type = each.value
 }
 
@@ -14,7 +19,7 @@ locals {
   }]
 
   node_group_status = {
-    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    for name, ng in merge(local.system_node_group_map, var.additional_node_groups, local.default_node_groups_filtered) :
     name => {
       is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
@@ -22,7 +27,7 @@ locals {
   }
 
   node_group_ami_class_types = {
-    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    for name, ng in merge(local.system_node_group_map, var.additional_node_groups, local.default_node_groups_filtered) :
     name => {
       ami_class = ng.ami != null ? "custom" : (
         local.node_group_status[name].is_neuron ? "neuron" :
@@ -38,7 +43,7 @@ locals {
   }
 
   node_groups = {
-    for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, var.default_node_groups) :
+    for name, ng in merge(local.system_node_group_map, var.additional_node_groups, local.default_node_groups_filtered) :
     name => merge(ng, {
       is_gpu          = local.node_group_status[name].is_gpu
       is_neuron       = local.node_group_status[name].is_neuron
@@ -47,11 +52,11 @@ locals {
       version         = ng.ami != null ? null : var.eks_info.cluster.version
       release_version = ng.ami != null ? null : try(nonsensitive(local.ami_version_mappings[local.node_group_ami_class_types[name].ami_class].release_version), null)
       instance_tags   = merge(data.aws_default_tags.this.tags, ng.tags, local.node_group_status[name].is_neuron ? { "k8s.io/cluster-autoscaler/node-template/resources/aws.amazon.com/neuron" = "1" } : null)
-      # Omit the karpenter nodegroups to mitigate daemonsets scheduling issues.
+      # Omit the system nodegroups to mitigate daemonsets scheduling issues.
       labels = merge(
         local.node_group_status[name].is_gpu ? local.gpu_labels : {},
         ng.labels,
-        lookup(coalesce(var.karpenter_node_groups, {}), name, null) == null ? { "dominodatalab.com/domino-node" = true } : {}
+        { "dominodatalab.com/domino-node" = true }
       )
       taints = local.node_group_status[name].is_gpu ? distinct(concat(local.gpu_taints, ng.taints)) : ng.taints
     })
@@ -142,7 +147,7 @@ resource "terraform_data" "calico_setup" {
 }
 
 resource "terraform_data" "karpenter_setup" {
-  count = var.karpenter_node_groups != null && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = var.eks_info.karpenter.enabled && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
 
   triggers_replace = [
     filemd5(var.eks_info.k8s_pre_setup_sh_file)
@@ -158,7 +163,7 @@ resource "terraform_data" "karpenter_setup" {
 }
 
 resource "terraform_data" "delete_karpenter_instances" {
-  count = var.karpenter_node_groups != null && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = var.eks_info.karpenter.enabled && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
 
   input = {
     k8s_pre_setup_sh_file = basename(var.eks_info.k8s_pre_setup_sh_file)
@@ -174,9 +179,10 @@ resource "terraform_data" "delete_karpenter_instances" {
 }
 
 locals {
-  karpenter_az_ids        = var.karpenter_node_groups != null ? flatten([for ng in var.karpenter_node_groups : ng.availability_zone_ids]) : []
-  karpenter_subnets       = var.karpenter_node_groups != null ? flatten([for ng in var.karpenter_node_groups : [for sb in var.network_info.subnets.private : sb.subnet_id if contains(local.karpenter_az_ids, sb.az_id)]]) : []
-  karpenter_tag_resources = var.karpenter_node_groups != null ? flatten([var.eks_info.nodes.security_group_id, local.karpenter_subnets]) : []
+  karpenter_tag_node_groups = var.eks_info.karpenter.enabled ? local.system_node_group_map : {}
+  karpenter_az_ids          = length(local.karpenter_tag_node_groups) > 0 ? flatten([for ng in local.karpenter_tag_node_groups : ng.availability_zone_ids]) : []
+  karpenter_subnets         = length(local.karpenter_tag_node_groups) > 0 ? flatten([for ng in local.karpenter_tag_node_groups : [for sb in var.network_info.subnets.private : sb.subnet_id if contains(local.karpenter_az_ids, sb.az_id)]]) : []
+  karpenter_tag_resources   = length(local.karpenter_tag_node_groups) > 0 ? flatten([var.eks_info.nodes.security_group_id, local.karpenter_subnets]) : []
 }
 
 resource "aws_ec2_tag" "karpenter" {
