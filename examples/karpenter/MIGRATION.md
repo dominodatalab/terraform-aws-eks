@@ -29,16 +29,16 @@ The migration process from EKS managed node groups to Karpenter consists of the 
 6. Verify all workloads are running properly
 7. Remove Managed Node Groups
 
-### 1. Create Karpenter Node Groups
+### 1. Create System Node Groups
 
-Create the Karpenter node groups. Make sure you read the text below regarding setting `karpenter_node_groups.karpenter.availability_zone_ids`.
+Create the system node groups. Make sure you read the text below regarding setting `system_node_group.system.availability_zone_ids`.
 
 #### Important Considerations
 
-When `default_node_groups` and `additional_node_groups` are not defined (which will happen later when the migration to karpenter completes), the `availability_zone_ids` in `karpenter_node_groups` exclusively determine four things:
+When `default_node_groups` and `additional_node_groups` are not defined (which will happen later when the migration to karpenter completes), the `availability_zone_ids` in `system_node_group` exclusively determine four things:
 
 1. Which availability zones will have supporting network infrastructure (such as subnets and route tables) created.
-2. Which subnets are used by the eks karpenter managed nodegroup to run karpenter itself.
+2. Which subnets are used by the eks system managed nodegroup to run karpenter itself.
 3. Which subnets will karpenter use to provision its nodes.
 4. Which subnets are used by the EKS cluster itself.
 
@@ -69,8 +69,8 @@ additional_node_groups = {
 We recommend including all AZs:
 
 ```hcl
-karpenter_node_groups = {
-  karpenter = {
+system_node_group = {
+  system = {
     availability_zone_ids = ["usw2-az1", "usw2-az2", "usw2-az3", "usw2-az4"]
     single_nodegroup = true
   }
@@ -86,9 +86,9 @@ Given that karpenter itself is stateless, we set the `single_nodegroup` in order
 1. Add the following to the infra.tfvars and nodes.tfvars:
 
 ```hcl
-# Consult the karpenter_node_groups variable for additional options.
-karpenter_node_groups = {
-  karpenter = {
+# Consult the system_node_group variable for additional options.
+system_node_group = {
+  system = {
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
     single_nodegroup = true
   }
@@ -115,7 +115,7 @@ karpenter = {
 
   :warning: There should not be any resource being destroyed nor replaced.
 
-  - `infra`: No changes expected if the `karpenter_node_groups.karpenter.availability_zone_ids` are already in use by by existing node_groups. Otherwise it will create the network resources necessary in the new `availability_zone_ids`
+  - `infra`: No changes expected if the `system_node_group.system.availability_zone_ids` are already in use by by existing node_groups. Otherwise it will create the network resources necessary in the new `availability_zone_ids`
   - `cluster`:
     - Creates:
       - `aws_iam_role_policy`

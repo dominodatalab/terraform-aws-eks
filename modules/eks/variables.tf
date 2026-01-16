@@ -263,8 +263,8 @@ variable "calico" {
     image_registry = optional(string, "quay.io")
     version        = optional(string, "v3.28.2")
     node_selector = optional(object({
-      key   = optional(string, "dominodatalab.com/calico-controlplane")
-      value = optional(string, "true")
+      key   = optional(string, "dominodatalab.com/node-pool")
+      value = optional(string, "system")
     }), {})
   })
   default = {}
@@ -305,6 +305,7 @@ variable "karpenter" {
       version = Configure the version for Karpenter.
       delete_instances_on_destroy = Toggle to delete Karpenter instances on destroy.
       vm_memory_overhead_percent  = Configure the vm memory overhead percent for Karpenter, represented in decimal form (%/100), i.e 7.5% = 0.075.
+      node_selector = Configure the node selector for Karpenter components.
     }
   EOF
   type = object({
@@ -313,6 +314,10 @@ variable "karpenter" {
     namespace                   = optional(string, "karpenter")
     version                     = optional(string, "1.6.3")
     vm_memory_overhead_percent  = optional(string, "0.075")
+    node_selector = optional(object({
+      key   = optional(string, "dominodatalab.com/node-pool")
+      value = optional(string, "system")
+    }), {})
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases
   })

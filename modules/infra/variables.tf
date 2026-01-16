@@ -188,8 +188,7 @@ variable "default_node_groups" {
           update_strategy            = optional(string, "DEFAULT")
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
-            "dominodatalab.com/node-pool"           = "platform"
-            "dominodatalab.com/calico-controlplane" = "true"
+            "dominodatalab.com/node-pool" = "platform"
           })
           taints = optional(list(object({
             key    = string
@@ -321,10 +320,10 @@ variable "additional_node_groups" {
   default = {}
 }
 
-variable "karpenter_node_groups" {
+variable "system_node_group" {
   description = <<EOF
-    Configuration for EKS node groups managed by Karpenter. These node groups are designed to dynamically scale
-    workloads based on resource requirements.
+    Configuration for EKS node groups used as the system pool. These node groups are designed to host
+    cluster components like Calico and Karpenter.
     Set `single_nodegroup: true` to create a single node group spanning multiple availability zones (AZs)
     instead of creating a separate node group per AZ. This is useful for simplifying management but may
     not be ideal for workloads requiring strict zone affinity (e.g., due to EBS volume zonal constraints).
@@ -343,8 +342,8 @@ variable "karpenter_node_groups" {
     desired_per_az             = optional(number, 1)
     availability_zone_ids      = list(string)
     labels = optional(map(string), {
-      "dominodatalab.com/node-pool"           = "karpenter"
-      "dominodatalab.com/calico-controlplane" = "true"
+      "dominodatalab.com/domino-node" = "true"
+      "dominodatalab.com/node-pool"   = "system"
     })
     taints = optional(list(object({
       key    = string

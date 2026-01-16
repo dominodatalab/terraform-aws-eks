@@ -5,7 +5,7 @@ module "infra" {
   additional_node_groups = var.additional_node_groups
   bastion                = var.bastion
   default_node_groups    = var.default_node_groups
-  karpenter_node_groups  = var.karpenter_node_groups
+  system_node_group      = var.system_node_group
   network                = var.network
   eks                    = var.eks
   kms                    = var.kms

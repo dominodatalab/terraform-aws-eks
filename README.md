@@ -337,8 +337,8 @@ To create a new deployment that uses Karpenter
 1. Complete all standard steps
 2. Add the following to your `infra.tfvars` and `nodes.tfvars`. See Note on selecting AZs  [karpenter-availability_zone_ids](./examples/karpenter/MIGRATION.md#1-create-karpenter-node-groups)
 ```hcl
-karpenter_node_groups = {
-  karpenter = {
+system_node_group = {
+  system = {
     availability_zone_ids = ["usw2-az1", "usw2-az2", "usw2-az3", "usw2-az4"]
     single_nodegroup = true
   }

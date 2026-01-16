@@ -120,8 +120,7 @@ variable "default_node_groups" {
           update_strategy            = optional(string, "DEFAULT")
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
-            "dominodatalab.com/node-pool"           = "platform"
-            "dominodatalab.com/calico-controlplane" = "true"
+            "dominodatalab.com/node-pool" = "platform"
           })
           taints = optional(list(object({
             key    = string
@@ -246,10 +245,10 @@ variable "additional_node_groups" {
   default = {}
 }
 
-variable "karpenter_node_groups" {
-  description = "Node groups for karpenter."
+variable "system_node_group" {
+  description = "System node groups for cluster components (Calico, Karpenter)."
   type = map(object({
-    single_nodegroup           = optional(bool, false)
+    single_nodegroup           = optional(bool, true)
     ami                        = optional(string, null)
     user_data_type             = optional(string, null)
     bootstrap_extra_args       = optional(string, "")
@@ -263,8 +262,8 @@ variable "karpenter_node_groups" {
     desired_per_az             = optional(number, 1)
     availability_zone_ids      = list(string)
     labels = optional(map(string), {
-      "dominodatalab.com/node-pool"           = "karpenter"
-      "dominodatalab.com/calico-controlplane" = "true"
+      "dominodatalab.com/domino-node" = "true"
+      "dominodatalab.com/node-pool"   = "system"
     })
     taints = optional(list(object({
       key    = string
@@ -280,7 +279,6 @@ variable "karpenter_node_groups" {
       throughput = optional(number, 500)
     }), {})
   }))
-  default = null
 }
 
 variable "storage" {

@@ -194,9 +194,9 @@ set_tf_vars() {
 
   DEFAULT_NODES=$(hcledit attribute get default_node_groups -f "$INFRA_VARS")
   ADDITIONAL_NODES=$(hcledit attribute get additional_node_groups -f "$INFRA_VARS")
-  KARPENTER_NODES=$(hcledit attribute get karpenter_node_groups -f "$INFRA_VARS")
+  SYSTEM_NODES=$(hcledit attribute get system_node_group -f "$INFRA_VARS")
 
-  export DEFAULT_NODES ADDITIONAL_NODES KARPENTER_NODES
+  export DEFAULT_NODES ADDITIONAL_NODES SYSTEM_NODES
 
   printf "\nCluster vars:\n"
   envsubst <"$CLUSTER_VARS_TPL" | tee "$CLUSTER_VARS"

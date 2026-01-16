@@ -188,8 +188,7 @@ variable "default_node_groups" {
           update_strategy            = optional(string, "DEFAULT")
           availability_zone_ids      = list(string)
           labels = optional(map(string), {
-            "dominodatalab.com/node-pool"           = "platform"
-            "dominodatalab.com/calico-controlplane" = "true"
+            "dominodatalab.com/node-pool" = "platform"
           })
           taints = optional(list(object({
             key    = string

@@ -197,9 +197,9 @@ _install_karpenter_chart() {
     --set controller.resources.limits.cpu=1 \
     --set controller.resources.limits.memory=1Gi \
     --set replicas=1 \
-    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=dominodatalab.com/node-pool \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=${karpenter_node_selector.key} \
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
-    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=karpenter \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=${karpenter_node_selector.value} \
     --set affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].topologyKey=kubernetes.io/hostname \
     --set-json 'podAnnotations={"crd-version":"${karpenter_version}","prometheus.io/scrape":"true","prometheus.io/port":"8080","prometheus.io/path":"/metrics"}' \
     --wait \
