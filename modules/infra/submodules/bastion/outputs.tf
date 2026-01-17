@@ -1,6 +1,7 @@
 output "info" {
   description = "Bastion information."
   value = {
+    instance_id         = aws_instance.bastion.id
     user                = var.bastion.username
     public_ip           = aws_eip.bastion.public_ip
     security_group_id   = aws_security_group.bastion.id
