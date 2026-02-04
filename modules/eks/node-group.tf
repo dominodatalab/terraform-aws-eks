@@ -44,8 +44,9 @@ resource "aws_security_group_rule" "node" {
   to_port           = each.value.to_port
   type              = each.value.type
   description       = each.value.description
-  cidr_blocks       = try(each.value.cidr_blocks, null)
-  self              = try(each.value.self, null)
+  # trivy:ignore:AWS-0104 EKS nodes require unrestricted egress for container images, AWS services, and external dependencies
+  cidr_blocks = try(each.value.cidr_blocks, null)
+  self        = try(each.value.self, null)
   source_security_group_id = try(
     each.value.source_security_group_id,
     try(each.value.source_cluster_security_group, false) ? aws_security_group.eks_cluster.id : null

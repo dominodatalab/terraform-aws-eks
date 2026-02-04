@@ -27,9 +27,9 @@ spec:
   userData: |
     kind: NodeConfig
     spec:
-      soci_snapshotter:
-        max_concurrent_downloads_per_image: 10
-        max_concurrent_unpacks_per_image: 10
+      # FastImagePull enables SOCI snapshotter integration for faster container startup
+      # Requires SOCI snapshotter to be pre-installed in the AMI
+      # Documentation: https://github.com/awslabs/soci-snapshotter/blob/main/docs/eks.md
       featureGates:
         FastImagePull: true
       kubelet:

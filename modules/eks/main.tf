@@ -267,6 +267,9 @@ locals {
         arn  = aws_iam_role.eks_nodes.arn
         name = aws_iam_role.eks_nodes.name
       }]
+      soci_snapshotter = var.eks.soci_snapshotter
+      kubelet          = var.eks.kubelet
+      feature_gates    = var.eks.feature_gates
     }
     kubeconfig = local.kubeconfig
     calico     = var.calico
