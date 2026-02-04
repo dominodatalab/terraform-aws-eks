@@ -30,6 +30,7 @@ resource "aws_security_group_rule" "bastion_outbound" {
   to_port     = "0"
   type        = "egress"
   description = "Allow all outbound traffic by default"
+  # trivy:ignore:AWS-0104 Bastion requires unrestricted egress for SSH proxy, system updates, and outbound connectivity
   cidr_blocks = ["0.0.0.0/0"]
 }
 
