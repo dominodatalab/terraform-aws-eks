@@ -1,0 +1,52 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: platform_jobs
+spec:
+  disruption:
+    budgets:
+      - nodes: 10%
+    consolidateAfter: 5m
+    consolidationPolicy: WhenEmpty
+  template:
+    metadata:
+      labels:
+        dominodatalab.com/domino-node: "true"
+        dominodatalab.com/node-pool: platform-jobs
+    spec:
+      limits:
+        cpu: 160
+        memory: 640Gi
+      expireAfter: Never
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: domino-eks-platform
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+            - amd64
+        - key: kubernetes.io/os
+          operator: In
+          values:
+            - linux
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values:
+            - on-demand
+            - reserved
+        - key: karpenter.k8s.aws/instance-family
+          operator: In
+          values:
+            - m6a
+            - m6i
+            - m7i-flex
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: In
+          values:
+            - "2"
+            - "4"
+      startupTaints:
+        - effect: NoExecute
+          key: ebs.csi.aws.com/agent-not-ready

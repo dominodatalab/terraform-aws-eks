@@ -139,6 +139,40 @@ variable "default_node_groups" {
             }
           )
       }),
+      platform_jobs = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string, null)
+          user_data_type             = optional(string, null)
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["m7i-flex.xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 0)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
+          desired_per_az             = optional(number, 0)
+          update_strategy            = optional(string, "DEFAULT")
+          availability_zone_ids      = list(string)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "platform-jobs"
+          })
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })), [])
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
+          volume = optional(object({
+            size = optional(number, 100)
+            type = optional(string, "gp3")
+            }), {
+            size = 100
+            type = "gp3"
+            }
+          )
+      })),
       gpu = object(
         {
           single_nodegroup           = optional(bool, false)

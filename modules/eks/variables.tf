@@ -136,6 +136,16 @@ variable "eks" {
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
+    soci_snapshotter = SOCI snapshotter configuration for fast image pulling. {
+      enabled = Enable SOCI snapshotter and FastImagePull feature gate.
+      max_concurrent_downloads_per_image = Max concurrent downloads per image.
+      max_concurrent_unpacks_per_image = Max concurrent unpacks per image.
+    }
+    kubelet = Kubelet configuration. {
+      registry_pull_qps = Registry pull QPS limit.
+      registry_burst = Registry pull burst limit.
+    }
+    feature_gates = Additional Kubernetes feature gates to enable (map of feature name to bool).
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
       path       = Fully qualified path name to write the kubeconfig file.
@@ -166,6 +176,16 @@ variable "eks" {
     creation_role_name = optional(string, null)
     k8s_version        = optional(string, "1.34")
     nodes_master       = optional(bool, false)
+    soci_snapshotter = optional(object({
+      enabled                            = optional(bool, true)
+      max_concurrent_downloads_per_image = optional(number, 10)
+      max_concurrent_unpacks_per_image   = optional(number, 10)
+    }), {})
+    kubelet = optional(object({
+      registry_pull_qps = optional(number, 12)
+      registry_burst    = optional(number, 40)
+    }), {})
+    feature_gates = optional(map(bool), {})
     kubeconfig = optional(object({
       extra_args = optional(string, "")
       path       = optional(string, null)

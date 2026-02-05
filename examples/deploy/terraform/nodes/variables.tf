@@ -61,6 +61,34 @@ variable "default_node_groups" {
             type = optional(string)
           }))
       }),
+      platform_jobs = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string)
+          user_data_type             = optional(string)
+          bootstrap_extra_args       = optional(string)
+          instance_types             = optional(list(string), ["m6a.large", "m6i.large", "m7i-flex.large", "m6a.xlarge", "m6i.xlarge", "m7i-flex.xlarge"])
+          spot                       = optional(bool)
+          min_per_az                 = optional(number)
+          max_per_az                 = optional(number)
+          max_unavailable_percentage = optional(number)
+          max_unavailable            = optional(number)
+          desired_per_az             = optional(number)
+          update_strategy            = optional(string, "MINIMAL")
+          availability_zone_ids      = list(string)
+          labels                     = optional(map(string))
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })))
+          tags = optional(map(string))
+          gpu  = optional(bool)
+          volume = optional(object({
+            size = optional(number)
+            type = optional(string)
+          }))
+      })),
       gpu = object(
         {
           single_nodegroup           = optional(bool, false)

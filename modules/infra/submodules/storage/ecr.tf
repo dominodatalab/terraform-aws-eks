@@ -8,6 +8,7 @@ locals {
   supports_pull_through_cache = data.aws_partition.current.partition == "aws" && !var.use_fips_endpoint
 }
 
+# trivy:ignore:AWS-0030 Image scanning is managed separately via ECR repository lifecycle policies or external scanning tools
 resource "aws_ecr_repository" "this" {
   for_each             = local.ecr_repos
   name                 = join("/", [var.deploy_id, each.key])

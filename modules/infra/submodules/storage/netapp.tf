@@ -24,8 +24,9 @@ resource "aws_security_group_rule" "netapp_outbound" {
   to_port           = 0
   protocol          = "-1"
   security_group_id = aws_security_group.netapp[0].id
-  cidr_blocks       = ["0.0.0.0/0"]
-  description       = "NETAPP outbound" # https://docs.netapp.com/us-en/bluexp-netapp-ontap/requirements/reference-security-groups-netapp.html#rules-for-netapp-for-ontap
+  # trivy:ignore:AWS-0104 NetApp ONTAP requires unrestricted egress per https://docs.netapp.com/us-en/bluexp-netapp-ontap/requirements/reference-security-groups-netapp.html#rules-for-netapp-for-ontap
+  cidr_blocks = ["0.0.0.0/0"]
+  description = "NETAPP outbound" # https://docs.netapp.com/us-en/bluexp-netapp-ontap/requirements/reference-security-groups-netapp.html#rules-for-netapp-for-ontap
 }
 
 locals {

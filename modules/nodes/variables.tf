@@ -94,7 +94,6 @@ variable "eks_info" {
         name = string
         arn  = string
       }
-      soci_snapshotter = SOCI snapshotter configuration
       kubelet = {
         registry_pull_qps = number
         registry_burst    = number
@@ -152,6 +151,7 @@ variable "eks_info" {
         arn  = string
       }))
       soci_snapshotter = optional(object({
+        enabled                            = optional(bool, true)
         max_concurrent_downloads_per_image = optional(number, 10)
         max_concurrent_unpacks_per_image   = optional(number, 10)
       }), {})
@@ -159,7 +159,7 @@ variable "eks_info" {
         registry_pull_qps = optional(number, 12)
         registry_burst    = optional(number, 40)
       }), {})
-      feature_gates = optional(object({ FastImagePull = bool }), { FastImagePull = true })
+      feature_gates = optional(map(bool), {})
     })
     kubeconfig = object({
       path       = string
@@ -256,6 +256,45 @@ variable "default_node_groups" {
             }
           )
       }),
+      platform_jobs = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string, null)
+          user_data_type             = optional(string, "AL2")
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["m6a.large", "m6i.large", "m7i-flex.large", "m6a.xlarge", "m6i.xlarge", "m7i-flex.xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 0)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
+          desired_per_az             = optional(number, 0)
+          update_strategy            = optional(string, "MINIMAL")
+          availability_zone_ids      = list(string)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "platform-jobs"
+          })
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+            })), []
+          )
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
+          volume = optional(object({
+            size       = optional(number, 100)
+            type       = optional(string, "gp3")
+            iops       = optional(number)
+            throughput = optional(number)
+            }), {
+            size       = 100
+            type       = "gp3"
+            iops       = null
+            throughput = null
+            }
+          )
+      })),
       gpu = object(
         {
           single_nodegroup           = optional(bool, false)

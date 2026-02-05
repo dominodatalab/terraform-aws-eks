@@ -62,6 +62,16 @@ variable "eks" {
     run_k8s_setup = Toggle to run the k8s setup.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
+    soci_snapshotter = SOCI snapshotter configuration for fast image pulling. {
+      enabled = Enable SOCI snapshotter and FastImagePull feature gate.
+      max_concurrent_downloads_per_image = Max concurrent downloads per image.
+      max_concurrent_unpacks_per_image = Max concurrent unpacks per image.
+    }
+    kubelet = Kubelet configuration. {
+      registry_pull_qps = Registry pull QPS limit.
+      registry_burst = Registry pull burst limit.
+    }
+    feature_gates = Additional Kubernetes feature gates to enable (map of feature name to bool).
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
       path       = Fully qualified path name to write the kubeconfig file.
@@ -89,6 +99,16 @@ variable "eks" {
     run_k8s_setup = optional(bool, true)
     k8s_version   = optional(string, "1.34")
     nodes_master  = optional(bool, false)
+    soci_snapshotter = optional(object({
+      enabled                            = optional(bool, true)
+      max_concurrent_downloads_per_image = optional(number, 10)
+      max_concurrent_unpacks_per_image   = optional(number, 10)
+    }), {})
+    kubelet = optional(object({
+      registry_pull_qps = optional(number, 12)
+      registry_burst    = optional(number, 40)
+    }), {})
+    feature_gates = optional(map(bool), {})
     kubeconfig = optional(object({
       extra_args = optional(string, "")
       path       = optional(string, null)
@@ -207,6 +227,40 @@ variable "default_node_groups" {
             }
           )
       }),
+      platform_jobs = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string, null)
+          user_data_type             = optional(string, null)
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["m6a.large", "m6i.large", "m7i-flex.large", "m6a.xlarge", "m6i.xlarge", "m7i-flex.xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 0)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
+          desired_per_az             = optional(number, 0)
+          update_strategy            = optional(string, "MINIMAL")
+          availability_zone_ids      = list(string)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "platform-jobs"
+          })
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })), [])
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
+          volume = optional(object({
+            size = optional(number, 100)
+            type = optional(string, "gp3")
+            }), {
+            size = 100
+            type = "gp3"
+            }
+          )
+      })),
       gpu = object(
         {
           single_nodegroup           = optional(bool, false)
