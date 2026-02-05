@@ -151,7 +151,7 @@ variable "eks_info" {
         arn  = string
       }))
       soci_snapshotter = optional(object({
-        enabled                            = optional(bool, false)
+        enabled                            = optional(bool, true)
         max_concurrent_downloads_per_image = optional(number, 10)
         max_concurrent_unpacks_per_image   = optional(number, 10)
       }), {})
