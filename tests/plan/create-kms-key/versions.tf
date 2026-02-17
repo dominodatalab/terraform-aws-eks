@@ -14,12 +14,3 @@ provider "aws" {
     keys = var.ignore_tags
   }
 }
-
-
-provider "aws" {
-  region = "us-east-1"
-  alias  = "us-east-1"
-  ignore_tags {
-    keys = var.ignore_tags
-  }
-}
