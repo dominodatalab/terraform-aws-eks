@@ -3,7 +3,7 @@ resource "aws_launch_template" "node_groups" {
   name                    = "${var.eks_info.cluster.specs.name}-${each.key}"
   disable_api_termination = false
   key_name                = var.ssh_key.key_pair_name
-  user_data = each.value.ami != null ? base64encode(templatefile(local.user_data_templates[each.value.user_data_type],
+  user_data = each.value.user_data_type != null ? base64encode(templatefile(local.user_data_templates[each.value.user_data_type],
     {
       # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-custom-ami
       # Required to bootstrap node
