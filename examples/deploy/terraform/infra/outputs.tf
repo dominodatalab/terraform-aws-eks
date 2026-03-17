@@ -24,14 +24,14 @@ output "domino_config_values" {
       s3_override = var.storage.s3.create ? {
         region         = var.region
         bucket         = module.infra.storage.s3.buckets.registry.bucket_name
-        sse_kms_key_id = module.infra.kms.key_arn
+        sse_kms_key_id = module.infra.kms.enabled ? module.infra.kms.key_arn : null
       } : null
     }
     external_docker_registry = var.storage.ecr.create ? module.infra.storage.ecr.container_registry : null
     storage_classes = {
       block = {
         parameters = {
-          kmsKeyId = module.infra.kms.key_arn
+          kmsKeyId = module.infra.kms.enabled ? module.infra.kms.key_arn : null
         }
       }
       shared = {
@@ -45,18 +45,18 @@ output "domino_config_values" {
         projects = var.storage.s3.create ? {
           region         = var.region
           bucket         = module.infra.storage.s3.buckets.blobs.bucket_name
-          sse_kms_key_id = module.infra.kms.key_arn
+          sse_kms_key_id = module.infra.kms.enabled ? module.infra.kms.key_arn : null
         } : null
         logs = var.storage.s3.create ? {
           region         = var.region
           bucket         = module.infra.storage.s3.buckets.logs.bucket_name
-          sse_kms_key_id = module.infra.kms.key_arn
+          sse_kms_key_id = module.infra.kms.enabled ? module.infra.kms.key_arn : null
 
         } : null
         backups = var.storage.s3.create ? {
           region         = var.region
           bucket         = module.infra.storage.s3.buckets.backups.bucket_name
-          sse_kms_key_id = module.infra.kms.key_arn
+          sse_kms_key_id = module.infra.kms.enabled ? module.infra.kms.key_arn : null
         } : null
         monitoring = {
           region = var.region
