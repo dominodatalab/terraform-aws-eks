@@ -46,6 +46,25 @@ Always refer to each section's respective README or documentation for detailed i
 * [hcledit](https://github.com/minamijoyo/hcledit)
 * bash >= 4.0
 
+### AWS Requirements
+
+- The default `AWSServiceRoleForAutoScaling` role must exist in the AWS account.
+  This service linked role **isn't** created by default in AWS until an Auto
+  Scaling group has been created. Furthermore, even when Auto Scaling groups
+  have been created in the account, this service linked role may be absent as
+  AWS recommends that it be
+  [deleted](https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-service-linked-role.html#delete-service-linked-role)
+  if it isn't being used.
+
+  If the `AWSServiceRoleForAutoScaling` doesn't exist in your AWS account, you
+  **must** create it before proceeding. Please refer to the [AWS
+  documentation](https://docs.aws.amazon.com/autoscaling/ec2/userguide/autoscaling-service-linked-role.html#create-edit-delete-service-linked-role)
+  for instructions. Alternatively, the following command will create it with its
+  default options:
+
+  ```
+  aws iam create-service-linked-role --aws-service-name autoscaling.amazonaws.com
+  ```
 
 ## Bootstrap module
 We first need to setup the module structure.
