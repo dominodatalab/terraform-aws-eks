@@ -4,23 +4,44 @@ set -euo pipefail
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
 source "${SH_DIR}/meta.sh"
 
+is_remote_backend() {
+  local dir=$1
+  local backend_file="${dir}/.terraform/terraform.tfstate"
+  if [[ -f "$backend_file" ]]; then
+    local backend_type
+    backend_type=$(jq -r '.backend.type // "local"' "$backend_file" 2>/dev/null)
+    [[ -n "$backend_type" && "$backend_type" != "local" ]]
+  else
+    return 1
+  fi
+}
+
 state_exists() {
   local dir=$1
-  local name=$(basename $dir)
-  local state_path="${BASE_TF_DIR}/${name}.tfstate"
-  [[ -f $state_path && -s $state_path ]]
+  if is_remote_backend "$dir"; then
+    terraform -chdir="$dir" state list &>/dev/null
+  else
+    local name=$(basename $dir)
+    local state_path="${BASE_TF_DIR}/${name}.tfstate"
+    [[ -f $state_path && -s $state_path ]]
+  fi
 }
 
 has_resources() {
   local dir=$1
-  local name=$(basename $dir)
-  local state_path="${BASE_TF_DIR}/${name}.tfstate"
-
-  if [[ ! -f "$state_path" ]]; then
-    return 1
+  if is_remote_backend "$dir"; then
+    local resource_count
+    resource_count=$(terraform -chdir="$dir" state list 2>/dev/null | wc -l)
+    [[ $resource_count -gt 0 ]]
+  else
+    local name=$(basename $dir)
+    local state_path="${BASE_TF_DIR}/${name}.tfstate"
+    if [[ ! -f "$state_path" ]]; then
+      return 1
+    fi
+    local resource_count=$(jq '.resources | length' "$state_path")
+    [[ $resource_count -gt 0 ]]
   fi
-  local resource_count=$(jq '.resources | length' "$state_path")
-  [[ $resource_count -gt 0 ]]
 }
 
 check_dependencies() {
@@ -54,6 +75,11 @@ run_tf_command() {
   local plan_path="${BASE_TF_DIR}/${name}-terraform.plan"
   local state_path="${BASE_TF_DIR}/${name}.tfstate"
 
+  local state_args=""
+  if ! is_remote_backend "$dir"; then
+    state_args="-state=${state_path}"
+  fi
+
   local tfvars_file="${BASE_TF_DIR}/${name}.tfvars"
   local tfvars_json_file="${tfvars_file}.json"
 
@@ -76,7 +102,7 @@ run_tf_command() {
 
   update_node_groups() {
     echo "Updating EKS Node Pools"
-    mapfile -t node_pools < <(terraform -chdir="$dir" state list -state="$state_path" | grep 'aws_eks_node_group.node_groups')
+    mapfile -t node_pools < <(terraform -chdir="$dir" state list $state_args | grep 'aws_eks_node_group.node_groups')
 
     if [[ ${#node_pools[@]} -eq 0 ]]; then
       echo "Error: No node pools found to update."
@@ -85,7 +111,7 @@ run_tf_command() {
 
     for np in "${node_pools[@]}"; do
       echo "Updating $np"
-      terraform -chdir="$dir" apply -input=false -parallelism=5 -state="$state_path" -target="$np" -auto-approve
+      terraform -chdir="$dir" apply -input=false -parallelism=5 $state_args -target="$np" -auto-approve
     done
   }
 
@@ -95,18 +121,18 @@ run_tf_command() {
     ;;
   plan)
     check_dependencies $name
-    terraform -chdir="$dir" plan -input=false -state="$state_path" -var-file="$tfvars_file"
+    terraform -chdir="$dir" plan -input=false $state_args -var-file="$tfvars_file"
     ;;
   plan_out)
     check_dependencies $name
-    terraform -chdir="$dir" plan -input=false -state="$state_path" -var-file="$tfvars_file" -out="$plan_path"
+    terraform -chdir="$dir" plan -input=false $state_args -var-file="$tfvars_file" -out="$plan_path"
     echo "Terraform plan for $name saved at: $(realpath $plan_path)"
     ;;
   apply)
     check_dependencies $name
     parallelism="10"
     [ "$name" == "nodes" ] && parallelism="5"
-    terraform -chdir="$dir" apply -input=false -parallelism="$parallelism" -state="$state_path" -var-file="$tfvars_file" -auto-approve
+    terraform -chdir="$dir" apply -input=false -parallelism="$parallelism" $state_args -var-file="$tfvars_file" -auto-approve
     ;;
   apply_plan)
     check_dependencies $name
@@ -114,11 +140,11 @@ run_tf_command() {
       echo "$plan_path does not exist. Exiting..."
       exit 1
     fi
-    terraform -chdir="$dir" apply -input=false -state="$state_path" -auto-approve "$plan_path"
+    terraform -chdir="$dir" apply -input=false $state_args -auto-approve "$plan_path"
     ;;
   refresh)
     check_dependencies $name
-    terraform -chdir="$dir" apply -input=false -state="$state_path" -var-file="$tfvars_file" -refresh-only -auto-approve
+    terraform -chdir="$dir" apply -input=false $state_args -var-file="$tfvars_file" -refresh-only -auto-approve
     ;;
   show_plan_json)
     check_dependencies $name
@@ -130,9 +156,9 @@ run_tf_command() {
   output)
     if state_exists "$dir"; then
       if [ $param != "false" ]; then
-        terraform -chdir="$dir" output -state="$state_path" "$param"
+        terraform -chdir="$dir" output $state_args "$param"
       else
-        terraform -chdir="$dir" output -state="$state_path" | tee "${BASE_TF_DIR}/${name}.outputs"
+        terraform -chdir="$dir" output $state_args | tee "${BASE_TF_DIR}/${name}.outputs"
       fi
     else
       echo "No state found for $name"
@@ -140,7 +166,7 @@ run_tf_command() {
     ;;
   output_json)
     if state_exists "$dir"; then
-      terraform -chdir="$dir" output -state="$state_path" -json
+      terraform -chdir="$dir" output $state_args -json
     else
       echo "No state found for $name"
     fi
@@ -154,7 +180,7 @@ run_tf_command() {
     ;;
   destroy)
     if state_exists "$dir" && has_resources "$dir"; then
-      terraform -chdir="$dir" destroy -input=false -state="$state_path" -var-file="$tfvars_file" -auto-approve || terraform -chdir="$dir" destroy -input=false -state="$state_path" -var-file="$tfvars_file" -auto-approve -refresh=false
+      terraform -chdir="$dir" destroy -input=false $state_args -var-file="$tfvars_file" -auto-approve || terraform -chdir="$dir" destroy -input=false $state_args -var-file="$tfvars_file" -auto-approve -refresh=false
     else
       echo "Nothing to destroy for $name"
     fi

@@ -116,15 +116,17 @@ resource "aws_iam_openid_connect_provider" "oidc_provider" {
 
 resource "null_resource" "kubeconfig" {
   provisioner "local-exec" {
-    when    = create
-    command = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name} ${local.kubeconfig.extra_args}"
+    when        = create
+    interpreter = ["bash", "-c"]
+    command     = "aws eks update-kubeconfig --kubeconfig ${self.triggers.kubeconfig_file} --region ${self.triggers.region} --name ${self.triggers.cluster_name} --alias ${self.triggers.cluster_name} ${local.kubeconfig.extra_args}"
     environment = {
       AWS_USE_FIPS_ENDPOINT = tostring(var.use_fips_endpoint)
     }
   }
   provisioner "local-exec" {
-    when    = destroy
-    command = <<EOT
+    when        = destroy
+    interpreter = ["bash", "-c"]
+    command     = <<EOT
       if (($(kubectl config --kubeconfig ${self.triggers.kubeconfig_file} get-contexts -o name | grep -v ${self.triggers.cluster_name}| wc -l) > 0 )); then
         kubectl config --kubeconfig ${self.triggers.kubeconfig_file} delete-cluster ${self.triggers.cluster_name}
         kubectl config --kubeconfig ${self.triggers.kubeconfig_file} delete-context ${self.triggers.cluster_name}
