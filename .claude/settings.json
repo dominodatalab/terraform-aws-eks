@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/alex.glenn/git/platform-apps/resources/deployer/deploys/alexgl117279/terraform/**)",
+      "Read(//Users/alex.glenn/git/platform-apps/resources/deployer/deploys/alexgl117279/**)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
