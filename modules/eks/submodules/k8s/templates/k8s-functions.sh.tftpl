@@ -154,11 +154,13 @@ _install_calico_chart() {
     --set-json 'nodeSelector={"${calico_node_selector.key}":"${calico_node_selector.value}"}' \
     --set podAnnotations.crd-version="${calico_version}" \
     --set installation.calicoNodeDaemonSet.spec.template.metadata.annotations.crd-version="${calico_version}" \
+%{ if calico_prometheus_metrics.enabled ~}
     --set installation.felixConfiguration.prometheusMetricsEnabled=true \
-    --set installation.felixConfiguration.prometheusMetricsPort=9091 \
+    --set installation.felixConfiguration.prometheusMetricsPort=${calico_prometheus_metrics.port} \
     --set-string installation.calicoNodeDaemonSet.spec.template.metadata.annotations."prometheus\.io/scrape"="true" \
-    --set-string installation.calicoNodeDaemonSet.spec.template.metadata.annotations."prometheus\.io/port"="9091" \
-    --set-string installation.calicoNodeDaemonSet.spec.template.metadata.annotations."prometheus\.io/path"="/metrics" \
+    --set-string installation.calicoNodeDaemonSet.spec.template.metadata.annotations."prometheus\.io/port"="${calico_prometheus_metrics.port}" \
+    --set-string installation.calicoNodeDaemonSet.spec.template.metadata.annotations."prometheus\.io/path"="${calico_prometheus_metrics.path}" \
+%{ endif ~}
     --set installation.calicoKubeControllersDeployment.metadata.annotations.crd-version="${calico_version}" \
     --set installation.csiNodeDriverDaemonSet.spec.template.metadata.annotations.crd-version="${calico_version}" \
     --set apiServer.apiServerDeployment.spec.template.metadata.annotations.crd-version="${calico_version}" \

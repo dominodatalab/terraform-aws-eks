@@ -286,6 +286,11 @@ variable "calico" {
       key   = optional(string, "dominodatalab.com/calico-controlplane")
       value = optional(string, "true")
     }), {})
+    prometheus_metrics = optional(object({
+      enabled = optional(bool, true)
+      port    = optional(number, 9091)
+      path    = optional(string, "/metrics")
+    }), {})
   })
   default = {}
 }
