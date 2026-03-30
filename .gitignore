@@ -55,3 +55,4 @@ k8s-proxy-tunnel.sh
 .DS_Store
 .idea/*
 *.iml
+.claude/settings.json

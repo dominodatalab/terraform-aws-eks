@@ -101,6 +101,11 @@ variable "eks_info" {
         key   = string
         value = string
       })
+      prometheus_metrics = object({
+        enabled = bool
+        port    = number
+        path    = string
+      })
     })
   })
 }

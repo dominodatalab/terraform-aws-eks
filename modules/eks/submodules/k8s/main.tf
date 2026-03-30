@@ -27,6 +27,7 @@ locals {
       calico_fips_mode                      = var.use_fips_endpoint ? "Enabled" : "Disabled"
       calico_image_registry                 = var.eks_info.calico.image_registry
       calico_node_selector                  = var.eks_info.calico.node_selector
+      calico_prometheus_metrics             = var.eks_info.calico.prometheus_metrics
       karpenter_namespace                   = var.karpenter.namespace
       karpenter_version                     = var.karpenter.version
       karpenter_vm_memory_overhead_percent  = var.karpenter.vm_memory_overhead_percent
