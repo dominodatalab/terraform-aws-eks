@@ -4,7 +4,7 @@ test_file_name="${1:-none}"
 
 TFVARS_BASE_PATH="../../examples/tfvars/"
 SH_DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-exclude=("bring-your-vpc.tfvars" "kms-byok.tfvars" "private-link.tfvars" "oidc-byo.tfvars")
+exclude=("bring-your-vpc.tfvars" "kms-byok.tfvars" "private-link.tfvars" "oidc-byo.tfvars" "nodes-custom-ami.tfvars")
 
 failed_vars=()
 success_vars=()
@@ -113,6 +113,49 @@ test_byok_kms() {
   tf_plan "$(realpath $vars_file)" && rm "$vars_file"
 }
 
+# The example nodes-custom-ami.tfvars has hardcoded AMI IDs for illustration,
+# but AWS deregisters EKS-optimized AMIs over time which breaks the plan.
+# Resolve current AL2023 AMIs from SSM and substitute before planning.
+test_nodes_custom_ami() {
+  local NODES_VARS_FILE="../../examples/tfvars/nodes-custom-ami.tfvars"
+  local vars_file
+  vars_file="$(basename "$NODES_VARS_FILE")"
+  local k8s_version
+  k8s_version=$(awk -F'"' '/k8s_version[[:space:]]*=/{print $2; exit}' "$NODES_VARS_FILE")
+
+  printf "\n\033[0;33mResolving AL2023 AMIs for k8s %s\033[0m\n" "$k8s_version"
+  local standard_ami nvidia_ami
+  standard_ami=$(aws ssm get-parameter --region us-west-2 \
+    --name "/aws/service/eks/optimized-ami/${k8s_version}/amazon-linux-2023/x86_64/standard/recommended/image_id" \
+    --query 'Parameter.Value' --output text 2>/dev/null)
+  nvidia_ami=$(aws ssm get-parameter --region us-west-2 \
+    --name "/aws/service/eks/optimized-ami/${k8s_version}/amazon-linux-2023/x86_64/nvidia/recommended/image_id" \
+    --query 'Parameter.Value' --output text 2>/dev/null)
+
+  if [[ -z "$standard_ami" || "$standard_ami" == "None" || -z "$nvidia_ami" || "$nvidia_ami" == "None" ]]; then
+    printf "\033[0;31mERROR: Failed to resolve AL2023 AMIs from SSM for k8s %s\033[0m\n" "$k8s_version"
+    failed_vars+=("$vars_file")
+    return
+  fi
+  printf "\033[0;32mStandard AMI: %s | NVIDIA AMI: %s\033[0m\n" "$standard_ami" "$nvidia_ami"
+
+  # The example file has two unique AMI IDs: one shared by compute+platform
+  # (standard) and one for gpu (nvidia). Substitute by original ID to preserve
+  # structure regardless of which specific IDs are in the file.
+  mapfile -t orig_amis < <(grep -oE 'ami-[0-9a-f]+' "$NODES_VARS_FILE" | awk '!seen[$0]++')
+  if [ "${#orig_amis[@]}" -ne 2 ]; then
+    printf "\033[0;31mERROR: Expected 2 distinct AMI IDs in %s, found %d\033[0m\n" "$NODES_VARS_FILE" "${#orig_amis[@]}"
+    failed_vars+=("$vars_file")
+    return
+  fi
+
+  sed -e "s|${orig_amis[0]}|${standard_ami}|g" \
+      -e "s|${orig_amis[1]}|${nvidia_ami}|g" \
+      "$NODES_VARS_FILE" > "$vars_file"
+
+  tf_plan "$(realpath $vars_file)" && rm "$vars_file"
+}
+
 finish() {
   destroy_kms_key
 
@@ -140,4 +183,7 @@ trap finish EXIT ERR INT TERM
 verify_terraform
 verify_aws_creds
 run_terraform_plans
-[ "$test_file_name" == "none" ] && test_byok_kms
+if [ "$test_file_name" == "none" ]; then
+  test_byok_kms
+  test_nodes_custom_ami
+fi
