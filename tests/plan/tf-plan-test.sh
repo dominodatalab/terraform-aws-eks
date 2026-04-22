@@ -26,9 +26,15 @@ verify_aws_creds() {
   fi
 }
 
+PLAN_LOGS_DIR="${PLAN_LOGS_DIR:-/tmp/tf-plan-logs}"
+mkdir -p "$PLAN_LOGS_DIR"
+
 tf_plan() {
   local tfvars="$1"
   local test_pem="terraform/plan-test.pem"
+  local base
+  base="$(basename "$tfvars")"
+  local plan_log="$PLAN_LOGS_DIR/${base}.log"
 
   printf "\n\033[0;33mRunning terraform plan for ${tfvars}\033[0m:\n"
   if [ ! -f "$test_pem" ]; then
@@ -36,14 +42,15 @@ tf_plan() {
   fi
 
   terraform -chdir=terraform init -upgrade
-  terraform -chdir=terraform plan -var-file="$tfvars" -var "ssh_pvt_key_path=$(basename $test_pem)"
+  terraform -chdir=terraform plan -var-file="$tfvars" -var "ssh_pvt_key_path=$(basename $test_pem)" 2>&1 | tee "$plan_log"
+  local rc=${PIPESTATUS[0]}
 
-  if [ "$?" != "0" ]; then
+  if [ "$rc" != "0" ]; then
     printf "\033[0;31mERROR: terraform plan failed for $tfvars\033[0m.\n"
-    failed_vars+=("$(basename $tfvars)")
+    failed_vars+=("$base")
   else
     printf "\033[0;32mSUCCESS: terraform plan succeeded for $tfvars\033[0m.\n"
-    success_vars+=("$(basename $tfvars)")
+    success_vars+=("$base")
   fi
 }
 
@@ -117,6 +124,14 @@ finish() {
   if [ "${#failed_vars[@]}" != "0" ]; then
     printf "\n\033[0;31mThe following examples failed to run a terraform plan:\033[0m\n"
     printf '\033[0;31m%s\n\033[0m' "${failed_vars[@]} "
+    for failed in "${failed_vars[@]}"; do
+      local log="$PLAN_LOGS_DIR/${failed}.log"
+      if [ -f "$log" ]; then
+        printf "\n\033[0;31m----- Tail of %s (last 200 lines) -----\033[0m\n" "$failed"
+        tail -n 200 "$log"
+        printf "\033[0;31m----- End of %s tail -----\033[0m\n" "$failed"
+      fi
+    done
     exit 1
   fi
 }
