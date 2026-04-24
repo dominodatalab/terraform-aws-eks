@@ -56,6 +56,12 @@ resource "aws_iam_role_policy_attachment" "flyte_controlplane" {
   policy_arn = aws_iam_policy.flyte_controlplane.arn
 }
 
+resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_flyte_controlplane" {
+  count      = var.kms_info.provided_key ? 1 : 0
+  role       = aws_iam_role.flyte_controlplane.name
+  policy_arn = var.kms_info.key_policy_arn
+}
+
 resource "random_id" "server" {
   keepers = {
     # Generate a new id each time there's a new deploy id (which should never occur)
@@ -157,4 +163,10 @@ resource "aws_iam_policy" "flyte_dataplane" {
 resource "aws_iam_role_policy_attachment" "flyte_dataplane" {
   role       = aws_iam_role.flyte_dataplane.name
   policy_arn = aws_iam_policy.flyte_dataplane.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_flyte_dataplane" {
+  count      = var.kms_info.provided_key ? 1 : 0
+  role       = aws_iam_role.flyte_dataplane.name
+  policy_arn = var.kms_info.key_policy_arn
 }
