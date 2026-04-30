@@ -59,14 +59,18 @@ variable "serviceaccount_names" {
 
 variable "kms_info" {
   description = <<EOF
-    key_id  = KMS key id.
-    key_arn = KMS key arn.
-    enabled = KMS key is enabled
+    key_id         = KMS key id.
+    key_arn        = KMS key arn.
+    enabled        = KMS key is enabled
+    key_policy_arn = KMS Policy ARN when key is provided
+    provided_key   = If KMS Key was provided
   EOF
   type = object({
-    key_id  = string
-    key_arn = string
-    enabled = bool
+    key_id         = string
+    key_arn        = string
+    enabled        = bool
+    key_policy_arn = optional(string, null)
+    provided_key   = optional(bool, false)
   })
 }
 

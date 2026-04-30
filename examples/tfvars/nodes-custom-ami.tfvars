@@ -5,15 +5,15 @@ ssh_pvt_key_path = "domino.pem"
 ## The following  (default_node_groups,additional_node_groups) will ALSO need to be set in the nodes.tfvars
 default_node_groups = {
   compute = {
-    ami                   = "ami-09222788e7e90420c" #Update with desired AMI
+    ami                   = "ami-002495de7d30f195d" #Update with desired AMI, this is amazon-eks-node-al2023-x86_64-standard-1.34-v20260116
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
   platform = {
-    ami                   = "ami-09222788e7e90420c" #Update with desired AMI
+    ami                   = "ami-002495de7d30f195d" #Update with desired AMI, this is amazon-eks-node-al2023-x86_64-standard-1.34-v20260116
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
   gpu = {
-    ami                   = "ami-00a5daece3b11427f" #Update with desired GPU AMI
+    ami                   = "ami-096d0f8a5842c603c" #Update with desired GPU AMI, this is amazon-eks-node-al2023-x86_64-nvidia-1.34-v20260116
     availability_zone_ids = ["usw2-az1", "usw2-az2"]
   }
 }
