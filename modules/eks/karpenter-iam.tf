@@ -41,6 +41,7 @@ data "aws_iam_policy_document" "karpenter" {
       "ec2:DescribeInstances",
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeInstanceTypeOfferings",
+      "ec2:DescribePlacementGroups",
       "ec2:DeleteLaunchTemplate",
       "ec2:CreateTags",
       "ec2:CreateLaunchTemplate",

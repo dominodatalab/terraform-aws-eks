@@ -174,7 +174,7 @@ variable "eks" {
     run_k8s_setup      = optional(bool, true)
     service_ipv4_cidr  = optional(string, "172.20.0.0/16")
     creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.34")
+    k8s_version        = optional(string, "1.35")
     nodes_master       = optional(bool, false)
     soci_snapshotter = optional(object({
       enabled                            = optional(bool, true)
@@ -336,7 +336,7 @@ variable "karpenter" {
     enabled                     = optional(bool, false)
     delete_instances_on_destroy = optional(bool, false)
     namespace                   = optional(string, "karpenter")
-    version                     = optional(string, "1.6.3")
+    version                     = optional(string, "1.9.0")
     vm_memory_overhead_percent  = optional(string, "0.075")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases

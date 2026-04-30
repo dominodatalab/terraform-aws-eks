@@ -20,6 +20,15 @@ sed -i.bak -E "s/(kubectl.*>= )[0-9.]+/\1$DEFAULT_K8S_VERSION/" \
 sed -i.bak -E "s/(optimized-ami\/)[0-9.]+\//\1$DEFAULT_K8S_VERSION\//" \
   examples/karpenter/karpenter-configs.sh
 
+# Regenerate terraform-docs for READMEs that embed the k8s_version default
+if command -v terraform-docs >/dev/null 2>&1; then
+  for dir in modules/eks modules/infra tests/plan/terraform; do
+    terraform-docs markdown table --lockfile=false --output-file=README.md --output-mode=inject "$dir" >/dev/null
+  done
+else
+  echo "WARNING: terraform-docs not found; README.md files under modules/eks, modules/infra, tests/plan/terraform may be stale. Run pre-commit run terraform_docs --all-files to regenerate." >&2
+fi
+
 # Clean up backup files
 find . -name "*.bak" -delete
 
