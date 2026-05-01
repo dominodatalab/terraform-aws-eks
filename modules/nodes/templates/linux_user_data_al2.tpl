@@ -13,5 +13,8 @@ CONFIG_FILE="/etc/kubernetes/kubelet/kubelet-config.json"
 if [ -f "$CONFIG_FILE" ]; then
   jq '.registryPullQPS=${registry_pull_qps} | .registryBurst=${registry_burst}' "$CONFIG_FILE" > "$CONFIG_FILE.tmp" && mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
 fi
+# kubelet 1.35 removed --pod-infra-container-image; strip from legacy AL2 bootstrap.sh.
+# Safe on earlier versions: containerd's sandbox_image (set by the same bootstrap.sh) is the source of truth.
+sed -i 's|--pod-infra-container-image=\$PAUSE_CONTAINER[[:space:]]*||' /etc/eks/bootstrap.sh
 /etc/eks/bootstrap.sh ${cluster_name} ${bootstrap_extra_args} --b64-cluster-ca $B64_CLUSTER_CA --apiserver-endpoint $API_SERVER_URL
 ${post_bootstrap_user_data ~}
