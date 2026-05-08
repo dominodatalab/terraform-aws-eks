@@ -4,7 +4,7 @@
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
 | <a name="requirement_archive"></a> [archive](#requirement\_archive) | ~> 2 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.0 |
@@ -12,7 +12,7 @@
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="provider_archive"></a> [archive](#provider\_archive) | ~> 2 |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 6.0 |
 | <a name="provider_aws.us-east-1"></a> [aws.us-east-1](#provider\_aws.us-east-1) | ~> 6.0 |
@@ -24,7 +24,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_athena_workgroup.athena_work_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/athena_workgroup) | resource |
 | [aws_cur_report_definition.aws_cur_report_definition](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cur_report_definition) | resource |
 | [aws_glue_catalog_database.aws_cur_database](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/glue_catalog_database) | resource |
@@ -73,7 +73,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | <a name="input_cost_usage_report"></a> [cost\_usage\_report](#input\_cost\_usage\_report) | athena\_result\_bucket\_suffix = Name of the S3 bucket into which Athena will put the cost data.<br/>    report\_bucket\_name\_suffix = Suffix of the S3 bucket into which CUR will put the cost data.<br/>    aws\_glue\_database\_suffix = Suffix of the Glue's DB.<br/>    report\_name = Name of the Cost and Usage Report which will be created.<br/>    report\_frequency = How often the Cost and Usage Report will be generated. HOURLY or DAILY.<br/>    report\_versioning = Whether reports should be overwritten or new ones should be created.<br/>    report\_format = Format for report. Valid values are: textORcsv, Parquet. If Parquet is used, then Compression must also be Parquet.<br/>    report\_compression = Compression format for report. Valid values are: GZIP, ZIP, Parquet. If Parquet is used, then format must also be Parquet.<br/>    s3\_bucket\_prefix = Prefix in the S3 bucket to put reports. | <pre>object({<br/>    athena_result_bucket_suffix = string<br/>    report_bucket_name_suffix   = string<br/>    aws_glue_database_suffix    = string<br/>    report_name                 = string<br/>    report_frequency            = string<br/>    report_versioning           = string<br/>    report_format               = string<br/>    report_compression          = string<br/>    s3_bucket_prefix            = string<br/>  })</pre> | <pre>{<br/>  "athena_result_bucket_suffix": "aws-athena-query-results-costs",<br/>  "aws_glue_database_suffix": "athena-cur-cost-db",<br/>  "report_bucket_name_suffix": "cur-report",<br/>  "report_compression": "Parquet",<br/>  "report_format": "Parquet",<br/>  "report_frequency": "DAILY",<br/>  "report_name": "cur-report",<br/>  "report_versioning": "OVERWRITE_REPORT",<br/>  "s3_bucket_prefix": "cur"<br/>}</pre> | no |
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
 | <a name="input_kms_info"></a> [kms\_info](#input\_kms\_info) | key\_id  = KMS key id.<br/>    key\_arn = KMS key arn.<br/>    enabled = KMS key is enabled | <pre>object({<br/>    key_id  = string<br/>    key_arn = string<br/>    enabled = bool<br/>  })</pre> | n/a | yes |
@@ -84,6 +84,6 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | <a name="output_info"></a> [info](#output\_info) | athena\_info\_configs = "Athena based cost reporting config information for kubecost cost-analyzer"<br/>   athena\_region"  = "athena region"<br/>   athena\_query\_result\_s3 = "S3 location for athena query results"<br/>   cur\_report\_bucket\_name = "Name of S3 bucket used for storing CUR data. This may be provisioned by this module or not."<br/>   glue\_catalog\_database\_name = "Name of the Glue Catalog Database which is populated with CUR data."<br/>   glue\_catalog\_table\_name = "Name of the Glue Catalog table which is populated with CUR data."<br/>   glue\_catalog\_status\_table\_name = "Name of the Glue Catalog table which is populated with CUR data's status."<br/>   report\_name = "Name of the provisioned Cost and Usage Report."<br/>   s3\_bucket\_region  = "Region where the S3 bucket used for storing CUR data is provisioned. This may be provisioned by this module or not."<br/>   athena\_work\_group = "Athena workgroup to execute queries"<br/>   cur\_iam\_policy\_arn = CUR IAM Policy ARN. |
 <!-- END_TF_DOCS -->
