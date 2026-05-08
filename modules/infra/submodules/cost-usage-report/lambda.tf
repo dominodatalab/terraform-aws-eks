@@ -10,12 +10,6 @@ data "archive_file" "cur_initializer_zip" {
     })
     filename = local.index_filename
   }
-  source {
-    content = templatefile("${local.templates_dir}/${local.cfn_response_template}", {
-      cur_crawler = local.cur_crawler
-    })
-    filename = local.cfn_response_filename
-  }
 }
 
 resource "aws_lambda_function" "cur_lambda_initializer" {
@@ -26,7 +20,7 @@ resource "aws_lambda_function" "cur_lambda_initializer" {
   source_code_hash = data.archive_file.cur_initializer_zip.output_base64sha256
   handler          = "index.handler"
   timeout          = 30
-  runtime          = "nodejs22.x"
+  runtime          = "nodejs24.x"
 
   reserved_concurrent_executions = 1
   kms_key_arn                    = local.kms_key_arn
@@ -34,11 +28,6 @@ resource "aws_lambda_function" "cur_lambda_initializer" {
   depends_on = [
     aws_glue_crawler.aws_cur_crawler
   ]
-  environment {
-    variables = {
-      CRAWLER_NAME = aws_glue_crawler.aws_cur_crawler.name
-    }
-  }
 
   tracing_config {
     mode = "Active"
@@ -92,56 +81,6 @@ resource "aws_lambda_permission" "aws_s3_cur_event_lambda_permission" {
   source_account = local.aws_account_id
   principal      = "s3.amazonaws.com"
   source_arn     = aws_s3_bucket.cur_report.arn
-}
-
-data "archive_file" "aws_s3_cur_notification_zip" {
-  type        = "zip"
-  output_path = "/tmp/aws_s3_cur_notification.zip"
-  source {
-    content = templatefile("${local.templates_dir}/${local.aws_s3_cur_notification_template}", {
-      cur_crawler = local.cur_crawler
-    })
-    filename = local.index_filename
-  }
-  source {
-    content = templatefile("${local.templates_dir}/${local.cfn_response_template}", {
-      cur_crawler = local.cur_crawler
-    })
-    filename = local.cfn_response_filename
-  }
-}
-
-resource "aws_lambda_function" "aws_s3_cur_notification" {
-  function_name = local.notification_lambda_function
-  role          = aws_iam_role.aws_cur_lambda_executor.arn
-
-  filename         = data.archive_file.aws_s3_cur_notification_zip.output_path
-  source_code_hash = data.archive_file.aws_s3_cur_notification_zip.output_base64sha256
-  handler          = "index.handler"
-  timeout          = 30
-  runtime          = "nodejs22.x"
-
-  reserved_concurrent_executions = 1
-
-  depends_on = [
-    aws_lambda_function.cur_lambda_initializer,
-    aws_lambda_permission.aws_s3_cur_event_lambda_permission,
-  ]
-
-  vpc_config {
-    subnet_ids         = local.private_subnet_ids
-    security_group_ids = [aws_security_group.lambda.id]
-  }
-
-  tracing_config {
-    mode = "Active"
-  }
-
-  dead_letter_config {
-    target_arn = aws_sqs_queue.lambda_dlq.arn
-  }
-
-  code_signing_config_arn = aws_lambda_code_signing_config.lambda_csc.arn
 }
 
 resource "aws_signer_signing_profile" "signing_profile" {
