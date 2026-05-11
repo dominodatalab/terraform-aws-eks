@@ -45,7 +45,7 @@ Requires=soci-snapshotter.service
 
 [Service]
 ExecStartPre=/usr/bin/ctr --namespace=k8s.io image import --snapshotter soci --local /etc/eks/pause.tar
-ExecStartPre=/usr/bin/ctr --namespace=k8s.io image label localhost/kubernetes/pause:latest io.cri-containerd.pinned=pinned
+ExecStartPre=-/usr/bin/ctr --namespace=k8s.io image label localhost/kubernetes/pause:latest io.cri-containerd.pinned=pinned
 EOF
 systemctl daemon-reload
 %{ endif ~}
