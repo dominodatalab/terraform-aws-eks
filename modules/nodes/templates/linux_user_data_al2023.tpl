@@ -29,6 +29,25 @@ sed -i "s/^max_concurrent_downloads_per_image = .*$/max_concurrent_downloads_per
 max_concurrent_unpacks_per_image="${soci_snapshotter.max_concurrent_unpacks_per_image}"
 sed -i "s/^max_concurrent_unpacks_per_image = .*$/max_concurrent_unpacks_per_image = $max_concurrent_unpacks_per_image/" "$${SOCI_CONFIG_FILE}"
 %{ endif ~}
+
+# TODO: remove once a fixed EKS AL2023 AMI ships.
+# containerd 2.2.3 (AL2023 AMI v20260505+) routes the pinned pause-image unpack
+# through the CRI snapshotter. SOCI has no local pause layers and tries to fetch
+# them from ECR before kubelet's credential provider is up, deadlocking pod
+# sandbox creation and leaving the node NotReady. Pre-import the AMI's bundled
+# pause tarball into SOCI before kubelet starts, and pin it so containerd's GC
+# can't evict it. Tracks https://github.com/awslabs/amazon-eks-ami/issues/2710.
+mkdir -p /etc/systemd/system/kubelet.service.d
+cat > /etc/systemd/system/kubelet.service.d/prestart-load-pause-ctr.conf << 'EOF'
+[Unit]
+After=soci-snapshotter.service
+Requires=soci-snapshotter.service
+
+[Service]
+ExecStartPre=/usr/bin/ctr --namespace=k8s.io image import --snapshotter soci --local /etc/eks/pause.tar
+ExecStartPre=-/usr/bin/ctr --namespace=k8s.io image label localhost/kubernetes/pause:latest io.cri-containerd.pinned=pinned
+EOF
+systemctl daemon-reload
 %{ endif ~}
 
 --BOUNDARY
