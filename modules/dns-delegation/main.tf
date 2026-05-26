@@ -4,4 +4,11 @@ resource "aws_route53_record" "this" {
   type    = "NS"
   ttl     = var.ttl
   records = var.nameservers
+
+  lifecycle {
+    precondition {
+      condition     = length(var.nameservers) > 0
+      error_message = "nameservers must be non-empty."
+    }
+  }
 }
