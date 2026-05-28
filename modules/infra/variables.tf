@@ -160,12 +160,12 @@ variable "default_node_groups" {
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
           volume = optional(object({
-            size       = optional(number, 1000)
+            size       = optional(number, 400)
             type       = optional(string, "gp3")
             iops       = optional(number)
             throughput = optional(number, 500)
             }), {
-            size       = 1000
+            size       = 400
             type       = "gp3"
             iops       = null
             throughput = 500
@@ -199,10 +199,10 @@ variable "default_node_groups" {
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
           volume = optional(object({
-            size = optional(number, 100)
+            size = optional(number, 128)
             type = optional(string, "gp3")
             }), {
-            size = 100
+            size = 128
             type = "gp3"
             }
           )
