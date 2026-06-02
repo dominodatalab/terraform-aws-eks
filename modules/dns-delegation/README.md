@@ -52,8 +52,9 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_allow_overwrite"></a> [allow\_overwrite](#input\_allow\_overwrite) | Allow overwriting an existing NS record in the parent zone (e.g. adopting a pre-existing delegation). Route 53 manages NS/SOA records specially, making import painful; default false keeps create-only behavior. | `bool` | `false` | no |
 | <a name="input_delegation_name"></a> [delegation\_name](#input\_delegation\_name) | FQDN of the subdomain being delegated, e.g. "azure-east.acme.domino.tech". | `string` | n/a | yes |
-| <a name="input_nameservers"></a> [nameservers](#input\_nameservers) | NS values from the child zone (Azure DNS, GCP DNS, etc.). | `list(string)` | n/a | yes |
+| <a name="input_nameservers"></a> [nameservers](#input\_nameservers) | NS values from the child zone (Azure DNS, GCP DNS, etc.). Azure returns these with a trailing dot; Route 53 accepts either form, so no normalization is needed. | `list(string)` | n/a | yes |
 | <a name="input_parent_zone_id"></a> [parent\_zone\_id](#input\_parent\_zone\_id) | Route 53 hosted zone ID of the parent zone. | `string` | n/a | yes |
 | <a name="input_ttl"></a> [ttl](#input\_ttl) | TTL for the NS delegation record. | `number` | `300` | no |
 
