@@ -143,6 +143,7 @@ _install_calico_chart() {
     --version "${calico_version}" \
     --kubeconfig "$kubeconfig" \
     --namespace "tigera-operator" \
+    --server-side=false \
     --set installation.kubernetesProvider=EKS \
     --set installation.cni.type=AmazonVPC \
     --set installation.registry="${calico_image_registry}/" \
