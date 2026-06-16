@@ -145,6 +145,7 @@ check_directories
 
 case "$1" in
 "render")
+  render
   echo "Templates rendered successfully!"
   ;;
 "apply")

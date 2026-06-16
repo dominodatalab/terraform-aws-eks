@@ -15,10 +15,10 @@ spec:
         dominodatalab.com/node-pool: default-gpu
         nvidia.com/gpu: "true"
     spec:
-      limits:
-        cpu: 80
-        memory: 320Gi
-        nvidia.com/gpu: 10
+#      limits:
+#        cpu: 80
+#        memory: 320Gi
+#        nvidia.com/gpu: 10
       expireAfter: Never
       nodeClassRef:
         group: karpenter.k8s.aws
