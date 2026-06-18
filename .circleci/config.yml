@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   helm_version:
     type: string
-    default: "v3.19.2"
+    default: "v4.2.0"
   terraform_version:
     type: string
     default: "1.14.9"
@@ -290,13 +290,15 @@ jobs:
       - install_tf:
           terraform_version: << parameters.terraform_version >>
       - install_helm:
-          helm_version: << parameters.helm_version >>
+          helm_version: v3.19.2
       - install_hcledit
       - setup_tf_mods_latest_rel
       - set_mod_source_latest_rel
       - set_tf_vars
       - tf_deploy
       - store_deploy_artifacts
+      - install_helm:
+          helm_version: << parameters.helm_version >>
       - setup_tf_mods_upgrade
       - set_mod_source_current
       - set_tf_vars
