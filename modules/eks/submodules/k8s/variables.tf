@@ -6,6 +6,7 @@ variable "bastion_info" {
     ssh_bastion_command = Command to ssh onto bastion.
   EOF
   type = object({
+    instance_id         = string
     user                = string
     public_ip           = string
     security_group_id   = string
@@ -22,6 +23,11 @@ variable "ssh_key" {
     path          = string
     key_pair_name = string
   })
+}
+
+variable "ssh_extra_args" {
+  description = "Extra arguments passed to SSH"
+  type        = string
 }
 
 variable "eks_info" {
