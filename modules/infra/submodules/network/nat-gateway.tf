@@ -9,7 +9,7 @@ resource "aws_eip" "public" {
 }
 
 resource "aws_nat_gateway" "ngw" {
-  for_each          = local.public_cidrs
+  for_each          = local.use_managed_nat ? local.public_cidrs : {}
   allocation_id     = aws_eip.public[each.key].allocation_id
   connectivity_type = "public"
   subnet_id         = aws_subnet.public[each.key].id
