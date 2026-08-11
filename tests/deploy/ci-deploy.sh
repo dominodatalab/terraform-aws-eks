@@ -97,10 +97,12 @@ install_helm() {
     exit 1
   fi
   echo "Installing Helm version: ${HELM_VERSION}"
-  github_curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 -o get_helm.sh
-  chmod +x get_helm.sh
-  ./get_helm.sh --version "${HELM_VERSION}"
-  rm ./get_helm.sh
+  local platform=linux
+  local arch=amd64
+  local helm_artifact="helm-v${HELM_VERSION}-${platform}-${arch}.tar.gz"
+  local helm_bin="${platform}-${arch}/helm"
+  curl -sSfL "https://get.helm.sh/$helm_artifact" | tar zxvf - --directory=./ "${platform}-${arch}/helm"
+  chmod +x "$helm_bin" && sudo mv "$helm_bin" /usr/local/bin/helm && rmdir "$platform-$arch"
   helm version --short
 }
 
