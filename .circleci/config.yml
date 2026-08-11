@@ -26,9 +26,43 @@ parameters:
 orbs:
   terraform: circleci/terraform@3.7.0
   aws-cli: circleci/aws-cli@5.4.1
-  envsubst: sawadashota/envsubst@1.4.3
 
 commands:
+  # copy/pasted from sawadashota/envsubst@1.4.3's source listed here: https://circleci.com/developer/orbs/orb/sawadashota/envsubst
+  install_envsubst:
+    parameters:
+      install-dir:
+        default: /usr/local/bin
+        description: Directory in which to install the envsubst command
+        type: string
+      version:
+        default: v1.4.2
+        description: |
+            Installing version of envsubst. https://github.com/a8m/envsubst/releases
+        type: string
+    steps:
+    - run:
+        command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+
+            ARCH=$(uname -m)
+            if [[ "$ARCH" == "aarch64" ]]; then
+              ARCH="arm64"
+            elif [[ "$ARCH" == "amd64" ]]; then
+              ARCH="x86_64"
+            fi
+
+            RES_CODE=$(curl -L https://github.com/a8m/envsubst/releases/download/<< parameters.version >>/envsubst-`uname -s`-$ARCH -o envsubst)
+
+            if [[ $RES_CODE -ge 400 ]]; then
+              echo "Error: Failed to download envsubst binary from https://github.com/a8m/envsubst/releases/download/<< parameters.version >>/envsubst-`uname -s`-$ARCH. Response code: $RES_CODE"
+              exit 1
+            fi
+
+            chmod +x envsubst
+            $SUDO mv envsubst << parameters.install-dir >>
+        name: Install envsubst
+
   install_tf:
     description: "Install Terraform"
     parameters:
@@ -125,7 +159,7 @@ commands:
   set_tf_vars:
     description: "Sets Terraform variables"
     steps:
-      - envsubst/install
+      - install_envsubst
       - set_aws_creds
       - run:
           name: Bootstrap terraform vars
