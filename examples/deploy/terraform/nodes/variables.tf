@@ -67,7 +67,7 @@ variable "default_node_groups" {
           ami                        = optional(string)
           user_data_type             = optional(string)
           bootstrap_extra_args       = optional(string)
-          instance_types             = optional(list(string), ["m6a.large", "m6i.large", "m7i-flex.large", "m6a.xlarge", "m6i.xlarge", "m7i-flex.xlarge"])
+          instance_types             = optional(list(string), ["m7i-flex.2xlarge"])
           spot                       = optional(bool)
           min_per_az                 = optional(number)
           max_per_az                 = optional(number)
