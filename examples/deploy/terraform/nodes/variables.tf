@@ -25,15 +25,43 @@ variable "default_node_groups" {
             value  = optional(string)
             effect = string
           })))
-          tags         = optional(map(string))
-          gpu          = optional(bool)
-          architecture = optional(string, null)
+          tags = optional(map(string))
+          gpu  = optional(bool)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
             })
           )
       }),
+      compute_arm64 = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string)
+          user_data_type             = optional(string)
+          bootstrap_extra_args       = optional(string)
+          instance_types             = optional(list(string), ["m6g.2xlarge"])
+          spot                       = optional(bool)
+          min_per_az                 = optional(number)
+          max_per_az                 = optional(number)
+          max_unavailable_percentage = optional(number)
+          max_unavailable            = optional(number)
+          desired_per_az             = optional(number)
+          update_strategy            = optional(string, "DEFAULT")
+          availability_zone_ids      = list(string)
+          labels                     = optional(map(string))
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })))
+          tags = optional(map(string))
+          gpu  = optional(bool)
+          volume = optional(object({
+            size = optional(number)
+            type = optional(string)
+            })
+          )
+      }), null)
       platform = object(
         {
           single_nodegroup           = optional(bool, false)
@@ -55,9 +83,8 @@ variable "default_node_groups" {
             value  = optional(string)
             effect = string
           })))
-          tags         = optional(map(string))
-          gpu          = optional(bool)
-          architecture = optional(string, null)
+          tags = optional(map(string))
+          gpu  = optional(bool)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -84,9 +111,8 @@ variable "default_node_groups" {
             value  = optional(string)
             effect = string
           })))
-          tags         = optional(map(string))
-          gpu          = optional(bool)
-          architecture = optional(string, null)
+          tags = optional(map(string))
+          gpu  = optional(bool)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -113,14 +139,41 @@ variable "default_node_groups" {
             value  = optional(string)
             effect = string
           })))
-          tags         = optional(map(string), {})
-          gpu          = optional(bool, null)
-          architecture = optional(string, null)
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
           }))
       })
+      gpu_arm64 = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string)
+          user_data_type             = optional(string)
+          bootstrap_extra_args       = optional(string)
+          instance_types             = optional(list(string), ["g5g.2xlarge"])
+          spot                       = optional(bool)
+          min_per_az                 = optional(number)
+          max_per_az                 = optional(number)
+          max_unavailable_percentage = optional(number)
+          max_unavailable            = optional(number)
+          desired_per_az             = optional(number)
+          update_strategy            = optional(string, "DEFAULT")
+          availability_zone_ids      = list(string)
+          labels                     = optional(map(string))
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })))
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
+          volume = optional(object({
+            size = optional(number)
+            type = optional(string)
+          }))
+      }), null)
   })
   default = null
 }
