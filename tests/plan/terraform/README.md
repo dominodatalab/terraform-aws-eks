@@ -19,7 +19,7 @@
 ## Modules
 
 | Name | Source | Version |
-------|--------|---------|
+|------|--------|---------|
 | <a name="module_eks"></a> [eks](#module\_eks) | ./../../../modules/eks | n/a |
 | <a name="module_external_deployments_operator"></a> [external\_deployments\_operator](#module\_external\_deployments\_operator) | ./../../../modules/external-deployments | n/a |
 | <a name="module_infra"></a> [infra](#module\_infra) | ./../../../modules/infra/ | n/a |

@@ -15,7 +15,7 @@ No providers.
 ## Modules
 
 | Name | Source | Version |
-------|--------|---------|
+|------|--------|---------|
 | <a name="module_infra"></a> [infra](#module\_infra) | ./../../../../modules/infra | n/a |
 
 ## Resources

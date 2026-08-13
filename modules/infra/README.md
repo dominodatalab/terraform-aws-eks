@@ -22,7 +22,7 @@
 ## Modules
 
 | Name | Source | Version |
-------|--------|---------|
+|------|--------|---------|
 | <a name="module_bastion"></a> [bastion](#module\_bastion) | ./submodules/bastion | n/a |
 | <a name="module_cost_usage_report"></a> [cost\_usage\_report](#module\_cost\_usage\_report) | ./submodules/cost-usage-report | n/a |
 | <a name="module_network"></a> [network](#module\_network) | ./submodules/network | n/a |

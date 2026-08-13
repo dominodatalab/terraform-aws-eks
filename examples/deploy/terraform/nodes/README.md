@@ -17,7 +17,7 @@
 ## Modules
 
 | Name | Source | Version |
-------|--------|---------|
+|------|--------|---------|
 | <a name="module_nodes"></a> [nodes](#module\_nodes) | ./../../../../modules/nodes | n/a |
 
 ## Resources
