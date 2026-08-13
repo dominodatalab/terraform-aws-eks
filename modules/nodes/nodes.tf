@@ -63,6 +63,14 @@ resource "aws_launch_template" "node_groups" {
         available = ${jsonencode(data.aws_ec2_instance_type_offerings.nodes[each.key].locations)}
       EOM
     }
+    precondition {
+      condition     = !(each.value.is_arm64 && each.value.is_neuron)
+      error_message = <<-EOM
+        Node group ${format("%q", each.key)} mixes arm64 instance types with Neuron/Trainium.
+        There is no arm64 Neuron AMI - Trainium/Inferentia hardware is x86_64-only.
+        instance_types = ${jsonencode(each.value.instance_types)}
+      EOM
+    }
     ignore_changes = [
       block_device_mappings[0].ebs[0].kms_key_id,
     ]
@@ -74,18 +82,34 @@ locals {
     standard = {
       ami_type      = "AL2023_x86_64_STANDARD"
       ssm_ami_param = "standard"
+      arch          = "x86_64"
     }
     neuron = {
       ami_type      = "AL2023_x86_64_NEURON"
       ssm_ami_param = "neuron"
+      arch          = "x86_64"
     }
     nvidia = {
       ami_type      = "AL2023_x86_64_NVIDIA"
       ssm_ami_param = "nvidia"
+      arch          = "x86_64"
+    }
+    # arm64 (Graviton). No neuron_arm64 - Trainium/Inferentia hardware doesn't come in
+    # arm64, so there is no AL2023_ARM_64_NEURON ami_type to point it at.
+    standard_arm64 = {
+      ami_type      = "AL2023_ARM_64_STANDARD"
+      ssm_ami_param = "standard"
+      arch          = "arm64"
+    }
+    nvidia_arm64 = {
+      ami_type      = "AL2023_ARM_64_NVIDIA"
+      ssm_ami_param = "nvidia"
+      arch          = "arm64"
     }
     custom = {
       ami_type      = "CUSTOM"
       ssm_ami_param = null
+      arch          = null
     }
   }
 
@@ -94,7 +118,7 @@ locals {
 
 data "aws_ssm_parameter" "eks_amis" {
   for_each = { for k, v in local.ami_type_map : k => v if v.ssm_ami_param != null }
-  name     = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/x86_64/${each.value.ssm_ami_param}/recommended/release_version"
+  name     = "/aws/service/eks/optimized-ami/${var.eks_info.cluster.version}/amazon-linux-2023/${each.value.arch}/${each.value.ssm_ami_param}/recommended/release_version"
 }
 
 

@@ -181,8 +181,9 @@ variable "default_node_groups" {
             value  = optional(string)
             effect = string
           })), [])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
+          tags         = optional(map(string), {})
+          gpu          = optional(bool, null)
+          architecture = optional(string, null)
           volume = optional(object({
             size = optional(number, 1000)
             type = optional(string, "gp3")
@@ -216,8 +217,9 @@ variable "default_node_groups" {
             value  = optional(string)
             effect = string
           })), [])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
+          tags         = optional(map(string), {})
+          gpu          = optional(bool, null)
+          architecture = optional(string, null)
           volume = optional(object({
             size = optional(number, 100)
             type = optional(string, "gp3")
@@ -250,8 +252,9 @@ variable "default_node_groups" {
             value  = optional(string)
             effect = string
           })), [])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
+          tags         = optional(map(string), {})
+          gpu          = optional(bool, null)
+          architecture = optional(string, null)
           volume = optional(object({
             size = optional(number, 100)
             type = optional(string, "gp3")
@@ -290,8 +293,9 @@ variable "default_node_groups" {
             effect = "NO_SCHEDULE"
             }
           ])
-          tags = optional(map(string), {})
-          gpu  = optional(bool, null)
+          tags         = optional(map(string), {})
+          gpu          = optional(bool, null)
+          architecture = optional(string, null)
           volume = optional(object({
             size = optional(number, 1000)
             type = optional(string, "gp3")
@@ -326,9 +330,10 @@ variable "additional_node_groups" {
       value  = optional(string)
       effect = string
     })), [])
-    tags   = optional(map(string), {})
-    gpu    = optional(bool, null)
-    neuron = optional(bool, null)
+    tags         = optional(map(string), {})
+    gpu          = optional(bool, null)
+    neuron       = optional(bool, null)
+    architecture = optional(string, null)
     volume = object({
       size = string
       type = string
