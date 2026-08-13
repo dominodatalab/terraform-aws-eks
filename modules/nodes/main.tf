@@ -22,11 +22,6 @@ locals {
     name => {
       is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
-      # architecture is an explicit override (set by the caller) OR'd with what the
-      # instance types themselves report - mirrors how is_gpu/is_neuron already work.
-      # The default "platform"/"platform_jobs" node groups don't have an `architecture`
-      # attribute at all (no compute_arm64-style variant exists for them yet), so this
-      # is effectively auto-detect-only for them - see compute_arm64 in variables.tf.
       is_arm64 = try(ng.architecture, null) == "arm64" || anytrue([
         for itype in ng.instance_types :
         contains(try(data.aws_ec2_instance_type.all[itype].supported_architectures, []), "arm64")
