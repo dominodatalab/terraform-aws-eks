@@ -411,7 +411,7 @@ variable "additional_node_groups" {
   default = {}
 
   validation {
-    condition     = alltrue([for ng in var.additional_node_groups : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    condition     = alltrue([for ng in coalesce(var.additional_node_groups, {}) : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
     error_message = "arch must be either \"amd64\" or \"arm64\"."
   }
 }
@@ -460,7 +460,7 @@ variable "karpenter_node_groups" {
   default = {}
 
   validation {
-    condition     = alltrue([for ng in var.karpenter_node_groups : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    condition     = alltrue([for ng in coalesce(var.karpenter_node_groups, {}) : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
     error_message = "arch must be either \"amd64\" or \"arm64\"."
   }
 }

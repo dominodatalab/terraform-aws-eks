@@ -19,7 +19,10 @@ default_node_groups = {
 }
 
 additional_node_groups = {
-  compute-arm64 = {
+  ## Neither this node group's name nor its label mentions arm/arm64, proving that
+  ## AMI selection (see modules/nodes/main.tf local.node_group_ami_class_types)
+  ## follows only the explicit `arch` field below, never the node group's name.
+  workers = {
     arch = "arm64"
     instance_types = [
       "m6g.xlarge"
@@ -32,7 +35,7 @@ additional_node_groups = {
       "usw2-az2"
     ],
     labels = {
-      "dominodatalab.com/node-pool" = "compute-arm64"
+      "dominodatalab.com/node-pool" = "workers"
     },
     volume = {
       size = 100,

@@ -71,6 +71,15 @@ resource "aws_launch_template" "node_groups" {
         instance_types = ${jsonencode(each.value.instance_types)}
       EOM
     }
+    precondition {
+      condition = alltrue([
+        for itype in each.value.instance_types :
+        contains(try(data.aws_ec2_instance_type.all[itype].supported_architectures, []), each.value.is_arm64 ? "arm64" : "x86_64")
+      ])
+      error_message = <<-EOM
+        Node group ${format("%q", each.key)} has arch = ${format("%q", coalesce(each.value.arch, "amd64"))}, but instance type(s) ${jsonencode(each.value.instance_types)} do not support that architecture.
+      EOM
+    }
     ignore_changes = [
       block_device_mappings[0].ebs[0].kms_key_id,
     ]
