@@ -27,6 +27,7 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string))
           gpu  = optional(bool)
+          arch = optional(string)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -56,6 +57,7 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string))
           gpu  = optional(bool)
+          arch = optional(string, "arm64")
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -85,6 +87,7 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string))
           gpu  = optional(bool)
+          arch = optional(string)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -113,6 +116,7 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string))
           gpu  = optional(bool)
+          arch = optional(string)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -141,6 +145,7 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -169,6 +174,7 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, "arm64")
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -176,6 +182,11 @@ variable "default_node_groups" {
       }), null)
   })
   default = null
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.default_node_groups, {}) : ng == null || ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 variable "additional_node_groups" {
@@ -210,6 +221,11 @@ variable "additional_node_groups" {
     })
   }))
   default = null
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.additional_node_groups, {}) : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 
@@ -256,4 +272,9 @@ variable "karpenter_node_groups" {
     }), {})
   }))
   default = null
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.karpenter_node_groups, {}) : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }

@@ -2,10 +2,9 @@ deploy_id        = "plantest021"
 region           = "us-west-2"
 ssh_pvt_key_path = "domino.pem"
 
-## arm64 (Graviton) node groups. Architecture is auto-detected from instance_types
-## (see modules/nodes/main.tf local.node_group_status.is_arm64), so `arch` is
-## only needed when you want to force it explicitly (e.g. a custom `ami` where the
-## instance type alone doesn't make the arch obvious).
+## arm64 (Graviton) node groups. `arch` is the only source of truth for whether a
+## node group is arm64 (see modules/nodes/main.tf local.node_group_status.is_arm64),
+## so it must be set explicitly here - it is never inferred from instance_types.
 ## The following (default_node_groups,additional_node_groups) will ALSO need to be set in the nodes.tfvars
 default_node_groups = {
   compute = {
@@ -21,6 +20,7 @@ default_node_groups = {
 
 additional_node_groups = {
   compute-arm64 = {
+    arch = "arm64"
     instance_types = [
       "m6g.xlarge"
     ],
@@ -42,6 +42,7 @@ additional_node_groups = {
   gpu-arm64 = {
     ## `gpu` is still auto-detected from the instance type (g5g has a T4G GPU), just
     ## like on the x86_64 gpu node group - no explicit `gpu = true` required here either.
+    arch = "arm64"
     instance_types = [
       "g5g.xlarge"
     ],

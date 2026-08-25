@@ -159,6 +159,7 @@ variable "default_node_groups" {
           })), [])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size       = optional(number, 1000)
             type       = optional(string, "gp3")
@@ -197,6 +198,7 @@ variable "default_node_groups" {
           })), [])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, "arm64")
           volume = optional(object({
             size       = optional(number, 1000)
             type       = optional(string, "gp3")
@@ -236,6 +238,7 @@ variable "default_node_groups" {
           })), [])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size = optional(number, 100)
             type = optional(string, "gp3")
@@ -270,6 +273,7 @@ variable "default_node_groups" {
           })), [])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size = optional(number, 100)
             type = optional(string, "gp3")
@@ -310,6 +314,7 @@ variable "default_node_groups" {
           ])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size = optional(number, 1000)
             type = optional(string, "gp3")
@@ -350,6 +355,7 @@ variable "default_node_groups" {
           ])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, "arm64")
           volume = optional(object({
             size = optional(number, 1000)
             type = optional(string, "gp3")
@@ -361,6 +367,11 @@ variable "default_node_groups" {
       }), null)
   })
   default = { platform = { availability_zone_ids = [] }, compute = { availability_zone_ids = [] }, gpu = { availability_zone_ids = [] } }
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.default_node_groups, {}) : ng == null || ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 variable "additional_node_groups" {
@@ -398,6 +409,11 @@ variable "additional_node_groups" {
   }))
 
   default = {}
+
+  validation {
+    condition     = alltrue([for ng in var.additional_node_groups : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 variable "karpenter_node_groups" {
@@ -442,6 +458,11 @@ variable "karpenter_node_groups" {
     single_nodegroup = optional(bool, false)
   }))
   default = {}
+
+  validation {
+    condition     = alltrue([for ng in var.karpenter_node_groups : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 

@@ -22,10 +22,7 @@ locals {
     name => {
       is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
-      is_arm64 = try(ng.arch, null) == "arm64" || anytrue([
-        for itype in ng.instance_types :
-        contains(try(data.aws_ec2_instance_type.all[itype].supported_architectures, []), "arm64")
-      ])
+      is_arm64  = ng.arch == "arm64"
     }
   }
 
