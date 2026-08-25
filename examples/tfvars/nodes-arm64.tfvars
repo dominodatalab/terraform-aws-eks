@@ -3,7 +3,7 @@ region           = "us-west-2"
 ssh_pvt_key_path = "domino.pem"
 
 ## arm64 (Graviton) node groups. Architecture is auto-detected from instance_types
-## (see modules/nodes/main.tf local.node_group_status.is_arm64), so `architecture` is
+## (see modules/nodes/main.tf local.node_group_status.is_arm64), so `arch` is
 ## only needed when you want to force it explicitly (e.g. a custom `ami` where the
 ## instance type alone doesn't make the arch obvious).
 ## The following (default_node_groups,additional_node_groups) will ALSO need to be set in the nodes.tfvars

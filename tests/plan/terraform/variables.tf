@@ -400,10 +400,10 @@ variable "additional_node_groups" {
       value  = optional(string)
       effect = string
     })), [])
-    tags         = optional(map(string), {})
-    gpu          = optional(bool, null)
-    neuron       = optional(bool, null)
-    architecture = optional(string, null)
+    tags   = optional(map(string), {})
+    gpu    = optional(bool, null)
+    neuron = optional(bool, null)
+    arch   = optional(string, null)
     volume = object({
       size = string
       type = string

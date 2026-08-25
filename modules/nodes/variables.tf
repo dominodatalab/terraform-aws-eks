@@ -472,10 +472,10 @@ variable "additional_node_groups" {
         effect = "NO_EXECUTE"
       }
     ])
-    tags         = optional(map(string), {})
-    gpu          = optional(bool, null)
-    neuron       = optional(bool, null)
-    architecture = optional(string, null)
+    tags   = optional(map(string), {})
+    gpu    = optional(bool, null)
+    neuron = optional(bool, null)
+    arch   = optional(string, null)
     volume = object({
       size       = string
       type       = string
@@ -513,9 +513,9 @@ variable "karpenter_node_groups" {
       value  = optional(string)
       effect = string
     })), [])
-    tags         = optional(map(string), {})
-    gpu          = optional(bool, null)
-    architecture = optional(string, null)
+    tags = optional(map(string), {})
+    gpu  = optional(bool, null)
+    arch = optional(string, null)
     volume = optional(object({
       size       = optional(string, "50")
       type       = optional(string, "gp3")
