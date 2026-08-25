@@ -36,8 +36,6 @@ additional_node_groups = {
     }
   }
   gpu-arm64 = {
-    ## `gpu` is still auto-detected from the instance type (g5g has a T4G GPU), just
-    ## like on the x86_64 gpu node group - no explicit `gpu = true` required here either.
     arch = "arm64"
     instance_types = [
       "g5g.xlarge"
