@@ -15,9 +15,6 @@ default_node_groups = {
 }
 
 additional_node_groups = {
-  ## Neither this node group's name nor its label mentions arm/arm64, proving that
-  ## AMI selection (see modules/nodes/main.tf local.node_group_ami_class_types)
-  ## follows only the explicit `arch` field below, never the node group's name.
   workers = {
     arch = "arm64"
     instance_types = [
