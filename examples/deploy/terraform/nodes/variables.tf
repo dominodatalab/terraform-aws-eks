@@ -27,12 +27,43 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string))
           gpu  = optional(bool)
+          arch = optional(string)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
             })
           )
       }),
+      compute_arm64 = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string)
+          user_data_type             = optional(string)
+          bootstrap_extra_args       = optional(string)
+          instance_types             = optional(list(string), ["m6g.2xlarge"])
+          spot                       = optional(bool)
+          min_per_az                 = optional(number)
+          max_per_az                 = optional(number)
+          max_unavailable_percentage = optional(number)
+          max_unavailable            = optional(number)
+          desired_per_az             = optional(number)
+          update_strategy            = optional(string, "DEFAULT")
+          availability_zone_ids      = list(string)
+          labels                     = optional(map(string))
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })))
+          tags = optional(map(string))
+          gpu  = optional(bool)
+          arch = optional(string, "arm64")
+          volume = optional(object({
+            size = optional(number)
+            type = optional(string)
+            })
+          )
+      }), null)
       platform = object(
         {
           single_nodegroup           = optional(bool, false)
@@ -56,6 +87,7 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string))
           gpu  = optional(bool)
+          arch = optional(string)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -84,6 +116,7 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string))
           gpu  = optional(bool)
+          arch = optional(string)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
@@ -112,13 +145,48 @@ variable "default_node_groups" {
           })))
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size = optional(number)
             type = optional(string)
           }))
       })
+      gpu_arm64 = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string)
+          user_data_type             = optional(string)
+          bootstrap_extra_args       = optional(string)
+          instance_types             = optional(list(string), ["g5g.2xlarge"])
+          spot                       = optional(bool)
+          min_per_az                 = optional(number)
+          max_per_az                 = optional(number)
+          max_unavailable_percentage = optional(number)
+          max_unavailable            = optional(number)
+          desired_per_az             = optional(number)
+          update_strategy            = optional(string, "DEFAULT")
+          availability_zone_ids      = list(string)
+          labels                     = optional(map(string))
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })))
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
+          arch = optional(string, "arm64")
+          volume = optional(object({
+            size = optional(number)
+            type = optional(string)
+          }))
+      }), null)
   })
   default = null
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.default_node_groups, {}) : ng == null || ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 variable "additional_node_groups" {
@@ -146,12 +214,18 @@ variable "additional_node_groups" {
     tags   = optional(map(string), {})
     gpu    = optional(bool)
     neuron = optional(bool)
+    arch   = optional(string, null)
     volume = object({
       size = string
       type = string
     })
   }))
   default = null
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.additional_node_groups, {}) : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 
@@ -189,6 +263,7 @@ variable "karpenter_node_groups" {
     })), [])
     tags = optional(map(string), {})
     gpu  = optional(bool, null)
+    arch = optional(string, null)
     volume = optional(object({
       size       = optional(string, "30")
       type       = optional(string, "gp3")
@@ -197,4 +272,9 @@ variable "karpenter_node_groups" {
     }), {})
   }))
   default = null
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.karpenter_node_groups, {}) : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }

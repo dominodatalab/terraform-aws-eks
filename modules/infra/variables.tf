@@ -159,6 +159,7 @@ variable "default_node_groups" {
           })), [])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size       = optional(number, 1000)
             type       = optional(string, "gp3")
@@ -172,6 +173,45 @@ variable "default_node_groups" {
             }
           )
       }),
+      compute_arm64 = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string, null)
+          user_data_type             = optional(string, null)
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["m6g.2xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 0)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
+          desired_per_az             = optional(number, 0)
+          update_strategy            = optional(string, "DEFAULT")
+          availability_zone_ids      = list(string)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "default-arm64"
+          })
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+          })), [])
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
+          arch = optional(string, "arm64")
+          volume = optional(object({
+            size       = optional(number, 1000)
+            type       = optional(string, "gp3")
+            iops       = optional(number)
+            throughput = optional(number, 500)
+            }), {
+            size       = 1000
+            type       = "gp3"
+            iops       = null
+            throughput = 500
+            }
+          )
+      }), null)
       platform = object(
         {
           single_nodegroup           = optional(bool, false)
@@ -198,6 +238,7 @@ variable "default_node_groups" {
           })), [])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size = optional(number, 100)
             type = optional(string, "gp3")
@@ -232,6 +273,7 @@ variable "default_node_groups" {
           })), [])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size = optional(number, 100)
             type = optional(string, "gp3")
@@ -272,6 +314,7 @@ variable "default_node_groups" {
           ])
           tags = optional(map(string), {})
           gpu  = optional(bool, null)
+          arch = optional(string, null)
           volume = optional(object({
             size = optional(number, 1000)
             type = optional(string, "gp3")
@@ -281,8 +324,54 @@ variable "default_node_groups" {
             }
           )
       })
+      gpu_arm64 = optional(object(
+        {
+          single_nodegroup           = optional(bool, false)
+          ami                        = optional(string, null)
+          user_data_type             = optional(string, null)
+          bootstrap_extra_args       = optional(string, "")
+          instance_types             = optional(list(string), ["g5g.2xlarge"])
+          spot                       = optional(bool, false)
+          min_per_az                 = optional(number, 0)
+          max_per_az                 = optional(number, 10)
+          max_unavailable_percentage = optional(number, 50)
+          max_unavailable            = optional(number, null)
+          desired_per_az             = optional(number, 0)
+          update_strategy            = optional(string, "DEFAULT")
+          availability_zone_ids      = list(string)
+          labels = optional(map(string), {
+            "dominodatalab.com/node-pool" = "default-gpu-arm64"
+            "nvidia.com/gpu"              = true
+          })
+          taints = optional(list(object({
+            key    = string
+            value  = optional(string)
+            effect = string
+            })), [{
+            key    = "nvidia.com/gpu"
+            value  = "true"
+            effect = "NO_SCHEDULE"
+            }
+          ])
+          tags = optional(map(string), {})
+          gpu  = optional(bool, null)
+          arch = optional(string, "arm64")
+          volume = optional(object({
+            size = optional(number, 1000)
+            type = optional(string, "gp3")
+            }), {
+            size = 1000
+            type = "gp3"
+            }
+          )
+      }), null)
   })
   default = { platform = { availability_zone_ids = [] }, compute = { availability_zone_ids = [] }, gpu = { availability_zone_ids = [] } }
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.default_node_groups, {}) : ng == null || ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 variable "additional_node_groups" {
@@ -310,6 +399,7 @@ variable "additional_node_groups" {
     tags   = optional(map(string), {})
     gpu    = optional(bool, null)
     neuron = optional(bool, null)
+    arch   = optional(string, null)
     volume = object({
       size       = string
       type       = string
@@ -319,6 +409,11 @@ variable "additional_node_groups" {
   }))
 
   default = {}
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.additional_node_groups, {}) : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 variable "karpenter_node_groups" {
@@ -353,6 +448,7 @@ variable "karpenter_node_groups" {
     })), [])
     tags = optional(map(string), {})
     gpu  = optional(bool, null)
+    arch = optional(string, null)
     volume = optional(object({
       size       = optional(string, "100")
       type       = optional(string, "gp3")
@@ -362,6 +458,11 @@ variable "karpenter_node_groups" {
     single_nodegroup = optional(bool, false)
   }))
   default = {}
+
+  validation {
+    condition     = alltrue([for ng in coalesce(var.karpenter_node_groups, {}) : ng.arch == null || contains(["amd64", "arm64"], ng.arch)])
+    error_message = "arch must be either \"amd64\" or \"arm64\"."
+  }
 }
 
 

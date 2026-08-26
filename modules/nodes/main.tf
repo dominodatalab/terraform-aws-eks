@@ -22,6 +22,7 @@ locals {
     name => {
       is_gpu    = coalesce(ng.gpu, false) || anytrue([for itype in ng.instance_types : length(data.aws_ec2_instance_type.all[itype].gpus) > 0])
       is_neuron = coalesce(try(ng.neuron, false), false) || anytrue([for itype in ng.instance_types : length(try(data.aws_ec2_instance_type.all[itype].neuron_devices, [])) > 0])
+      is_arm64  = ng.arch == "arm64"
     }
   }
 
@@ -29,9 +30,13 @@ locals {
     for name, ng in merge(var.karpenter_node_groups, var.additional_node_groups, local.default_node_groups_filtered) :
     name => {
       ami_class = ng.ami != null ? "custom" : (
-        local.node_group_status[name].is_neuron ? "neuron" :
-        local.node_group_status[name].is_gpu ? "nvidia" :
-        "standard"
+        local.node_group_status[name].is_arm64 ? (
+          local.node_group_status[name].is_gpu ? "nvidia_arm64" : "standard_arm64"
+          ) : (
+          local.node_group_status[name].is_neuron ? "neuron" :
+          local.node_group_status[name].is_gpu ? "nvidia" :
+          "standard"
+        )
       )
     }
   }
@@ -46,6 +51,7 @@ locals {
     name => merge(ng, {
       is_gpu          = local.node_group_status[name].is_gpu
       is_neuron       = local.node_group_status[name].is_neuron
+      is_arm64        = local.node_group_status[name].is_arm64
       user_data_type  = ng.ami != null ? ng.user_data_type : null
       ami_type        = ng.ami != null ? "CUSTOM" : local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
       version         = ng.ami != null ? null : var.eks_info.cluster.version
