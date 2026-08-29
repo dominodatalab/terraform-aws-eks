@@ -8,11 +8,7 @@ locals {
   configs = { for config in var.additional_pod_identity_configs : config.name => config }
 }
 
-# One document serves every config: the trust is scoped to the cluster, not to a
-# ServiceAccount. What binds a role to a single ServiceAccount is the association
-# below. Mirrors the trust policy Karpenter already uses in modules/eks, including
-# the SourceAccount/SourceArn conditions -- without them the role would be
-# assumable by the pod identity service on behalf of any cluster in any account.
+# One document serves every config; see README.md "Scoping" for why.
 data "aws_iam_policy_document" "trust" {
   statement {
     sid     = "EksPodIdentityAssumer"
@@ -23,6 +19,8 @@ data "aws_iam_policy_document" "trust" {
       identifiers = ["pods.eks.amazonaws.com"]
     }
 
+    # Both conditions are load-bearing: without them this role is assumable by the pod
+    # identity service on behalf of any cluster in any account.
     condition {
       test     = "StringEquals"
       variable = "aws:SourceAccount"

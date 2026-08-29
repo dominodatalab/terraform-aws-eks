@@ -8,10 +8,8 @@ variable "eks_info" {
     }
   EOF
 
-  # Deliberately narrower than the irsa module's eks_info: pod identity needs no
-  # OIDC provider, and requiring one here would reintroduce the coupling this
-  # module exists to avoid. Terraform drops the extra attributes when a caller
-  # passes the full `module.eks.info`.
+  # Narrower than the irsa module's eks_info -- no OIDC provider; see README.md. A caller may
+  # still pass the full `module.eks.info`, since Terraform drops the extra attributes.
   type = object({
     cluster = object({
       specs = object({
