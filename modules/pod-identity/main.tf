@@ -19,8 +19,8 @@ data "aws_iam_policy_document" "trust" {
       identifiers = ["pods.eks.amazonaws.com"]
     }
 
-    # Both conditions are load-bearing: without them this role is assumable by the pod
-    # identity service on behalf of any cluster in any account.
+    # Without both, the pod identity service will assume this role on behalf of any cluster
+    # in any account that names its ARN in an association.
     condition {
       test     = "StringEquals"
       variable = "aws:SourceAccount"
