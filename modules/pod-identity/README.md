@@ -51,6 +51,16 @@ Note that a non-root container reads its credentials from a projected token file
 using one of these roles needs a `securityContext.fsGroup` matching its runtime user;
 without it the AWS SDK silently falls through to the next credential source.
 
+## Validation
+
+Three input rules reject at plan time. None of them appear in the generated table below,
+because terraform-docs does not render `validation` blocks:
+
+* `policy` must parse as JSON.
+* `region` must be region-shaped, e.g. `eu-west-1`.
+* A `namespace`/`serviceaccount_name` pair may appear only once. EKS permits one pod identity
+  association per pair, so a duplicate would otherwise get through plan and fail at apply.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
