@@ -59,7 +59,7 @@ data "aws_iam_policy_document" "operator_assume_role_policy" {
 }
 
 resource "aws_iam_role" "operator" {
-  name               = local.operator_role
-  assume_role_policy = data.aws_iam_policy_document.operator_assume_role_policy.json
+  name                 = local.operator_role
+  assume_role_policy   = data.aws_iam_policy_document.operator_assume_role_policy.json
   permissions_boundary = var.permissions_boundary
 }

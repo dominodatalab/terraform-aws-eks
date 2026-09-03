@@ -36,7 +36,6 @@ module "nodes" {
   tags                   = local.infra.tags
   ignore_tags            = local.infra.ignore_tags
   use_fips_endpoint      = var.use_fips_endpoint
-  permissions_boundary = var.permissions_boundary
 }
 
 provider "aws" {

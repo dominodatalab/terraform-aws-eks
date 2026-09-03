@@ -278,9 +278,3 @@ variable "karpenter_node_groups" {
     error_message = "arch must be either \"amd64\" or \"arm64\"."
   }
 }
-
-variable "permissions_boundary" {
-  description = "ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable."
-  type        = string
-  default     = null
-}
