@@ -37,7 +37,7 @@ data "aws_iam_policy_document" "load_balancer_controller_policy" {
 }
 
 resource "aws_iam_role" "load_balancer_controller" {
-  name               = "${var.deploy_id}-load-balancer-controller"
+  name                 = "${var.deploy_id}-load-balancer-controller"
   assume_role_policy   = data.aws_iam_policy_document.load_balancer_controller.json
   permissions_boundary = var.permissions_boundary
 }

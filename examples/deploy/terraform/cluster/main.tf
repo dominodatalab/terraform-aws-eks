@@ -16,18 +16,18 @@ module "eks" {
   deploy_id = local.infra.deploy_id
   region    = local.infra.region
 
-  ssh_key             = local.infra.ssh_key
-  node_iam_policies   = local.infra.node_iam_policies
-  storage_info        = local.infra.storage
-  eks                 = var.eks
-  network_info        = local.infra.network
-  kms_info            = local.kms
-  bastion_info        = local.infra.bastion
-  create_eks_role_arn = local.infra.create_eks_role_arn
-  tags                = local.infra.tags
-  ignore_tags         = local.infra.ignore_tags
-  use_fips_endpoint   = var.use_fips_endpoint
-  calico              = merge(var.calico, { image_registry = try(local.infra.storage.ecr.calico_image_registry, var.calico.image_registry) })
+  ssh_key              = local.infra.ssh_key
+  node_iam_policies    = local.infra.node_iam_policies
+  storage_info         = local.infra.storage
+  eks                  = var.eks
+  network_info         = local.infra.network
+  kms_info             = local.kms
+  bastion_info         = local.infra.bastion
+  create_eks_role_arn  = local.infra.create_eks_role_arn
+  tags                 = local.infra.tags
+  ignore_tags          = local.infra.ignore_tags
+  use_fips_endpoint    = var.use_fips_endpoint
+  calico               = merge(var.calico, { image_registry = try(local.infra.storage.ecr.calico_image_registry, var.calico.image_registry) })
   karpenter            = var.karpenter
   permissions_boundary = var.permissions_boundary
 }
@@ -53,8 +53,8 @@ moved {
 # the following annotation to the `external-dns` service account:
 # `eks.amazonaws.com/role-arn: <<module.irsa_external_dns.irsa_role>>`
 module "irsa_external_dns" {
-  source   = "./../../../../modules/irsa"
-  eks_info = module.eks.info
+  source       = "./../../../../modules/irsa"
+  eks_info     = module.eks.info
   external_dns = merge(var.irsa_external_dns, { use_cluster_oidc_idp = local.is_eks_account_same })
 
   providers = {

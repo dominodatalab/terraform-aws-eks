@@ -56,7 +56,7 @@ resource "aws_iam_policy" "create_eks_role" {
 resource "aws_iam_role" "create_eks_role" {
   name = local.create_eks_role_name
   assume_role_policy = jsonencode({
-    Version   = "2012-10-17"
+    Version = "2012-10-17"
     Statement = [
       {
         Action = "sts:AssumeRole"
