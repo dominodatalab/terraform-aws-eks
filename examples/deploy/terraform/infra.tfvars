@@ -50,6 +50,11 @@ network = {
     private = 19
     public  = 27
   }
+  # nat = {
+  #   mode          = "managed"   # "managed" (AWS NAT Gateway, default) or "fck-nat" (EC2 NAT instance)
+  #   instance_type = "t4g.nano"  # only used when mode = "fck-nat"
+  #   ami_id        = null        # override fck-nat AMI; required in GovCloud/ISO partitions
+  # }
   use_pod_cidr = true
   vpc = {
     id = null

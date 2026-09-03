@@ -512,6 +512,11 @@ variable "network" {
     use_pod_cidr        = optional(bool, true)
     create_ecr_endpoint = optional(bool, true)
     create_s3_endpoint  = optional(bool, true)
+    nat = optional(object({
+      mode          = optional(string, "managed")
+      instance_type = optional(string, "t4g.nano")
+      ami_id        = optional(string, null)
+    }), {})
   })
 
   default = {}
