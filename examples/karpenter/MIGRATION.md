@@ -83,7 +83,7 @@ Given that karpenter itself is stateless, we set the `single_nodegroup` in order
 
 #### Implementation Steps
 
-1. Add the following to the infra.tfvars and nodes.tfvars:
+1. Check if the karpenter_node_groups variable exists then update or add it to  the following to the infra.tfvars and nodes.tfvars:
 
 ```hcl
 # Consult the karpenter_node_groups variable for additional options.
@@ -95,7 +95,7 @@ karpenter_node_groups = {
 }
 ```
 
-2. Add the following to the cluster.tfvars:
+2. Check if the karpenter variable exists then update or add it to the cluster.tfvars:
 
 ```hcl
 # Consult the karpenter variable for additional options.
@@ -214,7 +214,8 @@ If you do not wish to use the script to create and apply the `ec2nodeclasses` an
 3. Apply the Karpenter configurations:
 
 ```bash
-./karpenter/karpenter-configs.sh apply
+cd karpenter
+./karpenter-configs.sh apply
 ```
 
 

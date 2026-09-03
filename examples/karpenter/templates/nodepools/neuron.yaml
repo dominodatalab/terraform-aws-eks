@@ -15,10 +15,10 @@ spec:
         dominodatalab.com/domino-node: "true"
         dominodatalab.com/node-pool: trainium
     spec:
-      limits:
-        aws.amazon.com/neuron: 10
-        cpu: 80
-        memory: 320Gi
+#      limits:
+#        aws.amazon.com/neuron: 10
+#        cpu: 80
+#        memory: 320Gi
       expireAfter: Never
       nodeClassRef:
         group: karpenter.k8s.aws
