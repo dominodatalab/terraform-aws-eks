@@ -15,7 +15,7 @@ variable "deploy_id" {
   nullable    = false
 
   validation {
-    condition     = length(var.deploy_id) >= 3 && length(var.deploy_id) <= 32 && can(regex("^[a-z]([-a-z0-9]*[a-z0-9])$", var.deploy_id))
+    condition     = length(var.deploy_id) >= 3 && length(var.deploy_id) <= 32 && can(regex("^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])$", var.deploy_id))
     error_message = <<EOF
       Variable deploy_id must:
       1. Length must be between 3 and 32 characters.

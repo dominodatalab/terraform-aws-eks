@@ -19,7 +19,7 @@ moved {
 # trivy:ignore:AWS-0132 Encryption configured with KMS or AES256 via aws_s3_bucket_server_side_encryption_configuration resource
 resource "aws_s3_bucket" "backups" {
   count               = local.create_s3 ? 1 : 0
-  bucket              = "${var.deploy_id}-backups"
+  bucket              = lower("${var.deploy_id}-backups")
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
@@ -107,7 +107,7 @@ moved {
 # trivy:ignore:AWS-0132 Encryption configured with KMS or AES256 via aws_s3_bucket_server_side_encryption_configuration resource
 resource "aws_s3_bucket" "blobs" {
   count               = local.create_s3 ? 1 : 0
-  bucket              = "${var.deploy_id}-blobs"
+  bucket              = lower("${var.deploy_id}-blobs")
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
@@ -197,7 +197,7 @@ moved {
 # trivy:ignore:AWS-0132 Encryption configured with KMS or AES256 via aws_s3_bucket_server_side_encryption_configuration resource
 resource "aws_s3_bucket" "logs" {
   count               = local.create_s3 ? 1 : 0
-  bucket              = "${var.deploy_id}-logs"
+  bucket              = lower("${var.deploy_id}-logs")
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
@@ -279,7 +279,7 @@ data "aws_iam_policy_document" "logs" {
 # trivy:ignore:AWS-0093 Versioning enabled via aws_s3_bucket_versioning resource
 # trivy:ignore:AWS-0132 Encryption configured with AES256 via aws_s3_bucket_server_side_encryption_configuration resource
 resource "aws_s3_bucket" "monitoring" {
-  bucket              = "${var.deploy_id}-monitoring"
+  bucket              = lower("${var.deploy_id}-monitoring")
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
@@ -448,7 +448,7 @@ moved {
 # trivy:ignore:AWS-0132 Encryption configured with KMS or AES256 via aws_s3_bucket_server_side_encryption_configuration resource
 resource "aws_s3_bucket" "registry" {
   count               = local.create_s3 ? 1 : 0
-  bucket              = "${var.deploy_id}-registry"
+  bucket              = lower("${var.deploy_id}-registry")
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
@@ -591,7 +591,7 @@ moved {
 # trivy:ignore:AWS-0132 Cost bucket does not support customer-managed keys; encryption configured via bucket policy
 resource "aws_s3_bucket" "costs" {
   count               = var.storage.costs_enabled ? 1 : 0
-  bucket              = "${var.deploy_id}-costs"
+  bucket              = lower("${var.deploy_id}-costs")
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 }
@@ -670,7 +670,7 @@ data "aws_iam_policy_document" "costs" {
 # trivy:ignore:AWS-0132 Encryption configured with KMS or AES256 via bucket policy
 resource "aws_s3_bucket" "workspace_audit_events_working" {
   count               = local.create_s3 && var.storage.workspace_audit.enabled ? 1 : 0
-  bucket              = "${var.deploy_id}-${var.storage.workspace_audit.events_bucket_name}"
+  bucket              = lower("${var.deploy_id}-${var.storage.workspace_audit.events_bucket_name}")
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
@@ -688,7 +688,7 @@ resource "aws_s3_bucket" "workspace_audit_events_working" {
 # trivy:ignore:AWS-0132 Encryption configured with KMS or AES256 via bucket policy
 resource "aws_s3_bucket" "workspace_audit_events_archive" {
   count               = local.create_s3 && var.storage.workspace_audit.enabled ? 1 : 0
-  bucket              = "${var.deploy_id}-${var.storage.workspace_audit.events_archive_bucket_name}"
+  bucket              = lower("${var.deploy_id}-${var.storage.workspace_audit.events_archive_bucket_name}")
   force_destroy       = var.storage.s3.force_destroy_on_deletion
   object_lock_enabled = false
 
