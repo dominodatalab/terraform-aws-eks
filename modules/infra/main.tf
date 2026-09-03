@@ -31,13 +31,13 @@ module "cost_usage_report" {
 }
 
 module "storage" {
-  source            = "./submodules/storage"
-  deploy_id         = var.deploy_id
-  network_info      = module.network.info
-  kms_info          = local.kms_info
-  storage           = var.storage
-  use_fips_endpoint = var.use_fips_endpoint
-  region            = var.region
+  source               = "./submodules/storage"
+  deploy_id            = var.deploy_id
+  network_info         = module.network.info
+  kms_info             = local.kms_info
+  storage              = var.storage
+  use_fips_endpoint    = var.use_fips_endpoint
+  region               = var.region
   permissions_boundary = var.permissions_boundary
 }
 
@@ -104,15 +104,15 @@ resource "aws_key_pair" "domino" {
 }
 
 module "bastion" {
-  count        = var.bastion.enabled ? 1 : 0
-  source       = "./submodules/bastion"
-  deploy_id    = var.deploy_id
-  region       = var.region
-  ssh_key      = local.ssh_key
-  kms_info     = local.kms_info
-  k8s_version  = var.eks.k8s_version
-  network_info = module.network.info
-  bastion      = var.bastion
+  count                = var.bastion.enabled ? 1 : 0
+  source               = "./submodules/bastion"
+  deploy_id            = var.deploy_id
+  region               = var.region
+  ssh_key              = local.ssh_key
+  kms_info             = local.kms_info
+  k8s_version          = var.eks.k8s_version
+  network_info         = module.network.info
+  bastion              = var.bastion
   permissions_boundary = var.permissions_boundary
 }
 

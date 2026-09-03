@@ -12,7 +12,7 @@ data "aws_iam_policy_document" "eks_nodes" {
 
 resource "aws_iam_role" "eks_nodes" {
   name               = "${local.eks_cluster_name}-eks-nodes"
-  assume_role_policy = data.aws_iam_policy_document.eks_nodes.json
+  assume_role_policy   = data.aws_iam_policy_document.eks_nodes.json
   permissions_boundary = var.permissions_boundary
 }
 

@@ -37,7 +37,8 @@ No modules.
 | <a name="input_iam_policy_paths"></a> [iam\_policy\_paths](#input\_iam\_policy\_paths) | IAM policies to provision and use for deployment role, can be terraform templates | `list(any)` | `[]` | no |
 | <a name="input_ignore_tags"></a> [ignore\_tags](#input\_ignore\_tags) | Tag keys to be ignored by the aws provider. | `list(string)` | `[]` | no |
 | <a name="input_max_session_duration"></a> [max\_session\_duration](#input\_max\_session\_duration) | Maximum session duration for role in seconds | `number` | `43200` | no |
-| <a name="input_permissions_boundary"></a> [permissions\_boundary](#input_permissions\_boundary) | ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable. | `string` | `null` | no |
+
+| <a name="input_permissions_boundary"></a> [permissions\_boundary](#input\_permissions\_boundary) | ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable. | `string` | `null` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region for the deployment | `string` | n/a | yes |
 | <a name="input_template_config"></a> [template\_config](#input\_template\_config) | Variables to use for any templating in the IAM policies. AWS account ID (as 'account\_id'), deploy\_id, region and partition are automatically included. | `map(any)` | `{}` | no |
 | <a name="input_use_fips_endpoint"></a> [use\_fips\_endpoint](#input\_use\_fips\_endpoint) | Use aws FIPS endpoints | `bool` | `false` | no |

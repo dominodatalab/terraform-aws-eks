@@ -16,7 +16,7 @@ module "infra" {
   ignore_tags            = var.ignore_tags
   domino_cur             = var.domino_cur
   use_fips_endpoint      = var.use_fips_endpoint
-  permissions_boundary = var.permissions_boundary
+  permissions_boundary   = var.permissions_boundary
 }
 
 
