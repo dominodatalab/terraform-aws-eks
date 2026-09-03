@@ -3,6 +3,7 @@ locals {
   provided_vpc        = var.network.vpc.id != null
   create_ecr_endpoint = local.create_vpc && var.network.create_ecr_endpoint
   create_s3_endpoint  = local.create_vpc && var.network.create_s3_endpoint
+  create_sts_endpoint = local.create_vpc && var.network.create_sts_endpoint
 }
 
 data "aws_subnet" "public" {

@@ -21,6 +21,7 @@ resource "aws_iam_role" "flyte_controlplane" {
       },
     ]
   })
+  permissions_boundary = var.permissions_boundary
 }
 
 data "aws_iam_policy_document" "flyte_controlplane" {
@@ -127,6 +128,7 @@ resource "aws_iam_role" "flyte_dataplane" {
       },
     ]
   })
+  permissions_boundary = var.permissions_boundary
 }
 
 data "aws_iam_policy_document" "flyte_dataplane" {

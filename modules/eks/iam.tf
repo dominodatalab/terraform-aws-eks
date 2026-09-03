@@ -25,6 +25,7 @@ resource "aws_iam_role" "eks_cluster" {
   lifecycle {
     ignore_changes = [name]
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster" {

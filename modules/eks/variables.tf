@@ -3,7 +3,7 @@ variable "deploy_id" {
   description = "Domino Deployment ID"
 
   validation {
-    condition     = can(regex("^[a-z-0-9]{3,32}$", var.deploy_id))
+    condition     = can(regex("^[a-zA-Z0-9-]{3,32}$", var.deploy_id))
     error_message = "Argument deploy_id must: start with a letter, contain lowercase alphanumeric characters(can contain hyphens[-]) with length between 3 and 32 characters."
   }
 }
@@ -348,4 +348,10 @@ variable "karpenter" {
   }
 
   default = {}
+}
+
+variable "permissions_boundary" {
+  description = "ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable."
+  type        = string
+  default     = null
 }

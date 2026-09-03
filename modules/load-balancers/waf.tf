@@ -193,7 +193,7 @@ resource "aws_wafv2_web_acl_association" "alb_association" {
 resource "aws_s3_bucket" "waf_logs" {
   count = var.waf.enabled ? 1 : 0
 
-  bucket        = "aws-waf-logs-${var.deploy_id}"
+  bucket        = lower("aws-waf-logs-${var.deploy_id}")
   force_destroy = true
 }
 

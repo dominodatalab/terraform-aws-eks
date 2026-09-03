@@ -4,7 +4,7 @@ locals {
 }
 
 resource "aws_s3_bucket" "flyte_metadata" {
-  bucket              = "${local.deploy_id}-flyte-metadata"
+  bucket              = lower("${local.deploy_id}-flyte-metadata")
   force_destroy       = var.force_destroy_on_deletion
   object_lock_enabled = false
 }
@@ -56,7 +56,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "flye_metadata_enc
 }
 
 resource "aws_s3_bucket" "flyte_data" {
-  bucket              = "${local.deploy_id}-flyte-data"
+  bucket              = lower("${local.deploy_id}-flyte-data")
   force_destroy       = var.force_destroy_on_deletion
   object_lock_enabled = false
 }

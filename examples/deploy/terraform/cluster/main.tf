@@ -16,19 +16,20 @@ module "eks" {
   deploy_id = local.infra.deploy_id
   region    = local.infra.region
 
-  ssh_key             = local.infra.ssh_key
-  node_iam_policies   = local.infra.node_iam_policies
-  storage_info        = local.infra.storage
-  eks                 = var.eks
-  network_info        = local.infra.network
-  kms_info            = local.kms
-  bastion_info        = local.infra.bastion
-  create_eks_role_arn = local.infra.create_eks_role_arn
-  tags                = local.infra.tags
-  ignore_tags         = local.infra.ignore_tags
-  use_fips_endpoint   = var.use_fips_endpoint
-  calico              = merge(var.calico, { image_registry = try(local.infra.storage.ecr.calico_image_registry, var.calico.image_registry) })
-  karpenter           = var.karpenter
+  ssh_key              = local.infra.ssh_key
+  node_iam_policies    = local.infra.node_iam_policies
+  storage_info         = local.infra.storage
+  eks                  = var.eks
+  network_info         = local.infra.network
+  kms_info             = local.kms
+  bastion_info         = local.infra.bastion
+  create_eks_role_arn  = local.infra.create_eks_role_arn
+  tags                 = local.infra.tags
+  ignore_tags          = local.infra.ignore_tags
+  use_fips_endpoint    = var.use_fips_endpoint
+  calico               = merge(var.calico, { image_registry = try(local.infra.storage.ecr.calico_image_registry, var.calico.image_registry) })
+  karpenter            = var.karpenter
+  permissions_boundary = var.permissions_boundary
 }
 
 data "aws_caller_identity" "global" {
@@ -59,6 +60,7 @@ module "irsa_external_dns" {
   providers = {
     aws.global = aws.global
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 moved {
@@ -73,6 +75,7 @@ module "irsa_policies" {
   providers = {
     aws.global = aws.global
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 module "external_deployments_operator" {
@@ -83,6 +86,7 @@ module "external_deployments_operator" {
   kms_info             = local.kms
   region               = local.infra.region
   external_deployments = var.external_deployments_operator
+  permissions_boundary = var.permissions_boundary
 }
 
 module "flyte" {
@@ -94,6 +98,7 @@ module "flyte" {
   force_destroy_on_deletion = var.flyte.force_destroy_on_deletion
   platform_namespace        = var.flyte.platform_namespace
   compute_namespace         = var.flyte.compute_namespace
+  permissions_boundary      = var.permissions_boundary
 }
 
 

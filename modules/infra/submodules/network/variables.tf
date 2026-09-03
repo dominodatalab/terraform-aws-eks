@@ -3,7 +3,7 @@ variable "deploy_id" {
   description = "Domino Deployment ID"
 
   validation {
-    condition     = can(regex("^[a-z-0-9]{3,32}$", var.deploy_id))
+    condition     = can(regex("^[a-zA-Z0-9-]{3,32}$", var.deploy_id))
     error_message = "Argument deploy_id must: start with a letter, contain lowercase alphanumeric characters(can contain hyphens[-]) with length between 3 and 32 characters."
   }
 }
@@ -52,8 +52,8 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
-    create_s3_endpoint = Create the VPC Interface Endpoint For S3.
-    create_ecr_endpoint = Create the VPC Endpoint For S3.
+    create_s3_endpoint  = Create the VPC Interface Endpoint For S3.
+    create_sts_endpoint = Create the VPC Interface Endpoint For STS (required in air-gapped / iso regions).
   EOF
 
   type = object({
@@ -78,6 +78,7 @@ variable "network" {
     use_pod_cidr        = optional(bool)
     create_ecr_endpoint = optional(bool, false)
     create_s3_endpoint  = optional(bool, false)
+    create_sts_endpoint = optional(bool, false)
   })
 
   validation {

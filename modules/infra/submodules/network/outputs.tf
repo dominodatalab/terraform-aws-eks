@@ -23,5 +23,8 @@ output "info" {
     s3_endpoint = local.create_s3_endpoint ? {
       security_group_id = aws_security_group.s3_endpoint[0].id
     } : null
+    sts_endpoint = local.create_sts_endpoint ? {
+      security_group_id = aws_security_group.sts_endpoint[0].id
+    } : null
   }
 }
