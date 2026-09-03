@@ -188,6 +188,7 @@ resource "aws_iam_role" "karpenter" {
   count              = var.karpenter.enabled ? 1 : 0
   name               = "${var.deploy_id}-karpenter"
   assume_role_policy = data.aws_iam_policy_document.karpenter_trust_policy[0].json
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter" {

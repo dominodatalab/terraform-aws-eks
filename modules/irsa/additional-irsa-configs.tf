@@ -19,6 +19,7 @@ resource "aws_iam_role" "this" {
       }
     ]
   })
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_policy" "this" {

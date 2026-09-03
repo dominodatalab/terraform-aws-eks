@@ -38,6 +38,7 @@ module "storage" {
   storage           = var.storage
   use_fips_endpoint = var.use_fips_endpoint
   region            = var.region
+  permissions_boundary = var.permissions_boundary
 }
 
 locals {
@@ -112,6 +113,7 @@ module "bastion" {
   k8s_version  = var.eks.k8s_version
   network_info = module.network.info
   bastion      = var.bastion
+  permissions_boundary = var.permissions_boundary
 }
 
 locals {

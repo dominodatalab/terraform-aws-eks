@@ -29,6 +29,7 @@ module "eks" {
   use_fips_endpoint   = var.use_fips_endpoint
   calico              = merge(var.calico, { image_registry = try(local.infra.storage.ecr.calico_image_registry, var.calico.image_registry) })
   karpenter           = var.karpenter
+  permissions_boundary = var.permissions_boundary
 }
 
 data "aws_caller_identity" "global" {
@@ -59,6 +60,7 @@ module "irsa_external_dns" {
   providers = {
     aws.global = aws.global
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 moved {
@@ -73,6 +75,7 @@ module "irsa_policies" {
   providers = {
     aws.global = aws.global
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 module "external_deployments_operator" {
@@ -83,6 +86,7 @@ module "external_deployments_operator" {
   kms_info             = local.kms
   region               = local.infra.region
   external_deployments = var.external_deployments_operator
+  permissions_boundary = var.permissions_boundary
 }
 
 module "flyte" {
@@ -94,6 +98,7 @@ module "flyte" {
   force_destroy_on_deletion = var.flyte.force_destroy_on_deletion
   platform_namespace        = var.flyte.platform_namespace
   compute_namespace         = var.flyte.compute_namespace
+  permissions_boundary = var.permissions_boundary
 }
 
 

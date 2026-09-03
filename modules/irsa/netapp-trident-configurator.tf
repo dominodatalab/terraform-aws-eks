@@ -41,6 +41,7 @@ resource "aws_iam_role" "trident_configurator" {
       }
     ]
   })
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "trident_configurator" {

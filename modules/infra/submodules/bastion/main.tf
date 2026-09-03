@@ -87,6 +87,7 @@ resource "aws_iam_role" "bastion" {
   tags = {
     "Name" = "${var.deploy_id}-bastion"
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "bastion" {
