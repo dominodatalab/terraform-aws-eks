@@ -245,6 +245,14 @@ variable "storage" {
   }
 
   validation {
+    condition = alltrue([
+      for k, v in coalesce(var.storage.netapp.additional, {}) :
+      coalesce(v.storage_capacity, 1024) >= 1024 && coalesce(v.storage_capacity, 1024) <= 1048576
+    ])
+    error_message = "`storage.netapp.additional[*].storage_capacity` must be between 1024 and 1048576 GiB. FSx for ONTAP will not create a filesystem below 1024 GiB, so that is also the floor for how far a filesystem can be right-sized by replacement."
+  }
+
+  validation {
     condition = (
       coalesce(var.storage.netapp.active, "base") == "base" ||
       contains(keys(coalesce(var.storage.netapp.additional, {})), coalesce(var.storage.netapp.active, "base"))

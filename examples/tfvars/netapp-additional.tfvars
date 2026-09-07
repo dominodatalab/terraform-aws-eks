@@ -21,12 +21,14 @@ default_node_groups = {
 storage = {
   filesystem_type = "netapp"
   netapp = {
-    storage_capacity    = 1024
+    storage_capacity    = 2048
     throughput_capacity = 128
     additional = {
       "1" = {
-        description         = "DOM-80370 resize destination"
-        storage_capacity    = 512
+        description = "DOM-80370 resize destination"
+        # Half the base filesystem's capacity. 1024 GiB is as small as FSx for ONTAP goes, so it
+        # is also the floor for how far a filesystem can be right-sized by replacement.
+        storage_capacity    = 1024
         throughput_capacity = 128
         peering             = true
         storage_capacity_autosizing = {
