@@ -317,6 +317,13 @@ variable "storage_info" {
         name = optional(string, null)
       })
     }), null)
+    # Additional FSxN filesystems, so nodes can reach a replacement or DR filesystem while it
+    # coexists with the active one.
+    netapp_additional = optional(map(object({
+      filesystem = object({
+        security_group_id = optional(string, null)
+      })
+    })), {})
   })
 
   default = {}

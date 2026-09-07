@@ -586,6 +586,29 @@ variable "storage" {
           storage_efficiency_enabled = Toggle storage_efficiency_enabled
           junction_path              = filesystem junction path
           size_in_megabytes          = The size of the volume
+        }
+        additional = Map of extra FSxN filesystems provisioned alongside the base one, for
+                     resize-by-replacement and DR. Keys MUST be numeric (e.g. "1"): a key
+                     renders the filesystem's 'Name' tag as '<deploy_id>-<key>' and its
+                     credentials secrets as '<deploy_id>-netapp-ontap-<key>-<kind>', which is
+                     what the FSxN migration tooling discovers by and what the Trident IRSA
+                     secret wildcard already permits. Each entry accepts the same
+                     deployment_type/storage_capacity/throughput_capacity/backup/autosizing
+                     options as the base filesystem, plus:
+          description  = Free-text note surfaced as a 'Description' tag.
+          subnet_index = Index into the private subnets, for placing a DR filesystem in a
+                         different AZ from the base one.
+          peering      = Open the ONTAP intercluster rules between this filesystem's security
+                         group and the base one, for SnapMirror replication.
+          volume       = As the base 'volume' block, but 'create' defaults to false because a
+                         replication destination's volumes are created as DP volumes by the
+                         migration tooling.
+        active = Which filesystem serves the cluster: "base" or a key of 'additional'. Selects
+                 the filesystem reported in this module's netapp output, and therefore the one
+                 Trident is pointed at.
+        retire_base = Destroy the base filesystem. Requires 'active' to name an additional
+                      filesystem, so the filesystem currently serving the cluster cannot be
+                      destroyed.
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
@@ -648,6 +671,38 @@ variable "storage" {
         junction_path              = optional(string, "/domino")
         size_in_megabytes          = optional(number, 1048576)
       }), {})
+      # Additional filesystems alongside the base one, for resize-by-replacement and DR.
+      # Keys must be numeric: they render the "Name" tag as "<deploy_id>-<key>" and the
+      # credentials secrets as "<deploy_id>-netapp-ontap-<key>-<kind>", which is the
+      # naming the FSxN migration tooling discovers by and which the Trident IRSA policy
+      # wildcard "<deploy_id>-netapp-ontap-*" already covers.
+      additional = optional(map(object({
+        description                       = optional(string, "")
+        deployment_type                   = optional(string, "SINGLE_AZ_1")
+        storage_capacity                  = optional(number, 1024)
+        throughput_capacity               = optional(number, 128)
+        automatic_backup_retention_days   = optional(number, 90)
+        daily_automatic_backup_start_time = optional(string, "00:00")
+        subnet_index                      = optional(number, 0)
+        peering                           = optional(bool, false)
+        storage_capacity_autosizing = optional(object({
+          enabled                    = optional(bool, false)
+          threshold                  = optional(number, 70)
+          percent_capacity_increase  = optional(number, 30)
+          notification_email_address = optional(string, "")
+        }), {})
+        # Defaults to false: when an additional filesystem is a replication destination,
+        # its data volumes are created as DP (mirror) volumes by the migration tooling.
+        # A Terraform-managed RW volume of the same name would collide with them.
+        volume = optional(object({
+          create            = optional(bool, false)
+          name_suffix       = optional(string, "domino_shared_storage")
+          junction_path     = optional(string, "/domino")
+          size_in_megabytes = optional(number, 1048576)
+        }), {})
+      })), {})
+      active      = optional(string, "base")
+      retire_base = optional(bool, false)
     }), {})
     s3 = optional(object({
       create                    = optional(bool, true)

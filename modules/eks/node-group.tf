@@ -90,6 +90,17 @@ resource "aws_security_group_rule" "netapp" {
   source_security_group_id = aws_security_group.eks_nodes.id
 }
 
+resource "aws_security_group_rule" "netapp_additional" {
+  for_each                 = var.storage_info != null ? coalesce(var.storage_info.netapp_additional, {}) : {}
+  security_group_id        = each.value.filesystem.security_group_id
+  protocol                 = "-1"
+  from_port                = 0
+  to_port                  = 65535
+  type                     = "ingress"
+  description              = "Netapp access from EKS nodes (${each.key})."
+  source_security_group_id = aws_security_group.eks_nodes.id
+}
+
 resource "aws_security_group_rule" "ecr_endpoint" {
   count                    = var.network_info.ecr_endpoint != null ? 1 : 0
   security_group_id        = var.network_info.ecr_endpoint.security_group_id

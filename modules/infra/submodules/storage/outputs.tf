@@ -5,6 +5,12 @@ output "info" {
       file_system       = EFS file_system.
       security_group_id = EFS security group id.
     }
+    netapp = The FSxN filesystem serving the cluster, selected by storage.netapp.active: svm
+             (name, management_ip, nfs_ip, creds_secret_arn), filesystem (id, security_group_id)
+             and volume (name). Null when netapp is not deployed.
+    netapp_additional = The same description, keyed by storage.netapp.additional key, for every
+                        additional filesystem including the active one. Empty when none are
+                        declared.
     s3 = {
       buckets        = "S3 buckets name and arn"
       iam_policy_arn = S3 IAM Policy ARN.
@@ -21,18 +27,8 @@ output "info" {
       file_system       = aws_efs_file_system.eks[0]
       security_group_id = aws_security_group.efs[0].id
     } : null
-    netapp = local.deploy_netapp ? {
-      svm = {
-        name             = aws_fsx_ontap_storage_virtual_machine.eks[0].name
-        management_ip    = one(aws_fsx_ontap_storage_virtual_machine.eks[0].endpoints[0].management[0].ip_addresses)
-        nfs_ip           = one(aws_fsx_ontap_storage_virtual_machine.eks[0].endpoints[0].nfs[0].ip_addresses)
-        creds_secret_arn = aws_secretsmanager_secret.netapp["svm"].arn
-      }
-      filesystem = { id = aws_fsx_ontap_file_system.eks[0].id, security_group_id = aws_security_group.netapp[0].id }
-      volume = {
-        name = aws_fsx_ontap_volume.eks[0].name
-      }
-    } : null
+    netapp            = local.deploy_netapp ? local.netapp_info : null
+    netapp_additional = local.netapp_additional_info
     s3 = {
       buckets = { for k, b in local.s3_buckets : k => {
         "bucket_name"               = b.bucket_name,
