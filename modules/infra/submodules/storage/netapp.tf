@@ -4,12 +4,15 @@ locals {
   # Same placement rule as the base filesystem, except a SINGLE_AZ additional filesystem can
   # be pinned to a specific private subnet via subnet_index (a DR replica usually wants a
   # different AZ from the base one). An out-of-range index yields an empty list, which the
-  # precondition on aws_fsx_ontap_file_system.netapp_additional reports.
+  # precondition on aws_fsx_ontap_file_system.netapp_additional reports. The range is checked
+  # against length() rather than caught with try(), so that the precondition is decided at plan
+  # time: the subnet ids themselves may not be known until apply, and try() returns a wholly
+  # unknown value whenever its expression is not wholly known.
   netapp_additional_subnet_ids = {
     for k, v in local.netapp_additional : k => (
       startswith(v.deployment_type, "MULTI")
       ? sort(slice(local.private_subnet_ids, 0, 2))
-      : compact([try(local.private_subnet_ids[v.subnet_index], "")])
+      : v.subnet_index < length(local.private_subnet_ids) ? [local.private_subnet_ids[v.subnet_index]] : []
     )
   }
 
@@ -467,7 +470,16 @@ locals {
   }
 
   # The filesystem serving the cluster. `active` is validated to be "base" or a key of
-  # storage.netapp.additional; the try() only covers `active` naming an additional filesystem
-  # on a deployment where netapp is not deployed at all, where there is nothing to report.
-  netapp_info = local.netapp_active == "base" ? local.netapp_base_info : try(local.netapp_additional_info[local.netapp_active], null)
+  # storage.netapp.additional; the membership test only covers `active` naming an additional
+  # filesystem on a deployment where netapp is not deployed at all, where there is nothing to
+  # report. It is deliberately not try(): try() returns a wholly unknown value when its
+  # expression is not wholly known, which would make even the nullness of this output unknown
+  # until apply and so break the plan-time `count` on aws_security_group_rule.netapp in
+  # modules/eks. contains(keys(...)) is decided from the map's keys alone, which come from the
+  # variable, so whether this is null stays known at plan time.
+  netapp_info = local.netapp_active == "base" ? local.netapp_base_info : (
+    contains(keys(local.netapp_additional_info), local.netapp_active)
+    ? local.netapp_additional_info[local.netapp_active]
+    : null
+  )
 }
