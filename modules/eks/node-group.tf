@@ -77,11 +77,17 @@ resource "aws_security_group_rule" "efs" {
   source_security_group_id = aws_security_group.eks_nodes.id
 }
 
+# Node access to the BASE filesystem. Deliberately keyed off netapp_base rather than netapp:
+# netapp follows storage.netapp.active, so on a cutover (active != "base") it would point this
+# rule at the replacement filesystem's security group -- which netapp_additional below already
+# opens. AWS rejects the second, identical rule with InvalidPermission.Duplicate, and the base
+# filesystem is left with no node access even though it still exists. Reachability is per
+# filesystem; `active` only selects which one Trident uses.
 resource "aws_security_group_rule" "netapp" {
   count = var.storage_info != null ? (
-    var.storage_info.netapp != null ? 1 : 0
+    var.storage_info.netapp_base != null ? 1 : 0
   ) : 0
-  security_group_id        = var.storage_info.netapp.filesystem.security_group_id
+  security_group_id        = var.storage_info.netapp_base.filesystem.security_group_id
   protocol                 = "-1"
   from_port                = 0
   to_port                  = 65535

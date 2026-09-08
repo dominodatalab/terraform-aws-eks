@@ -11,6 +11,12 @@ output "info" {
     netapp_additional = The same description, keyed by storage.netapp.additional key, for every
                         additional filesystem including the active one. Empty when none are
                         declared.
+    netapp_base = The base FSxN filesystem, in the same shape, regardless of what
+                  storage.netapp.active selects. For consumers that need reachability to a
+                  filesystem rather than the one Trident is pointed at -- node security group
+                  access has to exist for every filesystem that exists, not just the active one.
+                  Null when netapp is not deployed, and once storage.netapp.retire_base has
+                  destroyed the base filesystem.
     s3 = {
       buckets        = "S3 buckets name and arn"
       iam_policy_arn = S3 IAM Policy ARN.
@@ -29,6 +35,7 @@ output "info" {
     } : null
     netapp            = local.deploy_netapp ? local.netapp_info : null
     netapp_additional = local.netapp_additional_info
+    netapp_base       = local.deploy_netapp ? local.netapp_base_info : null
     s3 = {
       buckets = { for k, b in local.s3_buckets : k => {
         "bucket_name"               = b.bucket_name,
