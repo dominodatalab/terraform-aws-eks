@@ -269,6 +269,10 @@ resource "aws_fsx_ontap_volume" "eks" {
   copy_tags_to_backups       = true
   volume_style               = "FLEXVOL"
   tags                       = local.backup_tagging
+  # Pinned rather than inherited. This is the volume retire_base destroys, so what happens on
+  # delete should be stated here and not left to a provider default that could change under us.
+  # false keeps the final backup, which is the safe side of a destructive path.
+  skip_final_backup = false
 
   lifecycle {
     ignore_changes = [name, size_in_megabytes] # This volume is meant to be managed by the trident operator after initial creation.
@@ -413,6 +417,7 @@ resource "aws_fsx_ontap_volume" "netapp_additional" {
   copy_tags_to_backups       = true
   volume_style               = "FLEXVOL"
   tags                       = local.backup_tagging
+  skip_final_backup          = false
 
   lifecycle {
     ignore_changes = [name, size_in_megabytes] # This volume is meant to be managed by the trident operator after initial creation.
@@ -464,6 +469,17 @@ locals {
       volume = {
         # Where Terraform does not create the volume, the migration tooling creates the
         # destination volume under the same name as the source it mirrors, so report that.
+        #
+        # KNOWN GAP: that is only the source's name where the source still carries the name this
+        # module gave it. On the AWS path tridentctl import renames a volume it adopts, so a
+        # long-lived source is called trident_pvc_<uuid> and SnapMirror reproduces THAT name on
+        # the destination, not this one. The base filesystem's equivalent above is right only
+        # because ignore_changes suppresses the diff on `name` without suppressing the refresh,
+        # so its resource holds the renamed value; an additional filesystem has no resource to
+        # refresh when create = false, so there is nothing here but the convention. Terraform
+        # cannot discover the real name either: the AWS provider has no aws_fsx_ontap_volume data
+        # source. Fixing it properly means reporting the imported name from outside Terraform,
+        # which is the same follow-up as the SVM root volume name the volume importer needs.
         name = v.volume.create ? aws_fsx_ontap_volume.netapp_additional[k].name : replace("${var.deploy_id}_${v.volume.name_suffix}", "/[^a-zA-z0-9_]/", "_")
       }
     }

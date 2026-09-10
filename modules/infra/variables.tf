@@ -597,7 +597,11 @@ variable "storage" {
                      options as the base filesystem, plus:
           description  = Free-text note surfaced as a 'Description' tag.
           subnet_index = Index into the private subnets, for placing a DR filesystem in a
-                         different AZ from the base one.
+                         different AZ from the base one. Read the base filesystem's real
+                         SubnetIds before setting this. The base filesystem ignores changes
+                         to its subnets, so its live AZ may not be the one this index
+                         resolves to now, and a mismatch pays cross-AZ transfer for the
+                         entire baseline copy and cross-AZ NFS from compute thereafter.
           peering      = Open the ONTAP intercluster rules between this filesystem's security
                          group and the base one, for SnapMirror replication.
           volume       = As the base 'volume' block, but 'create' defaults to false because a
@@ -608,7 +612,10 @@ variable "storage" {
                  Trident is pointed at.
         retire_base = Destroy the base filesystem. Requires 'active' to name an additional
                       filesystem, so the filesystem currently serving the cluster cannot be
-                      destroyed.
+                      destroyed. Terraform manages one volume on that filesystem; volumes
+                      Trident provisioned are invisible to this state, and FSx refuses to
+                      delete an SVM that still holds non-root volumes. Clear them from the
+                      base SVM first, or the apply dies part way through the destroy.
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
