@@ -69,6 +69,21 @@ jobs:
         uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_validate --all-files
+  # Not a pre-commit hook, unlike everything else in this file: `terraform test` has no hook in
+  # antonbabenko/pre-commit-terraform, so there is no id to mirror. Credential free, it runs
+  # entirely on mock providers.
+  terraform_test:
+    name: Run terraform test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.9"
+      - name: Terraform test modules/eks
+        run: >-
+          terraform -chdir=modules/eks init -backend=false &&
+          terraform -chdir=modules/eks test
   terraform_providers_lock:
     name: Run terraform providers_lock
     runs-on: ubuntu-latest
