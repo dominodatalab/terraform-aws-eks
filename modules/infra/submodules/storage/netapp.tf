@@ -451,7 +451,17 @@ locals {
       nfs_ip           = one(aws_fsx_ontap_storage_virtual_machine.eks[0].endpoints[0].nfs[0].ip_addresses)
       creds_secret_arn = aws_secretsmanager_secret.netapp["svm"].arn
     }
-    filesystem = { id = aws_fsx_ontap_file_system.eks[0].id, security_group_id = aws_security_group.netapp[0].id }
+    # FSx names an SVM's root volume after the SVM, with separators replaced: SVM
+    # "<deploy_id>-svm-1" gets root volume "<deploy_id>_svm_1_root". Reported rather than left to
+    # consumers to derive, because deriving it from the deployment name only happens to work
+    # while there is exactly one SVM per deployment named "<deploy_id>-svm".
+    #
+    # This is the name at creation. tridentctl renames a volume it adopts, so once the root PVC
+    # has been imported the volume is trident_pvc_<uuid>. That is the right value for the
+    # importer, which consumes the pre-import name, and the wrong one for anything reading the
+    # live volume afterwards. Same caveat as volume.name below.
+    root_volume_name = "${replace(aws_fsx_ontap_storage_virtual_machine.eks[0].name, "-", "_")}_root"
+    filesystem       = { id = aws_fsx_ontap_file_system.eks[0].id, security_group_id = aws_security_group.netapp[0].id }
     volume = {
       name = var.storage.netapp.volume.create ? aws_fsx_ontap_volume.eks[0].name : replace("${var.deploy_id}_${var.storage.netapp.volume.name_suffix}", "/[^a-zA-z0-9_]/", "_")
     }
@@ -465,7 +475,9 @@ locals {
         nfs_ip           = one(aws_fsx_ontap_storage_virtual_machine.netapp_additional[k].endpoints[0].nfs[0].ip_addresses)
         creds_secret_arn = aws_secretsmanager_secret.netapp["${k}-svm"].arn
       }
-      filesystem = { id = aws_fsx_ontap_file_system.netapp_additional[k].id, security_group_id = aws_security_group.netapp_additional[k].id }
+      # See the base filesystem's equivalent above.
+      root_volume_name = "${replace(aws_fsx_ontap_storage_virtual_machine.netapp_additional[k].name, "-", "_")}_root"
+      filesystem       = { id = aws_fsx_ontap_file_system.netapp_additional[k].id, security_group_id = aws_security_group.netapp_additional[k].id }
       volume = {
         # Where Terraform does not create the volume, the migration tooling creates the
         # destination volume under the same name as the source it mirrors, so report that.

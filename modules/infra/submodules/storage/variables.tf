@@ -98,16 +98,25 @@ variable "storage" {
                          group and the base one, for SnapMirror replication.
           volume       = As the base 'volume' block, but 'create' defaults to false because a
                          replication destination's volumes are created as DP volumes by the
-                         migration tooling.
+                         migration tooling. Size it from the source volume as measured, not by
+                         copying the base entry's value: the base one is a creation-time
+                         setting that autosizing and out-of-band growth have usually left far
+                         behind, and once 'active' names this filesystem its size becomes the
+                         shared PVC's size.
         active = Which filesystem serves the cluster: "base" or a key of 'additional'. Selects
                  the filesystem reported in this module's netapp output, and therefore the one
-                 Trident is pointed at.
+                 Trident is pointed at. Confirm replication has caught up before changing this.
+                 It deletes nothing, so no plan or policy gate can catch a premature flip, and
+                 pointing Trident at a filesystem the data has not finished landing on is an
+                 immediate outage.
         retire_base = Destroy the base filesystem. Requires 'active' to name an additional
                       filesystem, so the filesystem currently serving the cluster cannot be
                       destroyed. Terraform manages one volume on that filesystem; volumes
                       Trident provisioned are invisible to this state, and FSx refuses to
                       delete an SVM that still holds non-root volumes. Clear them from the
-                      base SVM first, or the apply dies part way through the destroy.
+                      base SVM first, or the apply dies part way through the destroy. Those are
+                      customer data volumes, so take final backups of them as part of that
+                      step: this module's own volume is the only one its backup settings cover.
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
@@ -257,6 +266,39 @@ variable "storage" {
       coalesce(v.storage_capacity, 1024) >= 1024 && coalesce(v.storage_capacity, 1024) <= 1048576
     ])
     error_message = "`storage.netapp.additional[*].storage_capacity` must be between 1024 and 1048576 GiB. FSx for ONTAP will not create a filesystem below 1024 GiB, so that is also the floor for how far a filesystem can be right-sized by replacement."
+  }
+
+  # The autosizing values are handed to the CloudFormation scaling stack, which declares
+  # PercentIncrease as MinValue 10 / MaxValue 100. Without these an out-of-range value is
+  # accepted at plan and fails inside CloudFormation at apply, where the stack is created with
+  # on_failure = DELETE.
+  validation {
+    condition = alltrue([
+      for a in concat(
+        [try(var.storage.netapp.storage_capacity_autosizing, null)],
+        [for k, v in coalesce(var.storage.netapp.additional, {}) : try(v.storage_capacity_autosizing, null)],
+        ) : a == null || (
+        coalesce(try(a.percent_capacity_increase, null), 30) >= 10
+        && coalesce(try(a.percent_capacity_increase, null), 30) <= 100
+      )
+    ])
+    error_message = "`storage_capacity_autosizing.percent_capacity_increase` must be between 10 and 100, on the base filesystem and on every entry of `storage.netapp.additional`. FSx's scaling template rejects anything outside that range."
+  }
+
+  # Unlike the percent, this bound is ours: the CloudFormation template puts no MinValue or
+  # MaxValue on the threshold. 100 would mean the alarm can never clear and 0 would mean it never
+  # fires, so both ends are excluded.
+  validation {
+    condition = alltrue([
+      for a in concat(
+        [try(var.storage.netapp.storage_capacity_autosizing, null)],
+        [for k, v in coalesce(var.storage.netapp.additional, {}) : try(v.storage_capacity_autosizing, null)],
+        ) : a == null || (
+        coalesce(try(a.threshold, null), 70) >= 1
+        && coalesce(try(a.threshold, null), 70) <= 99
+      )
+    ])
+    error_message = "`storage_capacity_autosizing.threshold` must be between 1 and 99 percent, on the base filesystem and on every entry of `storage.netapp.additional`."
   }
 
   validation {

@@ -606,16 +606,25 @@ variable "storage" {
                          group and the base one, for SnapMirror replication.
           volume       = As the base 'volume' block, but 'create' defaults to false because a
                          replication destination's volumes are created as DP volumes by the
-                         migration tooling.
+                         migration tooling. Size it from the source volume as measured, not by
+                         copying the base entry's value: the base one is a creation-time
+                         setting that autosizing and out-of-band growth have usually left far
+                         behind, and once 'active' names this filesystem its size becomes the
+                         shared PVC's size.
         active = Which filesystem serves the cluster: "base" or a key of 'additional'. Selects
                  the filesystem reported in this module's netapp output, and therefore the one
-                 Trident is pointed at.
+                 Trident is pointed at. Confirm replication has caught up before changing this.
+                 It deletes nothing, so no plan or policy gate can catch a premature flip, and
+                 pointing Trident at a filesystem the data has not finished landing on is an
+                 immediate outage.
         retire_base = Destroy the base filesystem. Requires 'active' to name an additional
                       filesystem, so the filesystem currently serving the cluster cannot be
                       destroyed. Terraform manages one volume on that filesystem; volumes
                       Trident provisioned are invisible to this state, and FSx refuses to
                       delete an SVM that still holds non-root volumes. Clear them from the
-                      base SVM first, or the apply dies part way through the destroy.
+                      base SVM first, or the apply dies part way through the destroy. Those are
+                      customer data volumes, so take final backups of them as part of that
+                      step: this module's own volume is the only one its backup settings cover.
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.

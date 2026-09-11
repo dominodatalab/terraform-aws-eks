@@ -6,8 +6,11 @@ output "info" {
       security_group_id = EFS security group id.
     }
     netapp = The FSxN filesystem serving the cluster, selected by storage.netapp.active: svm
-             (name, management_ip, nfs_ip, creds_secret_arn), filesystem (id, security_group_id)
-             and volume (name). Null when netapp is not deployed.
+             (name, management_ip, nfs_ip, creds_secret_arn), root_volume_name, filesystem
+             (id, security_group_id) and volume (name). root_volume_name is the SVM's root
+             volume as FSx creates it, which the volume importer needs and cannot derive from
+             the deployment name once more than one SVM exists. Null when netapp is not
+             deployed.
     netapp_additional = The same description, keyed by storage.netapp.additional key, for every
                         additional filesystem including the active one. Empty when none are
                         declared.
