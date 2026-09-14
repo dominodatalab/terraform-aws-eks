@@ -74,7 +74,10 @@ repos:
         name: Check for hard coded AWS partition
         entry: ./bin/pre-commit/check-aws-partition.sh
         language: script
-        exclude: "^(bin|examples)"
+        # Terraform test files are excluded for the same reason as examples: they carry literal
+        # ARNs as fixtures. The check is a substring match on the ARN prefix, and every partition
+        # name begins with the same three letters, so no spelling of a real ARN can satisfy it.
+        exclude: "^(bin|examples)|\\.tftest\\.hcl$"
       - id: validate_iam_bootstrap
         name: Validate IAM bootstrap
         entry: ./bin/pre-commit/validate-iam-bootstrap.py
