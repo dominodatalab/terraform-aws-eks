@@ -145,3 +145,15 @@ jobs:
       - uses: actions/checkout@master
       - name: Validate IAM bootstrap
         run: bin/pre-commit/validate-iam-bootstrap.py
+  validate-filetask-policies:
+    name: Validate S3 Files IAM policies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.9"
+          # The validator reads `terraform show -json` on stdout; the wrapper would corrupt it.
+          terraform_wrapper: false
+      - name: Validate S3 Files IAM policies
+        run: bin/pre-commit/validate-filetask-policies.py

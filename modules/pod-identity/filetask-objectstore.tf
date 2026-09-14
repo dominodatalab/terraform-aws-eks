@@ -99,7 +99,10 @@ data "aws_iam_policy_document" "filetask_objectstore" {
       condition {
         test     = "StringEquals"
         variable = "kms:ViaService"
-        values   = ["s3.${statement.value.key_region}.amazonaws.com"]
+        # dns_suffix rather than a literal: ViaService is an endpoint DNS name, so it is
+        # s3.<region>.amazonaws.com.cn in China. A service principal, by contrast, stays
+        # amazonaws.com in every partition -- which is why main.tf hardcodes that one.
+        values = ["s3.${statement.value.key_region}.${data.aws_partition.current.dns_suffix}"]
       }
 
       condition {
@@ -132,6 +135,25 @@ resource "aws_iam_role" "filetask_objectstore" {
 
   name               = "${local.name_prefix}-filetask-objectstore"
   assume_role_policy = data.aws_iam_policy_document.trust.json
+
+  lifecycle {
+    precondition {
+      # Configuring this feature *and* a matching additional_pod_identity_configs entry duplicates
+      # the IAM role and policy names and creates a second association for a namespace/account pair
+      # EKS permits only once -- all three of which fail at apply, not at plan. This module's own
+      # usage example configured exactly that by hand until now, so it is the migration path rather
+      # than a hypothetical. A variable validation cannot see a second variable, hence a
+      # precondition; with count = 0 it correctly does not fire when the feature is off.
+      condition = alltrue([
+        for c in var.additional_pod_identity_configs :
+        c.name != "filetask-objectstore" && !(
+          c.namespace == var.filetask_objectstore.namespace &&
+          c.serviceaccount_name == var.filetask_objectstore.serviceaccount_name
+        )
+      ])
+      error_message = "filetask_objectstore is enabled, so drop the additional_pod_identity_configs entry that duplicates it: one named \"filetask-objectstore\", or one binding ${var.filetask_objectstore.namespace}/${var.filetask_objectstore.serviceaccount_name}."
+    }
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "filetask_objectstore" {

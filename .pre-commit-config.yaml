@@ -83,3 +83,9 @@ repos:
         entry: ./bin/pre-commit/validate-iam-bootstrap.py
         language: python
         pass_filenames: false
+      - id: validate_filetask_policies
+        name: Validate S3 Files IAM policies
+        entry: ./bin/pre-commit/validate-filetask-policies.py
+        language: python
+        pass_filenames: false
+        files: "^(modules/pod-identity/|modules/eks/filetask-mount-iam.tf|bin/pre-commit/filetask-expected-policies.json)"
