@@ -12,3 +12,8 @@ output "associations" {
     service_account = v.service_account
   } }
 }
+
+output "filetask_objectstore_role_arn" {
+  description = "ARN of the S3 Files task role, or null when filetask_objectstore is not enabled"
+  value       = try(aws_iam_role.filetask_objectstore[0].arn, null)
+}
