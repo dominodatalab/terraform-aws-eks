@@ -28,8 +28,8 @@ FIXTURES = Path(__file__).parent / "filetask-expected-policies.json"
 MOUNT_FIXTURE = Path(__file__).parent / "filetask-expected-mount-policy.json"
 MOUNT_TF = ROOT / "modules" / "eks" / "filetask-mount-iam.tf"
 
-# What the node role is allowed to hold, lowercased for comparison. GetMountTarget and
-# ListMountTargets changed nothing when measured, and dropping GetFileSystem failed the mount.
+# The actions the node role may hold, lowercased for comparison. Why these four and no others is
+# recorded beside the policy itself, in modules/eks/filetask-mount-iam.tf.
 MOUNT_ACTIONS = {
     "s3files:clientmount",
     "s3files:clientwrite",
@@ -197,9 +197,7 @@ module "china" {
 """
 
 
-# modules/eks cannot plan offline -- it reads aws_caller_identity, aws_iam_session_context and
-# tls_certificate -- but the one file holding the mount policy can, once something supplies the four
-# names it references. It is copied in verbatim, so nothing here parses or edits it.
+# Only what the copied policy file references; the file goes in verbatim, so nothing here parses it.
 MOUNT_STUB = """
 variable "deploy_id" {
   type = string
@@ -369,8 +367,7 @@ def check_china_partition():
 
     rendered = rendered_policies(plan_json)
     policy = rendered["china"]["filetask_objectstore"]
-    # The mount policy rides along here for the same reason: in the aws partition its ARN renders
-    # identically whether it comes from the data source or a literal.
+    # The mount policy rides along for the same reason: in aws its ARN renders the same either way.
     policy["Statement"] = policy["Statement"] + rendered["china_mount"]["filetask_mount"]["Statement"]
     ok = True
 
@@ -391,8 +388,7 @@ def check_china_partition():
             [statement["Resource"]] if isinstance(statement["Resource"], str) else statement["Resource"]
         )
     ]
-    # Every ARN must be *in* the china partition, not merely not in the aws one: a hardcoded
-    # arn:aws-us-gov: or a bare * is just as wrong and would pass a check that only rejects arn:aws:.
+    # In the china partition, not merely not in the aws one: arn:aws-us-gov: and * are wrong too.
     wrong = [arn for arn in arns if not arn.startswith("arn:aws-cn:")]
     if wrong:
         print(f"china: policy contains an ARN outside the china partition: {wrong}")
@@ -436,8 +432,7 @@ def check_mount_policy():
         print(f"  rendered: {json.dumps(got, sort_keys=True)[:400]}")
         print(f"  expected: {json.dumps(want, sort_keys=True)[:400]}")
 
-    # Stated separately from the fixture, because these two are the reason the policy is allowed on
-    # the node role at all: a fixture diff would report them as a change like any other.
+    # Checked apart from the fixture: regenerating it would carry a widened grant straight through.
     statements = [s for policy in got.values() for s in policy.get("Statement", [])]
     inverted = [s.get("Sid") for s in statements if "NotAction" in s or "NotResource" in s]
     if inverted:
@@ -455,10 +450,8 @@ def check_mount_policy():
             )
         }
     )
-    # The exact set, not a prefix rule: s3files:DeleteFileSystem shares the prefix, and both `*` and
-    # `?` are IAM wildcards. Compared case-insensitively because IAM does not distinguish actions by
-    # case. Spelled out here as well as in the fixture so that widening the grant takes an edit to
-    # the claim, not a regenerated file.
+    # An exact set, not a prefix rule: s3files:DeleteFileSystem shares the prefix, and `*` and `?`
+    # are both IAM wildcards. Lowercased because IAM does not match action names by case.
     if {action.lower() for action in granted} != MOUNT_ACTIONS:
         print(f"mount policy grants something other than the four client actions: {granted}")
         ok = False
