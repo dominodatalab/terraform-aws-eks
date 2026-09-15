@@ -144,9 +144,13 @@ resource "aws_iam_role" "filetask_objectstore" {
       # usage example configured exactly that by hand until now, so it is the migration path rather
       # than a hypothetical. A variable validation cannot see a second variable, hence a
       # precondition; with count = 0 it correctly does not fire when the feature is off.
+      # lower() on the name because IAM does not distinguish names by case: "FileTask-ObjectStore"
+      # would pass an exact comparison and still collide at apply. Namespace and account are
+      # compared as written -- Kubernetes names are RFC 1123, so an uppercase one is rejected by the
+      # API rather than folded onto this one.
       condition = alltrue([
         for c in var.additional_pod_identity_configs :
-        c.name != "filetask-objectstore" && !(
+        lower(c.name) != "filetask-objectstore" && !(
           c.namespace == var.filetask_objectstore.namespace &&
           c.serviceaccount_name == var.filetask_objectstore.serviceaccount_name
         )

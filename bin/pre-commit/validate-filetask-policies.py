@@ -29,7 +29,21 @@ FIXTURES = Path(__file__).parent / "filetask-expected-policies.json"
 MOUNT_TF = ROOT / "modules" / "eks" / "filetask-mount-iam.tf"
 KMS_KEY = "arn:{}:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab".format("aws")
 
-HARNESS = """
+# Pinned so a provider release cannot silently change the rendering this golden file compares
+# against. The repo gitignores .terraform.lock.hcl, so there is no committed lockfile to copy into
+# the temporary root instead. Bump deliberately, and expect the fixture to need regenerating.
+PROVIDER = """
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "6.62.0"
+    }
+  }
+}
+"""
+
+HARNESS = PROVIDER + """
 provider "aws" {
   region                      = "us-west-2"
   access_key                  = "harness"
@@ -89,8 +103,9 @@ module "disabled" {
 """
 
 # Enabling the feature alongside an additional_pod_identity_configs entry that names the same
-# ServiceAccount must fail at plan, not at apply.
-COLLISION = """
+# ServiceAccount must fail at plan, not at apply. Deliberately mixed case: IAM does not distinguish
+# names by case, so an exact comparison in the precondition would let this one through to apply.
+COLLISION = PROVIDER + """
 provider "aws" {
   region                      = "us-west-2"
   access_key                  = "harness"
@@ -111,11 +126,39 @@ module "collision" {
   }
 
   additional_pod_identity_configs = [{
-    name                = "filetask-objectstore"
-    namespace           = "domino-compute"
-    serviceaccount_name = "domino-filetask-objectstore"
+    name                = "FileTask-ObjectStore"
+    namespace           = "other-namespace"
+    serviceaccount_name = "other-account"
     policy              = "{\\"Version\\":\\"2012-10-17\\",\\"Statement\\":[]}"
   }]
+}"""
+
+# The China partition, which is the whole point of building kms:ViaService and every ARN from the
+# partition data source rather than writing amazonaws.com. Without this case the previous hardcoded
+# implementation would still pass, because in the aws partition the two render identically.
+CHINA = PROVIDER + """
+provider "aws" {
+  region                      = "cn-north-1"
+  access_key                  = "harness"
+  secret_key                  = "harness"
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+  skip_metadata_api_check     = true
+}
+
+module "china" {
+  source   = "%(module)s"
+  region   = "cn-north-1"
+  eks_info = { cluster = { specs = { name = "example-cluster", account_id = "111122223333" } } }
+
+  filetask_objectstore = {
+    enabled = true
+    buckets = [{
+      name        = "example-bucket"
+      prefix      = "datasets"
+      kms_key_arn = "arn:aws-cn:kms:cn-north-1:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+    }]
+  }
 }
 """
 
@@ -205,12 +248,61 @@ def check_collision_is_rejected():
     return False
 
 
+def check_china_partition():
+    """Every ARN and kms:ViaService must come from the partition, not a literal.
+
+    In the aws partition dns_suffix *is* amazonaws.com, so the fixture cases above cannot tell a
+    hardcoded value from a derived one. This case can.
+    """
+    code, plan_json, err = plan(CHINA)
+    if code:
+        print(f"china harness failed to plan:\n{err[:400]}")
+        return False
+
+    policy = rendered_policies(plan_json)["china"]["filetask_objectstore"]
+    ok = True
+
+    via = []
+    for statement in policy["Statement"]:
+        value = statement.get("Condition", {}).get("StringEquals", {}).get("kms:ViaService")
+        if value is not None:
+            via.extend([value] if isinstance(value, str) else value)
+
+    if not via or not all(v.endswith(".amazonaws.com.cn") for v in via):
+        print(f"china: kms:ViaService is not partition-aware: {via}")
+        ok = False
+
+    arns = [
+        arn
+        for statement in policy["Statement"]
+        for arn in (
+            [statement["Resource"]] if isinstance(statement["Resource"], str) else statement["Resource"]
+        )
+    ]
+    if any(arn.startswith("arn:aws:") for arn in arns):
+        print(f"china: policy contains an aws-partition ARN: {[a for a in arns if a.startswith('arn:aws:')]}")
+        ok = False
+
+    if ok:
+        print("china: ViaService and every ARN follow the partition, as required")
+    return ok
+
+
 def check_mount_policy():
-    """The mount policy attaches to the node role, so an s3: action here would be dataset read
-    access for every pod that can reach instance metadata."""
+    """The mount policy attaches to the node role, so an s3: action anywhere in it would be dataset
+    read access for every pod that can reach instance metadata.
+
+    Every actions list in the file, not just the first: a second statement granting s3: would
+    otherwise go unnoticed and defeat exactly the invariant this exists to hold. Text rather than a
+    render because modules/eks reads aws_caller_identity and tls_certificate, so it cannot plan
+    offline.
+    """
     source = MOUNT_TF.read_text()
-    block = source[source.index("actions = [") :]
-    actions = re.findall(r'"([^"]+)"', block[: block.index("]")])
+    blocks = re.findall(r"actions\s*=\s*\[(.*?)\]", source, re.S)
+    if not blocks:
+        print("mount policy declares no actions at all")
+        return False
+    actions = [action for block in blocks for action in re.findall(r'"([^"]+)"', block)]
 
     expected = [
         "s3files:ClientMount",
@@ -221,10 +313,10 @@ def check_mount_policy():
     if sorted(actions) != sorted(expected):
         print(f"mount policy actions changed\n  found: {sorted(actions)}\n  want : {sorted(expected)}")
         return False
-    if not all(a.startswith("s3files:") for a in actions):
-        print(f"mount policy grants a non-s3files action: {actions}")
-        return False
-    print(f"mount policy holds its {len(actions)} actions, none of them s3: (text check, not a render)")
+    print(
+        f"mount policy holds its {len(actions)} actions across {len(blocks)} statement(s), "
+        "none of them s3: (text check, not a render)"
+    )
     return True
 
 
@@ -232,6 +324,7 @@ def main():
     if not shutil.which("terraform"):
         raise SystemExit("terraform is not on PATH")
     ok = check_rendered()
+    ok &= check_china_partition()
     ok &= check_collision_is_rejected()
     ok &= check_mount_policy()
     if not ok:
