@@ -313,6 +313,21 @@ def check_china_partition():
     return ok
 
 
+def literal_strings(block):
+    """The quoted strings in an HCL list body, or None if it holds anything else.
+
+    `["a", "b", local.extra]` reads as two actions unless the leftovers are checked, so whatever is
+    not a quoted string, a comma, whitespace or a comment makes the list unreadable by this method.
+    Quoted strings are removed first, so a `#` or `/*` inside one cannot be mistaken for a comment.
+    """
+    remainder = re.sub(r'"(?:[^"\\]|\\.)*"', "", block)
+    remainder = re.sub(r"/\*.*?\*/", "", remainder, flags=re.S)
+    remainder = re.sub(r"(#|//)[^\n]*", "", remainder)
+    if re.search(r"[^\s,]", remainder):
+        return None
+    return re.findall(r'"((?:[^"\\]|\\.)*)"', block)
+
+
 def check_mount_policy():
     """The mount policy attaches to the node role, so an s3: action anywhere in it would be dataset
     read access for every pod that can reach instance metadata.
@@ -345,7 +360,17 @@ def check_mount_policy():
             "inline it, or render the policy instead."
         )
         return False
-    actions = [action for block in blocks for action in re.findall(r'"([^"]+)"', block)]
+    actions = []
+    for block in blocks:
+        parsed = literal_strings(block)
+        if parsed is None:
+            print(
+                "mount policy has an actions list holding something other than quoted strings, so "
+                "reading the file cannot tell what it grants -- inline it, or render the policy "
+                f"instead: [{block.strip()}]"
+            )
+            return False
+        actions.extend(parsed)
 
     expected = [
         "s3files:ClientMount",
