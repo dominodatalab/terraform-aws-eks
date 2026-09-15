@@ -313,19 +313,112 @@ def check_china_partition():
     return ok
 
 
-def literal_strings(block):
-    """The quoted strings in an HCL list body, or None if it holds anything else.
+def blank_comments(source):
+    """Replace HCL comments with spaces, leaving strings and offsets intact.
 
-    `["a", "b", local.extra]` reads as two actions unless the leftovers are checked, so whatever is
-    not a quoted string, a comma, whitespace or a comment makes the list unreadable by this method.
-    Quoted strings are removed first, so a `#` or `/*` inside one cannot be mistaken for a comment.
+    Regexes cannot do this: a `#` inside an action string is not a comment, and a `]` inside a
+    comment is not the end of a list. Both of those were live bypasses before this existed, so the
+    scanner tracks which of the two it is in rather than guessing.
     """
-    remainder = re.sub(r'"(?:[^"\\]|\\.)*"', "", block)
-    remainder = re.sub(r"/\*.*?\*/", "", remainder, flags=re.S)
-    remainder = re.sub(r"(#|//)[^\n]*", "", remainder)
-    if re.search(r"[^\s,]", remainder):
+    out = []
+    index = 0
+    while index < len(source):
+        character = source[index]
+        if character == '"':
+            end = index + 1
+            while end < len(source):
+                if source[end] == "\\":
+                    end += 2
+                    continue
+                if source[end] == '"':
+                    end += 1
+                    break
+                end += 1
+            out.append(source[index:end])
+            index = end
+        elif source.startswith("/*", index):
+            end = source.find("*/", index + 2)
+            end = len(source) if end == -1 else end + 2
+            out.append(" " * (end - index))
+            index = end
+        elif source.startswith("//", index) or character == "#":
+            end = source.find("\n", index)
+            end = len(source) if end == -1 else end
+            out.append(" " * (end - index))
+            index = end
+        else:
+            out.append(character)
+            index += 1
+    return "".join(out)
+
+
+def list_body(source, open_bracket):
+    """The text between `[` and its matching `]`, or None if unterminated.
+
+    Depth-aware and string-aware so a bracket inside either cannot close the list early.
+    """
+    depth = 0
+    index = open_bracket
+    while index < len(source):
+        character = source[index]
+        if character == '"':
+            index += 1
+            while index < len(source):
+                if source[index] == "\\":
+                    index += 2
+                    continue
+                if source[index] == '"':
+                    break
+                index += 1
+        elif character == "[":
+            depth += 1
+        elif character == "]":
+            depth -= 1
+            if depth == 0:
+                return source[open_bracket + 1 : index]
+        index += 1
+    return None
+
+
+def literal_strings(body):
+    """The quoted strings in a list body, or None if it holds anything else.
+
+    `["a", "b", local.extra]` reads as two actions unless the leftovers are checked. Expects a body
+    whose comments are already blanked, so what survives removing the strings must be commas and
+    whitespace.
+    """
+    if re.search(r"[^\s,]", re.sub(r'"(?:[^"\\]|\\.)*"', "", body)):
         return None
-    return re.findall(r'"((?:[^"\\]|\\.)*)"', block)
+    return re.findall(r'"((?:[^"\\]|\\.)*)"', body)
+
+
+def check_parser():
+    """Run the scanner against the inputs that have fooled it before.
+
+    Three rounds of review found a different hole in this parsing, each time in a case nobody had
+    written down. These are those cases, checked on every run so a fourth cannot be introduced
+    quietly. They cost nothing: no files, no terraform.
+    """
+    cases = [
+        # A bracket inside a comment must not end the list, or a computed element after it hides.
+        ('["a", "b", # ]\n local.extra]', None),
+        # Quoted text inside a comment is not an action, and must not be reported as one.
+        ('# "s3:GetObject" is forbidden\n "a", "b"', ["a", "b"]),
+        (' "a", "b", ', ["a", "b"]),
+        (' "a", /* note */ "b" ', ["a", "b"]),
+        (' "a", local.extra ', None),
+        # A `#` inside a string is part of the action, not the start of a comment.
+        (' "a#b" ', ["a#b"]),
+    ]
+    ok = True
+    for body, expected in cases:
+        actual = literal_strings(blank_comments(body))
+        if actual != expected:
+            print(f"parser self-check failed on {body!r}: expected {expected}, got {actual}")
+            ok = False
+    if ok:
+        print(f"parser self-check: {len(cases)} known-tricky inputs read correctly")
+    return ok
 
 
 def check_mount_policy():
@@ -337,7 +430,9 @@ def check_mount_policy():
     render because modules/eks reads aws_caller_identity and tls_certificate, so it cannot plan
     offline.
     """
-    source = MOUNT_TF.read_text()
+    # Everything below reads the comment-free view, so a commented-out declaration is not mistaken
+    # for a real one and a bracket inside a comment cannot end a list early.
+    source = blank_comments(MOUNT_TF.read_text())
 
     # not_actions inverts the grant -- everything *except* those -- so it can never be right here,
     # and reading it as if it were an allow-list would report the opposite of the truth.
@@ -345,32 +440,29 @@ def check_mount_policy():
         print("mount policy uses not_actions, which inverts the grant; refusing to guess at it")
         return False
 
-    # Only a literal list can be read this way. `actions = concat(...)` or `= local.x` would be
-    # invisible to the regex below and would sail through, so count the assignments and require
-    # every one of them to be a literal that was actually parsed.
-    assignments = len(re.findall(r"\bactions\s*=", source))
-    blocks = re.findall(r"\bactions\s*=\s*\[(.*?)\]", source, re.S)
-    if not blocks:
-        print("mount policy declares no actions at all")
-        return False
-    if len(blocks) != assignments:
-        print(
-            f"mount policy has {assignments} actions assignment(s) but only {len(blocks)} literal "
-            "list(s). A computed actions value cannot be checked by reading the file -- either "
-            "inline it, or render the policy instead."
-        )
-        return False
     actions = []
-    for block in blocks:
-        parsed = literal_strings(block)
+    found = 0
+    for assignment in re.finditer(r"\bactions\s*=\s*", source):
+        found += 1
+        if not source[assignment.end() :].startswith("["):
+            print(
+                "mount policy computes an actions value rather than listing it, so reading the file "
+                "cannot tell what it grants -- inline it, or render the policy instead."
+            )
+            return False
+        body = list_body(source, assignment.end())
+        parsed = None if body is None else literal_strings(body)
         if parsed is None:
             print(
-                "mount policy has an actions list holding something other than quoted strings, so "
-                "reading the file cannot tell what it grants -- inline it, or render the policy "
-                f"instead: [{block.strip()}]"
+                "mount policy has an actions list this cannot read as plain strings -- inline it, "
+                f"or render the policy instead: [{(body or '').strip()}]"
             )
             return False
         actions.extend(parsed)
+
+    if not found:
+        print("mount policy declares no actions at all")
+        return False
 
     expected = [
         "s3files:ClientMount",
@@ -382,7 +474,7 @@ def check_mount_policy():
         print(f"mount policy actions changed\n  found: {sorted(actions)}\n  want : {sorted(expected)}")
         return False
     print(
-        f"mount policy holds its {len(actions)} actions across {len(blocks)} statement(s), "
+        f"mount policy holds its {len(actions)} actions across {found} statement(s), "
         "none of them s3: (text check, not a render)"
     )
     return True
@@ -391,7 +483,8 @@ def check_mount_policy():
 def main():
     if not shutil.which("terraform"):
         raise SystemExit("terraform is not on PATH")
-    ok = check_rendered()
+    ok = check_parser()
+    ok &= check_rendered()
     ok &= check_china_partition()
     ok &= check_collision_is_rejected()
     ok &= check_mount_policy()
