@@ -343,11 +343,25 @@ def skip_string(source, index):
 
 
 def skip_interpolation(source, index):
-    """The index just past the `}` closing the interpolation whose `${` ends at `index`."""
+    """The index just past the `}` closing the interpolation whose `${` ends at `index`.
+
+    An interpolation holds an expression, so it can hold strings and comments of its own. A `}` in
+    either of those ends it early, and everything after is then read inside out.
+    """
     depth = 1
     while index < len(source):
         if source[index] == '"':
             index = skip_string(source, index)
+            continue
+        if source.startswith("/*", index):
+            end = source.find("*/", index + 2)
+            if end == -1:
+                raise Unreadable("has a block comment that never closes")
+            index = end + 2
+            continue
+        if source.startswith("//", index) or source[index] == "#":
+            end = source.find("\n", index)
+            index = len(source) if end == -1 else end
             continue
         if source[index] == "{":
             depth += 1
@@ -442,9 +456,12 @@ def parse_actions(raw):
         return None, 0, str(unreadable)
 
     # not_actions inverts the grant -- everything *except* those -- so reading it as an allow-list
-    # would report the opposite of the truth.
-    if re.search(r"\bnot_actions\s*=", source):
-        return None, 0, "uses not_actions, which inverts the grant; refusing to guess at it"
+    # would report the opposite of the truth. Read from the raw text rather than the blanked view:
+    # the count below notices a hidden `actions` but never a hidden `not_actions`, so a comment that
+    # swallowed one would leave the inversion unseen. A mention in a real comment refuses too, which
+    # is the cheaper half of that trade.
+    if re.search(r"\bnot_actions\s*=", raw):
+        return None, 0, "mentions not_actions, which inverts the grant; refusing to guess at it"
 
     actions = []
     statements = 0
@@ -497,8 +514,13 @@ def check_parser():
         ('actions = ["a", local.extra]', None),
         # A `#` inside a string is part of the action, not the start of a comment.
         ('actions = ["a#b"]', ["a#b"]),
-        # A quote inside an interpolation must not flip the scanner into code and blank the rest.
+        # A quote inside an interpolation must not flip the scanner into code and blank the rest,
+        # nor a `}` inside a comment inside one.
         ('x = "${replace(v, "/*", "")}"\nactions = ["a"]', ["a"]),
+        ('x = "${0 /* } */ + length("/*")}"\nactions = ["a"]', ["a"]),
+        # not_actions inverts the grant wherever it appears, including where a flip would hide it.
+        ('x = "${0 /* } */ + length("/*")}"\nnot_actions = ["*"]\n# */\nactions = ["a"]', None),
+        ('# not_actions = ["*"]\nactions = ["a"]', None),
         # Anything that can hide a later assignment fails rather than reporting what it did read.
         ('x = "a" /* never closed\nactions = ["s3:GetObject"]', None),
         ('x = <<-EOT\n  actions = ["s3:GetObject"]\nEOT\nactions = ["a"]', None),
