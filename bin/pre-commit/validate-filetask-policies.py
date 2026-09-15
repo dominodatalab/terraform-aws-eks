@@ -27,6 +27,15 @@ ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = Path(__file__).parent / "filetask-expected-policies.json"
 MOUNT_FIXTURE = Path(__file__).parent / "filetask-expected-mount-policy.json"
 MOUNT_TF = ROOT / "modules" / "eks" / "filetask-mount-iam.tf"
+
+# What the node role is allowed to hold, lowercased for comparison. GetMountTarget and
+# ListMountTargets changed nothing when measured, and dropping GetFileSystem failed the mount.
+MOUNT_ACTIONS = {
+    "s3files:clientmount",
+    "s3files:clientwrite",
+    "s3files:clientrootaccess",
+    "s3files:getfilesystem",
+}
 KMS_KEY = "arn:{}:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab".format("aws")
 
 # Pinned so a provider release cannot silently change the rendering this golden file compares
@@ -446,22 +455,16 @@ def check_mount_policy():
             )
         }
     )
-    # Stated as an allow-list rather than a ban on `s3:`: IAM does not match action names by case,
-    # and `*` grants object access without naming a service at all.
-    beyond = [
-        action
-        for action in granted
-        if not action.lower().startswith("s3files:") or "*" in action
-    ]
-    if beyond:
-        print(f"mount policy grants more than an S3 Files mount on the node role: {beyond}")
+    # The exact set, not a prefix rule: s3files:DeleteFileSystem shares the prefix, and both `*` and
+    # `?` are IAM wildcards. Compared case-insensitively because IAM does not distinguish actions by
+    # case. Spelled out here as well as in the fixture so that widening the grant takes an edit to
+    # the claim, not a regenerated file.
+    if {action.lower() for action in granted} != MOUNT_ACTIONS:
+        print(f"mount policy grants something other than the four client actions: {granted}")
         ok = False
 
     if ok:
-        print(
-            f"mount policy renders {len(granted)} actions, every one a literal s3files: action, "
-            "none inverted"
-        )
+        print("mount policy renders exactly the four S3 Files client actions, none inverted")
     return ok
 
 
