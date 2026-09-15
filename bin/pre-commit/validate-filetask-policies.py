@@ -313,34 +313,76 @@ def check_china_partition():
     return ok
 
 
+class Unreadable(Exception):
+    """The text holds a construct the scanner does not model.
+
+    Refusing beats a best effort: whatever it fails to read, it also fails to check.
+    """
+
+
+def skip_string(source, index):
+    """The index just past the string opening at `index`.
+
+    An HCL string can carry `${...}` interpolations holding strings of their own, so closing at the
+    next quote leaves everything after it read as code where it is string, and as string where it is
+    code.
+    """
+    index += 1
+    while index < len(source):
+        if source.startswith("$${", index) or source.startswith("%%{", index):
+            index += 3
+        elif source[index] == "\\":
+            index += 2
+        elif source.startswith("${", index) or source.startswith("%{", index):
+            index = skip_interpolation(source, index + 2)
+        elif source[index] == '"':
+            return index + 1
+        else:
+            index += 1
+    raise Unreadable("has a string that never closes")
+
+
+def skip_interpolation(source, index):
+    """The index just past the `}` closing the interpolation whose `${` ends at `index`."""
+    depth = 1
+    while index < len(source):
+        if source[index] == '"':
+            index = skip_string(source, index)
+            continue
+        if source[index] == "{":
+            depth += 1
+        elif source[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+        index += 1
+    raise Unreadable("has an interpolation that never closes")
+
+
 def blank_comments(source):
     """Replace HCL comments with spaces, leaving strings and offsets intact.
 
     Regexes cannot do this: a `#` inside an action string is not a comment, and a `]` inside a
-    comment is not the end of a list. Both of those were live bypasses before this existed, so the
-    scanner tracks which of the two it is in rather than guessing.
+    comment is not the end of a list, so the scanner tracks which of the three it is in.
     """
     out = []
     index = 0
     while index < len(source):
         character = source[index]
         if character == '"':
-            end = index + 1
-            while end < len(source):
-                if source[end] == "\\":
-                    end += 2
-                    continue
-                if source[end] == '"':
-                    end += 1
-                    break
-                end += 1
+            end = skip_string(source, index)
             out.append(source[index:end])
             index = end
         elif source.startswith("/*", index):
             end = source.find("*/", index + 2)
-            end = len(source) if end == -1 else end + 2
+            if end == -1:
+                raise Unreadable("has a block comment that never closes")
+            end += 2
             out.append(" " * (end - index))
             index = end
+        elif source.startswith("<<", index):
+            # A heredoc body is not code, and nothing here tracks where it ends.
+            raise Unreadable("contains a heredoc, which this cannot read")
         elif source.startswith("//", index) or character == "#":
             end = source.find("\n", index)
             end = len(source) if end == -1 else end
@@ -362,15 +404,9 @@ def list_body(source, open_bracket):
     while index < len(source):
         character = source[index]
         if character == '"':
-            index += 1
-            while index < len(source):
-                if source[index] == "\\":
-                    index += 2
-                    continue
-                if source[index] == '"':
-                    break
-                index += 1
-        elif character == "[":
+            index = skip_string(source, index)
+            continue
+        if character == "[":
             depth += 1
         elif character == "]":
             depth -= 1
@@ -392,29 +428,92 @@ def literal_strings(body):
     return re.findall(r'"((?:[^"\\]|\\.)*)"', body)
 
 
-def check_parser():
-    """Run the scanner against the inputs that have fooled it before.
+def parse_actions(raw):
+    """Every action the text assigns, as `(actions, statements, None)`, or `(None, 0, reason)`.
 
-    Three rounds of review found a different hole in this parsing, each time in a case nobody had
-    written down. These are those cases, checked on every run so a fourth cannot be introduced
-    quietly. They cost nothing: no files, no terraform.
+    Every actions list, not just the first: a second statement granting s3: would otherwise go
+    unnoticed and defeat the invariant the caller exists to hold. The guard and its self-check both
+    come through here, because a self-check exercising a different path proves nothing about the
+    guard.
+    """
+    try:
+        source = blank_comments(raw)
+    except Unreadable as unreadable:
+        return None, 0, str(unreadable)
+
+    # not_actions inverts the grant -- everything *except* those -- so reading it as an allow-list
+    # would report the opposite of the truth.
+    if re.search(r"\bnot_actions\s*=", source):
+        return None, 0, "uses not_actions, which inverts the grant; refusing to guess at it"
+
+    actions = []
+    statements = 0
+    for assignment in re.finditer(r"\bactions\s*=\s*", source):
+        statements += 1
+        if not source[assignment.end() :].startswith("["):
+            return None, 0, (
+                "computes an actions value rather than listing it, so reading the file cannot tell "
+                "what it grants -- inline it, or render the policy instead"
+            )
+        body = list_body(source, assignment.end())
+        parsed = None if body is None else literal_strings(body)
+        if parsed is None:
+            return None, 0, (
+                "has an actions list this cannot read as plain strings -- inline it, or render the "
+                f"policy instead: [{(body or '').strip()}]"
+            )
+        actions.extend(parsed)
+
+    if not statements:
+        return None, 0, "declares no actions at all"
+
+    # A misread hides an assignment rather than mangling one, and a guard that reads three lists out
+    # of four passes on the fourth. Comparing with the raw text catches that whatever caused it.
+    raw_statements = len(re.findall(r"\bactions\s*=", raw))
+    if raw_statements != statements:
+        return None, 0, (
+            f"holds {raw_statements} actions assignments but reads {statements} as code, so one is "
+            "inside a comment or a string -- write it plainly"
+        )
+    return actions, statements, None
+
+
+def check_parser():
+    """Run the extraction against the inputs that have fooled it before.
+
+    Each hole found in this parsing so far was an input nobody had written down. These need no files
+    and no terraform, so they run before anything else does.
     """
     cases = [
-        # A bracket inside a comment must not end the list, or a computed element after it hides.
-        ('["a", "b", # ]\n local.extra]', None),
-        # Quoted text inside a comment is not an action, and must not be reported as one.
-        ('# "s3:GetObject" is forbidden\n "a", "b"', ["a", "b"]),
-        (' "a", "b", ', ["a", "b"]),
-        (' "a", /* note */ "b" ', ["a", "b"]),
-        (' "a", local.extra ', None),
+        # A bracket inside a comment must not end the list ...
+        ('actions = ["a", # ]\n  "b"]', ["a", "b"]),
+        # ... or a computed element after it passes unseen.
+        ('actions = ["a", "b", # ]\n  local.extra]', None),
+        # Quoted text inside a comment is not an action, within the list or above it.
+        ('actions = ["a", # not "b"\n  "c"]', ["a", "c"]),
+        ('# "s3:GetObject" is forbidden\nactions = ["a", "b"]', ["a", "b"]),
+        ('actions = ["a", "b",]', ["a", "b"]),
+        ('actions = ["a", /* note */ "b"]', ["a", "b"]),
+        ('actions = ["a", local.extra]', None),
         # A `#` inside a string is part of the action, not the start of a comment.
-        (' "a#b" ', ["a#b"]),
+        ('actions = ["a#b"]', ["a#b"]),
+        # A quote inside an interpolation must not flip the scanner into code and blank the rest.
+        ('x = "${replace(v, "/*", "")}"\nactions = ["a"]', ["a"]),
+        # Anything that can hide a later assignment fails rather than reporting what it did read.
+        ('x = "a" /* never closed\nactions = ["s3:GetObject"]', None),
+        ('x = <<-EOT\n  actions = ["s3:GetObject"]\nEOT\nactions = ["a"]', None),
+        ('actions = concat(["a"], [])', None),
+        ('actions = ["a"]\nnot_actions = ["b"]', None),
+        ("resources = []", None),
     ]
     ok = True
-    for body, expected in cases:
-        actual = literal_strings(blank_comments(body))
-        if actual != expected:
-            print(f"parser self-check failed on {body!r}: expected {expected}, got {actual}")
+    for source, expected in cases:
+        actions, _, problem = parse_actions(source)
+        if (None if problem else actions) != expected:
+            print(
+                f"parser self-check failed on {source!r}: expected {expected}, "
+                f"got {actions} / {problem}"
+            )
             ok = False
     if ok:
         print(f"parser self-check: {len(cases)} known-tricky inputs read correctly")
@@ -425,43 +524,12 @@ def check_mount_policy():
     """The mount policy attaches to the node role, so an s3: action anywhere in it would be dataset
     read access for every pod that can reach instance metadata.
 
-    Every actions list in the file, not just the first: a second statement granting s3: would
-    otherwise go unnoticed and defeat exactly the invariant this exists to hold. Text rather than a
-    render because modules/eks reads aws_caller_identity and tls_certificate, so it cannot plan
-    offline.
+    Text rather than a render because modules/eks reads aws_caller_identity and tls_certificate, so
+    it cannot plan offline.
     """
-    # Everything below reads the comment-free view, so a commented-out declaration is not mistaken
-    # for a real one and a bracket inside a comment cannot end a list early.
-    source = blank_comments(MOUNT_TF.read_text())
-
-    # not_actions inverts the grant -- everything *except* those -- so it can never be right here,
-    # and reading it as if it were an allow-list would report the opposite of the truth.
-    if re.search(r"\bnot_actions\s*=", source):
-        print("mount policy uses not_actions, which inverts the grant; refusing to guess at it")
-        return False
-
-    actions = []
-    found = 0
-    for assignment in re.finditer(r"\bactions\s*=\s*", source):
-        found += 1
-        if not source[assignment.end() :].startswith("["):
-            print(
-                "mount policy computes an actions value rather than listing it, so reading the file "
-                "cannot tell what it grants -- inline it, or render the policy instead."
-            )
-            return False
-        body = list_body(source, assignment.end())
-        parsed = None if body is None else literal_strings(body)
-        if parsed is None:
-            print(
-                "mount policy has an actions list this cannot read as plain strings -- inline it, "
-                f"or render the policy instead: [{(body or '').strip()}]"
-            )
-            return False
-        actions.extend(parsed)
-
-    if not found:
-        print("mount policy declares no actions at all")
+    actions, statements, problem = parse_actions(MOUNT_TF.read_text())
+    if problem:
+        print(f"mount policy {problem}")
         return False
 
     expected = [
@@ -474,7 +542,7 @@ def check_mount_policy():
         print(f"mount policy actions changed\n  found: {sorted(actions)}\n  want : {sorted(expected)}")
         return False
     print(
-        f"mount policy holds its {len(actions)} actions across {found} statement(s), "
+        f"mount policy holds its {len(actions)} actions across {statements} statement(s), "
         "none of them s3: (text check, not a render)"
     )
     return True
