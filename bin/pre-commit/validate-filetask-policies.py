@@ -126,12 +126,31 @@ module "collision" {
   }
 
   additional_pod_identity_configs = [{
-    name                = "FileTask-ObjectStore"
-    namespace           = "other-namespace"
-    serviceaccount_name = "other-account"
+    name                = "%(name)s"
+    namespace           = "%(namespace)s"
+    serviceaccount_name = "%(serviceaccount)s"
     policy              = "{\\"Version\\":\\"2012-10-17\\",\\"Statement\\":[]}"
   }]
 }"""
+
+# The precondition has two independent halves, so each needs its own case: removing either one must
+# fail something. The first collides only on the IAM name -- deliberately mixed case, since IAM does
+# not distinguish names by case. The second collides only on the association's namespace/account
+# pair, which EKS permits once.
+COLLISION_CASES = [
+    (
+        "an IAM name differing only by case",
+        {"name": "FileTask-ObjectStore", "namespace": "other-ns", "serviceaccount": "other-account"},
+    ),
+    (
+        "the same namespace and ServiceAccount under another name",
+        {
+            "name": "something-else",
+            "namespace": "domino-compute",
+            "serviceaccount": "domino-filetask-objectstore",
+        },
+    ),
+]
 
 # The China partition, which is the whole point of building kms:ViaService and every ARN from the
 # partition data source rather than writing amazonaws.com. Without this case the previous hardcoded
@@ -169,13 +188,16 @@ def terraform(workdir, *args):
     )
 
 
-def plan(hcl):
+def plan(hcl, **params):
     """Write a harness, plan it, and return (returncode, plan-json-or-None, stderr)."""
     work = Path(tempfile.mkdtemp(prefix="filetask-policies-"))
     try:
-        (work / "main.tf").write_text(
-            hcl % {"module": (ROOT / "modules" / "pod-identity").as_posix(), "kms": KMS_KEY}
-        )
+        substitutions = {
+            "module": (ROOT / "modules" / "pod-identity").as_posix(),
+            "kms": KMS_KEY,
+            **params,
+        }
+        (work / "main.tf").write_text(hcl % substitutions)
         init = terraform(work, "init", "-input=false", "-no-color")
         if init.returncode:
             return init.returncode, None, init.stderr
@@ -238,14 +260,17 @@ def check_rendered():
 
 
 def check_collision_is_rejected():
-    code, _, err = plan(COLLISION)
-    if code and "filetask_objectstore is enabled" in err:
-        print("a colliding additional_pod_identity_configs entry is rejected at plan, as required")
-        return True
-    print("a colliding additional_pod_identity_configs entry was NOT rejected at plan")
-    if err:
-        print(f"  stderr: {err[:400]}")
-    return False
+    ok = True
+    for description, params in COLLISION_CASES:
+        code, _, err = plan(COLLISION, **params)
+        if code and "filetask_objectstore is enabled" in err:
+            print(f"rejected at plan, as required: {description}")
+            continue
+        ok = False
+        print(f"NOT rejected at plan: {description}")
+        if err:
+            print(f"  stderr: {err[:300]}")
+    return ok
 
 
 def check_china_partition():
@@ -298,9 +323,27 @@ def check_mount_policy():
     offline.
     """
     source = MOUNT_TF.read_text()
-    blocks = re.findall(r"actions\s*=\s*\[(.*?)\]", source, re.S)
+
+    # not_actions inverts the grant -- everything *except* those -- so it can never be right here,
+    # and reading it as if it were an allow-list would report the opposite of the truth.
+    if re.search(r"\bnot_actions\s*=", source):
+        print("mount policy uses not_actions, which inverts the grant; refusing to guess at it")
+        return False
+
+    # Only a literal list can be read this way. `actions = concat(...)` or `= local.x` would be
+    # invisible to the regex below and would sail through, so count the assignments and require
+    # every one of them to be a literal that was actually parsed.
+    assignments = len(re.findall(r"\bactions\s*=", source))
+    blocks = re.findall(r"\bactions\s*=\s*\[(.*?)\]", source, re.S)
     if not blocks:
         print("mount policy declares no actions at all")
+        return False
+    if len(blocks) != assignments:
+        print(
+            f"mount policy has {assignments} actions assignment(s) but only {len(blocks)} literal "
+            "list(s). A computed actions value cannot be checked by reading the file -- either "
+            "inline it, or render the policy instead."
+        )
         return False
     actions = [action for block in blocks for action in re.findall(r'"([^"]+)"', block)]
 
