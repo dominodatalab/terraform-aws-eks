@@ -77,16 +77,58 @@ resource "aws_security_group_rule" "efs" {
   source_security_group_id = aws_security_group.eks_nodes.id
 }
 
+locals {
+  # A cluster plan reads storage_info out of infra.tfstate on disk, not live, so on a dry run it
+  # can be reading state written before netapp_base existed: netapp populated, netapp_base null.
+  # Without a fallback this rule plans as a destroy with nothing replacing it, on every netapp
+  # deployment. On state that old netapp IS the base filesystem, so use it.
+  #
+  # Gated on there being no additional filesystems for two reasons. A state that predates
+  # netapp_base also predates netapp_additional, so the gate is free there. And after retire_base
+  # netapp_base is legitimately null while netapp resolves to the replacement, whose security group
+  # netapp_additional already opens; falling back in that state would re-create the duplicate rule
+  # that keying off netapp_base was meant to avoid.
+  #
+  # Written with nullness checks and a map length rather than try() on the id: try() yields an
+  # unknown whenever the value it reads is not wholly known, and count cannot take an unknown.
+  netapp_base_is_legacy_output = var.storage_info != null ? (
+    var.storage_info.netapp_base == null
+    && var.storage_info.netapp != null
+    && length(coalesce(var.storage_info.netapp_additional, {})) == 0
+  ) : false
+}
+
+# Node access to the BASE filesystem. Deliberately keyed off netapp_base rather than netapp:
+# netapp follows storage.netapp.active, so on a cutover (active != "base") it would point this
+# rule at the replacement filesystem's security group -- which netapp_additional below already
+# opens. AWS rejects the second, identical rule with InvalidPermission.Duplicate, and the base
+# filesystem is left with no node access even though it still exists. Reachability is per
+# filesystem; `active` only selects which one Trident uses.
 resource "aws_security_group_rule" "netapp" {
   count = var.storage_info != null ? (
-    var.storage_info.netapp != null ? 1 : 0
+    var.storage_info.netapp_base != null || local.netapp_base_is_legacy_output ? 1 : 0
   ) : 0
-  security_group_id        = var.storage_info.netapp.filesystem.security_group_id
+  security_group_id = (
+    var.storage_info.netapp_base != null
+    ? var.storage_info.netapp_base.filesystem.security_group_id
+    : var.storage_info.netapp.filesystem.security_group_id
+  )
   protocol                 = "-1"
   from_port                = 0
   to_port                  = 65535
   type                     = "ingress"
   description              = "Netapp access from EKS nodes."
+  source_security_group_id = aws_security_group.eks_nodes.id
+}
+
+resource "aws_security_group_rule" "netapp_additional" {
+  for_each                 = var.storage_info != null ? coalesce(var.storage_info.netapp_additional, {}) : {}
+  security_group_id        = each.value.filesystem.security_group_id
+  protocol                 = "-1"
+  from_port                = 0
+  to_port                  = 65535
+  type                     = "ingress"
+  description              = "Netapp access from EKS nodes (${each.key})."
   source_security_group_id = aws_security_group.eks_nodes.id
 }
 

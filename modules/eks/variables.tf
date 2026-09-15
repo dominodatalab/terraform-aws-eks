@@ -317,6 +317,23 @@ variable "storage_info" {
         name = optional(string, null)
       })
     }), null)
+    # Additional FSxN filesystems, so nodes can reach a replacement or DR filesystem while it
+    # coexists with the active one.
+    netapp_additional = optional(map(object({
+      filesystem = object({
+        security_group_id = optional(string, null)
+      })
+    })), {})
+    # The base filesystem regardless of which one `netapp` resolves to. Node access is opened
+    # per filesystem, not per *active* filesystem: `netapp` follows storage.netapp.active, so
+    # using it here would open the active filesystem's security group twice (once here, once in
+    # netapp_additional -- a duplicate rule AWS rejects) and leave the base filesystem with no
+    # node access at all while it still exists.
+    netapp_base = optional(object({
+      filesystem = object({
+        security_group_id = optional(string, null)
+      })
+    }), null)
   })
 
   default = {}

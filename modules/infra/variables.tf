@@ -586,6 +586,45 @@ variable "storage" {
           storage_efficiency_enabled = Toggle storage_efficiency_enabled
           junction_path              = filesystem junction path
           size_in_megabytes          = The size of the volume
+        }
+        additional = Map of extra FSxN filesystems provisioned alongside the base one, for
+                     resize-by-replacement and DR. Keys MUST be numeric (e.g. "1"): a key
+                     renders the filesystem's 'Name' tag as '<deploy_id>-<key>' and its
+                     credentials secrets as '<deploy_id>-netapp-ontap-<key>-<kind>', which is
+                     what the FSxN migration tooling discovers by and what the Trident IRSA
+                     secret wildcard already permits. Each entry accepts the same
+                     deployment_type/storage_capacity/throughput_capacity/backup/autosizing
+                     options as the base filesystem, plus:
+          description  = Free-text note surfaced as a 'Description' tag.
+          subnet_index = Index into the private subnets, for placing a DR filesystem in a
+                         different AZ from the base one. Read the base filesystem's real
+                         SubnetIds before setting this. The base filesystem ignores changes
+                         to its subnets, so its live AZ may not be the one this index
+                         resolves to now, and a mismatch pays cross-AZ transfer for the
+                         entire baseline copy and cross-AZ NFS from compute thereafter.
+          peering      = Open the ONTAP intercluster rules between this filesystem's security
+                         group and the base one, for SnapMirror replication.
+          volume       = As the base 'volume' block, but 'create' defaults to false because a
+                         replication destination's volumes are created as DP volumes by the
+                         migration tooling. Size it from the source volume as measured, not by
+                         copying the base entry's value: the base one is a creation-time
+                         setting that autosizing and out-of-band growth have usually left far
+                         behind, and once 'active' names this filesystem its size becomes the
+                         shared PVC's size.
+        active = Which filesystem serves the cluster: "base" or a key of 'additional'. Selects
+                 the filesystem reported in this module's netapp output, and therefore the one
+                 Trident is pointed at. Confirm replication has caught up before changing this.
+                 It deletes nothing, so no plan or policy gate can catch a premature flip, and
+                 pointing Trident at a filesystem the data has not finished landing on is an
+                 immediate outage.
+        retire_base = Destroy the base filesystem. Requires 'active' to name an additional
+                      filesystem, so the filesystem currently serving the cluster cannot be
+                      destroyed. Terraform manages one volume on that filesystem; volumes
+                      Trident provisioned are invisible to this state, and FSx refuses to
+                      delete an SVM that still holds non-root volumes. Clear them from the
+                      base SVM first, or the apply dies part way through the destroy. Those are
+                      customer data volumes, so take final backups of them as part of that
+                      step: this module's own volume is the only one its backup settings cover.
       }
       s3 = {
         force_destroy_on_deletion = Toogle to allow recursive deletion of all objects in the s3 buckets. if 'false' terraform will NOT be able to delete non-empty buckets.
@@ -648,6 +687,38 @@ variable "storage" {
         junction_path              = optional(string, "/domino")
         size_in_megabytes          = optional(number, 1048576)
       }), {})
+      # Additional filesystems alongside the base one, for resize-by-replacement and DR.
+      # Keys must be numeric: they render the "Name" tag as "<deploy_id>-<key>" and the
+      # credentials secrets as "<deploy_id>-netapp-ontap-<key>-<kind>", which is the
+      # naming the FSxN migration tooling discovers by and which the Trident IRSA policy
+      # wildcard "<deploy_id>-netapp-ontap-*" already covers.
+      additional = optional(map(object({
+        description                       = optional(string, "")
+        deployment_type                   = optional(string, "SINGLE_AZ_1")
+        storage_capacity                  = optional(number, 1024)
+        throughput_capacity               = optional(number, 128)
+        automatic_backup_retention_days   = optional(number, 90)
+        daily_automatic_backup_start_time = optional(string, "00:00")
+        subnet_index                      = optional(number, 0)
+        peering                           = optional(bool, false)
+        storage_capacity_autosizing = optional(object({
+          enabled                    = optional(bool, false)
+          threshold                  = optional(number, 70)
+          percent_capacity_increase  = optional(number, 30)
+          notification_email_address = optional(string, "")
+        }), {})
+        # Defaults to false: when an additional filesystem is a replication destination,
+        # its data volumes are created as DP (mirror) volumes by the migration tooling.
+        # A Terraform-managed RW volume of the same name would collide with them.
+        volume = optional(object({
+          create            = optional(bool, false)
+          name_suffix       = optional(string, "domino_shared_storage")
+          junction_path     = optional(string, "/domino")
+          size_in_megabytes = optional(number, 1048576)
+        }), {})
+      })), {})
+      active      = optional(string, "base")
+      retire_base = optional(bool, false)
     }), {})
     s3 = optional(object({
       create                    = optional(bool, true)

@@ -21,14 +21,11 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.14.9"
+      # tflint deleted the install script this fetched (terraform-linters/tflint#2607), so the
+      # curl 404'd and bash ran the error page. This is their maintained action, and it needs no
+      # retry wrapper because it resolves a release rather than piping a URL into a shell.
       - name: Install tflint
-        uses: nick-fields/retry@v3.0.0
-        with:
-          timeout_seconds: 30
-          max_attempts: 5
-          retry_on: error
-          command: >-
-            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+        uses: terraform-linters/setup-tflint@v6
       - uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_tflint --all-files
@@ -69,6 +66,21 @@ jobs:
         uses: pre-commit/action@v3.0.1
         with:
           extra_args: terraform_validate --all-files
+  # Not a pre-commit hook, unlike everything else in this file: `terraform test` has no hook in
+  # antonbabenko/pre-commit-terraform, so there is no id to mirror. Credential free, it runs
+  # entirely on mock providers.
+  terraform_test:
+    name: Run terraform test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.9"
+      - name: Terraform test modules/eks
+        run: >-
+          terraform -chdir=modules/eks init -backend=false &&
+          terraform -chdir=modules/eks test
   terraform_providers_lock:
     name: Run terraform providers_lock
     runs-on: ubuntu-latest
