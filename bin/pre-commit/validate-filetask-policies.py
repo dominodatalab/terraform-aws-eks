@@ -6,9 +6,10 @@ Terraform. A policy that drifts from the published page is an AccessDenied in so
 cluster, so a change here has to be a deliberate, reviewed fixture update rather than a side effect.
 
 Renders modules/pod-identity through `terraform plan` for the three bucket shapes whose conditionals
-differ, and compares against bin/pre-commit/filetask-expected-policies.json. Also checks the mount
-policy in modules/eks, which cannot be rendered offline because that module reads aws_caller_identity
-and tls_certificate -- so that one is a text check of a static four-action statement.
+differ, and compares against bin/pre-commit/filetask-expected-policies.json. The mount policy in
+modules/eks renders the same way: that module as a whole cannot plan offline, because it reads
+aws_caller_identity and tls_certificate, but the single file holding the policy can once a harness
+supplies the names it references.
 
 Offline: aws_iam_policy_document renders locally, so this plans with fake credentials and is never
 applied.
@@ -17,15 +18,14 @@ Run from the repository root:  bin/pre-commit/validate-filetask-policies.py
 """
 
 import json
-import re
 import shutil
 import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = Path(__file__).parent / "filetask-expected-policies.json"
+MOUNT_FIXTURE = Path(__file__).parent / "filetask-expected-mount-policy.json"
 MOUNT_TF = ROOT / "modules" / "eks" / "filetask-mount-iam.tf"
 KMS_KEY = "arn:{}:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab".format("aws")
 
@@ -165,6 +165,12 @@ provider "aws" {
   skip_metadata_api_check     = true
 }
 
+module "china_mount" {
+  source                             = "%(mount)s"
+  deploy_id                          = "harness"
+  filetask_objectstore_mount_enabled = true
+}
+
 module "china" {
   source   = "%(module)s"
   region   = "cn-north-1"
@@ -182,14 +188,78 @@ module "china" {
 """
 
 
+# modules/eks cannot plan offline -- it reads aws_caller_identity, aws_iam_session_context and
+# tls_certificate -- but the one file holding the mount policy can, once something supplies the four
+# names it references. It is copied in verbatim, so nothing here parses or edits it.
+MOUNT_STUB = """
+variable "deploy_id" {
+  type = string
+}
+
+variable "filetask_objectstore_mount_enabled" {
+  type = bool
+}
+
+data "aws_partition" "current" {}
+
+resource "aws_iam_role" "eks_nodes" {
+  name = "${var.deploy_id}-nodes"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "ec2.${data.aws_partition.current.dns_suffix}" }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+}
+"""
+
+MOUNT = PROVIDER + """
+provider "aws" {
+  region                      = "us-west-2"
+  access_key                  = "harness"
+  secret_key                  = "harness"
+  skip_credentials_validation = true
+  skip_requesting_account_id  = true
+  skip_metadata_api_check     = true
+}
+
+module "enabled" {
+  source                             = "%(mount)s"
+  deploy_id                          = "harness"
+  filetask_objectstore_mount_enabled = true
+}
+
+module "disabled" {
+  source                             = "%(mount)s"
+  deploy_id                          = "harness"
+  filetask_objectstore_mount_enabled = false
+}
+"""
+
+
+def mount_files():
+    """The copied policy file plus the names it needs, keyed by path inside the harness."""
+    return {
+        "mount/filetask-mount-iam.tf": MOUNT_TF.read_text(),
+        "mount/harness.tf": MOUNT_STUB,
+    }
+
+
 def terraform(workdir, *args):
     return subprocess.run(
         ["terraform", f"-chdir={workdir}", *args], capture_output=True, text=True
     )
 
 
-def plan(hcl, **params):
-    """Write a harness, plan it, and return (returncode, plan-json-or-None, stderr)."""
+def plan(hcl, files=None, **params):
+    """Write a harness, plan it, and return (returncode, plan-json-or-None, stderr).
+
+    `files` maps paths relative to the harness root to their contents, for a case that needs more
+    than a root module. Those are written verbatim, never through the substitutions below.
+    """
     work = Path(tempfile.mkdtemp(prefix="filetask-policies-"))
     try:
         substitutions = {
@@ -197,6 +267,10 @@ def plan(hcl, **params):
             "kms": KMS_KEY,
             **params,
         }
+        for relative, content in (files or {}).items():
+            target = work / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content)
         (work / "main.tf").write_text(hcl % substitutions)
         init = terraform(work, "init", "-input=false", "-no-color")
         if init.returncode:
@@ -279,12 +353,16 @@ def check_china_partition():
     In the aws partition dns_suffix *is* amazonaws.com, so the fixture cases above cannot tell a
     hardcoded value from a derived one. This case can.
     """
-    code, plan_json, err = plan(CHINA)
+    code, plan_json, err = plan(CHINA, files=mount_files(), mount="./mount")
     if code:
         print(f"china harness failed to plan:\n{err[:400]}")
         return False
 
-    policy = rendered_policies(plan_json)["china"]["filetask_objectstore"]
+    rendered = rendered_policies(plan_json)
+    policy = rendered["china"]["filetask_objectstore"]
+    # The mount policy rides along here for the same reason: in the aws partition its ARN renders
+    # identically whether it comes from the data source or a literal.
+    policy["Statement"] = policy["Statement"] + rendered["china_mount"]["filetask_mount"]["Statement"]
     ok = True
 
     via = []
@@ -309,236 +387,7 @@ def check_china_partition():
         ok = False
 
     if ok:
-        print("china: ViaService and every ARN follow the partition, as required")
-    return ok
-
-
-class Unreadable(Exception):
-    """The text holds a construct the scanner does not model.
-
-    Refusing beats a best effort: whatever it fails to read, it also fails to check.
-    """
-
-
-def skip_string(source, index):
-    """The index just past the string opening at `index`.
-
-    An HCL string can carry `${...}` interpolations holding strings of their own, so closing at the
-    next quote leaves everything after it read as code where it is string, and as string where it is
-    code.
-    """
-    index += 1
-    while index < len(source):
-        if source.startswith("$${", index) or source.startswith("%%{", index):
-            index += 3
-        elif source[index] == "\\":
-            index += 2
-        elif source.startswith("${", index) or source.startswith("%{", index):
-            index = skip_interpolation(source, index + 2)
-        elif source[index] == '"':
-            return index + 1
-        else:
-            index += 1
-    raise Unreadable("has a string that never closes")
-
-
-def skip_interpolation(source, index):
-    """The index just past the `}` closing the interpolation whose `${` ends at `index`.
-
-    An interpolation holds an expression, so it can hold strings and comments of its own. A `}` in
-    either of those ends it early, and everything after is then read inside out.
-    """
-    depth = 1
-    while index < len(source):
-        if source[index] == '"':
-            index = skip_string(source, index)
-            continue
-        if source.startswith("/*", index):
-            end = source.find("*/", index + 2)
-            if end == -1:
-                raise Unreadable("has a block comment that never closes")
-            index = end + 2
-            continue
-        if source.startswith("//", index) or source[index] == "#":
-            end = source.find("\n", index)
-            index = len(source) if end == -1 else end
-            continue
-        if source[index] == "{":
-            depth += 1
-        elif source[index] == "}":
-            depth -= 1
-            if depth == 0:
-                return index + 1
-        index += 1
-    raise Unreadable("has an interpolation that never closes")
-
-
-def blank_comments(source):
-    """Replace HCL comments with spaces, leaving strings and offsets intact.
-
-    Regexes cannot do this: a `#` inside an action string is not a comment, and a `]` inside a
-    comment is not the end of a list, so the scanner tracks which of the three it is in.
-    """
-    out = []
-    index = 0
-    while index < len(source):
-        character = source[index]
-        if character == '"':
-            end = skip_string(source, index)
-            out.append(source[index:end])
-            index = end
-        elif source.startswith("/*", index):
-            end = source.find("*/", index + 2)
-            if end == -1:
-                raise Unreadable("has a block comment that never closes")
-            end += 2
-            out.append(" " * (end - index))
-            index = end
-        elif source.startswith("<<", index):
-            # A heredoc body is not code, and nothing here tracks where it ends.
-            raise Unreadable("contains a heredoc, which this cannot read")
-        elif source.startswith("//", index) or character == "#":
-            end = source.find("\n", index)
-            end = len(source) if end == -1 else end
-            out.append(" " * (end - index))
-            index = end
-        else:
-            out.append(character)
-            index += 1
-    return "".join(out)
-
-
-def list_body(source, open_bracket):
-    """The text between `[` and its matching `]`, or None if unterminated.
-
-    Depth-aware and string-aware so a bracket inside either cannot close the list early.
-    """
-    depth = 0
-    index = open_bracket
-    while index < len(source):
-        character = source[index]
-        if character == '"':
-            index = skip_string(source, index)
-            continue
-        if character == "[":
-            depth += 1
-        elif character == "]":
-            depth -= 1
-            if depth == 0:
-                return source[open_bracket + 1 : index]
-        index += 1
-    return None
-
-
-def literal_strings(body):
-    """The quoted strings in a list body, or None if it holds anything else.
-
-    `["a", "b", local.extra]` reads as two actions unless the leftovers are checked. Expects a body
-    whose comments are already blanked, so what survives removing the strings must be commas and
-    whitespace.
-    """
-    if re.search(r"[^\s,]", re.sub(r'"(?:[^"\\]|\\.)*"', "", body)):
-        return None
-    return re.findall(r'"((?:[^"\\]|\\.)*)"', body)
-
-
-def parse_actions(raw):
-    """Every action the text assigns, as `(actions, statements, None)`, or `(None, 0, reason)`.
-
-    Every actions list, not just the first: a second statement granting s3: would otherwise go
-    unnoticed and defeat the invariant the caller exists to hold. The guard and its self-check both
-    come through here, because a self-check exercising a different path proves nothing about the
-    guard.
-    """
-    try:
-        source = blank_comments(raw)
-    except Unreadable as unreadable:
-        return None, 0, str(unreadable)
-
-    # not_actions inverts the grant -- everything *except* those -- so reading it as an allow-list
-    # would report the opposite of the truth. Read from the raw text rather than the blanked view:
-    # the count below notices a hidden `actions` but never a hidden `not_actions`, so a comment that
-    # swallowed one would leave the inversion unseen. A mention in a real comment refuses too, which
-    # is the cheaper half of that trade.
-    if re.search(r"\bnot_actions\s*=", raw):
-        return None, 0, "mentions not_actions, which inverts the grant; refusing to guess at it"
-
-    actions = []
-    statements = 0
-    for assignment in re.finditer(r"\bactions\s*=\s*", source):
-        statements += 1
-        if not source[assignment.end() :].startswith("["):
-            return None, 0, (
-                "computes an actions value rather than listing it, so reading the file cannot tell "
-                "what it grants -- inline it, or render the policy instead"
-            )
-        body = list_body(source, assignment.end())
-        parsed = None if body is None else literal_strings(body)
-        if parsed is None:
-            return None, 0, (
-                "has an actions list this cannot read as plain strings -- inline it, or render the "
-                f"policy instead: [{(body or '').strip()}]"
-            )
-        actions.extend(parsed)
-
-    if not statements:
-        return None, 0, "declares no actions at all"
-
-    # A misread hides an assignment rather than mangling one, and a guard that reads three lists out
-    # of four passes on the fourth. Comparing with the raw text catches that whatever caused it.
-    raw_statements = len(re.findall(r"\bactions\s*=", raw))
-    if raw_statements != statements:
-        return None, 0, (
-            f"holds {raw_statements} actions assignments but reads {statements} as code, so one is "
-            "inside a comment or a string -- write it plainly"
-        )
-    return actions, statements, None
-
-
-def check_parser():
-    """Run the extraction against the inputs that have fooled it before.
-
-    Each hole found in this parsing so far was an input nobody had written down. These need no files
-    and no terraform, so they run before anything else does.
-    """
-    cases = [
-        # A bracket inside a comment must not end the list ...
-        ('actions = ["a", # ]\n  "b"]', ["a", "b"]),
-        # ... or a computed element after it passes unseen.
-        ('actions = ["a", "b", # ]\n  local.extra]', None),
-        # Quoted text inside a comment is not an action, within the list or above it.
-        ('actions = ["a", # not "b"\n  "c"]', ["a", "c"]),
-        ('# "s3:GetObject" is forbidden\nactions = ["a", "b"]', ["a", "b"]),
-        ('actions = ["a", "b",]', ["a", "b"]),
-        ('actions = ["a", /* note */ "b"]', ["a", "b"]),
-        ('actions = ["a", local.extra]', None),
-        # A `#` inside a string is part of the action, not the start of a comment.
-        ('actions = ["a#b"]', ["a#b"]),
-        # A quote inside an interpolation must not flip the scanner into code and blank the rest,
-        # nor a `}` inside a comment inside one.
-        ('x = "${replace(v, "/*", "")}"\nactions = ["a"]', ["a"]),
-        ('x = "${0 /* } */ + length("/*")}"\nactions = ["a"]', ["a"]),
-        # not_actions inverts the grant wherever it appears, including where a flip would hide it.
-        ('x = "${0 /* } */ + length("/*")}"\nnot_actions = ["*"]\n# */\nactions = ["a"]', None),
-        ('# not_actions = ["*"]\nactions = ["a"]', None),
-        # Anything that can hide a later assignment fails rather than reporting what it did read.
-        ('x = "a" /* never closed\nactions = ["s3:GetObject"]', None),
-        ('x = <<-EOT\n  actions = ["s3:GetObject"]\nEOT\nactions = ["a"]', None),
-        ('actions = concat(["a"], [])', None),
-        ('actions = ["a"]\nnot_actions = ["b"]', None),
-        ("resources = []", None),
-    ]
-    ok = True
-    for source, expected in cases:
-        actions, _, problem = parse_actions(source)
-        if (None if problem else actions) != expected:
-            print(
-                f"parser self-check failed on {source!r}: expected {expected}, "
-                f"got {actions} / {problem}"
-            )
-            ok = False
-    if ok:
-        print(f"parser self-check: {len(cases)} known-tricky inputs read correctly")
+        print("china: ViaService and every ARN in both policies follow the partition, as required")
     return ok
 
 
@@ -546,42 +395,76 @@ def check_mount_policy():
     """The mount policy attaches to the node role, so an s3: action anywhere in it would be dataset
     read access for every pod that can reach instance metadata.
 
-    Text rather than a render because modules/eks reads aws_caller_identity and tls_certificate, so
-    it cannot plan offline.
+    Rendered, not read. Every attempt to read it as text missed a case that HCL allows, and a render
+    also sees Effect, Resource and NotAction, which reading the actions list never did.
     """
-    actions, statements, problem = parse_actions(MOUNT_TF.read_text())
-    if problem:
-        print(f"mount policy {problem}")
+    code, plan_json, err = plan(MOUNT, files=mount_files(), mount="./mount")
+    if code:
+        print(f"mount harness failed to plan:\n{err[:400]}")
         return False
 
-    expected = [
-        "s3files:ClientMount",
-        "s3files:ClientWrite",
-        "s3files:ClientRootAccess",
-        "s3files:GetFileSystem",
-    ]
-    if sorted(actions) != sorted(expected):
-        print(f"mount policy actions changed\n  found: {sorted(actions)}\n  want : {sorted(expected)}")
-        return False
-    print(
-        f"mount policy holds its {len(actions)} actions across {statements} statement(s), "
-        "none of them s3: (text check, not a render)"
+    rendered = {}
+    for child in plan_json["planned_values"]["root_module"].get("child_modules", []):
+        rendered[child["address"].removeprefix("module.")] = {
+            resource["name"]: json.loads(resource["values"]["policy"])
+            for resource in child.get("resources", [])
+            if resource["type"] == "aws_iam_policy"
+        }
+
+    ok = True
+    if rendered.get("disabled"):
+        print(f"mount policy planned while disabled: {sorted(rendered['disabled'])}")
+        ok = False
+
+    got = rendered.get("enabled", {})
+    want = json.loads(MOUNT_FIXTURE.read_text())
+    if got != want:
+        ok = False
+        print("mount policy DIFFERS from bin/pre-commit/filetask-expected-mount-policy.json")
+        print(f"  rendered: {json.dumps(got, sort_keys=True)[:400]}")
+        print(f"  expected: {json.dumps(want, sort_keys=True)[:400]}")
+
+    # Stated separately from the fixture, because these two are the reason the policy is allowed on
+    # the node role at all: a fixture diff would report them as a change like any other.
+    statements = [s for policy in got.values() for s in policy.get("Statement", [])]
+    inverted = [s.get("Sid") for s in statements if "NotAction" in s or "NotResource" in s]
+    if inverted:
+        print(f"mount policy inverts a grant, so it allows everything else: {inverted}")
+        ok = False
+
+    granted = sorted(
+        {
+            action
+            for statement in statements
+            for action in (
+                [statement["Action"]]
+                if isinstance(statement.get("Action"), str)
+                else statement.get("Action", [])
+            )
+        }
     )
-    return True
+    objects = [action for action in granted if action.startswith("s3:")]
+    if objects:
+        print(f"mount policy grants object access on the node role: {objects}")
+        ok = False
+
+    if ok:
+        print(f"mount policy renders {len(granted)} actions, none of them s3:, none inverted")
+    return ok
 
 
 def main():
     if not shutil.which("terraform"):
         raise SystemExit("terraform is not on PATH")
-    ok = check_parser()
-    ok &= check_rendered()
+    ok = check_rendered()
     ok &= check_china_partition()
     ok &= check_collision_is_rejected()
     ok &= check_mount_policy()
     if not ok:
         raise SystemExit(
-            "S3 Files IAM policies changed. If that was deliberate, update "
-            "bin/pre-commit/filetask-expected-policies.json and the customer-facing IAM page together."
+            "S3 Files IAM policies changed. If that was deliberate, update the fixture it names "
+            "-- filetask-expected-policies.json or filetask-expected-mount-policy.json, both in "
+            "bin/pre-commit -- and the customer-facing IAM page together."
         )
 
 

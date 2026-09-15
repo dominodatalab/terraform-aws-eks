@@ -88,4 +88,4 @@ repos:
         entry: ./bin/pre-commit/validate-filetask-policies.py
         language: python
         pass_filenames: false
-        files: "^(modules/pod-identity/|modules/eks/filetask-mount-iam.tf|bin/pre-commit/filetask-expected-policies.json)"
+        files: "^(modules/pod-identity/|modules/eks/filetask-mount-iam.tf|bin/pre-commit/filetask-expected-(policies|mount-policy).json)"
