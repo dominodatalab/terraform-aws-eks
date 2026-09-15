@@ -382,8 +382,11 @@ def check_china_partition():
             [statement["Resource"]] if isinstance(statement["Resource"], str) else statement["Resource"]
         )
     ]
-    if any(arn.startswith("arn:aws:") for arn in arns):
-        print(f"china: policy contains an aws-partition ARN: {[a for a in arns if a.startswith('arn:aws:')]}")
+    # Every ARN must be *in* the china partition, not merely not in the aws one: a hardcoded
+    # arn:aws-us-gov: or a bare * is just as wrong and would pass a check that only rejects arn:aws:.
+    wrong = [arn for arn in arns if not arn.startswith("arn:aws-cn:")]
+    if wrong:
+        print(f"china: policy contains an ARN outside the china partition: {wrong}")
         ok = False
 
     if ok:
@@ -443,13 +446,22 @@ def check_mount_policy():
             )
         }
     )
-    objects = [action for action in granted if action.startswith("s3:")]
-    if objects:
-        print(f"mount policy grants object access on the node role: {objects}")
+    # Stated as an allow-list rather than a ban on `s3:`: IAM does not match action names by case,
+    # and `*` grants object access without naming a service at all.
+    beyond = [
+        action
+        for action in granted
+        if not action.lower().startswith("s3files:") or "*" in action
+    ]
+    if beyond:
+        print(f"mount policy grants more than an S3 Files mount on the node role: {beyond}")
         ok = False
 
     if ok:
-        print(f"mount policy renders {len(granted)} actions, none of them s3:, none inverted")
+        print(
+            f"mount policy renders {len(granted)} actions, every one a literal s3files: action, "
+            "none inverted"
+        )
     return ok
 
 
