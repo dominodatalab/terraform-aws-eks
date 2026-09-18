@@ -142,14 +142,14 @@ variable "filetask_objectstore" {
   }
 
   validation {
-    # A slash is added where the policy needs one, so `datasets/` would build `datasets//*` and
-    # deny every object under it. Rejected rather than trimmed, to keep the prefix in the policy
-    # the prefix that was configured.
+    # A slash is added where the policy needs one, so both `datasets/` and `` build `<bucket>//*`
+    # and deny every object. Omit prefix for a whole-bucket file system; an empty one is not that.
+    # Rejected rather than trimmed, to keep the prefix in the policy the prefix as configured.
     condition = alltrue([
       for b in var.filetask_objectstore.buckets :
-      b.prefix == null || !can(regex("^/|/$", b.prefix))
+      b.prefix == null || (length(b.prefix) > 0 && !can(regex("^/|/$", b.prefix)))
     ])
-    error_message = "filetask_objectstore prefixes must not start or end with '/'."
+    error_message = "filetask_objectstore prefixes must be non-empty and must not start or end with '/'. Omit prefix for a whole-bucket file system."
   }
 
   validation {
