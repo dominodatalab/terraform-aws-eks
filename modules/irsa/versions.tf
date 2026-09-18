@@ -1,6 +1,5 @@
 terraform {
-  # 1.9 for a variable validation that references path.module.
-  required_version = ">= 1.9.0"
+  required_version = ">= 1.6.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"

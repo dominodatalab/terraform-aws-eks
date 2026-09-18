@@ -93,11 +93,8 @@ variable "additional_irsa_configs" {
   }
 
   validation {
-    condition = alltrue([
-      for i in var.additional_irsa_configs :
-      try(jsondecode(i.policy), null) != null || fileexists("${path.module}/apps-policies/${i.name}.json.tftpl")
-    ])
-    error_message = "Each additional_irsa_configs entry needs either a valid json `policy` or a bundled policy file at apps-policies/<name>.json.tftpl"
+    condition     = alltrue([for i in var.additional_irsa_configs : i.policy == null || can(jsondecode(i.policy))])
+    error_message = "Invalid json found in policy"
   }
 }
 

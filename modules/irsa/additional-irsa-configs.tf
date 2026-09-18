@@ -90,6 +90,14 @@ resource "aws_iam_policy" "this" {
   # A ternary, not coalesce: coalesce evaluates both arguments, so an inline policy
   # with no bundled file would fail on the missing templatefile.
   policy = each.value.policy != null ? each.value.policy : templatefile("${path.module}/apps-policies/${each.key}.json.tftpl", merge(local.policy_vars, each.value.params))
+
+  lifecycle {
+    precondition {
+      # Here rather than in the variable, which cannot reference path.module before Terraform 1.9.
+      condition     = each.value.policy != null || fileexists("${path.module}/apps-policies/${each.key}.json.tftpl")
+      error_message = "additional_irsa_configs[\"${each.key}\"] needs either a valid json policy or a bundled policy file at apps-policies/${each.key}.json.tftpl"
+    }
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "this" {
