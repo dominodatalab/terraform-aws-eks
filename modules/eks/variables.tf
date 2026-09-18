@@ -366,3 +366,18 @@ variable "karpenter" {
 
   default = {}
 }
+
+variable "filetask_objectstore_mount_enabled" {
+  description = <<EOF
+    Attach the S3 Files mount permission to the node role. Set it when S3 Files dataset storage is
+    in use.
+
+    The grant is the four `s3files:` client actions and carries no `s3:` action, so it authorises
+    mounting a file system without granting any access to the objects behind it. The identity that
+    reads the bucket is separate, and is configured in modules/pod-identity.
+  EOF
+
+  type     = bool
+  default  = false
+  nullable = false
+}

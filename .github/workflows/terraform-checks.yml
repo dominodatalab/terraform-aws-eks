@@ -21,9 +21,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.14.9"
-      # tflint deleted the install script this fetched (terraform-linters/tflint#2607), so the
-      # curl 404'd and bash ran the error page. This is their maintained action, and it needs no
-      # retry wrapper because it resolves a release rather than piping a URL into a shell.
+      # Not `curl | bash` on install_linux.sh: upstream removed it, so that fetched a 404 page.
       - name: Install tflint
         uses: terraform-linters/setup-tflint@v6
       - uses: pre-commit/action@v3.0.1
@@ -145,3 +143,15 @@ jobs:
       - uses: actions/checkout@master
       - name: Validate IAM bootstrap
         run: bin/pre-commit/validate-iam-bootstrap.py
+  validate-filetask-policies:
+    name: Validate S3 Files IAM policies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.9"
+          # The validator reads `terraform show -json` on stdout; the wrapper would corrupt it.
+          terraform_wrapper: false
+      - name: Validate S3 Files IAM policies
+        run: bin/pre-commit/validate-filetask-policies.py
