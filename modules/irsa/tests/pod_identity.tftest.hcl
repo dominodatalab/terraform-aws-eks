@@ -1,19 +1,9 @@
-# Regression test for the trust policy conditional and the S3 Files policy template in
-# additional-irsa-configs.tf.
+# checkov and trivy see an aws_iam_policy built from jsonencode() or aws_iam_policy_document,
+# and see nothing when the body is templatefile(), which is how every apps-policies file reaches
+# aws_iam_policy.this. Nothing else in CI looks inside those documents.
 #
-# This is a compensating control, not a style check. checkov and trivy both walk an
-# aws_iam_policy whose body is jsonencode(...) or an aws_iam_policy_document data source, and
-# both report nothing when the body comes from templatefile(...) instead, which is how every
-# apps-policies/*.json.tftpl file reaches aws_iam_policy.this. Nothing else in this repo's CI
-# looks inside those rendered documents. So this file asserts the invariants that actually
-# matter for these policies: a missing StringEquals/ArnEquals pair on a pod identity trust leaves
-# it assumable on behalf of any cluster rather than just this one, a prefix condition on the
-# wrong statement denies every list instead of narrowing it, and a wildcard resource or action on
-# an s3: statement grants far more than a files task needs.
-#
-# Credential free by design: mock_provider only. Every attribute asserted below is a resource
-# input or a templatefile() rendering of module variables, both known at plan time, so every run
-# here uses command = plan.
+# mock_provider only. Everything asserted is a resource input or a templatefile() rendering, so
+# every run is command = plan.
 
 mock_provider "aws" {
   mock_data "aws_partition" {
@@ -37,8 +27,7 @@ mock_provider "aws" {
   }
 }
 
-# configuration_aliases requires a provider configuration for aws.global even though the
-# fixtures below never enable external_dns, the one feature that resource actually serves.
+# configuration_aliases makes aws.global mandatory even with external_dns off.
 mock_provider "aws" {
   alias = "global"
 }
@@ -62,8 +51,7 @@ variables {
   }
 }
 
-# A pod_identity = true entry and a pod_identity = false entry, each with an inline policy so
-# this run stays decoupled from any apps-policies file.
+# Inline policies, so this run does not depend on any apps-policies file.
 run "trust_policy_and_association" {
   command = plan
 
@@ -132,9 +120,7 @@ run "trust_policy_and_association" {
   }
 }
 
-# The S3 Files policy, driven through filetask_objectstore with a prefixed bucket, an
-# unprefixed bucket, and a KMS-encrypted bucket whose key lives in a different region than the
-# cluster.
+# Prefixed bucket, unprefixed bucket, and a KMS bucket whose key is outside the cluster region.
 run "filetask_objectstore_scoping" {
   command = plan
 
@@ -157,8 +143,7 @@ run "filetask_objectstore_scoping" {
   }
 
   assert {
-    # StringLike on the absent s3:prefix key never matches, so an unprefixed bucket must carry
-    # no Condition at all rather than one that would deny every list.
+    # StringLike on an absent s3:prefix never matches, so a condition here would deny every list.
     condition     = !contains(keys(jsondecode(aws_iam_policy.this["filetask-objectstore"].policy).Statement[1]), "Condition")
     error_message = "The unprefixed bucket's ListBucket statement must carry no Condition."
   }
@@ -183,8 +168,7 @@ run "filetask_objectstore_scoping" {
   }
 
   assert {
-    # A closed set, not just a negative check: this also catches a statement appended for one
-    # bucket but scoped to another's ARN, which neither wildcard check above would notice.
+    # Closed set, so an appended statement scoped to the wrong bucket is caught too.
     condition = alltrue([
       for s in jsondecode(aws_iam_policy.this["filetask-objectstore"].policy).Statement :
       alltrue([
@@ -214,8 +198,7 @@ run "filetask_objectstore_scoping" {
   }
 
   assert {
-    # Parsed from the key's own ARN, not the cluster's region: SSE-KMS keeps the key in the
-    # bucket's region, which here is deliberately not us-west-2.
+    # The key's own region, not the cluster's: SSE-KMS keeps the key in the bucket's region.
     condition     = jsondecode(aws_iam_policy.this["filetask-objectstore"].policy).Statement[9].Condition.StringEquals["kms:ViaService"] == "s3.eu-west-1.amazonaws.com"
     error_message = "The KMS statement's kms:ViaService must name the key's own region, not the cluster's region."
   }
@@ -237,9 +220,8 @@ run "filetask_objectstore_scoping" {
   }
 }
 
-# Every file in apps-policies/ must render through templatefile() and decode as JSON. A typo or
-# an unsupplied interpolation variable in any one of them fails only here: nothing else in this
-# repo's plans or CI renders these files unless an additional_irsa_configs entry names them.
+# Nothing else renders these files until a config entry names one, so a typo or a missing
+# interpolation variable surfaces only here.
 run "policy_library_renders" {
   command = plan
 
