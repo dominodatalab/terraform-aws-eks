@@ -8,6 +8,8 @@ locals {
     deploy_id  = local.name_prefix
   }
 
+  # try() because this is module scope, not resource scope: without it the module fails to load
+  # on a cluster with no OIDC provider even when additional_irsa_configs is empty.
   oidc_issuer = try(trimprefix(local.oidc_provider_url, "https://"), null)
 
   configs = { for c in var.additional_irsa_configs : c.name => c }
@@ -21,7 +23,7 @@ resource "aws_iam_role" "this" {
     Version = "2012-10-17"
     Statement = [
       # Action must stay a list on both branches of this conditional, or Terraform
-      # errors with "Inconsistent conditional result types" between the two statements.
+      # errors with "Inconsistent conditional result types".
       each.value.pod_identity ? {
         Effect = "Allow"
         Principal = {
@@ -57,6 +59,13 @@ resource "aws_iam_role" "this" {
       condition     = each.value.pod_identity || local.oidc_provider_arn != null
       error_message = "additional_irsa_configs[\"${each.key}\"] needs an OIDC provider on the cluster unless pod_identity is true"
     }
+
+    precondition {
+      # Unguarded this renders "aws:SourceArn": null, which scopes the trust to nothing rather
+      # than failing.
+      condition     = !each.value.pod_identity || var.eks_info.cluster.arn != null
+      error_message = "additional_irsa_configs[\"${each.key}\"] sets pod_identity, so eks_info.cluster.arn must be set to scope the trust policy to this cluster"
+    }
   }
 }
 
@@ -89,7 +98,7 @@ resource "aws_eks_pod_identity_association" "this" {
         for c in local.configs : c
         if c.namespace == each.value.namespace && c.serviceaccount_name == each.value.serviceaccount_name
       ]) == 1
-      error_message = "namespace/serviceaccount_name ${each.value.namespace}/${each.value.serviceaccount_name} is used by more than one additional_irsa_configs entry; EKS allows only one pod identity association per pair"
+      error_message = "More than one additional_irsa_configs entry binds ${each.value.namespace}/${each.value.serviceaccount_name}. Stricter than EKS, which only rejects a second pod identity association on the pair: a service account carrying both bindings resolves to the IRSA role, because the SDK credential chain reaches the web identity provider before container credentials, leaving this association in place and unused."
     }
   }
 }

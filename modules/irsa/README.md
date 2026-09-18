@@ -11,7 +11,7 @@ This module is an opinionated implementation of predefined and custom `irsa` rol
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.0 |
 
 ## Providers
@@ -30,6 +30,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [aws_eks_pod_identity_association.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_pod_identity_association) | resource |
 | [aws_iam_openid_connect_provider.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider) | resource |
 | [aws_iam_policy.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
@@ -50,14 +51,15 @@ No modules.
 | [aws_iam_policy_document.trident_configurator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.trident_operator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_route53_zone.hosted](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_additional_irsa_configs"></a> [additional\_irsa\_configs](#input\_additional\_irsa\_configs) | Input for additional irsa configurations | <pre>list(object({<br/>    name                = string<br/>    namespace           = string<br/>    serviceaccount_name = string<br/>    policy              = string #json<br/>  }))</pre> | `[]` | no |
-| <a name="input_eks_info"></a> [eks\_info](#input\_eks\_info) | cluster = {<br/>      specs {<br/>        name            = Cluster name.<br/>        account\_id      = AWS account id where the cluster resides.<br/>      }<br/>      oidc = {<br/>        arn = OIDC provider ARN.<br/>        url = OIDC provider url.<br/>        cert = {<br/>          thumbprint\_list = OIDC cert thumbprints.<br/>          url             = OIDC cert URL.<br/>      }<br/>    } | <pre>object({<br/>    nodes = object({<br/>      roles = list(object({<br/>        arn  = string<br/>        name = string<br/>      }))<br/>    })<br/>    cluster = object({<br/>      specs = object({<br/>        name       = string<br/>        account_id = string<br/>      })<br/>      oidc = object({<br/>        arn             = string<br/>        id              = string<br/>        url             = string<br/>        thumbprint_list = list(string)<br/>      })<br/>    })<br/>  })</pre> | n/a | yes |
+| <a name="input_additional_irsa_configs"></a> [additional\_irsa\_configs](#input\_additional\_irsa\_configs) | Input for additional irsa configurations | <pre>list(object({<br/>    name                = string<br/>    namespace           = string<br/>    serviceaccount_name = string<br/>    policy              = optional(string) #json<br/>    pod_identity        = optional(bool, false)<br/>  }))</pre> | `[]` | no |
+| <a name="input_eks_info"></a> [eks\_info](#input\_eks\_info) | cluster = {<br/>      specs {<br/>        name            = Cluster name.<br/>        account\_id      = AWS account id where the cluster resides.<br/>      }<br/>      oidc = {<br/>        arn = OIDC provider ARN.<br/>        url = OIDC provider url.<br/>        cert = {<br/>          thumbprint\_list = OIDC cert thumbprints.<br/>          url             = OIDC cert URL.<br/>      }<br/>    } | <pre>object({<br/>    nodes = object({<br/>      roles = list(object({<br/>        arn  = string<br/>        name = string<br/>      }))<br/>    })<br/>    cluster = object({<br/>      arn = optional(string)<br/>      specs = object({<br/>        name       = string<br/>        account_id = string<br/>      })<br/>      oidc = object({<br/>        arn             = string<br/>        id              = string<br/>        url             = string<br/>        thumbprint_list = list(string)<br/>      })<br/>    })<br/>  })</pre> | n/a | yes |
 | <a name="input_external_dns"></a> [external\_dns](#input\_external\_dns) | Config to enable irsa for external-dns<br/>    use\_cluster\_oidc\_idp = Toogle to set the oidc idp connector in the trust policy.<br/>    Set to `true` if the cluster and the hosted zone are in different aws accounts.<br/>    `extra_role` attaches policy to provided role (optional)<br/>    `rm_role_policy` used to facilitate the cleanup if a node attached policy was used previously. | <pre>object({<br/>    enabled              = optional(bool, false)<br/>    hosted_zone_name     = optional(string, null)<br/>    hosted_zone_private  = optional(string, false)<br/>    namespace            = optional(string, "domino-platform")<br/>    serviceaccount_name  = optional(string, "external-dns")<br/>    use_cluster_oidc_idp = optional(bool, true)<br/>    extra_role           = optional(string, null)<br/>    rm_role_policy = optional(object({<br/>      remove           = optional(bool, false)<br/>      detach_from_role = optional(bool, false)<br/>      policy_name      = optional(string, "")<br/>    }), {})<br/>  })</pre> | `{}` | no |
 | <a name="input_netapp_trident_configurator"></a> [netapp\_trident\_configurator](#input\_netapp\_trident\_configurator) | Config to create IRSA role for the netapp-trident-configurator. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "trident")<br/>    serviceaccount_name = optional(string, "trident-configurator")<br/>    region              = optional(string)<br/>  })</pre> | `{}` | no |
 | <a name="input_netapp_trident_operator"></a> [netapp\_trident\_operator](#input\_netapp\_trident\_operator) | Config to create IRSA role for the netapp-trident-operator. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "trident")<br/>    serviceaccount_name = optional(string, "trident-controller")<br/>    region              = optional(string)<br/>  })</pre> | `{}` | no |
@@ -67,6 +69,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_associations"></a> [associations](#output\_associations) | Pod identity association info, keyed by additional\_irsa\_configs name |
 | <a name="output_external_dns"></a> [external\_dns](#output\_external\_dns) | External\_dns info |
 | <a name="output_netapp_trident_configurator"></a> [netapp\_trident\_configurator](#output\_netapp\_trident\_configurator) | NetApp Astra Trident NETAPP configurator role info |
 | <a name="output_netapp_trident_operator"></a> [netapp\_trident\_operator](#output\_netapp\_trident\_operator) | NetApp Astra Trident NETAPP Operator role info |

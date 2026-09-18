@@ -86,6 +86,13 @@ variable "additional_irsa_configs" {
   default = []
 
   validation {
+    # `name` becomes an IAM role name suffix and an apps-policies path segment, so it is
+    # constrained here rather than at either use.
+    condition     = alltrue([for i in var.additional_irsa_configs : can(regex("^[a-zA-Z0-9-]+$", i.name))])
+    error_message = "Each additional_irsa_configs name must match ^[a-zA-Z0-9-]+$"
+  }
+
+  validation {
     condition = alltrue([
       for i in var.additional_irsa_configs :
       try(jsondecode(i.policy), null) != null || fileexists("${path.module}/apps-policies/${i.name}.json.tftpl")
