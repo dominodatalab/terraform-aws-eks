@@ -101,7 +101,8 @@ variable "irsa_policies" {
     name                = string
     namespace           = string
     serviceaccount_name = string
-    policy              = string #json
+    policy              = optional(string) #json
+    pod_identity        = optional(bool, false)
   }))
 
   default = []

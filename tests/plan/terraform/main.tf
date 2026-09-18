@@ -107,17 +107,39 @@ data "aws_iam_policy_document" "mypod_s3" {
   }
 }
 
+data "aws_iam_policy_document" "mypod_pod_identity" {
+  statement {
+    actions   = ["s3:ListAllMyBuckets"]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+}
+
+locals {
+  irsa_policies_configs = [
+    {
+      name                = "mypod-s3"
+      namespace           = "domino-config"
+      policy              = data.aws_iam_policy_document.mypod_s3.json
+      serviceaccount_name = "mypod-s3"
+      pod_identity        = false
+    },
+    {
+      name                = "mypod-pod-identity"
+      namespace           = "domino-config"
+      policy              = data.aws_iam_policy_document.mypod_pod_identity.json
+      serviceaccount_name = "mypod-pod-identity"
+      pod_identity        = true
+    }
+  ]
+}
+
 module "irsa_policies" {
-  count    = module.eks.info.cluster.oidc != null ? 1 : 0
-  source   = "./../../../modules/irsa"
-  eks_info = module.eks.info
-  additional_irsa_configs = [{
-    name                = "mypod-s3"
-    namespace           = "domino-config"
-    policy              = data.aws_iam_policy_document.mypod_s3.json
-    serviceaccount_name = "mypod-s3"
-  }]
-  use_fips_endpoint = var.use_fips_endpoint
+  count                   = module.eks.info.cluster.oidc != null || anytrue([for c in local.irsa_policies_configs : c.pod_identity]) ? 1 : 0
+  source                  = "./../../../modules/irsa"
+  eks_info                = module.eks.info
+  additional_irsa_configs = local.irsa_policies_configs
+  use_fips_endpoint       = var.use_fips_endpoint
 
   providers = {
     aws.global = aws.global

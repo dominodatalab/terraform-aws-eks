@@ -22,6 +22,7 @@ variable "eks_info" {
       }))
     })
     cluster = object({
+      arn = optional(string)
       specs = object({
         name       = string
         account_id = string
@@ -78,14 +79,18 @@ variable "additional_irsa_configs" {
     name                = string
     namespace           = string
     serviceaccount_name = string
-    policy              = string #json
+    policy              = optional(string) #json
+    pod_identity        = optional(bool, false)
   }))
 
   default = []
 
   validation {
-    condition     = alltrue([for i in var.additional_irsa_configs : can(jsondecode(i.policy))])
-    error_message = "Invalid json found in policy"
+    condition = alltrue([
+      for i in var.additional_irsa_configs :
+      try(jsondecode(i.policy), null) != null || fileexists("${path.module}/apps-policies/${i.name}.json.tftpl")
+    ])
+    error_message = "Each additional_irsa_configs entry needs either a valid json `policy` or a bundled policy file at apps-policies/<name>.json.tftpl"
   }
 }
 
