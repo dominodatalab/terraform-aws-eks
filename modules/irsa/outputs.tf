@@ -3,6 +3,16 @@ output "roles" {
   value       = { for k, v in aws_iam_role.this : k => v.arn }
 }
 
+output "associations" {
+  description = "Pod identity association info, keyed by additional_irsa_configs name"
+  value = { for k, v in aws_eks_pod_identity_association.this : k => {
+    association_arn = v.association_arn
+    association_id  = v.association_id
+    namespace       = v.namespace
+    service_account = v.service_account
+  } }
+}
+
 output "external_dns" {
   description = "External_dns info"
   value = var.external_dns.enabled ? {

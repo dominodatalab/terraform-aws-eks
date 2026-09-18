@@ -1,0 +1,69 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "glue:GetUserDefinedFunction",
+                "glue:GetTable*",
+                "glue:GetPartition*",
+                "glue:GetDatabase*",
+                "glue:BatchGetPartition"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:${partition}:glue:*:*:table/${deploy_id}*/*",
+                "arn:${partition}:glue:*:*:database/${deploy_id}-athena-cur-cost-db*",
+                "arn:${partition}:glue:*:*:catalog"
+            ]
+        },
+        {
+            "Action": [
+                "athena:StopQueryExecution",
+                "athena:StartQueryExecution",
+                "athena:ListWorkGroups",
+                "athena:ListTableMetadata",
+                "athena:ListQueryExecutions",
+                "athena:ListEngineVersions",
+                "athena:ListDatabases",
+                "athena:ListDataCatalogs",
+                "athena:GetWorkGroup",
+                "athena:GetTableMetadata",
+                "athena:GetQueryResultsStream",
+                "athena:GetQueryResults",
+                "athena:GetQueryExecution",
+                "athena:GetDatabase",
+                "athena:GetDataCatalog"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Action": [
+                "s3:ListBucketMultipartUploads",
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:${partition}:s3:::${deploy_id}-cur-report",
+                "arn:${partition}:s3:::${deploy_id}-aws-athena-query-results-costs",
+                "arn:${partition}:s3:::${deploy_id}-costs"
+            ]
+        },
+        {
+            "Action": [
+                "s3:PutObject",
+                "s3:ListMultipartUploadParts",
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:AbortMultipartUpload"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:${partition}:s3:::${deploy_id}-cur-report/*",
+                "arn:${partition}:s3:::${deploy_id}-aws-athena-query-results-costs/*",
+                "arn:${partition}:s3:::${deploy_id}-costs/*"
+            ]
+        }
+    ]
+}
