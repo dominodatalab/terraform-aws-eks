@@ -6,6 +6,26 @@ This module is an opinionated implementation of predefined and custom `irsa` rol
 
 * `external-dns`
 
+## Policy templates and pod identity
+
+An `additional_irsa_configs` entry may omit `policy`. When it does, the factory renders
+`apps-policies/<name>.json.tftpl` through `templatefile()`, keyed on the entry's `name`; an
+inline `policy` on the entry always wins over a file of the same name.
+
+The template has five interpolation variables available: `partition`, `account_id`, `region`,
+`deploy_id` and `dns_suffix`.
+
+Setting `pod_identity = true` on an entry swaps its role's OIDC trust policy for an EKS Pod
+Identity trust policy and creates the matching pod identity association. This requires the
+`eks-pod-identity-agent` cluster addon, which this repo installs by default. A deployment that
+overrides `cluster_addons` and drops that addon ends up with roles no pod can assume.
+
+The files under `apps-policies/` are inert on their own: a file grants nothing until an
+`additional_irsa_configs` entry names it.
+
+`aws.global` stays a required provider alias on this module even for a caller that only uses
+pod identity, because `configuration_aliases` on a module's provider block cannot be optional.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
