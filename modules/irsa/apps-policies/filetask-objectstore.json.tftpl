@@ -1,9 +1,11 @@
 ${jsonencode({
   Version = "2012-10-17"
   Statement = concat(
-    [for b in buckets : merge(
+    # Sids are indexed, not named: IAM restricts a Sid to letters and digits, while a bucket name
+    # may carry a dot, a hyphen or an underscore.
+    [for i, b in buckets : merge(
       {
-        Sid      = "ListPrefix${b.name}"
+        Sid      = "ListPrefix${i}"
         Effect   = "Allow"
         Action   = "s3:ListBucket"
         Resource = "arn:${partition}:s3:::${b.name}"
@@ -18,15 +20,15 @@ ${jsonencode({
         }
       }
     )],
-    [for b in buckets : {
-      Sid = "MultipartListing${b.name}"
+    [for i, b in buckets : {
+      Sid = "MultipartListing${i}"
       # Cannot carry a prefix condition here: AWS rejects the statement.
       Effect   = "Allow"
       Action   = "s3:ListBucketMultipartUploads"
       Resource = "arn:${partition}:s3:::${b.name}"
     }],
-    [for b in buckets : {
-      Sid    = "Objects${b.name}"
+    [for i, b in buckets : {
+      Sid    = "Objects${i}"
       Effect = "Allow"
       Action = [
         "s3:GetObject",
@@ -37,8 +39,8 @@ ${jsonencode({
       ]
       Resource = b.prefix == null ? "arn:${partition}:s3:::${b.name}/*" : "arn:${partition}:s3:::${b.name}/${b.prefix}/*"
     }],
-    [for b in buckets : {
-      Sid      = "ObjectEncryption${b.name}"
+    [for i, b in buckets : {
+      Sid      = "ObjectEncryption${i}"
       Effect   = "Allow"
       Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
       Resource = b.kms_key_arn

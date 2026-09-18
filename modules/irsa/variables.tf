@@ -142,6 +142,17 @@ variable "filetask_objectstore" {
   }
 
   validation {
+    # A slash is added where the policy needs one, so `datasets/` would build `datasets//*` and
+    # deny every object under it. Rejected rather than trimmed, to keep the prefix in the policy
+    # the prefix that was configured.
+    condition = alltrue([
+      for b in var.filetask_objectstore.buckets :
+      b.prefix == null || !can(regex("^/|/$", b.prefix))
+    ])
+    error_message = "filetask_objectstore prefixes must not start or end with '/'."
+  }
+
+  validation {
     # A bare key id or an alias ARN builds a policy that reads as configured and denies every
     # operation, so reject both here rather than at first use.
     condition = alltrue([
