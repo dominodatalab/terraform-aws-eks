@@ -6,13 +6,27 @@ locals {
     account_id = var.eks_info.cluster.specs.account_id
     region     = data.aws_region.current.region
     deploy_id  = local.name_prefix
+    # An endpoint DNS name, not a service principal, so it becomes .amazonaws.com.cn in China.
+    dns_suffix = data.aws_partition.current.dns_suffix
   }
 
   # try() because this is module scope, not resource scope: without it the module fails to load
   # on a cluster with no OIDC provider even when additional_irsa_configs is empty.
   oidc_issuer = try(trimprefix(local.oidc_provider_url, "https://"), null)
 
-  configs = { for c in var.additional_irsa_configs : c.name => c }
+  # concat() unifies the two lists' differing `params` shapes into one object type, filling in
+  # missing attributes with null, so a plain list literal here would fail to type-check.
+  configs = { for c in concat(
+    [for c in var.additional_irsa_configs : merge(c, { params = {} })],
+    var.filetask_objectstore.enabled ? [{
+      name                = "filetask-objectstore"
+      namespace           = var.filetask_objectstore.namespace
+      serviceaccount_name = var.filetask_objectstore.serviceaccount_name
+      policy              = null
+      pod_identity        = true
+      params              = { buckets = var.filetask_objectstore.buckets }
+    }] : []
+  ) : c.name => c }
 }
 
 resource "aws_iam_role" "this" {
@@ -75,7 +89,7 @@ resource "aws_iam_policy" "this" {
   path     = "/"
   # A ternary, not coalesce: coalesce evaluates both arguments, so an inline policy
   # with no bundled file would fail on the missing templatefile.
-  policy = each.value.policy != null ? each.value.policy : templatefile("${path.module}/apps-policies/${each.key}.json.tftpl", local.policy_vars)
+  policy = each.value.policy != null ? each.value.policy : templatefile("${path.module}/apps-policies/${each.key}.json.tftpl", merge(local.policy_vars, each.value.params))
 }
 
 resource "aws_iam_role_policy_attachment" "this" {

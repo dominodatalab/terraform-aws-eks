@@ -70,6 +70,7 @@ module "irsa_policies" {
   source                  = "./../../../../modules/irsa"
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
+  filetask_objectstore    = var.filetask_objectstore
   providers = {
     aws.global = aws.global
   }
