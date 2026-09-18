@@ -8,6 +8,7 @@ module "k8s_setup" {
 
   source            = "./submodules/k8s"
   ssh_key           = var.ssh_key
+  ssh_extra_args    = var.ssh_extra_args
   bastion_info      = var.bastion_info
   eks_info          = local.eks_info
   use_fips_endpoint = var.use_fips_endpoint
