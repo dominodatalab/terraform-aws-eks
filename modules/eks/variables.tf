@@ -366,3 +366,10 @@ variable "karpenter" {
 
   default = {}
 }
+
+variable "filetask_objectstore_mount_enabled" {
+  description = "Grant the node role the S3 Files mount permissions the EFS CSI driver needs when mounting a file system for Domino's s3-native filetask dataset storage."
+  type        = bool
+  default     = false
+  nullable    = false
+}
