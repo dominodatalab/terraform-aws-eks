@@ -34,6 +34,21 @@ resource "aws_ecr_pull_through_cache_rule" "quay" {
   upstream_registry_url = "quay.io"
 }
 
+data "aws_default_tags" "this" {}
+
+# Repos under the quay pull-through-cache prefix are created ad-hoc by ECR itself when an
+# image is first pulled, not by this module's aws_ecr_repository resources, so the provider's
+# default_tags never reach them. This template tags them at creation time so they're reachable
+# by the same tag-based cleanup sweeps as everything else, instead of relying solely on the
+# best-effort destroy-time provisioner below.
+resource "aws_ecr_repository_creation_template" "quay" {
+  count           = local.create_ecr && local.supports_pull_through_cache ? 1 : 0
+  prefix          = aws_ecr_pull_through_cache_rule.quay[0].ecr_repository_prefix
+  applied_for     = ["PULL_THROUGH_CACHE"]
+  custom_role_arn = aws_iam_role.ecr_repository_creation[0].arn
+  resource_tags   = data.aws_default_tags.this.tags
+}
+
 moved {
   from = terraform_data.pull_through_cache_deletion
   to   = terraform_data.pull_through_cache_deletion[0]
@@ -52,7 +67,8 @@ resource "terraform_data" "pull_through_cache_deletion" {
     command     = <<-EOF
       set -ex -o pipefail
       for repo_name in calico/apiserver calico/csi calico/kube-controllers calico/node calico/node-driver-registrar calico/pod2daemon-flexvol calico/typha tigera/operator; do
-        aws ecr delete-repository --force --repository-name "${self.input.ecr_repository_prefix}/$repo_name" > /dev/null || echo "Failed to delete repository $repo_name"
+        aws ecr delete-repository --force --repository-name "${self.input.ecr_repository_prefix}/$repo_name" > /dev/null \
+          || echo "PULL_THROUGH_CACHE_DELETE_FAILED: ${self.input.ecr_repository_prefix}/$repo_name"
       done
     EOF
     interpreter = ["bash", "-c"]

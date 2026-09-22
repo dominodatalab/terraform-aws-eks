@@ -96,3 +96,48 @@ resource "aws_iam_policy" "ecr" {
   path   = "/"
   policy = data.aws_iam_policy_document.ecr[0].json
 }
+
+# Assumed by ECR itself to tag pull-through-cache repos at creation time, per
+# aws_ecr_repository_creation_template.quay in ecr.tf.
+resource "aws_iam_role" "ecr_repository_creation" {
+  count = local.create_ecr && local.supports_pull_through_cache ? 1 : 0
+  name  = "${var.deploy_id}-ecr-repo-creation"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ecr.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+data "aws_iam_policy_document" "ecr_repository_creation" {
+  count = local.create_ecr && local.supports_pull_through_cache ? 1 : 0
+
+  statement {
+    effect = "Allow"
+
+    resources = [
+      "arn:${data.aws_partition.current.partition}:ecr:${var.region}:${data.aws_caller_identity.this.account_id}:repository/${aws_ecr_pull_through_cache_rule.quay[0].ecr_repository_prefix}/*"
+    ]
+
+    actions = [
+      "ecr:CreateRepository",
+      "ecr:TagResource",
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "ecr_repository_creation" {
+  count  = local.create_ecr && local.supports_pull_through_cache ? 1 : 0
+  name   = "${var.deploy_id}-ecr-repo-creation"
+  role   = aws_iam_role.ecr_repository_creation[0].id
+  policy = data.aws_iam_policy_document.ecr_repository_creation[0].json
+}
