@@ -1,0 +1,68 @@
+${jsonencode({
+  Version = "2012-10-17"
+  Statement = concat(
+    # Sids are indexed, not named: IAM restricts a Sid to letters and digits, while a bucket name
+    # may carry a dot, a hyphen or an underscore.
+    [for i, b in buckets : merge(
+      {
+        Sid      = "ListPrefix${i}"
+        Effect   = "Allow"
+        Action   = "s3:ListBucket"
+        Resource = "arn:${partition}:s3:::${b.name}"
+      },
+      # StringLike on the absent s3:prefix key never matches, so an unprefixed bucket gets no
+      # condition at all rather than one that would deny every list.
+      b.prefix == null ? {} : {
+        Condition = {
+          StringLike = {
+            "s3:prefix" = [b.prefix, "${b.prefix}/*"]
+          }
+        }
+      }
+    )],
+    [for i, b in buckets : {
+      Sid = "MultipartListing${i}"
+      # Cannot carry a prefix condition here: AWS rejects the statement.
+      Effect   = "Allow"
+      Action   = "s3:ListBucketMultipartUploads"
+      Resource = "arn:${partition}:s3:::${b.name}"
+    }],
+    [for i, b in buckets : {
+      Sid    = "Objects${i}"
+      Effect = "Allow"
+      Action = [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:AbortMultipartUpload",
+        "s3:ListMultipartUploadParts",
+      ]
+      Resource = b.prefix == null ? "arn:${partition}:s3:::${b.name}/*" : "arn:${partition}:s3:::${b.name}/${b.prefix}/*"
+    }],
+    [for i, b in buckets : {
+      Sid      = "ObjectEncryption${i}"
+      Effect   = "Allow"
+      Action   = ["kms:Decrypt", "kms:GenerateDataKey"]
+      Resource = b.kms_key_arn
+      Condition = {
+        StringEquals = {
+          # The key's region, parsed from its own ARN, not the cluster's: SSE-KMS keeps the key
+          # in the bucket's region.
+          "kms:ViaService" = "s3.${split(":", b.kms_key_arn)[3]}.${dns_suffix}"
+        }
+        StringLike = {
+          "kms:EncryptionContext:aws:s3:arn" = [
+            "arn:${partition}:s3:::${b.name}",
+            b.prefix == null ? "arn:${partition}:s3:::${b.name}/*" : "arn:${partition}:s3:::${b.name}/${b.prefix}/*"
+          ]
+        }
+      }
+    } if b.kms_key_arn != null],
+    [{
+      Sid      = "DescribeFileSystems"
+      Effect   = "Allow"
+      Action   = "s3files:GetFileSystem"
+      Resource = "arn:${partition}:s3files:*:*:file-system/*"
+    }]
+  )
+})}

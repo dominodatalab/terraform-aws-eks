@@ -27,3 +27,10 @@ output "netapp_trident_configurator" {
     irsa_role = aws_iam_role.trident_configurator[0].arn
   } : null
 }
+
+output "filetask_objectstore" {
+  description = "Filetask object store pod identity role info"
+  value = var.filetask_objectstore.enabled ? {
+    identity_role = aws_iam_role.filetask_objectstore[0].arn
+  } : null
+}
