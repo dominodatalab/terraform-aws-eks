@@ -235,6 +235,12 @@ variable "use_fips_endpoint" {
   default     = false
 }
 
+variable "install_calico" {
+  description = "Whether to run the Calico install step (needs public internet access for its helm chart + manifests) - set to false for air-gapped installs where CNI is set up separately/manually."
+  type        = bool
+  default     = true
+}
+
 
 variable "karpenter_node_groups" {
   description = "Node groups for karpenter."

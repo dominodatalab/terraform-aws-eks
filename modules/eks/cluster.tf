@@ -97,21 +97,25 @@ resource "aws_eks_cluster" "this" {
   }
 }
 
-data "tls_certificate" "cluster_tls_certificate" {
-  count = var.eks.oidc_provider.create ? 1 : 0
-  url   = aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
-
 moved {
   from = aws_iam_openid_connect_provider.oidc_provider
   to   = aws_iam_openid_connect_provider.oidc_provider[0]
 }
 
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
-  count           = var.eks.oidc_provider.create ? 1 : 0
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = data.tls_certificate.cluster_tls_certificate[0].certificates[*].sha1_fingerprint
-  url             = data.tls_certificate.cluster_tls_certificate[0].url
+  count          = var.eks.oidc_provider.create ? 1 : 0
+  client_id_list = ["sts.amazonaws.com"]
+  # Hardcoded rather than live-fetched (data.tls_certificate) - air-gapped
+  # install nodes have no route to the public internet and there's no
+  # PrivateLink option for the OIDC/JWKS content itself (and even VPC-endpoint
+  # private DNS for eks/eks-fips can shadow the oidc.eks.<region>.amazonaws.com
+  # subdomain with no record, causing a hard NXDOMAIN rather than falling
+  # back to public resolution). AWS doesn't actually validate this thumbprint
+  # against the live cert for its own OIDC providers (EKS), so this static,
+  # long-standing AWS root CA thumbprint is the standard workaround for
+  # restricted-network EKS deployments.
+  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
+  url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
 }
 
 resource "null_resource" "kubeconfig" {
