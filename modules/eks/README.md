@@ -18,7 +18,6 @@
 | <a name="provider_aws.eks"></a> [aws.eks](#provider\_aws.eks) | ~> 6.0 |
 | <a name="provider_null"></a> [null](#provider\_null) | >= 3.1.0 |
 | <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
-| <a name="provider_tls"></a> [tls](#provider\_tls) | >= 4.0 |
 
 ## Modules
 
@@ -77,7 +76,6 @@
 | [aws_iam_role.master_roles](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
 | [aws_iam_session_context.create_eks_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_session_context) | data source |
 | [aws_partition.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/partition) | data source |
-| [tls_certificate.cluster_tls_certificate](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/certificate) | data source |
 
 ## Inputs
 
