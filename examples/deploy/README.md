@@ -1,7 +1,9 @@
 # Terraform Multi-Module Management
 
 ## Overview
-The `tf.sh` script provides a convenient method to manage multiple Terraform configurations for various components of a system. The primary modules managed by this script include `infra`, `cluster`, and `nodes`. These components might represent different layers of an infrastructure deployment. Similarly the `set-mod-version.sh` script helps to set the source module version on all three modules(`infra`, `cluster`, and `nodes`), see [README](../../README.md#Using_script).
+The `tf.sh` script provides a convenient method to manage multiple Terraform configurations for various components of a system. The primary modules managed by this script include `infra`, `cluster`, `nodes`, and `load_balancers`. These components might represent different layers of an infrastructure deployment. Similarly the `set-mod-version.sh` script helps to set the source module version on all four modules(`infra`, `cluster`, `nodes`, and `load_balancers`), see [README](../../README.md#Using_script).
+
+`nodes` and `load_balancers` are independent siblings: both only depend on `cluster`'s state, and neither depends on the other. `./tf.sh all apply`/`./tf.sh all destroy` run them concurrently for this reason - Global Accelerator (created by `load_balancers`, when configured) commonly takes 8+ minutes to finish propagating, and letting that overlap with node-group/add-on provisioning instead of serializing before or after it meaningfully shortens a full deploy.
 
 ## Pre-requisites
 * Ensure that `terraform` is installed and accessible in your path.
@@ -32,11 +34,17 @@ deploy
 │   │   ├── main.tf
 │   │   ├── outputs.tf
 │   │   └── variables.tf
-│   └── nodes.tfvars
+│   ├── nodes.tfvars
+│   ├── load_balancers
+│   │   ├── README.md
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   └── load_balancers.tfvars
 └── tf.sh
 ```
 
-* Each subdirectory under `terraform` (e.g., `infra`, `cluster`, `nodes`) should contain its respective Terraform configurations.
+* Each subdirectory under `terraform` (e.g., `infra`, `cluster`, `nodes`, `load_balancers`) should contain its respective Terraform configurations.
 * Each component is expected to have a corresponding `.tfvars` file at the `terraform` directory. For instance, for the `infra` component, there should be an `terraform/infra.tfvars` file.
 * Each of component's state and output(when the `output` command is invoked) is saved in the `terraform` directory:
 
@@ -47,7 +55,9 @@ deploy
    ├── infra.outputs
    ├── infra.tfstate
    ├── nodes.outputs
-   └── nodes.tfstate
+   ├── nodes.tfstate
+   ├── load_balancers.outputs
+   └── load_balancers.tfstate
 ```
 ## Variables structure
 
@@ -61,7 +71,7 @@ To use the script, invoke it with the desired command and component:
 ./tf.sh <component> <command>
 ```
 
-* **component**: The component parameter refers to the specific section of your architecture that you wish to target with a command. Supported components include `infra`, `cluster`, `nodes`, and `all`. Selecting all will execute the command across `infra`, `cluster` and `nodes`.
+* **component**: The component parameter refers to the specific section of your architecture that you wish to target with a command. Supported components include `infra`, `cluster`, `nodes`, `load_balancers`, and `all`. Selecting all will execute the command across `infra`, `cluster`, `nodes`, and `load_balancers` - for `apply`/`destroy`, `nodes` and `load_balancers` run concurrently since neither depends on the other.
   The script uses the component parameter to identify corresponding Terraform directories and to name both the Terraform variables file (`terraform/${component}.tfvars`) and the Terraform state file (`terraform/${component}.tfstate`). If you create a custom folder named `mydir` that includes your Terraform configuration, setup a terraform variables file(`terraform/mydir.tfstate`), and state file(`terraform/mydir.tfstate`) if existing, then you can utilize the tf.sh script to execute Terraform commands. For example, running `./tf.sh mydir plan`.
 
   It's important to note that your custom directory, mydir, ***will not*** be included when using the `all` value for components.
@@ -84,6 +94,12 @@ To use the script, invoke it with the desired command and component:
 
 ```bash
 ./tf.sh cluster plan
+```
+
+* To preview the execution plan of the load balancers/Global Accelerator (independent of `nodes`, can run in parallel with it):
+
+```bash
+./tf.sh load_balancers plan
 ```
 
 * To create all components:

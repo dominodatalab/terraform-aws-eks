@@ -118,7 +118,13 @@ domino-deploy
 │   │   ├── main.tf
 │   │   ├── outputs.tf
 │   │   └── variables.tf
-│   └── nodes.tfvars
+│   ├── nodes.tfvars
+│   ├── load_balancers
+│   │   ├── README.md
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   └── load_balancers.tfvars
 └── tf.sh
 ```
 
@@ -147,6 +153,7 @@ For example if `MOD_VERSION=v3.0.0`
 * **infra/main.tf** : Update `module.infra.source` from `"./../../../../modules/infra"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/infra?ref=v3.0.0`
 * **cluster/main.tf** : Update `module.eks.source` from `"./../../../../modules/eks"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/eks?ref=v3.0.0`
 * **nodes/main.tf** : Update `module.nodes.source` from `"./../../../../modules/nodes"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/nodes?ref=v3.0.0`
+* **load_balancers/main.tf** : Update `module.load_balancers.source` from `"./../../../../modules/load-balancers"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/load-balancers?ref=v3.0.0`, and `module.privatelink.source` from `"./../../../../modules/privatelink"` to `github.com/dominodatalab/terraform-aws-eks.git//modules/privatelink?ref=v3.0.0`
 
 
 ### 3. Review and Configure `tfvars`
@@ -175,11 +182,19 @@ Consult available variables within each of the modules `variables.tf`
   * `default_node_groups`
   * `additional_node_groups`
 
+* `domino-deploy/terraform/load_balancers/variables.tf`
+  * `load_balancers`
+  * `waf`
+  * `access_logs` / `connection_logs` / `flow_logs`
+  * `route53_hosted_zone_name`
+  * `privatelink`
+
 Configure terraform variables at:
 
 * `domino-deploy/terraform/infra.tfvars`
 * `domino-deploy/terraform/cluster.tfvars`
 * `domino-deploy/terraform/nodes.tfvars`
+* `domino-deploy/terraform/load_balancers.tfvars`
 
 **NOTE**: The `eks` configuration is required in both the `infra` and `cluster` modules because the Kubernetes version is used for installing the `kubectl` binary on the bastion host. Similarly, `default_node_groups` and `additional_node_groups` must be defined in both the `infra` and `nodes` modules, as the `availability zones` for the `nodes` are necessary for setting up the network infrastructure.
 
@@ -213,9 +228,9 @@ For each of the modules, run `init`, `plan`, inspect the plan, then `apply` in t
 
 1. `infra`
 2. `cluster`
-3. `nodes`
+3. `nodes` and `load_balancers` - these two are independent of each other (both only depend on `cluster`), so they can be applied in either order, or in parallel.
 
-Note: You can use `all` instead but it is recommended that the `plan`  and `apply` be done one at a time, so that the plans can be carefully examined.
+Note: You can use `all` instead but it is recommended that the `plan`  and `apply` be done one at a time, so that the plans can be carefully examined. When using `all apply`/`all destroy`, `./tf.sh` runs `nodes` and `load_balancers` concurrently for this reason.
 
 1. Init all
 
@@ -261,6 +276,20 @@ Note: You can use `all` instead but it is recommended that the `plan`  and `appl
 
 ```bash
 ./tf.sh nodes apply
+```
+
+11. `load_balancers` plan (independent of `nodes` - can be planned/applied before, after, or in parallel with steps 8-10)
+
+```bash
+./tf.sh load_balancers plan
+```
+
+12. :exclamation: Carefully inspect the actions detailed in the `load_balancers` plan for correctness, before proceeding.
+
+13. `load_balancers` apply
+
+```bash
+./tf.sh load_balancers apply
 ```
 
 ### At this point the infrastructure has been created.

@@ -56,6 +56,11 @@ check_dependencies() {
       printf "\nERROR: Cannot plan/apply 'nodes' without 'infra' and 'cluster' being provisioned. being provisioned !!!\n\n"
       exit 1
     fi
+  elif [[ $name == "load_balancers" ]]; then
+    if ! has_resources "${BASE_TF_DIR}/infra" || ! has_resources "${BASE_TF_DIR}/cluster"; then
+      printf "\nERROR: Cannot plan/apply 'load_balancers' without 'infra' and 'cluster' being provisioned !!!\n\n"
+      exit 1
+    fi
   fi
   return 0
 }
@@ -196,10 +201,11 @@ usage() {
   echo "Usage: ./tf.sh <component> <command>"
 
   echo -e "\nComponents:"
-  echo -e "  infra    \tManage the infrastructure components."
-  echo -e "  cluster  \tManage the cluster components."
-  echo -e "  nodes    \tManage the node components."
-  echo -e "  all      \tManage all components."
+  echo -e "  infra          \tManage the infrastructure components."
+  echo -e "  cluster        \tManage the cluster components."
+  echo -e "  nodes          \tManage the node components."
+  echo -e "  load_balancers \tManage the load balancer/Global Accelerator/PrivateLink components. Independent of 'nodes' - only depends on 'cluster'."
+  echo -e "  all            \tManage all components. 'nodes' and 'load_balancers' are applied/destroyed concurrently since neither depends on the other."
   echo "Note: If an unlisted component is provided, the script will attempt to execute the given command, assuming the corresponding directory is properly configured."
 
   echo -e "\nCommands:"
@@ -237,7 +243,7 @@ else
 fi
 
 case $component in
-infra | cluster | nodes)
+infra | cluster | nodes | load_balancers)
   if [[ "$param" != "false" ]]; then
     run_tf_command "${BASE_TF_DIR}/${component}" "$command" "$param"
   else
@@ -245,10 +251,38 @@ infra | cluster | nodes)
   fi
   ;;
 all)
-  if [[ "$command" == "destroy" ]]; then
-    for ((idx = ${#MOD_DIRS[@]} - 1; idx >= 0; idx--)); do
-      run_tf_command "${MOD_DIRS[idx]}" "$command"
-    done
+  # 'nodes' and 'load_balancers' are independent siblings: both only depend on 'cluster'
+  # (and, transitively, 'infra'), and neither depends on the other. For apply/destroy, run
+  # them concurrently so Global Accelerator's slow endpoint-group propagation overlaps with
+  # node-group/add-on provisioning instead of serializing before or after it. Every other
+  # command (init, plan, output, ...) keeps the simple sequential loop.
+  if [[ "$command" == "apply" || "$command" == "destroy" ]]; then
+    run_parallel() {
+      local rc=0
+      run_tf_command "${NODES_DIR}" "$command" &
+      local nodes_pid=$!
+      run_tf_command "${LOAD_BALANCERS_DIR}" "$command" &
+      local lb_pid=$!
+      wait "$nodes_pid" || {
+        echo "ERROR: 'nodes' $command failed"
+        rc=1
+      }
+      wait "$lb_pid" || {
+        echo "ERROR: 'load_balancers' $command failed"
+        rc=1
+      }
+      [[ $rc -eq 0 ]] || exit 1
+    }
+
+    if [[ "$command" == "destroy" ]]; then
+      run_parallel
+      run_tf_command "${CLUSTER_DIR}" "$command"
+      run_tf_command "${INFRA_DIR}" "$command"
+    else
+      run_tf_command "${INFRA_DIR}" "$command"
+      run_tf_command "${CLUSTER_DIR}" "$command"
+      run_parallel
+    fi
   else
     for dir in "${MOD_DIRS[@]}"; do
       run_tf_command "$dir" "$command"
@@ -256,7 +290,7 @@ all)
   fi
   ;;
 *)
-  echo "Default components: infra, cluster, nodes, all"
+  echo "Default components: infra, cluster, nodes, load_balancers, all"
   if [[ -d "${BASE_TF_DIR}/${component}" ]]; then
     if ls "${BASE_TF_DIR}/${component}"/*.tf 1>/dev/null 2>&1; then
       echo "Running command $command on non-default component: $component"

@@ -110,6 +110,19 @@ locals {
       replace(substr("${ng.ng_name}-${var.eks_info.cluster.specs.name}-${ng.sb_az_id}", 0, 63), "/[^A-Za-z0-9]+$/", "")
     ) => ng
   }
+
+  # `platform` is a required (non-optional) default node group, always present, and is the
+  # only group post-compute add-ons/calico setup actually need to schedule onto (coredns's own
+  # nodeSelector already targets it). Depending on it alone - instead of every node group - lets
+  # those steps start without waiting on slower specialty groups (gpu, gpu_arm64, etc.).
+  platform_node_group_keys = [for k, ng in local.node_groups_by_name : k if ng.ng_name == "platform"]
+}
+
+# `depends_on` requires a static list of resource references, so referencing specific
+# for_each keys of aws_eks_node_group.node_groups directly isn't valid there. This resource
+# turns that dynamic set into a single reference other resources can depend_on instead.
+resource "terraform_data" "platform_node_groups_ready" {
+  input = [for k in local.platform_node_group_keys : aws_eks_node_group.node_groups[k].id]
 }
 
 data "aws_ec2_instance_type_offerings" "nodes" {
@@ -148,7 +161,7 @@ resource "terraform_data" "calico_setup" {
     working_dir = dirname(var.eks_info.k8s_pre_setup_sh_file)
   }
 
-  depends_on = [aws_eks_node_group.node_groups]
+  depends_on = [terraform_data.platform_node_groups_ready]
 }
 
 resource "terraform_data" "karpenter_setup" {
