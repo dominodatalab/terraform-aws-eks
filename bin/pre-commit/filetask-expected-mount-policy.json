@@ -1,0 +1,18 @@
+{
+  "filetask_mount": {
+    "Statement": [
+      {
+        "Action": [
+          "s3files:GetFileSystem",
+          "s3files:ClientWrite",
+          "s3files:ClientRootAccess",
+          "s3files:ClientMount"
+        ],
+        "Effect": "Allow",
+        "Resource": "arn:aws:s3files:*:*:file-system/*",
+        "Sid": "MountS3Files"
+      }
+    ],
+    "Version": "2012-10-17"
+  }
+}

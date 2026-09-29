@@ -1,0 +1,201 @@
+{
+  "prefixed": {
+    "filetask_objectstore": {
+      "Statement": [
+        {
+          "Action": "s3:ListBucket",
+          "Condition": {
+            "StringLike": {
+              "s3:prefix": [
+                "datasets",
+                "datasets/*"
+              ]
+            }
+          },
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::example-bucket",
+          "Sid": "ListPrefix0"
+        },
+        {
+          "Action": "s3:ListBucketMultipartUploads",
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::example-bucket",
+          "Sid": "MultipartListing0"
+        },
+        {
+          "Action": [
+            "s3:PutObject",
+            "s3:ListMultipartUploadParts",
+            "s3:GetObject",
+            "s3:DeleteObject",
+            "s3:AbortMultipartUpload"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::example-bucket/datasets/*",
+          "Sid": "Objects0"
+        },
+        {
+          "Action": [
+            "kms:GenerateDataKey",
+            "kms:Decrypt"
+          ],
+          "Condition": {
+            "StringEquals": {
+              "kms:ViaService": "s3.us-west-2.amazonaws.com"
+            },
+            "StringLike": {
+              "kms:EncryptionContext:aws:s3:arn": [
+                "arn:aws:s3:::example-bucket",
+                "arn:aws:s3:::example-bucket/datasets/*"
+              ]
+            }
+          },
+          "Effect": "Allow",
+          "Resource": "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+          "Sid": "ObjectEncryption0"
+        },
+        {
+          "Action": "s3files:GetFileSystem",
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3files:*:*:file-system/*",
+          "Sid": "DescribeFileSystems"
+        }
+      ],
+      "Version": "2012-10-17"
+    }
+  },
+  "two_buckets": {
+    "filetask_objectstore": {
+      "Statement": [
+        {
+          "Action": "s3:ListBucket",
+          "Condition": {
+            "StringLike": {
+              "s3:prefix": [
+                "one",
+                "one/*"
+              ]
+            }
+          },
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::plain-bucket",
+          "Sid": "ListPrefix0"
+        },
+        {
+          "Action": "s3:ListBucket",
+          "Condition": {
+            "StringLike": {
+              "s3:prefix": [
+                "two",
+                "two/*"
+              ]
+            }
+          },
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::kms-bucket",
+          "Sid": "ListPrefix1"
+        },
+        {
+          "Action": "s3:ListBucketMultipartUploads",
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::plain-bucket",
+          "Sid": "MultipartListing0"
+        },
+        {
+          "Action": "s3:ListBucketMultipartUploads",
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::kms-bucket",
+          "Sid": "MultipartListing1"
+        },
+        {
+          "Action": [
+            "s3:PutObject",
+            "s3:ListMultipartUploadParts",
+            "s3:GetObject",
+            "s3:DeleteObject",
+            "s3:AbortMultipartUpload"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::plain-bucket/one/*",
+          "Sid": "Objects0"
+        },
+        {
+          "Action": [
+            "s3:PutObject",
+            "s3:ListMultipartUploadParts",
+            "s3:GetObject",
+            "s3:DeleteObject",
+            "s3:AbortMultipartUpload"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::kms-bucket/two/*",
+          "Sid": "Objects1"
+        },
+        {
+          "Action": [
+            "kms:GenerateDataKey",
+            "kms:Decrypt"
+          ],
+          "Condition": {
+            "StringEquals": {
+              "kms:ViaService": "s3.us-west-2.amazonaws.com"
+            },
+            "StringLike": {
+              "kms:EncryptionContext:aws:s3:arn": [
+                "arn:aws:s3:::kms-bucket",
+                "arn:aws:s3:::kms-bucket/two/*"
+              ]
+            }
+          },
+          "Effect": "Allow",
+          "Resource": "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
+          "Sid": "ObjectEncryption1"
+        },
+        {
+          "Action": "s3files:GetFileSystem",
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3files:*:*:file-system/*",
+          "Sid": "DescribeFileSystems"
+        }
+      ],
+      "Version": "2012-10-17"
+    }
+  },
+  "whole_bucket": {
+    "filetask_objectstore": {
+      "Statement": [
+        {
+          "Action": "s3:ListBucket",
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::example-bucket",
+          "Sid": "ListPrefix0"
+        },
+        {
+          "Action": "s3:ListBucketMultipartUploads",
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::example-bucket",
+          "Sid": "MultipartListing0"
+        },
+        {
+          "Action": [
+            "s3:PutObject",
+            "s3:ListMultipartUploadParts",
+            "s3:GetObject",
+            "s3:DeleteObject",
+            "s3:AbortMultipartUpload"
+          ],
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3:::example-bucket/*",
+          "Sid": "Objects0"
+        },
+        {
+          "Action": "s3files:GetFileSystem",
+          "Effect": "Allow",
+          "Resource": "arn:aws:s3files:*:*:file-system/*",
+          "Sid": "DescribeFileSystems"
+        }
+      ],
+      "Version": "2012-10-17"
+    }
+  }
+}
