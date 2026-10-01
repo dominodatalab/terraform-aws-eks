@@ -1,5 +1,8 @@
 locals {
-  iam_policy_paths = length(var.iam_policy_paths) == 0 ? ["${path.module}/bootstrap-0.json", "${path.module}/bootstrap-1.json", "${path.module}/bootstrap-2.json"] : var.iam_policy_paths
+  iam_policy_paths = concat(
+    length(var.iam_policy_paths) == 0 ? ["${path.module}/bootstrap-0.json", "${path.module}/bootstrap-1.json", "${path.module}/bootstrap-2.json"] : var.iam_policy_paths,
+    var.additional_iam_policy_paths
+  )
 }
 
 data "aws_caller_identity" "admin" {}

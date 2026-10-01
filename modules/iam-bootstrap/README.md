@@ -33,6 +33,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_additional_iam_policy_paths"></a> [additional\_iam\_policy\_paths](#input\_additional\_iam\_policy\_paths) | IAM policies to append to the ones in use, defaults or override alike, can be terraform templates | `list(any)` | `[]` | no |
 | <a name="input_deploy_id"></a> [deploy\_id](#input\_deploy\_id) | Domino Deployment ID | `string` | n/a | yes |
 | <a name="input_iam_policy_paths"></a> [iam\_policy\_paths](#input\_iam\_policy\_paths) | IAM policies to provision and use for deployment role, can be terraform templates | `list(any)` | `[]` | no |
 | <a name="input_ignore_tags"></a> [ignore\_tags](#input\_ignore\_tags) | Tag keys to be ignored by the aws provider. | `list(string)` | `[]` | no |
