@@ -1,11 +1,12 @@
 additional_node_groups = {}
 bastion = {
-  ami_id                   = null
-  authorized_ssh_ip_ranges = null
-  enabled                  = true
-  install_binaries         = null
-  instance_type            = null
-  username                 = null
+  ami_id                    = null
+  authorized_ssh_ip_ranges  = null
+  enabled                   = true
+  install_binaries          = null
+  instance_type             = null
+  use_private_ip_for_tunnel = true
+  username                  = null
 }
 default_node_groups = null
 deploy_id           = null
