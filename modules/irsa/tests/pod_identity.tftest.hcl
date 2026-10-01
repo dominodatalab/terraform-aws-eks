@@ -32,6 +32,33 @@ mock_provider "aws" {
   alias = "global"
 }
 
+# A second partition for the China run, selected per run with `providers`. The partition and
+# dns_suffix reach the template only through data.aws_partition.current, which the default mock
+# above pins to the commercial partition.
+mock_provider "aws" {
+  alias = "china"
+
+  mock_data "aws_partition" {
+    defaults = {
+      partition  = "aws-cn"
+      dns_suffix = "amazonaws.com.cn"
+    }
+  }
+
+  mock_data "aws_caller_identity" {
+    defaults = {
+      account_id = "123456789012"
+      arn        = "arn:aws-cn:iam::123456789012:user/test"
+    }
+  }
+
+  mock_data "aws_region" {
+    defaults = {
+      region = "cn-north-1"
+    }
+  }
+}
+
 variables {
   eks_info = {
     nodes = { roles = [] }
@@ -220,6 +247,114 @@ run "filetask_objectstore_scoping" {
   }
 }
 
+# The scoping run above pins where the grants may land; this one pins what they are. Statement
+# order is the template's: ListPrefix x3, MultipartListing x3, Objects x3, ObjectEncryption for the
+# one KMS bucket, then DescribeFileSystems.
+run "filetask_objectstore_exact_actions" {
+  command = plan
+
+  variables {
+    filetask_objectstore = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-objectstore"
+      buckets = [
+        { name = "prefixed-bucket", prefix = "datasets" },
+        { name = "unprefixed-bucket" },
+        { name = "kms-bucket", prefix = "kms-data", kms_key_arn = "arn:aws:kms:eu-west-1:123456789012:key/11111111-2222-3333-4444-555555555555" },
+      ]
+    }
+  }
+
+  assert {
+    condition     = length(jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement) == 11
+    error_message = "The policy must have exactly 11 statements for three buckets, one of them KMS-encrypted: 3 ListPrefix, 3 MultipartListing, 3 Objects, 1 ObjectEncryption, 1 DescribeFileSystems."
+  }
+
+  assert {
+    condition = [
+      for s in jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement : toset(flatten([s.Action]))
+      ] == [
+      toset(["s3:ListBucket"]),
+      toset(["s3:ListBucket"]),
+      toset(["s3:ListBucket"]),
+      toset(["s3:ListBucketMultipartUploads"]),
+      toset(["s3:ListBucketMultipartUploads"]),
+      toset(["s3:ListBucketMultipartUploads"]),
+      toset(["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"]),
+      toset(["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"]),
+      toset(["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"]),
+      toset(["kms:Decrypt", "kms:GenerateDataKey"]),
+      toset(["s3files:GetFileSystem"]),
+    ]
+    error_message = "Each statement must grant exactly its expected actions, in template order. An added or removed action, or an added statement, changes what the pod can do and must be a deliberate edit to this list."
+  }
+
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement :
+      !contains(keys(s), "NotAction") && !contains(keys(s), "NotResource")
+    ])
+    error_message = "No statement may use NotAction or NotResource: both grant everything except what they name."
+  }
+}
+
+# The provider region and partition come from the mocked data sources, so a per-run provider
+# mapping is the only way to render another partition.
+run "filetask_objectstore_china_partition" {
+  command = plan
+
+  providers = {
+    aws        = aws.china
+    aws.global = aws.global
+  }
+
+  variables {
+    filetask_objectstore = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-objectstore"
+      buckets = [
+        { name = "prefixed-bucket", prefix = "datasets" },
+        { name = "kms-bucket", prefix = "kms-data", kms_key_arn = "arn:aws-cn:kms:cn-north-1:123456789012:key/11111111-2222-3333-4444-555555555555" },
+      ]
+    }
+  }
+
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement :
+      alltrue([for r in flatten([s.Resource]) : startswith(r, "arn:aws-cn:")])
+    ])
+    error_message = "Every Resource in the China render must be an arn:aws-cn: ARN."
+  }
+
+  assert {
+    condition     = !can(regex("arn:aws:", aws_iam_policy.filetask_objectstore[0].policy))
+    error_message = "No arn:aws: ARN may appear anywhere in the China render, including inside Condition values."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement[2].Resource == "arn:aws-cn:s3:::prefixed-bucket"
+    error_message = "The bucket ARN must be built with the aws-cn partition."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement[4].Resource == "arn:aws-cn:s3:::prefixed-bucket/datasets/*"
+    error_message = "The object ARN must be built with the aws-cn partition."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement[6].Condition.StringEquals["kms:ViaService"] == "s3.cn-north-1.amazonaws.com.cn"
+    error_message = "kms:ViaService must end in amazonaws.com.cn in the China partition."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement[7].Resource == ["arn:aws-cn:s3files:cn-north-1:123456789012:file-system/*"]
+    error_message = "The s3files ARN must carry the aws-cn partition, the cluster region and the cluster account."
+  }
+}
+
 run "filetask_objectstore_disabled" {
   command = plan
 
@@ -292,5 +427,96 @@ run "filetask_objectstore_rejects_serviceaccount_collision" {
 
   expect_failures = [
     aws_eks_pod_identity_association.filetask_objectstore,
+  ]
+}
+
+run "filetask_objectstore_file_system_ids" {
+  command = plan
+
+  variables {
+    filetask_objectstore = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-objectstore"
+      file_system_ids     = ["fs-0123456789abcdef0", "fs-fedcba9876543210f"]
+      buckets             = [{ name = "fs-scoped-bucket" }]
+    }
+  }
+
+  assert {
+    condition = [
+      for s in jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement :
+      s.Resource if s.Sid == "DescribeFileSystems"
+      ] == [[
+        "arn:aws:s3files:us-west-2:123456789012:file-system/fs-0123456789abcdef0",
+        "arn:aws:s3files:us-west-2:123456789012:file-system/fs-fedcba9876543210f",
+    ]]
+    error_message = "DescribeFileSystems must name exactly the two configured file systems, with no wildcard."
+  }
+}
+
+run "filetask_objectstore_rejects_malformed_file_system_id" {
+  command = plan
+
+  variables {
+    filetask_objectstore = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-objectstore"
+      file_system_ids     = ["fs-NOT-HEX"]
+      buckets             = [{ name = "fs-scoped-bucket" }]
+    }
+  }
+
+  expect_failures = [
+    var.filetask_objectstore,
+  ]
+}
+
+run "filetask_objectstore_trims_prefix_slashes" {
+  command = plan
+
+  variables {
+    filetask_objectstore = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-objectstore"
+      buckets             = [{ name = "prefixed-bucket", prefix = "/datasets/" }]
+    }
+  }
+
+  assert {
+    condition = toset(flatten([
+      for s in jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement :
+      s.Resource if s.Sid == "Objects0"
+      ])) == toset(["arn:aws:s3:::prefixed-bucket/datasets/*"
+    ])
+    error_message = "A surrounding slash must be trimmed, not carried into the resource as `//`."
+  }
+
+  assert {
+    condition = toset(flatten([
+      for s in jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement :
+      values(s.Condition.StringLike) if s.Sid == "ListPrefix0"
+      ])) == toset(["datasets", "datasets/*"
+    ])
+    error_message = "The list condition must use the trimmed prefix."
+  }
+}
+
+run "filetask_objectstore_rejects_slash_only_prefix" {
+  command = plan
+
+  variables {
+    filetask_objectstore = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-objectstore"
+      buckets             = [{ name = "prefixed-bucket", prefix = "/" }]
+    }
+  }
+
+  expect_failures = [
+    var.filetask_objectstore,
   ]
 }

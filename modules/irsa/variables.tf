@@ -106,12 +106,15 @@ variable "filetask_objectstore" {
       name        = bucket backing an S3 File System.
       prefix      = key prefix the file system is scoped to, omitted for a whole-bucket one.
       kms_key_arn = required only for an SSE-KMS bucket; must be a regional key ARN.
+
+    `file_system_ids` scopes s3files:GetFileSystem to these S3 File System ids; empty grants it on every file system in the account and region.
   EOF
 
   type = object({
     enabled             = optional(bool, false)
     namespace           = optional(string, "domino-compute")
     serviceaccount_name = optional(string, "domino-filetask-objectstore")
+    file_system_ids     = optional(list(string), [])
     buckets = optional(list(object({
       name        = string
       prefix      = optional(string)
@@ -138,14 +141,14 @@ variable "filetask_objectstore" {
   }
 
   validation {
-    # A slash is added where the policy needs one, so both `datasets/` and `` build `<bucket>//*`
-    # and deny every object. Omit prefix for a whole-bucket file system; an empty one is not that.
-    # Rejected rather than trimmed, to keep the prefix in the policy the prefix as configured.
+    # Surrounding slashes are trimmed before the policy is built, so only a prefix that trims away
+    # to nothing is rejected: `/` is not a whole-bucket file system, and reading it as one would
+    # silently widen the grant. Omit prefix for that instead.
     condition = alltrue([
       for b in var.filetask_objectstore.buckets :
-      b.prefix == null || (length(b.prefix) > 0 && !can(regex("^/|/$", b.prefix)))
+      b.prefix == null || length(trim(b.prefix, "/")) > 0
     ])
-    error_message = "filetask_objectstore prefixes must be non-empty and must not start or end with '/'. Omit prefix for a whole-bucket file system."
+    error_message = "filetask_objectstore prefixes must hold something other than '/'. Omit prefix for a whole-bucket file system."
   }
 
   validation {
@@ -156,6 +159,13 @@ variable "filetask_objectstore" {
       b.kms_key_arn == null || can(regex("^arn:[^:]+:kms:[^:]+:[0-9]{12}:key/.+$", b.kms_key_arn))
     ])
     error_message = "Each filetask_objectstore kms_key_arn must be a regional KMS key ARN: arn:<partition>:kms:<region>:<account>:key/<id>."
+  }
+
+  validation {
+    # A malformed id still builds an ARN, one that matches no file system, so that file system
+    # is unreachable instead of the plan failing.
+    condition     = alltrue([for id in var.filetask_objectstore.file_system_ids : can(regex("^fs-[0-9a-f]{17,40}$", id))])
+    error_message = "Each filetask_objectstore file_system_ids entry must match ^fs-[0-9a-f]{17,40}$: a malformed id builds an ARN that matches no file system."
   }
 
   validation {

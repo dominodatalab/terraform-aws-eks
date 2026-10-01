@@ -59,10 +59,11 @@ ${jsonencode({
       }
     } if b.kms_key_arn != null],
     [{
+      # File system ids are AWS-generated, so the wildcard stays until the caller names them.
       Sid      = "DescribeFileSystems"
       Effect   = "Allow"
       Action   = "s3files:GetFileSystem"
-      Resource = "arn:${partition}:s3files:*:*:file-system/*"
+      Resource = length(file_system_ids) == 0 ? ["arn:${partition}:s3files:${region}:${account_id}:file-system/*"] : [for id in file_system_ids : "arn:${partition}:s3files:${region}:${account_id}:file-system/${id}"]
     }]
   )
 })}

@@ -1,9 +1,18 @@
+locals {
+  # The template supplies the separator, so a configured slash would build `<bucket>//*`, which
+  # matches only keys that literally start with one. A null prefix stays null: that is the whole
+  # bucket, and an empty one is rejected in the variable.
+  filetask_objectstore_buckets = [for b in var.filetask_objectstore.buckets :
+    merge(b, { prefix = b.prefix == null ? null : trim(b.prefix, "/") })
+  ]
+}
+
 resource "aws_iam_policy" "filetask_objectstore" {
   count = var.filetask_objectstore.enabled ? 1 : 0
 
   name   = "${local.name_prefix}-filetask-objectstore"
   path   = "/"
-  policy = templatefile("${path.module}/apps-policies/filetask-objectstore.json.tftpl", merge(local.policy_vars, { buckets = var.filetask_objectstore.buckets }))
+  policy = templatefile("${path.module}/apps-policies/filetask-objectstore.json.tftpl", merge(local.policy_vars, { buckets = local.filetask_objectstore_buckets, file_system_ids = var.filetask_objectstore.file_system_ids }))
 }
 
 resource "aws_iam_role" "filetask_objectstore" {
