@@ -29,6 +29,9 @@ module "eks" {
   use_fips_endpoint   = var.use_fips_endpoint
   calico              = merge(var.calico, { image_registry = try(local.infra.storage.ecr.calico_image_registry, var.calico.image_registry) })
   karpenter           = var.karpenter
+  # Mounting a file system is authorized separately from reading the bucket behind it, and the
+  # mount is performed by the CSI driver as the node, so it cannot ride the task role.
+  filetask_objectstore_mount_enabled = var.filetask_objectstore.enabled
 }
 
 data "aws_caller_identity" "global" {
@@ -70,6 +73,7 @@ module "irsa_policies" {
   source                  = "./../../../../modules/irsa"
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
+  filetask_objectstore    = var.filetask_objectstore
   providers = {
     aws.global = aws.global
   }

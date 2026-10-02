@@ -107,17 +107,39 @@ data "aws_iam_policy_document" "mypod_s3" {
   }
 }
 
+locals {
+  irsa_policies_configs = [
+    {
+      name                = "mypod-s3"
+      namespace           = "domino-config"
+      policy              = data.aws_iam_policy_document.mypod_s3.json
+      serviceaccount_name = "mypod-s3"
+      pod_identity        = false
+    },
+    {
+      name                = "mypod-pod-identity"
+      namespace           = "domino-config"
+      policy              = data.aws_iam_policy_document.mypod_s3.json
+      serviceaccount_name = "mypod-pod-identity"
+      pod_identity        = true
+    }
+  ]
+
+  # Filtered rather than gated on the module: pod identity needs no OIDC provider, so a cluster
+  # without one still exercises those entries, while an IRSA entry there would trip the module's
+  # own precondition.
+  irsa_policies_supported = [
+    for c in local.irsa_policies_configs : c
+    if c.pod_identity || module.eks.info.cluster.oidc != null
+  ]
+}
+
 module "irsa_policies" {
-  count    = module.eks.info.cluster.oidc != null ? 1 : 0
-  source   = "./../../../modules/irsa"
-  eks_info = module.eks.info
-  additional_irsa_configs = [{
-    name                = "mypod-s3"
-    namespace           = "domino-config"
-    policy              = data.aws_iam_policy_document.mypod_s3.json
-    serviceaccount_name = "mypod-s3"
-  }]
-  use_fips_endpoint = var.use_fips_endpoint
+  count                   = length(local.irsa_policies_supported) > 0 ? 1 : 0
+  source                  = "./../../../modules/irsa"
+  eks_info                = module.eks.info
+  additional_irsa_configs = local.irsa_policies_supported
+  use_fips_endpoint       = var.use_fips_endpoint
 
   providers = {
     aws.global = aws.global

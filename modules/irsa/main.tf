@@ -1,7 +1,17 @@
 data "aws_caller_identity" "aws_account" {}
 data "aws_partition" "current" {}
+data "aws_region" "current" {}
 
 locals {
+  policy_vars = {
+    partition  = data.aws_partition.current.partition
+    account_id = var.eks_info.cluster.specs.account_id
+    region     = data.aws_region.current.region
+    deploy_id  = local.name_prefix
+    # An endpoint DNS name, not a service principal, so it becomes .amazonaws.com.cn in China.
+    dns_suffix = data.aws_partition.current.dns_suffix
+  }
+
   oidc_provider_url = var.eks_info.cluster.oidc != null ? var.eks_info.cluster.oidc.url : null
   oidc_provider_arn = var.eks_info.cluster.oidc != null ? var.eks_info.cluster.oidc.arn : null
   name_prefix       = var.eks_info.cluster.specs.name
