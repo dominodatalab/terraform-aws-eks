@@ -8,12 +8,13 @@ This module is an opinionated implementation of predefined and custom `irsa` rol
 
 ## Policy templates and pod identity
 
-An `additional_irsa_configs` entry may omit `policy`. When it does, the factory renders
-`apps-policies/<name>.json.tftpl` through `templatefile()`, keyed on the entry's `name`; an
-inline `policy` on the entry always wins over a file of the same name.
+Each `additional_irsa_configs` entry supplies its own `policy` as JSON.
 
-The template has five interpolation variables available: `partition`, `account_id`, `region`,
-`deploy_id` and `dns_suffix`.
+`filetask_objectstore` is the first component to build its policy from a template in
+`apps-policies/`, rendered through `templatefile()` with `partition`, `account_id`, `region`,
+`deploy_id` and `dns_suffix`. Extending that to `additional_irsa_configs`, so an entry can omit
+`policy` and get `apps-policies/<name>.json.tftpl`, needs `policy` to become `optional(string)`
+and a fallback in the role and policy resources. Not done here.
 
 Setting `pod_identity = true` on an entry swaps its role's OIDC trust policy for an EKS Pod
 Identity trust policy and creates the matching pod identity association. This requires the
