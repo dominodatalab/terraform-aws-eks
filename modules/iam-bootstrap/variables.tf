@@ -24,6 +24,12 @@ variable "iam_policy_paths" {
   default     = []
 }
 
+variable "additional_iam_policy_paths" {
+  type        = list(any)
+  description = "IAM policies to append to the ones in use, defaults or override alike, can be terraform templates"
+  default     = []
+}
+
 variable "template_config" {
   type        = map(any)
   description = "Variables to use for any templating in the IAM policies. AWS account ID (as 'account_id'), deploy_id, region and partition are automatically included."

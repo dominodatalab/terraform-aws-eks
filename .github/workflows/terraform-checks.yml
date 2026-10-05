@@ -81,6 +81,10 @@ jobs:
         run: >-
           terraform -chdir=modules/eks init -backend=false &&
           terraform -chdir=modules/eks test
+      - name: Terraform test modules/irsa
+        run: >-
+          terraform -chdir=modules/irsa init -backend=false &&
+          terraform -chdir=modules/irsa test
   terraform_providers_lock:
     name: Run terraform providers_lock
     runs-on: ubuntu-latest
