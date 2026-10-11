@@ -78,6 +78,11 @@ variable "network" {
     use_pod_cidr        = optional(bool)
     create_ecr_endpoint = optional(bool, false)
     create_s3_endpoint  = optional(bool, false)
+    nat = optional(object({
+      mode          = optional(string, "managed")
+      instance_type = optional(string, "t4g.nano")
+      ami_id        = optional(string, null)
+    }), {})
   })
 
   validation {
@@ -125,6 +130,11 @@ variable "network" {
   validation {
     condition     = var.network.vpc.id == null ? length(var.network.vpc.subnets.pod) == 0 : true
     error_message = "Must provide a vpc_id when providing pod_subnets."
+  }
+
+  validation {
+    condition     = contains(["managed", "fck-nat"], var.network.nat.mode)
+    error_message = "network.nat.mode must be \"managed\" or \"fck-nat\"."
   }
 }
 

@@ -75,3 +75,9 @@ locals {
   private_route_table_ids = [for rt in aws_route_table.private : rt.id]
   pod_route_table_ids     = [for rt in aws_route_table.pod : rt.id]
 }
+
+locals {
+  use_managed_nat            = var.network.nat.mode == "managed"
+  nat_gw_id_by_public_cidr   = { for k, ngw in aws_nat_gateway.ngw : k => ngw.id }
+  fck_nat_eni_by_public_cidr = { for k, inst in aws_instance.fck_nat : k => inst.primary_network_interface_id }
+}
