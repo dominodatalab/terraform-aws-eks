@@ -107,6 +107,9 @@ variable "eks_info" {
   EOF
   type = object({
     k8s_pre_setup_sh_file = string
+    calico = optional(object({
+      enabled = optional(bool, true)
+    }), {})
     cluster = object({
       addons = optional(list(string), ["kube-proxy", "coredns", "vpc-cni", "eks-pod-identity-agent"])
       vpc_cni = optional(object({
