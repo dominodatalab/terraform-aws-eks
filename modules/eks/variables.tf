@@ -273,6 +273,7 @@ variable "aws_load_balancer_controller_namespace" {
 variable "calico" {
   description = <<EOF
     calico = {
+      enabled = Install Calico (policy-only, on top of the AWS VPC CNI). Set to false when another policy engine (for example Cilium in aws-cni chaining mode) is managed outside this module. Existing Calico installs are not removed; setting this to false only stops this module from installing or upgrading Calico.
       version = Configure the version for Calico
       image_registry = Configure the image registry for Calico
       node_selector = Configure the node selector for Calico control plane components
@@ -280,6 +281,7 @@ variable "calico" {
   EOF
 
   type = object({
+    enabled        = optional(bool, true)
     image_registry = optional(string, "quay.io")
     version        = optional(string, "v3.31.4")
     node_selector = optional(object({
