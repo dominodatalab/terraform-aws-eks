@@ -61,6 +61,11 @@ variable "network" {
       pod = optional(string, "100.64.0.0/16")
     }), {})
     use_pod_cidr = optional(bool, true)
+    nat = optional(object({
+      mode          = optional(string, "managed")
+      instance_type = optional(string, "t4g.nano")
+      ami_id        = optional(string, null)
+    }), {})
   })
 
   default = {}
