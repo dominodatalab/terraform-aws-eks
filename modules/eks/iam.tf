@@ -248,6 +248,7 @@ locals {
     "AmazonEKSWorkerNodePolicy",
     "AmazonEKS_CNI_Policy",
     "AmazonEC2ContainerRegistryReadOnly",
+    "AmazonEC2ContainerRegistryPullOnly",
     "AmazonSSMManagedInstanceCore",
     "AmazonElasticFileSystemReadOnlyAccess",
   ]
