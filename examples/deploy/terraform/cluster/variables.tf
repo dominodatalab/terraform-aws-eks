@@ -138,6 +138,33 @@ variable "filetask_objectstore" {
   nullable = false
 }
 
+variable "filetask_archive" {
+  description = <<EOF
+    S3 archive storage for Domino's archive filetask types (validate-archive-s3, archive-s3,
+    restore-s3).
+
+    `buckets` declares buckets that already exist and is used only to scope IAM -- nothing here
+    creates a bucket. Each entry is:
+      name        = bucket holding archive repositories.
+      prefix      = key prefix the archive pods may use, omitted for the whole bucket.
+      kms_key_arn = required only for an SSE-KMS bucket; must be a regional key ARN.
+  EOF
+
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string, "domino-compute")
+    serviceaccount_name = optional(string, "domino-filetask-archive")
+    buckets = optional(list(object({
+      name        = string
+      prefix      = optional(string)
+      kms_key_arn = optional(string)
+    })), [])
+  })
+
+  default  = {}
+  nullable = false
+}
+
 variable "irsa_external_dns" {
   description = <<EOF
     Config to enable irsa for external-dns

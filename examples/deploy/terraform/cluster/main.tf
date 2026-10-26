@@ -74,6 +74,7 @@ module "irsa_policies" {
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
   filetask_objectstore    = var.filetask_objectstore
+  filetask_archive        = var.filetask_archive
   providers = {
     aws.global = aws.global
   }

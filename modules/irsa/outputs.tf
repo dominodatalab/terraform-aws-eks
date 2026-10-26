@@ -34,3 +34,10 @@ output "filetask_objectstore" {
     identity_role = aws_iam_role.filetask_objectstore[0].arn
   } : null
 }
+
+output "filetask_archive" {
+  description = "Filetask archive pod identity role info"
+  value = var.filetask_archive.enabled ? {
+    identity_role = aws_iam_role.filetask_archive[0].arn
+  } : null
+}

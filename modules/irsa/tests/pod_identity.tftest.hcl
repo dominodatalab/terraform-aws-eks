@@ -520,3 +520,342 @@ run "filetask_objectstore_rejects_slash_only_prefix" {
     var.filetask_objectstore,
   ]
 }
+
+# filetask_archive is filetask_objectstore without the s3files grant, bound to its own service
+# account. Same three buckets as the object-store scoping run.
+run "filetask_archive_scoping" {
+  command = plan
+
+  variables {
+    filetask_archive = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-archive"
+      buckets = [
+        { name = "prefixed-bucket", prefix = "archives" },
+        { name = "unprefixed-bucket" },
+        { name = "kms-bucket", prefix = "kms-archives", kms_key_arn = "arn:aws:kms:eu-west-1:123456789012:key/11111111-2222-3333-4444-555555555555" },
+      ]
+    }
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_role.filetask_archive[0].assume_role_policy).Statement[0].Principal.Service == "pods.eks.amazonaws.com"
+    error_message = "The archive role must trust the pods.eks.amazonaws.com service."
+  }
+
+  assert {
+    condition     = toset(flatten([jsondecode(aws_iam_role.filetask_archive[0].assume_role_policy).Statement[0].Action])) == toset(["sts:AssumeRole", "sts:TagSession"])
+    error_message = "The archive trust policy must allow exactly sts:AssumeRole and sts:TagSession."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_role.filetask_archive[0].assume_role_policy).Statement[0].Condition.StringEquals["aws:SourceAccount"] == "123456789012"
+    error_message = "Without aws:SourceAccount, the archive role is assumable on behalf of pods in any account."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_role.filetask_archive[0].assume_role_policy).Statement[0].Condition.ArnEquals["aws:SourceArn"] == "arn:aws:eks:us-west-2:123456789012:cluster/test-deploy"
+    error_message = "Without aws:SourceArn naming this cluster, the archive role is assumable from another cluster's association."
+  }
+
+  assert {
+    condition     = aws_eks_pod_identity_association.filetask_archive[0].namespace == "domino-compute" && aws_eks_pod_identity_association.filetask_archive[0].service_account == "domino-filetask-archive"
+    error_message = "The archive association must bind domino-compute/domino-filetask-archive: the filetask charts create exactly that account."
+  }
+
+  assert {
+    condition     = aws_iam_role.filetask_archive[0].name == "test-deploy-filetask-archive" && aws_iam_policy.filetask_archive[0].name == "test-deploy-filetask-archive"
+    error_message = "The archive role and policy must be named <cluster>-filetask-archive."
+  }
+
+  assert {
+    condition     = toset(jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement[0].Condition.StringLike["s3:prefix"]) == toset(["archives", "archives/*"])
+    error_message = "The prefixed bucket's ListBucket statement must carry StringLike on s3:prefix with both the bare prefix and the prefix/* form."
+  }
+
+  assert {
+    condition     = !contains(keys(jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement[1]), "Condition")
+    error_message = "The unprefixed bucket's ListBucket statement must carry no Condition."
+  }
+
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement :
+      alltrue([for r in flatten([s.Resource]) : contains([
+        "arn:aws:s3:::prefixed-bucket", "arn:aws:s3:::prefixed-bucket/archives/*",
+        "arn:aws:s3:::unprefixed-bucket", "arn:aws:s3:::unprefixed-bucket/*",
+        "arn:aws:s3:::kms-bucket", "arn:aws:s3:::kms-bucket/kms-archives/*",
+      ], r)]) if anytrue([for a in flatten([s.Action]) : startswith(a, "s3:")])
+    ])
+    error_message = "Every s3: statement must name only the configured archive buckets and their prefix paths."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement[6].Resource == "arn:aws:s3:::prefixed-bucket/archives/*"
+    error_message = "The prefixed bucket's object statement must be confined to its prefix path, not the whole bucket."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement[9].Condition.StringEquals["kms:ViaService"] == "s3.eu-west-1.amazonaws.com"
+    error_message = "The KMS statement's kms:ViaService must name the key's own region, not the cluster's region."
+  }
+
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement :
+      try(s.Sid, null) == null || can(regex("^[A-Za-z0-9]+$", s.Sid))
+    ])
+    error_message = "Every Sid must match ^[A-Za-z0-9]+$: IAM accepts only letters and digits in a Sid and rejects the whole policy otherwise."
+  }
+
+  assert {
+    condition     = length(aws_iam_role.filetask_objectstore) == 0 && length(aws_eks_pod_identity_association.filetask_objectstore) == 0
+    error_message = "Enabling filetask_archive must not create any filetask_objectstore resource."
+  }
+}
+
+# Statement order is the template's: ListPrefix x3, MultipartListing x3, Objects x3, then
+# ObjectEncryption for the one KMS bucket. No s3files statement.
+run "filetask_archive_exact_actions" {
+  command = plan
+
+  variables {
+    filetask_archive = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-archive"
+      buckets = [
+        { name = "prefixed-bucket", prefix = "archives" },
+        { name = "unprefixed-bucket" },
+        { name = "kms-bucket", prefix = "kms-archives", kms_key_arn = "arn:aws:kms:eu-west-1:123456789012:key/11111111-2222-3333-4444-555555555555" },
+      ]
+    }
+  }
+
+  assert {
+    condition = [
+      for s in jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement : toset(flatten([s.Action]))
+      ] == [
+      toset(["s3:ListBucket"]),
+      toset(["s3:ListBucket"]),
+      toset(["s3:ListBucket"]),
+      toset(["s3:ListBucketMultipartUploads"]),
+      toset(["s3:ListBucketMultipartUploads"]),
+      toset(["s3:ListBucketMultipartUploads"]),
+      toset(["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"]),
+      toset(["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"]),
+      toset(["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"]),
+      toset(["kms:Decrypt", "kms:GenerateDataKey"]),
+    ]
+    error_message = "Each statement must grant exactly its expected actions, in template order. An added or removed action, or an added statement, changes what the pod can do and must be a deliberate edit to this list."
+  }
+
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement :
+      !contains(keys(s), "NotAction") && !contains(keys(s), "NotResource")
+    ])
+    error_message = "No statement may use NotAction or NotResource: both grant everything except what they name."
+  }
+}
+
+run "filetask_archive_china_partition" {
+  command = plan
+
+  providers = {
+    aws        = aws.china
+    aws.global = aws.global
+  }
+
+  variables {
+    filetask_archive = {
+      enabled             = true
+      namespace           = "domino-compute"
+      serviceaccount_name = "domino-filetask-archive"
+      buckets = [
+        { name = "prefixed-bucket", prefix = "archives" },
+        { name = "kms-bucket", prefix = "kms-archives", kms_key_arn = "arn:aws-cn:kms:cn-north-1:123456789012:key/11111111-2222-3333-4444-555555555555" },
+      ]
+    }
+  }
+
+  assert {
+    condition     = !can(regex("arn:aws:", aws_iam_policy.filetask_archive[0].policy))
+    error_message = "No arn:aws: ARN may appear anywhere in the China render, including inside Condition values."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement[4].Resource == "arn:aws-cn:s3:::prefixed-bucket/archives/*"
+    error_message = "The object ARN must be built with the aws-cn partition."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement[6].Condition.StringEquals["kms:ViaService"] == "s3.cn-north-1.amazonaws.com.cn"
+    error_message = "kms:ViaService must end in amazonaws.com.cn in the China partition."
+  }
+}
+
+run "filetask_archive_disabled" {
+  command = plan
+
+  assert {
+    condition     = length(aws_iam_policy.filetask_archive) == 0 && length(aws_iam_role.filetask_archive) == 0 && length(aws_iam_role_policy_attachment.filetask_archive) == 0 && length(aws_eks_pod_identity_association.filetask_archive) == 0
+    error_message = "No filetask_archive resource may be created when disabled."
+  }
+
+  assert {
+    condition     = output.filetask_archive == null
+    error_message = "The filetask_archive output must be null when disabled."
+  }
+}
+
+run "filetask_archive_trims_prefix_slashes" {
+  command = plan
+
+  variables {
+    filetask_archive = {
+      enabled = true
+      buckets = [{ name = "prefixed-bucket", prefix = "/archives/" }]
+    }
+  }
+
+  assert {
+    condition = toset(flatten([
+      for s in jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement :
+      s.Resource if s.Sid == "Objects0"
+    ])) == toset(["arn:aws:s3:::prefixed-bucket/archives/*"])
+    error_message = "A surrounding slash must be trimmed, not carried into the resource as `//`."
+  }
+
+  assert {
+    condition     = aws_eks_pod_identity_association.filetask_archive[0].namespace == "domino-compute" && aws_eks_pod_identity_association.filetask_archive[0].service_account == "domino-filetask-archive"
+    error_message = "The defaults must bind domino-compute/domino-filetask-archive."
+  }
+}
+
+run "filetask_archive_rejects_slash_only_prefix" {
+  command = plan
+
+  variables {
+    filetask_archive = {
+      enabled = true
+      buckets = [{ name = "prefixed-bucket", prefix = "/" }]
+    }
+  }
+
+  expect_failures = [
+    var.filetask_archive,
+  ]
+}
+
+run "filetask_archive_rejects_empty_buckets" {
+  command = plan
+
+  variables {
+    filetask_archive = {
+      enabled = true
+    }
+  }
+
+  expect_failures = [
+    var.filetask_archive,
+  ]
+}
+
+run "filetask_archive_rejects_name_collision" {
+  command = plan
+
+  variables {
+    filetask_archive = {
+      enabled = true
+      buckets = [{ name = "collision-bucket" }]
+    }
+    additional_irsa_configs = [
+      {
+        name                = "filetask-archive"
+        namespace           = "domino-platform"
+        serviceaccount_name = "different-sa"
+        policy              = jsonencode({ Version = "2012-10-17", Statement = [] })
+      },
+    ]
+  }
+
+  expect_failures = [
+    aws_iam_role.filetask_archive,
+  ]
+}
+
+run "filetask_archive_rejects_serviceaccount_collision" {
+  command = plan
+
+  variables {
+    filetask_archive = {
+      enabled = true
+      buckets = [{ name = "collision-bucket" }]
+    }
+    additional_irsa_configs = [
+      {
+        name                = "different-name"
+        namespace           = "domino-compute"
+        serviceaccount_name = "domino-filetask-archive"
+        pod_identity        = true
+        policy              = jsonencode({ Version = "2012-10-17", Statement = [] })
+      },
+    ]
+  }
+
+  expect_failures = [
+    aws_eks_pod_identity_association.filetask_archive,
+  ]
+}
+
+run "filetask_archive_rejects_objectstore_serviceaccount" {
+  command = plan
+
+  variables {
+    filetask_objectstore = {
+      enabled = true
+      buckets = [{ name = "objectstore-bucket" }]
+    }
+    filetask_archive = {
+      enabled             = true
+      serviceaccount_name = "domino-filetask-objectstore"
+      buckets             = [{ name = "archive-bucket" }]
+    }
+  }
+
+  expect_failures = [
+    aws_eks_pod_identity_association.filetask_archive,
+  ]
+}
+
+run "filetask_archive_beside_objectstore" {
+  command = plan
+
+  variables {
+    filetask_objectstore = {
+      enabled = true
+      buckets = [{ name = "objectstore-bucket" }]
+    }
+    filetask_archive = {
+      enabled = true
+      buckets = [{ name = "archive-bucket" }]
+    }
+  }
+
+  assert {
+    condition     = !can(regex("objectstore-bucket", aws_iam_policy.filetask_archive[0].policy))
+    error_message = "The archive policy must not reach the object-store bucket."
+  }
+
+  assert {
+    condition     = !can(regex("archive-bucket", aws_iam_policy.filetask_objectstore[0].policy))
+    error_message = "The object-store policy must not reach the archive bucket."
+  }
+
+  assert {
+    condition     = aws_eks_pod_identity_association.filetask_archive[0].service_account != aws_eks_pod_identity_association.filetask_objectstore[0].service_account
+    error_message = "The archive and object-store associations must bind different service accounts."
+  }
+}

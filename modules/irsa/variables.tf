@@ -181,6 +181,77 @@ variable "filetask_objectstore" {
   }
 }
 
+variable "filetask_archive" {
+  description = <<EOF
+    S3 archive storage for Domino's archive filetask types (validate-archive-s3, archive-s3,
+    restore-s3).
+
+    `buckets` declares buckets that already exist and is used only to scope IAM -- nothing here
+    creates a bucket. Each entry is:
+      name        = bucket holding archive repositories.
+      prefix      = key prefix the archive pods may use, omitted for the whole bucket.
+      kms_key_arn = required only for an SSE-KMS bucket; must be a regional key ARN.
+  EOF
+
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string, "domino-compute")
+    serviceaccount_name = optional(string, "domino-filetask-archive")
+    buckets = optional(list(object({
+      name        = string
+      prefix      = optional(string)
+      kms_key_arn = optional(string)
+    })), [])
+  })
+
+  default  = {}
+  nullable = false
+
+  validation {
+    condition     = alltrue([for b in var.filetask_archive.buckets : can(regex("^[A-Za-z0-9._-]+$", b.name))])
+    error_message = "Each filetask_archive bucket name must match ^[A-Za-z0-9._-]+$."
+  }
+
+  validation {
+    # A wildcard here spans `/`, so `data*` would also grant <bucket>/database-backups/*.
+    condition = alltrue([
+      for b in var.filetask_archive.buckets :
+      b.prefix == null || !can(regex("[*?]|\\$\\{", b.prefix))
+    ])
+    error_message = "filetask_archive prefixes must be literal: no '*', '?' or '$${...}'. Use one bucket entry per prefix."
+  }
+
+  validation {
+    # `/` trims away to nothing; reading it as the whole bucket would silently widen the grant.
+    condition = alltrue([
+      for b in var.filetask_archive.buckets :
+      b.prefix == null || length(trim(b.prefix, "/")) > 0
+    ])
+    error_message = "filetask_archive prefixes must hold something other than '/'. Omit prefix for the whole bucket."
+  }
+
+  validation {
+    # A bare key id or an alias ARN builds a policy that reads as configured and denies every
+    # operation, so reject both here rather than at first use.
+    condition = alltrue([
+      for b in var.filetask_archive.buckets :
+      b.kms_key_arn == null || can(regex("^arn:[^:]+:kms:[^:]+:[0-9]{12}:key/.+$", b.kms_key_arn))
+    ])
+    error_message = "Each filetask_archive kms_key_arn must be a regional KMS key ARN: arn:<partition>:kms:<region>:<account>:key/<id>."
+  }
+
+  validation {
+    condition     = !var.filetask_archive.enabled || length(var.filetask_archive.serviceaccount_name) > 0
+    error_message = "filetask_archive.serviceaccount_name must not be empty when enabled: an association keyed on an empty name silently binds nothing."
+  }
+
+  validation {
+    # Enabled with no buckets would create a role that grants nothing, which reads as configured.
+    condition     = !var.filetask_archive.enabled || length(var.filetask_archive.buckets) > 0
+    error_message = "filetask_archive.buckets must be non-empty when enabled."
+  }
+}
+
 variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
