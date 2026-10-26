@@ -1,5 +1,6 @@
 locals {
-  # Same trim as filetask_objectstore_buckets: the template supplies the separator.
+  # The template supplies the separator, so a configured slash would build `<bucket>//*`, which
+  # matches only keys that literally start with one. A null prefix stays null: the whole bucket.
   filetask_archive_buckets = [for b in var.filetask_archive.buckets :
     merge(b, { prefix = b.prefix == null ? null : trim(b.prefix, "/") })
   ]

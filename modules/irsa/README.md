@@ -14,8 +14,8 @@ Each `additional_irsa_configs` entry supplies its own `policy` as JSON.
 `apps-policies/`, rendered through `templatefile()` with `partition`, `account_id`, `region`,
 `deploy_id` and `dns_suffix`. Extending that to `additional_irsa_configs`, so an entry can omit
 `policy` and get `apps-policies/<name>.json.tftpl`, needs `policy` to become `optional(string)`
-and a fallback in the role and policy resources. Not done here. `filetask_archive` follows the
-same shape for the archive filetask types, without the s3files grant, on its own service account.
+and a fallback in the role and policy resources. Not done here. `filetask_archive` also builds its
+policy from a template, `apps-policies/filetask-archive.json.tftpl`.
 
 Setting `pod_identity = true` on an entry swaps its role's OIDC trust policy for an EKS Pod
 Identity trust policy and creates the matching pod identity association. This requires the

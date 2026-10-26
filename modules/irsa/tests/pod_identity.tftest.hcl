@@ -521,8 +521,7 @@ run "filetask_objectstore_rejects_slash_only_prefix" {
   ]
 }
 
-# filetask_archive is filetask_objectstore without the s3files grant, bound to its own service
-# account. Same three buckets as the object-store scoping run.
+# Prefixed bucket, unprefixed bucket, and a KMS bucket whose key is outside the cluster region.
 run "filetask_archive_scoping" {
   command = plan
 
@@ -616,7 +615,7 @@ run "filetask_archive_scoping" {
 }
 
 # Statement order is the template's: ListPrefix x3, MultipartListing x3, Objects x3, then
-# ObjectEncryption for the one KMS bucket. No s3files statement.
+# ObjectEncryption for the one KMS bucket.
 run "filetask_archive_exact_actions" {
   command = plan
 

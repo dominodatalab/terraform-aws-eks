@@ -1,7 +1,6 @@
 ${jsonencode({
   Version = "2012-10-17"
-  # The filetask-objectstore grant without its s3files statement: archive buckets are plain S3.
-  # Kopia maintenance rewrites and deletes pack files, so restore keeps write and delete too.
+  # Read, write and delete on each configured bucket and prefix, and nothing outside them.
   Statement = concat(
     # Sids are indexed, not named: IAM restricts a Sid to letters and digits, while a bucket name
     # may carry a dot, a hyphen or an underscore.
