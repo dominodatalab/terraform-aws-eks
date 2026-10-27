@@ -214,3 +214,37 @@ variable "netapp_trident_configurator" {
 
   default = {}
 }
+
+variable "netapp_volume_usage" {
+  description = <<EOF
+    Config to create the IRSA role the data plane agent uses to read the ONTAP SVM credentials
+    (vsadmin) for NetApp volume usage.
+
+    `secret_arns` are the exact Secrets Manager ARNs of the SVM credentials secrets (for example
+    `module.infra.storage.netapp.svm.creds_secret_arn`). Never pass the fsxadmin filesystem secret.
+    `namespace` and `serviceaccount_name` are those of the data plane agent and have no default.
+  EOF
+
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string)
+    serviceaccount_name = optional(string)
+    secret_arns         = optional(list(string), [])
+  })
+
+  default = {}
+
+  validation {
+    condition = !var.netapp_volume_usage.enabled || (
+      var.netapp_volume_usage.namespace != null &&
+      var.netapp_volume_usage.serviceaccount_name != null &&
+      length(var.netapp_volume_usage.secret_arns) > 0
+    )
+    error_message = "netapp_volume_usage needs namespace, serviceaccount_name and at least one secret ARN when enabled."
+  }
+
+  validation {
+    condition     = alltrue([for a in var.netapp_volume_usage.secret_arns : can(regex("^arn:[a-z-]+:secretsmanager:[a-z0-9-]+:[0-9]{12}:secret:[^*?]+$", a))])
+    error_message = "Each netapp_volume_usage secret ARN must be a Secrets Manager secret ARN with no wildcard."
+  }
+}
