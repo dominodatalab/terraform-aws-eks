@@ -56,17 +56,20 @@ No modules.
 | [aws_iam_openid_connect_provider.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider) | resource |
 | [aws_iam_policy.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.filetask_objectstore](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.netapp_volume_usage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.trident_configurator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.trident_operator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.filetask_objectstore](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.netapp_volume_usage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.trident_configurator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.trident_operator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.external_dns_extra_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.filetask_objectstore](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.netapp_volume_usage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.trident_configurator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.trident_operator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -89,6 +92,7 @@ No modules.
 | <a name="input_filetask_objectstore"></a> [filetask\_objectstore](#input\_filetask\_objectstore) | S3 Files dataset storage for Domino's s3-native filetask dataset tasks.<br/><br/>    `buckets` declares buckets that already exist and is used only to scope IAM -- nothing here<br/>    creates a bucket, a file system, or a mount target. Each entry is:<br/>      name        = bucket backing an S3 File System.<br/>      prefix      = key prefix the file system is scoped to, omitted for a whole-bucket one.<br/>      kms\_key\_arn = required only for an SSE-KMS bucket; must be a regional key ARN.<br/><br/>    `file_system_ids` scopes s3files:GetFileSystem to these S3 File System ids; empty grants it on every file system in the account and region. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "domino-compute")<br/>    serviceaccount_name = optional(string, "domino-filetask-objectstore")<br/>    file_system_ids     = optional(list(string), [])<br/>    buckets = optional(list(object({<br/>      name        = string<br/>      prefix      = optional(string)<br/>      kms_key_arn = optional(string)<br/>    })), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_netapp_trident_configurator"></a> [netapp\_trident\_configurator](#input\_netapp\_trident\_configurator) | Config to create IRSA role for the netapp-trident-configurator. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "trident")<br/>    serviceaccount_name = optional(string, "trident-configurator")<br/>    region              = optional(string)<br/>  })</pre> | `{}` | no |
 | <a name="input_netapp_trident_operator"></a> [netapp\_trident\_operator](#input\_netapp\_trident\_operator) | Config to create IRSA role for the netapp-trident-operator. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "trident")<br/>    serviceaccount_name = optional(string, "trident-controller")<br/>    region              = optional(string)<br/>  })</pre> | `{}` | no |
+| <a name="input_netapp_volume_usage"></a> [netapp\_volume\_usage](#input\_netapp\_volume\_usage) | Config to create the IRSA role the data plane agent uses to read the ONTAP SVM credentials<br/>    (vsadmin) for NetApp volume usage.<br/><br/>    `secret_arns` are the exact Secrets Manager ARNs of the SVM credentials secrets (for example<br/>    `module.infra.storage.netapp.svm.creds_secret_arn`). Never pass the fsxadmin filesystem secret.<br/>    `namespace` and `serviceaccount_name` are those of the data plane agent and have no default. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string)<br/>    serviceaccount_name = optional(string)<br/>    secret_arns         = optional(list(string), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_use_fips_endpoint"></a> [use\_fips\_endpoint](#input\_use\_fips\_endpoint) | Use aws FIPS endpoints | `bool` | `false` | no |
 
 ## Outputs
@@ -99,5 +103,6 @@ No modules.
 | <a name="output_filetask_objectstore"></a> [filetask\_objectstore](#output\_filetask\_objectstore) | Filetask object store pod identity role info |
 | <a name="output_netapp_trident_configurator"></a> [netapp\_trident\_configurator](#output\_netapp\_trident\_configurator) | NetApp Astra Trident NETAPP configurator role info |
 | <a name="output_netapp_trident_operator"></a> [netapp\_trident\_operator](#output\_netapp\_trident\_operator) | NetApp Astra Trident NETAPP Operator role info |
+| <a name="output_netapp_volume_usage"></a> [netapp\_volume\_usage](#output\_netapp\_volume\_usage) | NetApp volume usage (agent ONTAP credentials) role info |
 | <a name="output_roles"></a> [roles](#output\_roles) | Roles mapping info |
 <!-- END_TF_DOCS -->
