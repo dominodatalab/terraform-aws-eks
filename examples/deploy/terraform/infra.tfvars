@@ -36,7 +36,9 @@ eks = {
   run_k8s_setup      = null
   service_ipv4_cidr  = null
   ssm_log_group_name = null
-  vpc_cni            = null
+  vpc_cni = {
+    network_policy = true
+  }
 }
 ignore_tags           = []
 karpenter_node_groups = null
