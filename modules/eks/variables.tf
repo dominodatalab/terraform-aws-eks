@@ -205,6 +205,7 @@ variable "eks" {
     vpc_cni = optional(object({
       prefix_delegation = optional(bool, false)
       annotate_pod_ip   = optional(bool, true)
+      network_policy    = optional(bool, false)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
