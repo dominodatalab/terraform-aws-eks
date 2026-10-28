@@ -137,7 +137,7 @@ resource "aws_eks_node_group" "node_groups" {
   version              = each.value.node_group.version
   release_version      = each.value.node_group.release_version
   node_group_name      = each.key
-  node_role_arn        = var.eks_info.nodes.roles[0].arn
+  node_role_arn        = each.value.node_group.is_platform && var.eks_info.nodes.platform_role != null ? var.eks_info.nodes.platform_role.arn : var.eks_info.nodes.roles[0].arn
   subnet_ids           = try(lookup(each.value.node_group, "single_nodegroup", false), false) ? [for s in values(each.value.subnet) : s.subnet_id] : [each.value.subnet.subnet_id]
   force_update_version = true
   scaling_config {

@@ -52,6 +52,7 @@ locals {
       is_gpu          = local.node_group_status[name].is_gpu
       is_neuron       = local.node_group_status[name].is_neuron
       is_arm64        = local.node_group_status[name].is_arm64
+      is_platform     = try(ng.labels["dominodatalab.com/node-pool"], null) == "platform"
       user_data_type  = ng.ami != null ? ng.user_data_type : null
       ami_type        = ng.ami != null ? "CUSTOM" : local.ami_type_map[local.node_group_ami_class_types[name].ami_class].ami_type
       version         = ng.ami != null ? null : var.eks_info.cluster.version

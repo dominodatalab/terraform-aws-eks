@@ -94,6 +94,10 @@ variable "eks_info" {
         name = string
         arn  = string
       }
+      platform_role = Optional minimal IAM Role used only by platform node groups. {
+        name = string
+        arn  = string
+      }
       kubelet = {
         registry_pull_qps = number
         registry_burst    = number
@@ -148,6 +152,10 @@ variable "eks_info" {
     nodes = object({
       security_group_id = string
       roles = list(object({
+        name = string
+        arn  = string
+      }))
+      platform_role = optional(object({
         name = string
         arn  = string
       }))

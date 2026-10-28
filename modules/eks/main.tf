@@ -263,10 +263,18 @@ locals {
     nodes = {
       nodes_master      = var.eks.nodes_master
       security_group_id = aws_security_group.eks_nodes.id
-      roles = [{
+      roles = concat([{
         arn  = aws_iam_role.eks_nodes.arn
         name = aws_iam_role.eks_nodes.name
-      }]
+        }],
+        [for r in aws_iam_role.eks_platform_nodes : {
+          arn  = r.arn
+          name = r.name
+      }])
+      platform_role = one([for r in aws_iam_role.eks_platform_nodes : {
+        arn  = r.arn
+        name = r.name
+      }])
       soci_snapshotter = var.eks.soci_snapshotter
       kubelet          = var.eks.kubelet
       feature_gates    = var.eks.feature_gates

@@ -136,6 +136,7 @@ variable "eks" {
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
+    separate_platform_node_role = Create a separate minimal IAM role (only what a worker needs to join the cluster) for platform node groups. The default eks-nodes role is then used only by non-platform (compute) node groups.
     soci_snapshotter = SOCI snapshotter configuration for fast image pulling. {
       enabled = Enable SOCI snapshotter and FastImagePull feature gate.
       max_concurrent_downloads_per_image = Max concurrent downloads per image.
@@ -176,6 +177,7 @@ variable "eks" {
     creation_role_name = optional(string, null)
     k8s_version        = optional(string, "1.35")
     nodes_master       = optional(bool, false)
+    separate_platform_node_role = optional(bool, false)
     soci_snapshotter = optional(object({
       enabled                            = optional(bool, true)
       max_concurrent_downloads_per_image = optional(number, 10)
