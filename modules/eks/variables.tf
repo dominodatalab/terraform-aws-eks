@@ -137,10 +137,6 @@ variable "eks" {
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
     separate_platform_node_role = Create a separate minimal IAM role (only what a worker needs to join the cluster) for platform node groups. The default eks-nodes role is then used only by non-platform (compute) node groups.
-    platform_pod_identity = EKS Pod Identity roles for platform service accounts. {
-      enabled     = Create roles + associations for cluster-autoscaler and ebs-csi-controller-sa.
-      extra_roles = Map of additional roles { namespace, service_account, policy_arns }.
-    }
     soci_snapshotter = SOCI snapshotter configuration for fast image pulling. {
       enabled = Enable SOCI snapshotter and FastImagePull feature gate.
       max_concurrent_downloads_per_image = Max concurrent downloads per image.
@@ -182,14 +178,6 @@ variable "eks" {
     k8s_version                 = optional(string, "1.35")
     nodes_master                = optional(bool, false)
     separate_platform_node_role = optional(bool, false)
-    platform_pod_identity = optional(object({
-      enabled = optional(bool, false)
-      extra_roles = optional(map(object({
-        namespace       = optional(string, "kube-system")
-        service_account = string
-        policy_arns     = optional(list(string), [])
-      })), {})
-    }), {})
     soci_snapshotter = optional(object({
       enabled                            = optional(bool, true)
       max_concurrent_downloads_per_image = optional(number, 10)
