@@ -601,8 +601,3 @@ variable "use_fips_endpoint" {
   default     = false
 }
 
-variable "install_calico" {
-  description = "Whether to run the Calico install step (helm chart from projectcalico.docs.tigera.io + manifests from raw.githubusercontent.com) - both require public internet access, so set to false for air-gapped installs where CNI is set up separately/manually."
-  type        = bool
-  default     = true
-}

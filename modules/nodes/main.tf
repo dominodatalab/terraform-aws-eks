@@ -137,7 +137,7 @@ data "aws_ami" "custom" {
 }
 
 resource "terraform_data" "calico_setup" {
-  count = var.install_calico && var.eks_info.calico.enabled && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
+  count = var.eks_info.calico.enabled && try(fileexists(var.eks_info.k8s_pre_setup_sh_file), false) ? 1 : 0
 
   triggers_replace = [
     filemd5(var.eks_info.k8s_pre_setup_sh_file)
