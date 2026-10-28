@@ -22,6 +22,7 @@ variable "eks_info" {
       }))
     })
     cluster = object({
+      arn = optional(string)
       specs = object({
         name       = string
         account_id = string
@@ -79,13 +80,104 @@ variable "additional_irsa_configs" {
     namespace           = string
     serviceaccount_name = string
     policy              = string #json
+    pod_identity        = optional(bool, false)
   }))
 
   default = []
 
   validation {
+    # `name` becomes an IAM role name suffix, so it is constrained here rather than at use.
+    condition     = alltrue([for i in var.additional_irsa_configs : can(regex("^[a-zA-Z0-9-]+$", i.name))])
+    error_message = "Each additional_irsa_configs name must match ^[a-zA-Z0-9-]+$"
+  }
+
+  validation {
     condition     = alltrue([for i in var.additional_irsa_configs : can(jsondecode(i.policy))])
     error_message = "Invalid json found in policy"
+  }
+}
+
+variable "filetask_objectstore" {
+  description = <<EOF
+    S3 Files dataset storage for Domino's s3-native filetask dataset tasks.
+
+    `buckets` declares buckets that already exist and is used only to scope IAM -- nothing here
+    creates a bucket, a file system, or a mount target. Each entry is:
+      name        = bucket backing an S3 File System.
+      prefix      = key prefix the file system is scoped to, omitted for a whole-bucket one.
+      kms_key_arn = required only for an SSE-KMS bucket; must be a regional key ARN.
+
+    `file_system_ids` scopes s3files:GetFileSystem to these S3 File System ids; empty grants it on every file system in the account and region.
+  EOF
+
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string, "domino-compute")
+    serviceaccount_name = optional(string, "domino-filetask-objectstore")
+    file_system_ids     = optional(list(string), [])
+    buckets = optional(list(object({
+      name        = string
+      prefix      = optional(string)
+      kms_key_arn = optional(string)
+    })), [])
+  })
+
+  default  = {}
+  nullable = false
+
+  validation {
+    condition     = alltrue([for b in var.filetask_objectstore.buckets : can(regex("^[A-Za-z0-9._-]+$", b.name))])
+    error_message = "Each filetask_objectstore bucket name must match ^[A-Za-z0-9._-]+$."
+  }
+
+  validation {
+    # A wildcard here spans `/`, so `data*` would also grant <bucket>/database-backups/* -- a
+    # path that reads like one folder. Use one bucket entry per prefix instead.
+    condition = alltrue([
+      for b in var.filetask_objectstore.buckets :
+      b.prefix == null || !can(regex("[*?]|\\$\\{", b.prefix))
+    ])
+    error_message = "filetask_objectstore prefixes must be literal: no '*', '?' or '$${...}'. Use one bucket entry per prefix."
+  }
+
+  validation {
+    # Surrounding slashes are trimmed before the policy is built, so only a prefix that trims away
+    # to nothing is rejected: `/` is not a whole-bucket file system, and reading it as one would
+    # silently widen the grant. Omit prefix for that instead.
+    condition = alltrue([
+      for b in var.filetask_objectstore.buckets :
+      b.prefix == null || length(trim(b.prefix, "/")) > 0
+    ])
+    error_message = "filetask_objectstore prefixes must hold something other than '/'. Omit prefix for a whole-bucket file system."
+  }
+
+  validation {
+    # A bare key id or an alias ARN builds a policy that reads as configured and denies every
+    # operation, so reject both here rather than at first use.
+    condition = alltrue([
+      for b in var.filetask_objectstore.buckets :
+      b.kms_key_arn == null || can(regex("^arn:[^:]+:kms:[^:]+:[0-9]{12}:key/.+$", b.kms_key_arn))
+    ])
+    error_message = "Each filetask_objectstore kms_key_arn must be a regional KMS key ARN: arn:<partition>:kms:<region>:<account>:key/<id>."
+  }
+
+  validation {
+    # A malformed id still builds an ARN, one that matches no file system, so that file system
+    # is unreachable instead of the plan failing.
+    condition     = alltrue([for id in var.filetask_objectstore.file_system_ids : can(regex("^fs-[0-9a-f]{17,40}$", id))])
+    error_message = "Each filetask_objectstore file_system_ids entry must match ^fs-[0-9a-f]{17,40}$: a malformed id builds an ARN that matches no file system."
+  }
+
+  validation {
+    condition     = !var.filetask_objectstore.enabled || length(var.filetask_objectstore.serviceaccount_name) > 0
+    error_message = "filetask_objectstore.serviceaccount_name must not be empty when enabled: an association keyed on an empty name silently binds nothing."
+  }
+
+  validation {
+    # Enabled with no buckets used to silently create no role and no association, leaving the
+    # task pods on the shared node role -- the exact exposure this feature exists to remove.
+    condition     = !var.filetask_objectstore.enabled || length(var.filetask_objectstore.buckets) > 0
+    error_message = "filetask_objectstore.buckets must be non-empty when enabled."
   }
 }
 

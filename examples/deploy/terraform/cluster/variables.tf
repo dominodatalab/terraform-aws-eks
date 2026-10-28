@@ -103,9 +103,40 @@ variable "irsa_policies" {
     namespace           = string
     serviceaccount_name = string
     policy              = string #json
+    pod_identity        = optional(bool, false)
   }))
 
   default = []
+}
+
+variable "filetask_objectstore" {
+  description = <<EOF
+    S3 Files dataset storage for Domino's s3-native filetask dataset tasks.
+
+    `buckets` declares buckets that already exist and is used only to scope IAM -- nothing here
+    creates a bucket, a file system, or a mount target. Each entry is:
+      name        = bucket backing an S3 File System.
+      prefix      = key prefix the file system is scoped to, omitted for a whole-bucket one.
+      kms_key_arn = required only for an SSE-KMS bucket; must be a regional key ARN.
+
+    `file_system_ids` scopes the s3files grant to named file systems. Omitted, the grant covers
+    every file system in the account and region.
+  EOF
+
+  type = object({
+    enabled             = optional(bool, false)
+    namespace           = optional(string, "domino-compute")
+    serviceaccount_name = optional(string, "domino-filetask-objectstore")
+    file_system_ids     = optional(list(string), [])
+    buckets = optional(list(object({
+      name        = string
+      prefix      = optional(string)
+      kms_key_arn = optional(string)
+    })), [])
+  })
+
+  default  = {}
+  nullable = false
 }
 
 variable "irsa_external_dns" {
@@ -196,6 +227,7 @@ variable "karpenter" {
 variable "calico" {
   description = <<EOF
     calico = {
+      enabled = Install Calico (policy-only, on top of the AWS VPC CNI). Set to false when another policy engine (for example Cilium in aws-cni chaining mode) is managed outside this module. Existing Calico installs are not removed; setting this to false only stops this module from installing or upgrading Calico.
       version = Configure the version for Calico
       image_registry = Configure the image registry for Calico
       node_selector = Configure the node selector for Calico control plane components
@@ -203,6 +235,7 @@ variable "calico" {
   EOF
 
   type = object({
+    enabled        = optional(bool, true)
     image_registry = optional(string, "quay.io")
     version        = optional(string, "v3.31.4")
     node_selector = optional(object({

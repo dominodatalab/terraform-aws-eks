@@ -288,6 +288,7 @@ variable "aws_load_balancer_controller_namespace" {
 variable "calico" {
   description = <<EOF
     calico = {
+      enabled = Install Calico (policy-only, on top of the AWS VPC CNI). Set to false when another policy engine (for example Cilium in aws-cni chaining mode) is managed outside this module. Existing Calico installs are not removed; setting this to false only stops this module from installing or upgrading Calico.
       version = Configure the version for Calico
       image_registry = Configure the image registry for Calico
       node_selector = Configure the node selector for Calico control plane components
@@ -295,6 +296,7 @@ variable "calico" {
   EOF
 
   type = object({
+    enabled        = optional(bool, true)
     image_registry = optional(string, "quay.io")
     version        = optional(string, "v3.31.4")
     node_selector = optional(object({
@@ -330,6 +332,23 @@ variable "storage_info" {
       })
       volume = object({
         name = optional(string, null)
+      })
+    }), null)
+    # Additional FSxN filesystems, so nodes can reach a replacement or DR filesystem while it
+    # coexists with the active one.
+    netapp_additional = optional(map(object({
+      filesystem = object({
+        security_group_id = optional(string, null)
+      })
+    })), {})
+    # The base filesystem regardless of which one `netapp` resolves to. Node access is opened
+    # per filesystem, not per *active* filesystem: `netapp` follows storage.netapp.active, so
+    # using it here would open the active filesystem's security group twice (once here, once in
+    # netapp_additional -- a duplicate rule AWS rejects) and leave the base filesystem with no
+    # node access at all while it still exists.
+    netapp_base = optional(object({
+      filesystem = object({
+        security_group_id = optional(string, null)
       })
     }), null)
   })
@@ -369,4 +388,11 @@ variable "permissions_boundary" {
   description = "ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable."
   type        = string
   default     = null
+}
+
+variable "filetask_objectstore_mount_enabled" {
+  description = "Grant the node role the S3 Files mount permissions the EFS CSI driver needs when mounting a file system for Domino's s3-native filetask dataset storage."
+  type        = bool
+  default     = false
+  nullable    = false
 }

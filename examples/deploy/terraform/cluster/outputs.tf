@@ -29,3 +29,13 @@ output "flyte" {
   description = "Flyte details."
   value       = try(module.flyte[0], null)
 }
+
+output "filetask_objectstore" {
+  description = <<EOF
+  "Filetask object store info"
+  {
+    identity_role = pod identity role arn.
+  }
+  EOF
+  value       = module.irsa_policies.filetask_objectstore
+}

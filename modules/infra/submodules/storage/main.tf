@@ -8,6 +8,15 @@ locals {
   deploy_efs         = var.storage.filesystem_type == "efs" || var.storage.netapp.migrate_from_efs.enabled
   deploy_netapp      = var.storage.filesystem_type == "netapp" || var.storage.netapp.migrate_from_efs.enabled
 
+  # Which filesystem serves the cluster ("base", or a key of storage.netapp.additional), and
+  # whether the base one is being decommissioned after a replacement took over. With no
+  # additional filesystems declared and retire_base unset, deploy_netapp_base == deploy_netapp,
+  # so these are a no-op for existing deployments.
+  netapp_active      = coalesce(var.storage.netapp.active, "base")
+  netapp_retire_base = coalesce(var.storage.netapp.retire_base, false)
+  netapp_additional  = local.deploy_netapp ? coalesce(var.storage.netapp.additional, {}) : {}
+  deploy_netapp_base = local.deploy_netapp && !local.netapp_retire_base
+
   s3_buckets = { for k, v in {
     monitoring = { # We need the monitoring bucket for nginx
       bucket_name               = aws_s3_bucket.monitoring.bucket

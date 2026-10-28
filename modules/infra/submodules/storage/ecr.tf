@@ -40,10 +40,10 @@ moved {
 }
 
 resource "terraform_data" "pull_through_cache_deletion" {
-  count = local.create_ecr ? 1 : 0
+  count = local.create_ecr && local.supports_pull_through_cache ? 1 : 0
   input = {
     region                = var.region
-    ecr_repository_prefix = "${var.deploy_id}/quay"
+    ecr_repository_prefix = aws_ecr_pull_through_cache_rule.quay[0].ecr_repository_prefix
     use_fips_endpoint     = var.use_fips_endpoint
   }
 
