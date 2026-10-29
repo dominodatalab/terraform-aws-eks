@@ -11,7 +11,7 @@ resource "aws_iam_policy" "filetask_archive" {
 
   name = "${local.name_prefix}-filetask-archive"
   path = "/"
-  # The object-store policy without its S3 Files statement: archive buckets are plain S3.
+  # The object-store policy without its S3 Files statement: archive buckets have no file systems.
   policy = templatefile("${path.module}/apps-policies/filetask-objectstore.json.tftpl", merge(local.policy_vars, { buckets = local.filetask_archive_buckets, file_system_ids = null }))
 }
 

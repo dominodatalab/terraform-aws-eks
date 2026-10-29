@@ -59,7 +59,7 @@ ${jsonencode({
         }
       }
     } if b.kms_key_arn != null],
-    # null omits the statement for plain-S3 callers; [] is the S3 Files wildcard, not "none".
+    # null omits the statement for callers with no file systems; [] is the S3 Files wildcard, not "none".
     file_system_ids == null ? [] : [{
       # File system ids are AWS-generated, so the wildcard stays until the caller names them.
       Sid      = "DescribeFileSystems"
