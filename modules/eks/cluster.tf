@@ -102,19 +102,32 @@ moved {
   to   = aws_iam_openid_connect_provider.oidc_provider[0]
 }
 
+# Opt-in live lookup of the cluster's OIDC issuer certificate chain. It can only run once the
+# cluster exists (the issuer URL is a cluster attribute) and needs a route to
+# oidc.eks.<region>.amazonaws.com, so it is off by default for restricted-network installs.
+data "tls_certificate" "cluster_tls_certificate" {
+  count = var.eks.oidc_provider.create && var.eks.oidc_provider.fetch_thumbprint ? 1 : 0
+  url   = aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
+locals {
+  # Static, long-standing AWS root CA thumbprint. AWS doesn't validate the thumbprint against
+  # the live cert for its own OIDC providers (EKS), so this is the standard workaround for
+  # air-gapped installs where data.tls_certificate can't reach (or even resolve) the issuer.
+  default_oidc_thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
+
+  # Precedence: explicit oidc_provider.thumbprint_list > live fetch (fetch_thumbprint) > static default.
+  oidc_thumbprint_list = coalescelist(
+    coalesce(var.eks.oidc_provider.thumbprint_list, []),
+    try(data.tls_certificate.cluster_tls_certificate[0].certificates[*].sha1_fingerprint, []),
+    local.default_oidc_thumbprint_list,
+  )
+}
+
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
-  count          = var.eks.oidc_provider.create ? 1 : 0
-  client_id_list = ["sts.amazonaws.com"]
-  # Hardcoded rather than live-fetched (data.tls_certificate) - air-gapped
-  # install nodes have no route to the public internet and there's no
-  # PrivateLink option for the OIDC/JWKS content itself (and even VPC-endpoint
-  # private DNS for eks/eks-fips can shadow the oidc.eks.<region>.amazonaws.com
-  # subdomain with no record, causing a hard NXDOMAIN rather than falling
-  # back to public resolution). AWS doesn't actually validate this thumbprint
-  # against the live cert for its own OIDC providers (EKS), so this static,
-  # long-standing AWS root CA thumbprint is the standard workaround for
-  # restricted-network EKS deployments.
-  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
+  count           = var.eks.oidc_provider.create ? 1 : 0
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = local.oidc_thumbprint_list
   url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
 }
 
