@@ -9,9 +9,10 @@ locals {
 resource "aws_iam_policy" "filetask_archive" {
   count = var.filetask_archive.enabled ? 1 : 0
 
-  name   = "${local.name_prefix}-filetask-archive"
-  path   = "/"
-  policy = templatefile("${path.module}/apps-policies/filetask-archive.json.tftpl", merge(local.policy_vars, { buckets = local.filetask_archive_buckets }))
+  name = "${local.name_prefix}-filetask-archive"
+  path = "/"
+  # The object-store policy without its S3 Files statement: archive buckets are plain S3.
+  policy = templatefile("${path.module}/apps-policies/filetask-objectstore.json.tftpl", merge(local.policy_vars, { buckets = local.filetask_archive_buckets, file_system_ids = null }))
 }
 
 resource "aws_iam_role" "filetask_archive" {

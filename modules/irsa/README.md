@@ -11,11 +11,11 @@ This module is an opinionated implementation of predefined and custom `irsa` rol
 Each `additional_irsa_configs` entry supplies its own `policy` as JSON.
 
 `filetask_objectstore` is the first component to build its policy from a template in
-`apps-policies/`, rendered through `templatefile()` with `partition`, `account_id`, `region`,
-`deploy_id` and `dns_suffix`. Extending that to `additional_irsa_configs`, so an entry can omit
+`apps-policies/`, rendered through `templatefile()` with `partition`, `account_id`, `region` and
+`deploy_id`. Extending that to `additional_irsa_configs`, so an entry can omit
 `policy` and get `apps-policies/<name>.json.tftpl`, needs `policy` to become `optional(string)`
-and a fallback in the role and policy resources. Not done here. `filetask_archive` also builds its
-policy from a template, `apps-policies/filetask-archive.json.tftpl`.
+and a fallback in the role and policy resources. Not done here. `filetask_archive` renders the same
+template with `file_system_ids = null`, which drops the S3 Files statement.
 
 Setting `pod_identity = true` on an entry swaps its role's OIDC trust policy for an EKS Pod
 Identity trust policy and creates the matching pod identity association. This requires the

@@ -32,9 +32,9 @@ mock_provider "aws" {
   alias = "global"
 }
 
-# A second partition for the China run, selected per run with `providers`. The partition and
-# dns_suffix reach the template only through data.aws_partition.current, which the default mock
-# above pins to the commercial partition.
+# A second partition for the China run, selected per run with `providers`. The partition reaches
+# the template only through data.aws_partition.current, which the default mock above pins to the
+# commercial partition. dns_suffix stays .cn here so the runs prove kms:ViaService does not use it.
 mock_provider "aws" {
   alias = "china"
 
@@ -345,8 +345,8 @@ run "filetask_objectstore_china_partition" {
   }
 
   assert {
-    condition     = jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement[6].Condition.StringEquals["kms:ViaService"] == "s3.cn-north-1.amazonaws.com.cn"
-    error_message = "kms:ViaService must end in amazonaws.com.cn in the China partition."
+    condition     = jsondecode(aws_iam_policy.filetask_objectstore[0].policy).Statement[6].Condition.StringEquals["kms:ViaService"] == "s3.cn-north-1.amazonaws.com"
+    error_message = "kms:ViaService must end in amazonaws.com in the China partition too: AWS uses that suffix in every partition."
   }
 
   assert {
@@ -690,8 +690,8 @@ run "filetask_archive_china_partition" {
   }
 
   assert {
-    condition     = jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement[6].Condition.StringEquals["kms:ViaService"] == "s3.cn-north-1.amazonaws.com.cn"
-    error_message = "kms:ViaService must end in amazonaws.com.cn in the China partition."
+    condition     = jsondecode(aws_iam_policy.filetask_archive[0].policy).Statement[6].Condition.StringEquals["kms:ViaService"] == "s3.cn-north-1.amazonaws.com"
+    error_message = "kms:ViaService must end in amazonaws.com in the China partition too: AWS uses that suffix in every partition."
   }
 }
 
