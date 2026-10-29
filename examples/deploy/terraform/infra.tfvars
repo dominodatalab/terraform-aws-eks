@@ -5,7 +5,7 @@ bastion = {
   enabled                   = true
   install_binaries          = null
   instance_type             = null
-  use_private_ip_for_tunnel = true
+  use_private_ip_for_tunnel = false
   username                  = null
 }
 default_node_groups = null
@@ -36,9 +36,7 @@ eks = {
   run_k8s_setup      = null
   service_ipv4_cidr  = null
   ssm_log_group_name = null
-  vpc_cni = {
-    network_policy = true
-  }
+  vpc_cni            = null
 }
 ignore_tags           = []
 karpenter_node_groups = null

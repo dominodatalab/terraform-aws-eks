@@ -60,7 +60,3 @@ karpenter = {
 }
 kms_info          = null
 use_fips_endpoint = false
-
-calico = {
-  enabled = false
-}
