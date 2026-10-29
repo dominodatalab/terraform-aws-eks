@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DescribeOnlyHardAWSLimit",
+      "Effect": "Allow",
+      "Action": ["autoscaling:DescribeAutoScalingGroups", "autoscaling:DescribeTags", "ec2:DescribeVolumes"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DescribeThisClusterOnly",
+      "Effect": "Allow",
+      "Action": "eks:DescribeCluster",
+      "Resource": "${cluster_arn}"
+    }
+  ]
+}

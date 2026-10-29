@@ -1,0 +1,25 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DescribeScopedToRegion",
+      "Effect": "Allow",
+      "Action": ["elasticfilesystem:DescribeAccessPoints", "elasticfilesystem:DescribeFileSystems"],
+      "Resource": "arn:${partition}:elasticfilesystem:${region}:${account_id}:*"
+    },
+    {
+      "Sid": "CreateAccessPointOnThisFilesystemOnly",
+      "Effect": "Allow",
+      "Action": "elasticfilesystem:CreateAccessPoint",
+      "Resource": "arn:${partition}:elasticfilesystem:${region}:${account_id}:file-system/${efs_file_system_id}",
+      "Condition": { "StringLike": { "aws:RequestTag/efs.csi.aws.com/cluster": "true" } }
+    },
+    {
+      "Sid": "DeleteAccessPointScopedToRegion",
+      "Effect": "Allow",
+      "Action": "elasticfilesystem:DeleteAccessPoint",
+      "Resource": "arn:${partition}:elasticfilesystem:${region}:${account_id}:access-point/*",
+      "Condition": { "StringEquals": { "aws:ResourceTag/efs.csi.aws.com/cluster": "true" } }
+    }
+  ]
+}

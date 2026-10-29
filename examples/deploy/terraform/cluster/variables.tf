@@ -111,6 +111,30 @@ variable "irsa_policies" {
   default = []
 }
 
+variable "platform_pod_identity" {
+  description = <<EOF
+    Pod Identity roles and associations for the Domino platform and compute service accounts,
+    replacing the permissions those pods would otherwise inherit from the node instance role.
+    The bucket names, KMS key and EFS file system come from the infra state.
+    enabled            = Create the roles and associations.
+    platform_namespace = Namespace of the platform service accounts.
+    compute_namespace  = Namespace of the compute service accounts (hephaestus-buildkit).
+    ecr_repo_prefix    = ECR repository prefix hephaestus pushes to. Defaults to the lower-cased deploy_id.
+    route53_zone_id    = Hosted zone external-dns may change. The external-dns role is skipped when null.
+    disabled           = Preset names to skip: ebs-csi, efs-csi, cluster-autoscaler, domino-admin-toolkit, domino-data-importer, fluentd, mlflow, nucleus, nucleus-ecr-credential-refresher, hephaestus, external-dns.
+  EOF
+  type = object({
+    enabled            = optional(bool, false)
+    platform_namespace = optional(string, "domino-platform")
+    compute_namespace  = optional(string, "domino-compute")
+    ecr_repo_prefix    = optional(string)
+    route53_zone_id    = optional(string)
+    disabled           = optional(list(string), [])
+  })
+  default  = {}
+  nullable = false
+}
+
 variable "filetask_objectstore" {
   description = <<EOF
     S3 Files dataset storage for Domino's s3-native filetask dataset tasks.

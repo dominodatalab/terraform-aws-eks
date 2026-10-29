@@ -74,12 +74,17 @@ variable "external_dns" {
 }
 
 variable "additional_irsa_configs" {
-  description = "Input for additional irsa configurations"
+  description = <<EOF
+    Input for additional irsa configurations. Each entry creates an IAM role, optionally bound to
+    a service account through Pod Identity (pod_identity = true) or the cluster OIDC provider.
+    `policy` (JSON) is optional when `managed_policy_arns` is set.
+  EOF
   type = list(object({
     name                = string
     namespace           = string
     serviceaccount_name = string
-    policy              = string #json
+    policy              = optional(string) #json
+    managed_policy_arns = optional(list(string), [])
     pod_identity        = optional(bool, false)
   }))
 
@@ -92,8 +97,61 @@ variable "additional_irsa_configs" {
   }
 
   validation {
-    condition     = alltrue([for i in var.additional_irsa_configs : can(jsondecode(i.policy))])
+    condition     = alltrue([for i in var.additional_irsa_configs : i.policy == null || can(jsondecode(i.policy))])
     error_message = "Invalid json found in policy"
+  }
+
+  validation {
+    condition     = alltrue([for i in var.additional_irsa_configs : i.policy != null || length(i.managed_policy_arns) > 0])
+    error_message = "Each additional_irsa_configs entry needs a policy or at least one managed_policy_arns"
+  }
+}
+
+variable "platform_pod_identity" {
+  description = <<EOF
+    Pod Identity roles and associations for the Domino platform and compute service accounts,
+    replacing the permissions those pods would otherwise inherit from the node instance role.
+    One narrowly scoped role per service account, named <cluster name>-<service account>.
+    enabled            = Create the roles and associations.
+    platform_namespace = Namespace of the platform service accounts.
+    compute_namespace  = Namespace of the compute service accounts (hephaestus-buildkit).
+    kms_key_arn        = KMS key used by the S3 buckets.
+    buckets            = { backups, logs, blobs } bucket names.
+    efs_file_system_id = EFS file system id. The EFS CSI role is skipped when null.
+    ecr_repo_prefix    = ECR repository prefix hephaestus pushes to (<prefix>/model, <prefix>/environment, <prefix>/quay/*). Defaults to the lower-cased cluster name.
+    route53_zone_id    = Hosted zone external-dns may change. The external-dns role is skipped when null.
+    disabled           = Preset names to skip: ebs-csi, efs-csi, cluster-autoscaler, domino-admin-toolkit, domino-data-importer, fluentd, mlflow, nucleus, nucleus-ecr-credential-refresher, hephaestus, external-dns.
+  EOF
+  type = object({
+    enabled            = optional(bool, false)
+    platform_namespace = optional(string, "domino-platform")
+    compute_namespace  = optional(string, "domino-compute")
+    kms_key_arn        = optional(string)
+    buckets = optional(object({
+      backups = string
+      logs    = string
+      blobs   = string
+    }))
+    efs_file_system_id = optional(string)
+    ecr_repo_prefix    = optional(string)
+    route53_zone_id    = optional(string)
+    disabled           = optional(list(string), [])
+  })
+
+  default  = {}
+  nullable = false
+
+  validation {
+    condition     = !var.platform_pod_identity.enabled || (var.platform_pod_identity.kms_key_arn != null && var.platform_pod_identity.buckets != null)
+    error_message = "platform_pod_identity.kms_key_arn and platform_pod_identity.buckets are required when platform_pod_identity.enabled is true"
+  }
+
+  validation {
+    condition = alltrue([for d in var.platform_pod_identity.disabled : contains([
+      "ebs-csi", "efs-csi", "cluster-autoscaler", "domino-admin-toolkit", "domino-data-importer",
+      "fluentd", "mlflow", "nucleus", "nucleus-ecr-credential-refresher", "hephaestus", "external-dns",
+    ], d)])
+    error_message = "platform_pod_identity.disabled has an unknown preset name"
   }
 }
 

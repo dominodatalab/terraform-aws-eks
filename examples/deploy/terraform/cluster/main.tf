@@ -76,6 +76,15 @@ module "irsa_policies" {
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
   filetask_objectstore    = var.filetask_objectstore
+  platform_pod_identity = merge(var.platform_pod_identity, {
+    kms_key_arn = try(local.kms.key_arn, null)
+    buckets = try({
+      backups = local.infra.storage.s3.buckets.backups.bucket_name
+      logs    = local.infra.storage.s3.buckets.logs.bucket_name
+      blobs   = local.infra.storage.s3.buckets.blobs.bucket_name
+    }, null)
+    efs_file_system_id = try(local.infra.storage.efs.file_system.id, null)
+  })
   providers = {
     aws.global = aws.global
   }

@@ -223,3 +223,21 @@ calico = {
 * Setting `calico.enabled = false` only stops this module from installing or upgrading Calico. An existing Calico install is not removed, so uninstall it first or both engines will try to enforce policy.
 * The VPC CNI agent supports standard `NetworkPolicy` only, not Calico-specific resources such as `GlobalNetworkPolicy`.
 * It requires vpc-cni addon v1.14 or later and Kubernetes 1.25 or later.
+
+### Pod Identity for platform service accounts
+
+By default, pods inherit the node instance role's S3, ECR, EFS and EBS permissions. `platform_pod_identity` creates one narrowly scoped IAM role per Domino service account and binds it with an EKS Pod Identity association (the `eks-pod-identity-agent` addon is required and is in the default `cluster_addons`). Set it in `cluster.tfvars`:
+
+```hcl
+platform_pod_identity = {
+  enabled         = true
+  ecr_repo_prefix = "my-ecr-prefix"   # where hephaestus pushes; defaults to the lower-cased deploy_id
+  route53_zone_id = "Z0123456789ABC"  # optional; external-dns is skipped when null
+}
+```
+
+Roles are named `<deploy_id>-<service account preset>` and carry `permissions_boundary`. Bucket names, the KMS key and the EFS file system come from the `infra` state. Presets: `ebs-csi`, `efs-csi`, `cluster-autoscaler`, `domino-admin-toolkit`, `domino-data-importer`, `fluentd`, `mlflow`, `nucleus`, `nucleus-ecr-credential-refresher`, `hephaestus` (`domino-compute/hephaestus-buildkit`) and `external-dns`. Use `disabled = ["mlflow"]` to skip any of them.
+
+* An association is unique per namespace and service account. Remove any existing Pod Identity association for the same service accounts (for example ones created by hand) before applying.
+* Pods pick up the new credentials only after a restart.
+* This does not remove the node role's policies. Trim them separately once the workloads are confirmed running on their Pod Identity roles.
