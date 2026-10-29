@@ -186,3 +186,40 @@ By setting `use_fips_endpoint: true` , the modules will:
 * Set the Terraform AWS provider [use_fips_endpoint](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#use_fips_endpoint) attribute, ensuring API calls to AWS are made via the FIPS endpoints.
 * Set the shell environment variable `AWS_USE_FIPS_ENDPOINT=true` on `local-exec` resources.
 * Enable FIPS mode (fipsMode: enabled) during the installation of Calico (see [documentation](https://docs.tigera.io/calico/latest/operations/fips)).
+
+### Air-gapped / restricted networks with FIPS endpoints
+
+With `use_fips_endpoint: true` the provider calls the `-fips` hostnames. `iam-fips.amazonaws.com` has no VPC endpoint private DNS, so from a network with no route to the public internet it resolves to a public IP and `./tf.sh <component> plan` hangs (connections stuck in `SYN-SENT`). The `infra`, `cluster` and `nodes` modules declare their own `provider "aws"` blocks, so an `endpoints` block on the root provider in the wrapper's `main.tf` does not reach them.
+
+Point the provider at your IAM VPC endpoint with the AWS SDK service endpoint variable before running `tf.sh`. It applies to every provider configuration, including the ones inside the modules:
+
+```bash
+export AWS_ENDPOINT_URL_IAM="https://<vpce-id>.iam.us-east-1.vpce.amazonaws.com"
+./tf.sh infra init
+./tf.sh infra plan
+```
+
+To make it persistent, add the `export` to the shell profile of the user that runs `tf.sh`. Services without a VPC endpoint can be handled the same way with `AWS_ENDPOINT_URL_<SERVICE>`.
+
+### Network policy without Calico
+
+To enforce Kubernetes `NetworkPolicy` with the VPC CNI's built-in network policy agent instead of Calico, set the following:
+
+```hcl
+# infra.tfvars and cluster.tfvars
+eks = {
+  vpc_cni = {
+    network_policy = true   # sets enableNetworkPolicy on the vpc-cni addon (default: false)
+  }
+}
+
+# cluster.tfvars
+calico = {
+  enabled = false           # skip installing Calico (it needs public internet access)
+}
+```
+
+* The addon configuration is applied by the `nodes` component, so the change appears in `./tf.sh nodes plan` (after `cluster` has been applied).
+* Setting `calico.enabled = false` only stops this module from installing or upgrading Calico. An existing Calico install is not removed, so uninstall it first or both engines will try to enforce policy.
+* The VPC CNI agent supports standard `NetworkPolicy` only, not Calico-specific resources such as `GlobalNetworkPolicy`.
+* It requires vpc-cni addon v1.14 or later and Kubernetes 1.25 or later.

@@ -455,6 +455,7 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
+    create_sts_endpoint = Create the VPC Interface Endpoint For STS (required in air-gapped / iso regions).
     create_s3_endpoint = Create the VPC Interface Endpoint For S3.
   EOF
 
@@ -480,6 +481,7 @@ variable "network" {
     use_pod_cidr        = optional(bool, true)
     create_ecr_endpoint = optional(bool, false)
     create_s3_endpoint  = optional(bool, false)
+    create_sts_endpoint = optional(bool, false)
   })
 
   default = {}
@@ -493,15 +495,17 @@ variable "bastion" {
     authorized_ssh_ip_ranges = List of CIDR ranges permitted for the bastion ssh access.
     username                 = Bastion user.
     install_binaries         = Toggle to install required Domino binaries in the bastion.
+    use_private_ip_for_tunnel = Use the bastion's private IP (not its public EIP) for SSH/tunnel access - for air-gapped setups where the caller is already inside the VPC.
   EOF
 
   type = object({
-    enabled                  = optional(bool, true)
-    ami_id                   = optional(string, null) # default will use the latest 'al2023' ami
-    instance_type            = optional(string, "t3.micro")
-    authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
-    username                 = optional(string, "ec2-user")
-    install_binaries         = optional(bool, false)
+    enabled                   = optional(bool, true)
+    ami_id                    = optional(string, null) # default will use the latest 'al2023' ami
+    instance_type             = optional(string, "t3.micro")
+    authorized_ssh_ip_ranges  = optional(list(string), ["0.0.0.0/0"])
+    username                  = optional(string, "ec2-user")
+    install_binaries          = optional(bool, false)
+    use_private_ip_for_tunnel = optional(bool, false)
   })
 
   default = {}
