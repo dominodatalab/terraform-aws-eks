@@ -213,7 +213,7 @@ variable "karpenter" {
     enabled                     = optional(bool, false)
     delete_instances_on_destroy = optional(bool, true)
     namespace                   = optional(string, "karpenter")
-    version                     = optional(string, "1.13.1")
+    version                     = optional(string, "1.14.3")
     vm_memory_overhead_percent  = optional(string, "0.075")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases
