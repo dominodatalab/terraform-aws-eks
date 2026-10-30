@@ -87,6 +87,7 @@ resource "aws_iam_role" "bastion" {
   tags = {
     "Name" = "${var.deploy_id}-bastion"
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "bastion" {
@@ -199,15 +200,35 @@ resource "aws_instance" "bastion" {
   depends_on = [terraform_data.check_bastion_instance_profile]
 }
 
+# No EIP when callers reach the bastion over its private IP (air-gapped VPCs
+# have no internet gateway to attach one to).
 resource "aws_eip" "bastion" {
+  count = var.bastion.use_private_ip_for_tunnel ? 0 : 1
+
   instance             = aws_instance.bastion.id
   network_border_group = var.region
   domain               = "vpc"
 }
 
 resource "aws_eip_association" "bastion" {
+  count = var.bastion.use_private_ip_for_tunnel ? 0 : 1
+
   instance_id   = aws_instance.bastion.id
-  allocation_id = aws_eip.bastion.id
+  allocation_id = aws_eip.bastion[0].id
+}
+
+moved {
+  from = aws_eip.bastion
+  to   = aws_eip.bastion[0]
+}
+
+moved {
+  from = aws_eip_association.bastion
+  to   = aws_eip_association.bastion[0]
+}
+
+locals {
+  bastion_host_ip = var.bastion.use_private_ip_for_tunnel ? aws_instance.bastion.private_ip : aws_eip.bastion[0].public_ip
 }
 
 data "aws_iam_policy_document" "bastion_assume_role" {
@@ -271,7 +292,7 @@ resource "null_resource" "install_binaries" {
       k8s_version  = var.k8s_version
       bastion_user = var.bastion.username
     }))
-    bastion_elastic_ip = aws_eip.bastion.public_ip
+    bastion_elastic_ip = local.bastion_host_ip
   }
 
   depends_on = [

@@ -97,21 +97,38 @@ resource "aws_eks_cluster" "this" {
   }
 }
 
-data "tls_certificate" "cluster_tls_certificate" {
-  count = var.eks.oidc_provider.create ? 1 : 0
-  url   = aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
-
 moved {
   from = aws_iam_openid_connect_provider.oidc_provider
   to   = aws_iam_openid_connect_provider.oidc_provider[0]
 }
 
+# Opt-in live lookup of the cluster's OIDC issuer certificate chain. It can only run once the
+# cluster exists (the issuer URL is a cluster attribute) and needs a route to
+# oidc.eks.<region>.amazonaws.com, so it is on by default; set fetch_thumbprint = false for restricted-network (air-gapped) installs.
+data "tls_certificate" "cluster_tls_certificate" {
+  count = var.eks.oidc_provider.create && var.eks.oidc_provider.fetch_thumbprint ? 1 : 0
+  url   = aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
+locals {
+  # Static, long-standing AWS root CA thumbprint (fallback when the live lookup is disabled). AWS doesn't validate the thumbprint against
+  # the live cert for its own OIDC providers (EKS), so this is the standard workaround for
+  # air-gapped installs where data.tls_certificate can't reach (or even resolve) the issuer.
+  default_oidc_thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
+
+  # Precedence: explicit oidc_provider.thumbprint_list > live fetch (fetch_thumbprint) > static default.
+  oidc_thumbprint_list = coalescelist(
+    coalesce(var.eks.oidc_provider.thumbprint_list, []),
+    try(data.tls_certificate.cluster_tls_certificate[0].certificates[*].sha1_fingerprint, []),
+    local.default_oidc_thumbprint_list,
+  )
+}
+
 resource "aws_iam_openid_connect_provider" "oidc_provider" {
   count           = var.eks.oidc_provider.create ? 1 : 0
   client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = data.tls_certificate.cluster_tls_certificate[0].certificates[*].sha1_fingerprint
-  url             = data.tls_certificate.cluster_tls_certificate[0].url
+  thumbprint_list = local.oidc_thumbprint_list
+  url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
 }
 
 resource "null_resource" "kubeconfig" {

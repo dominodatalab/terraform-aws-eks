@@ -3,7 +3,7 @@ variable "deploy_id" {
   description = "Domino Deployment ID"
 
   validation {
-    condition     = can(regex("^[a-z-0-9]{3,32}$", var.deploy_id))
+    condition     = can(regex("^[a-zA-Z0-9-]{3,32}$", var.deploy_id))
     error_message = "Argument deploy_id must: start with a letter, contain lowercase alphanumeric characters(can contain hyphens[-]) with length between 3 and 32 characters."
   }
 }
@@ -136,6 +136,7 @@ variable "eks" {
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
+    separate_platform_node_role = Create a separate minimal IAM role (only what a worker needs to join the cluster) for platform node groups. The default eks-nodes role is then used only by non-platform (compute) node groups.
     soci_snapshotter = SOCI snapshotter configuration for fast image pulling. {
       enabled = Enable SOCI snapshotter and FastImagePull feature gate.
       max_concurrent_downloads_per_image = Max concurrent downloads per image.
@@ -171,11 +172,12 @@ variable "eks" {
   EOF
 
   type = object({
-    run_k8s_setup      = optional(bool, true)
-    service_ipv4_cidr  = optional(string, "172.20.0.0/16")
-    creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.35")
-    nodes_master       = optional(bool, false)
+    run_k8s_setup               = optional(bool, true)
+    service_ipv4_cidr           = optional(string, "172.20.0.0/16")
+    creation_role_name          = optional(string, null)
+    k8s_version                 = optional(string, "1.35")
+    nodes_master                = optional(bool, false)
+    separate_platform_node_role = optional(bool, false)
     soci_snapshotter = optional(object({
       enabled                            = optional(bool, true)
       max_concurrent_downloads_per_image = optional(number, 10)
@@ -205,6 +207,7 @@ variable "eks" {
     vpc_cni = optional(object({
       prefix_delegation = optional(bool, false)
       annotate_pod_ip   = optional(bool, true)
+      network_policy    = optional(bool, false)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
@@ -217,7 +220,9 @@ variable "eks" {
       username_prefix               = optional(string, null)
     })), []),
     oidc_provider = optional(object({
-      create = optional(bool, true)
+      create           = optional(bool, true)
+      fetch_thumbprint = optional(bool, true)
+      thumbprint_list  = optional(list(string), null)
       oidc = optional(object({
         id              = optional(string, null)
         arn             = optional(string, null)
@@ -367,6 +372,12 @@ variable "karpenter" {
   }
 
   default = {}
+}
+
+variable "permissions_boundary" {
+  description = "ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable."
+  type        = string
+  default     = null
 }
 
 variable "filetask_objectstore_mount_enabled" {

@@ -50,6 +50,7 @@ resource "aws_iam_role" "external_dns" {
       }
     ]
   })
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_policy" "external_dns" {

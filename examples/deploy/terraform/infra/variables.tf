@@ -39,6 +39,9 @@ variable "network" {
       pod     = The IPv4 CIDR block for the Pod subnets.
     }
     use_pod_cidr = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
+    create_ecr_endpoint = Create the VPC Endpoint For ECR.
+    create_s3_endpoint = Create the VPC Endpoint For S3.
+    create_sts_endpoint = Create the VPC Interface Endpoint For STS (required in air-gapped / iso regions).
   EOF
 
   type = object({
@@ -60,7 +63,10 @@ variable "network" {
       vpc = optional(string, "10.0.0.0/16")
       pod = optional(string, "100.64.0.0/16")
     }), {})
-    use_pod_cidr = optional(bool, true)
+    use_pod_cidr        = optional(bool, true)
+    create_ecr_endpoint = optional(bool, true)
+    create_s3_endpoint  = optional(bool, true)
+    create_sts_endpoint = optional(bool, false)
   })
 
   default = {}
@@ -534,6 +540,7 @@ variable "eks" {
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
+    separate_platform_node_role = Create a separate minimal IAM role (only what a worker needs to join the cluster) for platform node groups. The default eks-nodes role is then used only by non-platform (compute) node groups.
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
       path       = Fully qualified path name to write the kubeconfig file.
@@ -558,11 +565,12 @@ variable "eks" {
   EOF
 
   type = object({
-    run_k8s_setup      = optional(bool)
-    service_ipv4_cidr  = optional(string)
-    creation_role_name = optional(string, null)
-    k8s_version        = optional(string)
-    nodes_master       = optional(bool, false)
+    run_k8s_setup               = optional(bool)
+    service_ipv4_cidr           = optional(string)
+    creation_role_name          = optional(string, null)
+    k8s_version                 = optional(string)
+    nodes_master                = optional(bool, false)
+    separate_platform_node_role = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string)
       path       = optional(string)
@@ -582,6 +590,7 @@ variable "eks" {
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
       annotate_pod_ip   = optional(bool)
+      network_policy    = optional(bool)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
@@ -594,7 +603,9 @@ variable "eks" {
       username_prefix               = optional(string)
     })))
     oidc_provider = optional(object({
-      create = optional(bool, true)
+      create           = optional(bool, true)
+      fetch_thumbprint = optional(bool, true)
+      thumbprint_list  = optional(list(string), null)
       oidc = optional(object({
         id              = optional(string, null)
         arn             = optional(string, null)
@@ -620,15 +631,17 @@ variable "bastion" {
     authorized_ssh_ip_ranges = List of CIDR ranges permitted for the bastion ssh access.
     username                 = Bastion user.
     install_binaries         = Toggle to install required Domino binaries in the bastion.
+    use_private_ip_for_tunnel = Use the bastion's private IP (not its public EIP) for SSH/tunnel access - for air-gapped setups where the caller is already inside the VPC.
   EOF
 
   type = object({
-    enabled                  = optional(bool, true)
-    ami_id                   = optional(string)
-    instance_type            = optional(string)
-    authorized_ssh_ip_ranges = optional(list(string))
-    username                 = optional(string)
-    install_binaries         = optional(bool)
+    enabled                   = optional(bool, true)
+    ami_id                    = optional(string)
+    instance_type             = optional(string)
+    authorized_ssh_ip_ranges  = optional(list(string))
+    username                  = optional(string)
+    install_binaries          = optional(bool)
+    use_private_ip_for_tunnel = optional(bool)
   })
 
   default = {}
@@ -648,4 +661,10 @@ variable "use_fips_endpoint" {
   description = "Use aws FIPS endpoints"
   type        = bool
   default     = false
+}
+
+variable "permissions_boundary" {
+  description = "ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable."
+  type        = string
+  default     = null
 }

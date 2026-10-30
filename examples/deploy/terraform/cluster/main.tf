@@ -16,19 +16,20 @@ module "eks" {
   deploy_id = local.infra.deploy_id
   region    = local.infra.region
 
-  ssh_key             = local.infra.ssh_key
-  node_iam_policies   = local.infra.node_iam_policies
-  storage_info        = local.infra.storage
-  eks                 = var.eks
-  network_info        = local.infra.network
-  kms_info            = local.kms
-  bastion_info        = local.infra.bastion
-  create_eks_role_arn = local.infra.create_eks_role_arn
-  tags                = local.infra.tags
-  ignore_tags         = local.infra.ignore_tags
-  use_fips_endpoint   = var.use_fips_endpoint
-  calico              = merge(var.calico, { image_registry = try(local.infra.storage.ecr.calico_image_registry, var.calico.image_registry) })
-  karpenter           = var.karpenter
+  ssh_key              = local.infra.ssh_key
+  node_iam_policies    = local.infra.node_iam_policies
+  storage_info         = local.infra.storage
+  eks                  = var.eks
+  network_info         = local.infra.network
+  kms_info             = local.kms
+  bastion_info         = local.infra.bastion
+  create_eks_role_arn  = local.infra.create_eks_role_arn
+  tags                 = local.infra.tags
+  ignore_tags          = local.infra.ignore_tags
+  use_fips_endpoint    = var.use_fips_endpoint
+  calico               = merge(var.calico, { image_registry = try(local.infra.storage.ecr.calico_image_registry, var.calico.image_registry) })
+  karpenter            = var.karpenter
+  permissions_boundary = var.permissions_boundary
   # Mounting a file system is authorized separately from reading the bucket behind it, and the
   # mount is performed by the CSI driver as the node, so it cannot ride the task role.
   filetask_objectstore_mount_enabled = var.filetask_objectstore.enabled
@@ -62,6 +63,7 @@ module "irsa_external_dns" {
   providers = {
     aws.global = aws.global
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 moved {
@@ -74,9 +76,19 @@ module "irsa_policies" {
   eks_info                = module.eks.info
   additional_irsa_configs = var.irsa_policies
   filetask_objectstore    = var.filetask_objectstore
+  platform_pod_identity = merge(var.platform_pod_identity, {
+    kms_key_arn = try(local.kms.key_arn, null)
+    buckets = try({
+      backups = local.infra.storage.s3.buckets.backups.bucket_name
+      logs    = local.infra.storage.s3.buckets.logs.bucket_name
+      blobs   = local.infra.storage.s3.buckets.blobs.bucket_name
+    }, null)
+    efs_file_system_id = try(local.infra.storage.efs.file_system.id, null)
+  })
   providers = {
     aws.global = aws.global
   }
+  permissions_boundary = var.permissions_boundary
 }
 
 module "external_deployments_operator" {
@@ -87,6 +99,7 @@ module "external_deployments_operator" {
   kms_info             = local.kms
   region               = local.infra.region
   external_deployments = var.external_deployments_operator
+  permissions_boundary = var.permissions_boundary
 }
 
 module "flyte" {
@@ -98,6 +111,7 @@ module "flyte" {
   force_destroy_on_deletion = var.flyte.force_destroy_on_deletion
   platform_namespace        = var.flyte.platform_namespace
   compute_namespace         = var.flyte.compute_namespace
+  permissions_boundary      = var.permissions_boundary
 }
 
 

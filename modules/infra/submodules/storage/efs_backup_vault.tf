@@ -56,6 +56,7 @@ resource "aws_iam_role" "efs_backup_role" {
       },
     ]
   })
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "efs_backup_role_attach" {

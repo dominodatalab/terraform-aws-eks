@@ -43,7 +43,7 @@ locals {
     }
   }
 
-  vpc_cni_configuration_values = merge({ env = local.vpc_cni_env }, local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {})
+  vpc_cni_configuration_values = merge({ env = local.vpc_cni_env, enableNetworkPolicy = tostring(try(var.eks_info.cluster.vpc_cni.network_policy, false)) }, local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {})
   coredns_configuration_values = {
     nodeSelector = {
       "dominodatalab.com/calico-controlplane" = "true"

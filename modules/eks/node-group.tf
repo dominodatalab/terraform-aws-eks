@@ -11,8 +11,9 @@ data "aws_iam_policy_document" "eks_nodes" {
 }
 
 resource "aws_iam_role" "eks_nodes" {
-  name               = "${local.eks_cluster_name}-eks-nodes"
-  assume_role_policy = data.aws_iam_policy_document.eks_nodes.json
+  name                 = "${local.eks_cluster_name}-eks-nodes"
+  assume_role_policy   = data.aws_iam_policy_document.eks_nodes.json
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_security_group" "eks_nodes" {
@@ -157,5 +158,30 @@ resource "aws_security_group_rule" "s3_endpoint" {
 resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_nodes" {
   count      = var.kms_info.provided_key ? 1 : 0
   role       = aws_iam_role.eks_nodes.name
+  policy_arn = local.kms_key_policy_arn
+}
+
+## Minimal role for platform nodes. Platform pods get their AWS permissions via EKS Pod Identity,
+## so the instance role only needs what a worker requires to join the cluster and pull images.
+resource "aws_iam_role" "eks_platform_nodes" {
+  count                = var.eks.separate_platform_node_role ? 1 : 0
+  name                 = "${local.eks_cluster_name}-eks-platform-nodes"
+  assume_role_policy   = data.aws_iam_policy_document.eks_nodes.json
+  permissions_boundary = var.permissions_boundary
+}
+
+resource "aws_iam_role_policy_attachment" "aws_eks_platform_nodes" {
+  for_each = var.eks.separate_platform_node_role ? toset([
+    "AmazonEKSWorkerNodePolicy",
+    "AmazonEKS_CNI_Policy",
+    "AmazonEC2ContainerRegistryReadOnly",
+  ]) : toset([])
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/${each.key}"
+  role       = aws_iam_role.eks_platform_nodes[0].name
+}
+
+resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_platform_nodes" {
+  count      = var.eks.separate_platform_node_role && var.kms_info.provided_key ? 1 : 0
+  role       = aws_iam_role.eks_platform_nodes[0].name
   policy_arn = local.kms_key_policy_arn
 }

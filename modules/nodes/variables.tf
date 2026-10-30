@@ -94,6 +94,10 @@ variable "eks_info" {
         name = string
         arn  = string
       }
+      platform_role = Optional minimal IAM Role used only by platform node groups. {
+        name = string
+        arn  = string
+      }
       kubelet = {
         registry_pull_qps = number
         registry_burst    = number
@@ -115,6 +119,7 @@ variable "eks_info" {
       vpc_cni = optional(object({
         prefix_delegation = optional(bool, false)
         annotate_pod_ip   = optional(bool, true)
+        network_policy    = optional(bool, false)
       }))
       specs = object({
         name     = string
@@ -150,6 +155,10 @@ variable "eks_info" {
     nodes = object({
       security_group_id = string
       roles = list(object({
+        name = string
+        arn  = string
+      }))
+      platform_role = optional(object({
         name = string
         arn  = string
       }))
@@ -591,3 +600,4 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
+

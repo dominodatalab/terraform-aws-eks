@@ -24,7 +24,8 @@ resource "aws_iam_role" "aws_cur_crawler_component_function_role" {
   name_prefix        = substr("${var.deploy_id}-crawler_comp_func_role", 0, 37)
   assume_role_policy = data.aws_iam_policy_document.cur_crawler_component_assume_role_policy.json
 
-  tags = var.tags
+  tags                 = var.tags
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "cur_crawler_glue_service_role_policy_attach" {
@@ -122,8 +123,9 @@ data "aws_iam_policy_document" "cur_lambda_initializer_assume" {
 }
 
 resource "aws_iam_role" "cur_lambda_initializer" {
-  name               = "${var.deploy_id}-${var.cost_usage_report.report_name}-crawler-lambda-initializer"
-  assume_role_policy = data.aws_iam_policy_document.cur_lambda_initializer_assume.json
+  name                 = "${var.deploy_id}-${var.cost_usage_report.report_name}-crawler-lambda-initializer"
+  assume_role_policy   = data.aws_iam_policy_document.cur_lambda_initializer_assume.json
+  permissions_boundary = var.permissions_boundary
 }
 
 data "aws_iam_policy_document" "cur_lambda_initializer_pd" {

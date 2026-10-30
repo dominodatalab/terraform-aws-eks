@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ChangeThisZoneOnly",
+      "Effect": "Allow",
+      "Action": ["route53:ChangeResourceRecordSets", "route53:ListResourceRecordSets", "route53:ListTagsForResource"],
+      "Resource": "arn:${partition}:route53:::hostedzone/${route53_zone_id}"
+    },
+    {
+      "Sid": "ListZonesHardAWSLimit",
+      "Effect": "Allow",
+      "Action": "route53:ListHostedZones",
+      "Resource": "*"
+    }
+  ]
+}

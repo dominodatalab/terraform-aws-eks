@@ -3,7 +3,7 @@ locals {
   # on a cluster with no OIDC provider even when additional_irsa_configs is empty.
   oidc_issuer = try(trimprefix(local.oidc_provider_url, "https://"), null)
 
-  configs = { for c in var.additional_irsa_configs : c.name => c }
+  configs = { for c in concat(var.additional_irsa_configs, local.platform_pod_identity_configs) : c.name => c }
 }
 
 resource "aws_iam_role" "this" {
@@ -44,6 +44,7 @@ resource "aws_iam_role" "this" {
       }
     ]
   })
+  permissions_boundary = var.permissions_boundary
 
   lifecycle {
     precondition {
@@ -61,16 +62,24 @@ resource "aws_iam_role" "this" {
 }
 
 resource "aws_iam_policy" "this" {
-  for_each = local.configs
+  for_each = { for k, v in local.configs : k => v if v.policy != null }
   name     = "${local.name_prefix}-${each.value.name}"
   path     = "/"
   policy   = each.value.policy
 }
 
 resource "aws_iam_role_policy_attachment" "this" {
-  for_each   = local.configs
+  for_each   = aws_iam_policy.this
   role       = aws_iam_role.this[each.key].name
-  policy_arn = aws_iam_policy.this[each.key].arn
+  policy_arn = each.value.arn
+}
+
+resource "aws_iam_role_policy_attachment" "managed" {
+  for_each = merge([
+    for k, v in local.configs : { for arn in v.managed_policy_arns : "${k}|${arn}" => { role = k, arn = arn } }
+  ]...)
+  role       = aws_iam_role.this[each.value.role].name
+  policy_arn = each.value.arn
 }
 
 resource "aws_eks_pod_identity_association" "this" {

@@ -83,3 +83,9 @@ variable "region" {
     error_message = "The provided region must follow the format of AWS region names, e.g., us-west-2, us-gov-west-1, us-iso-east-1."
   }
 }
+
+variable "permissions_boundary" {
+  description = "ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable."
+  type        = string
+  default     = null
+}

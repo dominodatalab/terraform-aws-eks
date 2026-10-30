@@ -15,7 +15,7 @@ variable "deploy_id" {
   nullable    = false
 
   validation {
-    condition     = length(var.deploy_id) >= 3 && length(var.deploy_id) <= 32 && can(regex("^[a-z]([-a-z0-9]*[a-z0-9])$", var.deploy_id))
+    condition     = length(var.deploy_id) >= 3 && length(var.deploy_id) <= 32 && can(regex("^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])$", var.deploy_id))
     error_message = <<EOF
       Variable deploy_id must:
       1. Length must be between 3 and 32 characters.
@@ -62,6 +62,7 @@ variable "eks" {
     run_k8s_setup = Toggle to run the k8s setup.
     k8s_version = EKS cluster k8s version.
     nodes_master  Grants the nodes role system:master access. NOT recomended
+    separate_platform_node_role = Create a separate minimal IAM role (only what a worker needs to join the cluster) for platform node groups. The default eks-nodes role is then used only by non-platform (compute) node groups.
     soci_snapshotter = SOCI snapshotter configuration for fast image pulling. {
       enabled = Enable SOCI snapshotter and FastImagePull feature gate.
       max_concurrent_downloads_per_image = Max concurrent downloads per image.
@@ -96,9 +97,10 @@ variable "eks" {
   EOF
 
   type = object({
-    run_k8s_setup = optional(bool, true)
-    k8s_version   = optional(string, "1.35")
-    nodes_master  = optional(bool, false)
+    run_k8s_setup               = optional(bool, true)
+    k8s_version                 = optional(string, "1.35")
+    nodes_master                = optional(bool, false)
+    separate_platform_node_role = optional(bool, false)
     soci_snapshotter = optional(object({
       enabled                            = optional(bool, true)
       max_concurrent_downloads_per_image = optional(number, 10)
@@ -128,6 +130,7 @@ variable "eks" {
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
       annotate_pod_ip   = optional(bool)
+      network_policy    = optional(bool)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
@@ -140,7 +143,9 @@ variable "eks" {
       username_prefix               = optional(string, null)
     })), [])
     oidc_provider = optional(object({
-      create = optional(bool, true)
+      create           = optional(bool, true)
+      fetch_thumbprint = optional(bool, true)
+      thumbprint_list  = optional(list(string), null)
       oidc = optional(object({
         id              = optional(string, null)
         arn             = optional(string, null)
@@ -450,6 +455,7 @@ variable "network" {
     }
     use_pod_cidr        = Use additional pod CIDR range (ie 100.64.0.0/16) for pod networking.
     create_ecr_endpoint = Create the VPC Endpoint For ECR.
+    create_sts_endpoint = Create the VPC Interface Endpoint For STS (required in air-gapped / iso regions).
     create_s3_endpoint = Create the VPC Interface Endpoint For S3.
   EOF
 
@@ -475,6 +481,7 @@ variable "network" {
     use_pod_cidr        = optional(bool, true)
     create_ecr_endpoint = optional(bool, false)
     create_s3_endpoint  = optional(bool, false)
+    create_sts_endpoint = optional(bool, false)
   })
 
   default = {}
@@ -488,15 +495,17 @@ variable "bastion" {
     authorized_ssh_ip_ranges = List of CIDR ranges permitted for the bastion ssh access.
     username                 = Bastion user.
     install_binaries         = Toggle to install required Domino binaries in the bastion.
+    use_private_ip_for_tunnel = Use the bastion's private IP (not its public EIP) for SSH/tunnel access - for air-gapped setups where the caller is already inside the VPC.
   EOF
 
   type = object({
-    enabled                  = optional(bool, true)
-    ami_id                   = optional(string, null) # default will use the latest 'al2023' ami
-    instance_type            = optional(string, "t3.micro")
-    authorized_ssh_ip_ranges = optional(list(string), ["0.0.0.0/0"])
-    username                 = optional(string, "ec2-user")
-    install_binaries         = optional(bool, false)
+    enabled                   = optional(bool, true)
+    ami_id                    = optional(string, null) # default will use the latest 'al2023' ami
+    instance_type             = optional(string, "t3.micro")
+    authorized_ssh_ip_ranges  = optional(list(string), ["0.0.0.0/0"])
+    username                  = optional(string, "ec2-user")
+    install_binaries          = optional(bool, false)
+    use_private_ip_for_tunnel = optional(bool, false)
   })
 
   default = {}

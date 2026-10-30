@@ -183,6 +183,37 @@ resource "aws_default_network_acl" "default" {
   }
 }
 
+resource "aws_security_group" "sts_endpoint" {
+  count       = local.create_sts_endpoint ? 1 : 0
+  name        = "${var.deploy_id}-sts"
+  description = "STS Endpoint security group"
+  vpc_id      = aws_vpc.this[0].id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+  tags = {
+    "Name" = "${var.deploy_id}-sts"
+  }
+}
+
+resource "aws_vpc_endpoint" "sts" {
+  count               = local.create_sts_endpoint ? 1 : 0
+  vpc_id              = aws_vpc.this[0].id
+  private_dns_enabled = true
+  service_name        = "com.amazonaws.${var.region}.sts"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [for s in aws_subnet.pod : s.id]
+
+  security_group_ids = [
+    aws_security_group.sts_endpoint[0].id,
+  ]
+
+  tags = {
+    "Name" = "${var.deploy_id}-sts"
+  }
+}
+
 resource "aws_flow_log" "this" {
   count                    = local.create_vpc && var.flow_log_bucket_arn != null ? 1 : 0
   log_destination          = var.flow_log_bucket_arn["arn"]

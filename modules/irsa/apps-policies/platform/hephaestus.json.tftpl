@@ -1,0 +1,34 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ECRTokenHardAWSLimit",
+      "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*"
+    },
+    {
+      "Sid": "PushBuildRepos",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:UploadLayerPart",
+        "ecr:PutImage",
+        "ecr:InitiateLayerUpload",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:CompleteLayerUpload",
+        "ecr:BatchGetImage",
+        "ecr:BatchCheckLayerAvailability"
+      ],
+      "Resource": [
+        "arn:${partition}:ecr:${region}:${account_id}:repository/${ecr_repo_prefix}/model",
+        "arn:${partition}:ecr:${region}:${account_id}:repository/${ecr_repo_prefix}/environment"
+      ]
+    },
+    {
+      "Sid": "PullThroughCacheRepos",
+      "Effect": "Allow",
+      "Action": ["ecr:GetDownloadUrlForLayer", "ecr:CreateRepository", "ecr:BatchImportUpstreamImage", "ecr:BatchGetImage"],
+      "Resource": "arn:${partition}:ecr:${region}:${account_id}:repository/${ecr_repo_prefix}/quay/*"
+    }
+  ]
+}

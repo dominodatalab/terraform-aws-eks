@@ -45,6 +45,7 @@ resource "aws_iam_role" "deployment" {
   })
 
   max_session_duration = var.max_session_duration
+  permissions_boundary = var.permissions_boundary
 }
 
 

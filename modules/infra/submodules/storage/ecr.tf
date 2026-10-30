@@ -11,7 +11,7 @@ locals {
 # trivy:ignore:AWS-0030 Image scanning is managed separately via ECR repository lifecycle policies or external scanning tools
 resource "aws_ecr_repository" "this" {
   for_each             = local.ecr_repos
-  name                 = join("/", [var.deploy_id, each.key])
+  name                 = lower(join("/", [var.deploy_id, each.key]))
   image_tag_mutability = "IMMUTABLE"
 
   encryption_configuration {

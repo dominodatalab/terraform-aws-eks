@@ -70,6 +70,7 @@ resource "aws_iam_role" "create_eks_role" {
       },
     ]
   })
+  permissions_boundary = var.permissions_boundary
 }
 
 resource "aws_iam_role_policy_attachment" "create_eks_role" {

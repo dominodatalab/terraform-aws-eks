@@ -53,6 +53,7 @@ variable "eks" {
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
       annotate_pod_ip   = optional(bool)
+      network_policy    = optional(bool)
     }))
     identity_providers = optional(list(object({
       client_id                     = string
@@ -65,7 +66,9 @@ variable "eks" {
       username_prefix               = optional(string)
     })))
     oidc_provider = optional(object({
-      create = optional(bool, true)
+      create           = optional(bool, true)
+      fetch_thumbprint = optional(bool, true)
+      thumbprint_list  = optional(list(string), null)
       oidc = optional(object({
         id              = optional(string, null)
         arn             = optional(string, null)
@@ -106,6 +109,30 @@ variable "irsa_policies" {
   }))
 
   default = []
+}
+
+variable "platform_pod_identity" {
+  description = <<EOF
+    Pod Identity roles and associations for the Domino platform and compute service accounts,
+    replacing the permissions those pods would otherwise inherit from the node instance role.
+    The bucket names, KMS key and EFS file system come from the infra state.
+    enabled            = Create the roles and associations.
+    platform_namespace = Namespace of the platform service accounts.
+    compute_namespace  = Namespace of the compute service accounts (hephaestus-buildkit).
+    ecr_repo_prefix    = ECR repository prefix hephaestus pushes to. Defaults to the lower-cased deploy_id.
+    route53_zone_id    = Hosted zone external-dns may change. The external-dns role is skipped when null.
+    disabled           = Preset names to skip: ebs-csi, efs-csi, cluster-autoscaler, domino-admin-toolkit, domino-data-importer, fluentd, mlflow, nucleus, nucleus-ecr-credential-refresher, hephaestus, external-dns.
+  EOF
+  type = object({
+    enabled            = optional(bool, false)
+    platform_namespace = optional(string, "domino-platform")
+    compute_namespace  = optional(string, "domino-compute")
+    ecr_repo_prefix    = optional(string)
+    route53_zone_id    = optional(string)
+    disabled           = optional(list(string), [])
+  })
+  default  = {}
+  nullable = false
 }
 
 variable "filetask_objectstore" {
@@ -244,4 +271,10 @@ variable "calico" {
   })
 
   default = {}
+}
+
+variable "permissions_boundary" {
+  description = "ARN of the IAM permissions boundary policy to attach to every IAM role created by this module. Set to null (default) to disable."
+  type        = string
+  default     = null
 }

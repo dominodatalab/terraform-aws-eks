@@ -186,3 +186,58 @@ By setting `use_fips_endpoint: true` , the modules will:
 * Set the Terraform AWS provider [use_fips_endpoint](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#use_fips_endpoint) attribute, ensuring API calls to AWS are made via the FIPS endpoints.
 * Set the shell environment variable `AWS_USE_FIPS_ENDPOINT=true` on `local-exec` resources.
 * Enable FIPS mode (fipsMode: enabled) during the installation of Calico (see [documentation](https://docs.tigera.io/calico/latest/operations/fips)).
+
+### Air-gapped / restricted networks with FIPS endpoints
+
+With `use_fips_endpoint: true` the provider calls the `-fips` hostnames. `iam-fips.amazonaws.com` has no VPC endpoint private DNS, so from a network with no route to the public internet it resolves to a public IP and `./tf.sh <component> plan` hangs (connections stuck in `SYN-SENT`). The `infra`, `cluster` and `nodes` modules declare their own `provider "aws"` blocks, so an `endpoints` block on the root provider in the wrapper's `main.tf` does not reach them.
+
+Point the provider at your IAM VPC endpoint with the AWS SDK service endpoint variable before running `tf.sh`. It applies to every provider configuration, including the ones inside the modules:
+
+```bash
+export AWS_ENDPOINT_URL_IAM="https://<vpce-id>.iam.us-east-1.vpce.amazonaws.com"
+./tf.sh infra init
+./tf.sh infra plan
+```
+
+To make it persistent, add the `export` to the shell profile of the user that runs `tf.sh`. Services without a VPC endpoint can be handled the same way with `AWS_ENDPOINT_URL_<SERVICE>`.
+
+### Network policy without Calico
+
+To enforce Kubernetes `NetworkPolicy` with the VPC CNI's built-in network policy agent instead of Calico, set the following:
+
+```hcl
+# infra.tfvars and cluster.tfvars
+eks = {
+  vpc_cni = {
+    network_policy = true   # sets enableNetworkPolicy on the vpc-cni addon (default: false)
+  }
+}
+
+# cluster.tfvars
+calico = {
+  enabled = false           # skip installing Calico (it needs public internet access)
+}
+```
+
+* The addon configuration is applied by the `nodes` component, so the change appears in `./tf.sh nodes plan` (after `cluster` has been applied).
+* Setting `calico.enabled = false` only stops this module from installing or upgrading Calico. An existing Calico install is not removed, so uninstall it first or both engines will try to enforce policy.
+* The VPC CNI agent supports standard `NetworkPolicy` only, not Calico-specific resources such as `GlobalNetworkPolicy`.
+* It requires vpc-cni addon v1.14 or later and Kubernetes 1.25 or later.
+
+### Pod Identity for platform service accounts
+
+By default, pods inherit the node instance role's S3, ECR, EFS and EBS permissions. `platform_pod_identity` creates one narrowly scoped IAM role per Domino service account and binds it with an EKS Pod Identity association (the `eks-pod-identity-agent` addon is required and is in the default `cluster_addons`). Set it in `cluster.tfvars`:
+
+```hcl
+platform_pod_identity = {
+  enabled         = true
+  ecr_repo_prefix = "my-ecr-prefix"   # where hephaestus pushes; defaults to the lower-cased deploy_id
+  route53_zone_id = "Z0123456789ABC"  # optional; external-dns is skipped when null
+}
+```
+
+Roles are named `<deploy_id>-<service account preset>` and carry `permissions_boundary`. Bucket names, the KMS key and the EFS file system come from the `infra` state. Presets: `ebs-csi`, `efs-csi`, `cluster-autoscaler`, `domino-admin-toolkit`, `domino-data-importer`, `fluentd`, `mlflow`, `nucleus`, `nucleus-ecr-credential-refresher`, `hephaestus` (`domino-compute/hephaestus-buildkit`) and `external-dns`. Use `disabled = ["mlflow"]` to skip any of them.
+
+* An association is unique per namespace and service account. Remove any existing Pod Identity association for the same service accounts (for example ones created by hand) before applying.
+* Pods pick up the new credentials only after a restart.
+* This does not remove the node role's policies. Trim them separately once the workloads are confirmed running on their Pod Identity roles.

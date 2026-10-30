@@ -14,8 +14,8 @@ locals {
   cur_report_table_name         = "${var.deploy_id}_cur_report"
   s3_server_side_encryption     = var.kms_info.enabled ? "aws:kms" : "AES256"
   report_name                   = "${var.deploy_id}-${var.cost_usage_report.report_name}"
-  cur_report_bucket             = "${var.deploy_id}-${var.cost_usage_report.report_bucket_name_suffix}"
-  athena_cur_result_bucket_name = "${var.deploy_id}-${var.cost_usage_report.athena_result_bucket_suffix}"
+  cur_report_bucket             = lower("${var.deploy_id}-${var.cost_usage_report.report_bucket_name_suffix}")
+  athena_cur_result_bucket_name = lower("${var.deploy_id}-${var.cost_usage_report.athena_result_bucket_suffix}")
   aws_glue_database             = "${var.deploy_id}-${var.cost_usage_report.aws_glue_database_suffix}"
   cur_report_path               = join("/", [var.cost_usage_report.s3_bucket_prefix, local.report_name, local.report_name])
 
