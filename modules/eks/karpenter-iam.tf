@@ -39,6 +39,7 @@ data "aws_iam_policy_document" "karpenter" {
       "ec2:DescribeSecurityGroups",
       "ec2:DescribeLaunchTemplates",
       "ec2:DescribeInstances",
+      "ec2:DescribeInstanceStatus",
       "ec2:DescribeInstanceTypes",
       "ec2:DescribeInstanceTypeOfferings",
       "ec2:DescribePlacementGroups",
