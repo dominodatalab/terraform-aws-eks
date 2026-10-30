@@ -97,7 +97,7 @@ variable "eks" {
 
   type = object({
     run_k8s_setup = optional(bool, true)
-    k8s_version   = optional(string, "1.35")
+    k8s_version   = optional(string, "1.36")
     nodes_master  = optional(bool, false)
     soci_snapshotter = optional(object({
       enabled                            = optional(bool, true)
