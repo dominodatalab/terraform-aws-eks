@@ -240,7 +240,7 @@ variable "karpenter" {
     enabled                     = optional(bool, false)
     delete_instances_on_destroy = optional(bool, true)
     namespace                   = optional(string, "karpenter")
-    version                     = optional(string, "1.9.0")
+    version                     = optional(string, "1.14.3")
     vm_memory_overhead_percent  = optional(string, "0.075")
     #https://karpenter.sh/docs/upgrading/compatibility/#compatibility-matrix
     #https://github.com/aws/karpenter-provider-aws/releases
@@ -263,7 +263,7 @@ variable "calico" {
   type = object({
     enabled        = optional(bool, true)
     image_registry = optional(string, "quay.io")
-    version        = optional(string, "v3.31.4")
+    version        = optional(string, "v3.32.3")
     node_selector = optional(object({
       key   = optional(string, "dominodatalab.com/calico-controlplane")
       value = optional(string, "true")
