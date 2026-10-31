@@ -11,10 +11,11 @@ This module is an opinionated implementation of predefined and custom `irsa` rol
 Each `additional_irsa_configs` entry supplies its own `policy` as JSON.
 
 `filetask_objectstore` is the first component to build its policy from a template in
-`apps-policies/`, rendered through `templatefile()` with `partition`, `account_id`, `region`,
-`deploy_id` and `dns_suffix`. Extending that to `additional_irsa_configs`, so an entry can omit
+`apps-policies/`, rendered through `templatefile()` with `partition`, `account_id`, `region` and
+`deploy_id`. Extending that to `additional_irsa_configs`, so an entry can omit
 `policy` and get `apps-policies/<name>.json.tftpl`, needs `policy` to become `optional(string)`
-and a fallback in the role and policy resources. Not done here.
+and a fallback in the role and policy resources. Not done here. `filetask_archive` renders the same
+template with `file_system_ids = null`, which drops the S3 Files statement.
 
 Setting `pod_identity = true` on an entry swaps its role's OIDC trust policy for an EKS Pod
 Identity trust policy and creates the matching pod identity association. This requires the
@@ -51,21 +52,25 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [aws_eks_pod_identity_association.filetask_archive](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_pod_identity_association) | resource |
 | [aws_eks_pod_identity_association.filetask_objectstore](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_pod_identity_association) | resource |
 | [aws_eks_pod_identity_association.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_pod_identity_association) | resource |
 | [aws_iam_openid_connect_provider.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider) | resource |
 | [aws_iam_policy.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.filetask_archive](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.filetask_objectstore](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.trident_configurator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.trident_operator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role.filetask_archive](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.filetask_objectstore](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.trident_configurator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.trident_operator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.external_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.external_dns_extra_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.filetask_archive](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.filetask_objectstore](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.trident_configurator](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -86,6 +91,7 @@ No modules.
 | <a name="input_additional_irsa_configs"></a> [additional\_irsa\_configs](#input\_additional\_irsa\_configs) | Input for additional irsa configurations | <pre>list(object({<br/>    name                = string<br/>    namespace           = string<br/>    serviceaccount_name = string<br/>    policy              = string #json<br/>    pod_identity        = optional(bool, false)<br/>  }))</pre> | `[]` | no |
 | <a name="input_eks_info"></a> [eks\_info](#input\_eks\_info) | cluster = {<br/>      specs {<br/>        name            = Cluster name.<br/>        account\_id      = AWS account id where the cluster resides.<br/>      }<br/>      oidc = {<br/>        arn = OIDC provider ARN.<br/>        url = OIDC provider url.<br/>        cert = {<br/>          thumbprint\_list = OIDC cert thumbprints.<br/>          url             = OIDC cert URL.<br/>      }<br/>    } | <pre>object({<br/>    nodes = object({<br/>      roles = list(object({<br/>        arn  = string<br/>        name = string<br/>      }))<br/>    })<br/>    cluster = object({<br/>      arn = optional(string)<br/>      specs = object({<br/>        name       = string<br/>        account_id = string<br/>      })<br/>      oidc = object({<br/>        arn             = string<br/>        id              = string<br/>        url             = string<br/>        thumbprint_list = list(string)<br/>      })<br/>    })<br/>  })</pre> | n/a | yes |
 | <a name="input_external_dns"></a> [external\_dns](#input\_external\_dns) | Config to enable irsa for external-dns<br/>    use\_cluster\_oidc\_idp = Toogle to set the oidc idp connector in the trust policy.<br/>    Set to `true` if the cluster and the hosted zone are in different aws accounts.<br/>    `extra_role` attaches policy to provided role (optional)<br/>    `rm_role_policy` used to facilitate the cleanup if a node attached policy was used previously. | <pre>object({<br/>    enabled              = optional(bool, false)<br/>    hosted_zone_name     = optional(string, null)<br/>    hosted_zone_private  = optional(string, false)<br/>    namespace            = optional(string, "domino-platform")<br/>    serviceaccount_name  = optional(string, "external-dns")<br/>    use_cluster_oidc_idp = optional(bool, true)<br/>    extra_role           = optional(string, null)<br/>    rm_role_policy = optional(object({<br/>      remove           = optional(bool, false)<br/>      detach_from_role = optional(bool, false)<br/>      policy_name      = optional(string, "")<br/>    }), {})<br/>  })</pre> | `{}` | no |
+| <a name="input_filetask_archive"></a> [filetask\_archive](#input\_filetask\_archive) | S3 archive storage for Domino's archive filetask types (validate-archive-s3, archive-s3,<br/>    restore-s3).<br/><br/>    `buckets` declares buckets that already exist and is used only to scope IAM -- nothing here<br/>    creates a bucket. Each entry is:<br/>      name        = bucket holding archive repositories.<br/>      prefix      = key prefix the archive pods may use, omitted for the whole bucket.<br/>      kms\_key\_arn = required only for an SSE-KMS bucket; must be a regional key ARN. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "domino-compute")<br/>    serviceaccount_name = optional(string, "domino-filetask-archive")<br/>    buckets = optional(list(object({<br/>      name        = string<br/>      prefix      = optional(string)<br/>      kms_key_arn = optional(string)<br/>    })), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_filetask_objectstore"></a> [filetask\_objectstore](#input\_filetask\_objectstore) | S3 Files dataset storage for Domino's s3-native filetask dataset tasks.<br/><br/>    `buckets` declares buckets that already exist and is used only to scope IAM -- nothing here<br/>    creates a bucket, a file system, or a mount target. Each entry is:<br/>      name        = bucket backing an S3 File System.<br/>      prefix      = key prefix the file system is scoped to, omitted for a whole-bucket one.<br/>      kms\_key\_arn = required only for an SSE-KMS bucket; must be a regional key ARN.<br/><br/>    `file_system_ids` scopes s3files:GetFileSystem to these S3 File System ids; empty grants it on every file system in the account and region. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "domino-compute")<br/>    serviceaccount_name = optional(string, "domino-filetask-objectstore")<br/>    file_system_ids     = optional(list(string), [])<br/>    buckets = optional(list(object({<br/>      name        = string<br/>      prefix      = optional(string)<br/>      kms_key_arn = optional(string)<br/>    })), [])<br/>  })</pre> | `{}` | no |
 | <a name="input_netapp_trident_configurator"></a> [netapp\_trident\_configurator](#input\_netapp\_trident\_configurator) | Config to create IRSA role for the netapp-trident-configurator. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "trident")<br/>    serviceaccount_name = optional(string, "trident-configurator")<br/>    region              = optional(string)<br/>  })</pre> | `{}` | no |
 | <a name="input_netapp_trident_operator"></a> [netapp\_trident\_operator](#input\_netapp\_trident\_operator) | Config to create IRSA role for the netapp-trident-operator. | <pre>object({<br/>    enabled             = optional(bool, false)<br/>    namespace           = optional(string, "trident")<br/>    serviceaccount_name = optional(string, "trident-controller")<br/>    region              = optional(string)<br/>  })</pre> | `{}` | no |
@@ -96,6 +102,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_external_dns"></a> [external\_dns](#output\_external\_dns) | External\_dns info |
+| <a name="output_filetask_archive"></a> [filetask\_archive](#output\_filetask\_archive) | Filetask archive pod identity role info |
 | <a name="output_filetask_objectstore"></a> [filetask\_objectstore](#output\_filetask\_objectstore) | Filetask object store pod identity role info |
 | <a name="output_netapp_trident_configurator"></a> [netapp\_trident\_configurator](#output\_netapp\_trident\_configurator) | NetApp Astra Trident NETAPP configurator role info |
 | <a name="output_netapp_trident_operator"></a> [netapp\_trident\_operator](#output\_netapp\_trident\_operator) | NetApp Astra Trident NETAPP Operator role info |

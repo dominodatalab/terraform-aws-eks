@@ -39,3 +39,13 @@ output "filetask_objectstore" {
   EOF
   value       = module.irsa_policies.filetask_objectstore
 }
+
+output "filetask_archive" {
+  description = <<EOF
+  "Filetask archive info"
+  {
+    identity_role = pod identity role arn.
+  }
+  EOF
+  value       = module.irsa_policies.filetask_archive
+}

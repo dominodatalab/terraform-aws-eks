@@ -47,8 +47,9 @@ ${jsonencode({
       Condition = {
         StringEquals = {
           # The key's region, parsed from its own ARN, not the cluster's: SSE-KMS keeps the key
-          # in the bucket's region.
-          "kms:ViaService" = "s3.${split(":", b.kms_key_arn)[3]}.${dns_suffix}"
+          # in the bucket's region. ViaService names end in .amazonaws.com in every partition,
+          # China included.
+          "kms:ViaService" = "s3.${split(":", b.kms_key_arn)[3]}.amazonaws.com"
         }
         StringLike = {
           "kms:EncryptionContext:aws:s3:arn" = [
@@ -58,7 +59,8 @@ ${jsonencode({
         }
       }
     } if b.kms_key_arn != null],
-    [{
+    # null omits the statement for callers with no file systems; [] is the S3 Files wildcard, not "none".
+    file_system_ids == null ? [] : [{
       # File system ids are AWS-generated, so the wildcard stays until the caller names them.
       Sid      = "DescribeFileSystems"
       Effect   = "Allow"
