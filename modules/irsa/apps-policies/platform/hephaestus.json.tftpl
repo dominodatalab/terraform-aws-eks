@@ -28,7 +28,7 @@
       "Sid": "PullThroughCacheRepos",
       "Effect": "Allow",
       "Action": ["ecr:GetDownloadUrlForLayer", "ecr:CreateRepository", "ecr:BatchImportUpstreamImage", "ecr:BatchGetImage"],
-      "Resource": "arn:${partition}:ecr:${region}:${account_id}:repository/${ecr_repo_prefix}/quay/*"
+      "Resource": "arn:${partition}:ecr:${region}:${account_id}:repository/${ecr_quay_prefix}/*"
     }
   ]
 }

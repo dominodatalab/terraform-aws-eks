@@ -119,7 +119,7 @@ variable "eks_info" {
       vpc_cni = optional(object({
         prefix_delegation = optional(bool, false)
         annotate_pod_ip   = optional(bool, true)
-        network_policy    = optional(bool, false)
+        network_policy    = optional(bool)
       }))
       specs = object({
         name     = string
@@ -600,4 +600,3 @@ variable "use_fips_endpoint" {
   type        = bool
   default     = false
 }
-

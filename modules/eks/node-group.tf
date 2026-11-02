@@ -155,6 +155,17 @@ resource "aws_security_group_rule" "s3_endpoint" {
   source_security_group_id = aws_security_group.eks_nodes.id
 }
 
+resource "aws_security_group_rule" "sts_endpoint" {
+  count                    = var.network_info.sts_endpoint != null ? 1 : 0
+  security_group_id        = var.network_info.sts_endpoint.security_group_id
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+  type                     = "ingress"
+  description              = "STS Endpoint access from EKS nodes."
+  source_security_group_id = aws_security_group.eks_nodes.id
+}
+
 resource "aws_iam_role_policy_attachment" "attach_provided_key_policy_to_eks_nodes" {
   count      = var.kms_info.provided_key ? 1 : 0
   role       = aws_iam_role.eks_nodes.name

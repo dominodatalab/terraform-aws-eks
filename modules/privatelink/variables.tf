@@ -4,7 +4,7 @@ variable "deploy_id" {
 
   validation {
     condition     = can(regex("^[a-zA-Z0-9-]{3,32}$", var.deploy_id))
-    error_message = "Argument deploy_id must: start with a letter, contain lowercase alphanumeric characters(can contain hyphens[-]) with length between 3 and 32 characters."
+    error_message = "Argument deploy_id must: be 3-32 characters long and contain only alphanumeric characters and hyphens[-]. Names that require lowercase (S3, ECR, Glue) are lower-cased automatically."
   }
 }
 

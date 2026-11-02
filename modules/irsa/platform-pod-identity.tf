@@ -11,9 +11,12 @@ locals {
     kms_key_arn        = local.ppi.kms_key_arn
     efs_file_system_id = local.ppi.efs_file_system_id
     ecr_repo_prefix    = coalesce(local.ppi.ecr_repo_prefix, lower(local.name_prefix))
-    route53_zone_id    = local.ppi.route53_zone_id
-    bucket             = ""
-    ecr_token          = false
+    # Mirrors aws_ecr_pull_through_cache_rule.quay in the infra storage submodule, which
+    # truncates the deploy id to 24 characters.
+    ecr_quay_prefix = "${lower(substr(local.name_prefix, 0, 24))}/quay"
+    route53_zone_id = local.ppi.route53_zone_id
+    bucket          = ""
+    ecr_token       = false
   }
 
   ppi_dir = "${path.module}/apps-policies/platform"

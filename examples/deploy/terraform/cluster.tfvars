@@ -17,10 +17,11 @@ eks = {
     cidrs   = null
     enabled = null
   }
-  run_k8s_setup      = null
-  service_ipv4_cidr  = null
-  ssm_log_group_name = null
-  vpc_cni            = null
+  run_k8s_setup               = null
+  separate_platform_node_role = null
+  service_ipv4_cidr           = null
+  ssm_log_group_name          = null
+  vpc_cni                     = null
 }
 external_deployments_operator = {
   bucket_suffix                   = "external-deployments"

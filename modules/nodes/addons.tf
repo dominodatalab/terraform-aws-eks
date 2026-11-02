@@ -43,7 +43,15 @@ locals {
     }
   }
 
-  vpc_cni_configuration_values = merge({ env = local.vpc_cni_env, enableNetworkPolicy = tostring(try(var.eks_info.cluster.vpc_cni.network_policy, false)) }, local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {})
+  # Only render enableNetworkPolicy when it is set, so existing clusters see no vpc-cni
+  # configuration change. Domino enforces NetworkPolicy with Calico; enabling the VPC CNI
+  # network policy agent as well runs two policy engines.
+  vpc_cni_network_policy = try(var.eks_info.cluster.vpc_cni.network_policy, null)
+  vpc_cni_configuration_values = merge(
+    { env = local.vpc_cni_env },
+    local.vpc_cni_network_policy != null ? { enableNetworkPolicy = tostring(local.vpc_cni_network_policy) } : {},
+    local.is_pod_sb ? { eniConfig = local.vpc_cni_eni_config } : {},
+  )
   coredns_configuration_values = {
     nodeSelector = {
       "dominodatalab.com/calico-controlplane" = "true"

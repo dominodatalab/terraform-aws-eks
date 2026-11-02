@@ -120,6 +120,113 @@ run "all_presets" {
     condition     = jsondecode(aws_iam_policy.this["cluster-autoscaler"].policy).Statement[1].Condition.StringEquals["autoscaling:ResourceTag/k8s.io/cluster-autoscaler/Test-Deploy"] == "owned"
     error_message = "cluster-autoscaler may only scale groups tagged as owned by this cluster."
   }
+
+  assert {
+    condition = length(setsubtract(
+      ["ec2:DescribeImages", "ec2:GetInstanceTypesFromInstanceRequirements", "eks:DescribeNodegroup"],
+      jsondecode(aws_iam_policy.this["cluster-autoscaler"].policy).Statement[0].Action,
+    )) == 0
+    error_message = "cluster-autoscaler must keep the describe actions the node-role autoscaler policy grants (modules/eks/iam.tf)."
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.this["hephaestus"].policy).Statement[2].Resource == "arn:aws:ecr:us-east-1:123456789012:repository/test-deploy/quay/*"
+    error_message = "hephaestus pull-through access must use the lower-cased pull-through cache prefix."
+  }
+}
+
+run "quay_prefix_truncated_like_pull_through_rule" {
+  command = plan
+
+  variables {
+    eks_info = {
+      nodes = { roles = [] }
+      cluster = {
+        arn = "arn:aws:eks:us-east-1:123456789012:cluster/Abcdefghij-Klmnopqrst-Uvwxyz-123"
+        specs = {
+          name       = "Abcdefghij-Klmnopqrst-Uvwxyz-123"
+          account_id = "123456789012"
+        }
+        oidc = {
+          arn             = "arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/EXAMPLE"
+          id              = "EXAMPLE"
+          url             = "oidc.eks.us-east-1.amazonaws.com/id/EXAMPLE"
+          thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
+        }
+      }
+    }
+    platform_pod_identity = {
+      enabled     = true
+      kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/11111111-2222-3333-4444-555555555555"
+      buckets     = { backups = "test-backups", logs = "test-logs", blobs = "test-blobs" }
+    }
+  }
+
+  assert {
+    condition     = jsondecode(aws_iam_policy.this["hephaestus"].policy).Statement[2].Resource == "arn:aws:ecr:us-east-1:123456789012:repository/abcdefghij-klmnopqrst-uv/quay/*"
+    error_message = "The quay prefix must match aws_ecr_pull_through_cache_rule.quay (first 24 characters of the deploy id, lower-cased)."
+  }
+
+  assert {
+    condition     = alltrue([for r in aws_iam_role.this : length(r.name) <= 64])
+    error_message = "Role names must fit IAM's 64-character limit for a maximum-length (32-character) deploy id."
+  }
+
+  assert {
+    condition     = aws_iam_role.this["nucleus"].name == "Abcdefghij-Klmnopqrst-Uvwxyz-123-nucleus"
+    error_message = "Role names that already fit must not be rewritten."
+  }
+}
+
+run "permissions_boundary_on_every_role" {
+  command = plan
+
+  # The mock provider renders policy documents as an empty string, which aws_iam_policy rejects.
+  override_data {
+    target = data.aws_iam_policy_document.trident_operator[0]
+    values = { json = "{\"Version\":\"2012-10-17\",\"Statement\":[]}" }
+  }
+
+  override_data {
+    target = data.aws_iam_policy_document.trident_configurator[0]
+    values = { json = "{\"Version\":\"2012-10-17\",\"Statement\":[]}" }
+  }
+
+  variables {
+    permissions_boundary = "arn:aws:iam::123456789012:policy/test-boundary"
+    platform_pod_identity = {
+      enabled     = true
+      kms_key_arn = "arn:aws:kms:us-east-1:123456789012:key/11111111-2222-3333-4444-555555555555"
+      buckets     = { backups = "test-backups", logs = "test-logs", blobs = "test-blobs" }
+    }
+    filetask_objectstore = {
+      enabled = true
+      buckets = [{ name = "unprefixed-bucket" }]
+    }
+    netapp_trident_operator = {
+      enabled = true
+      region  = "us-east-1"
+    }
+    netapp_trident_configurator = {
+      enabled = true
+      region  = "us-east-1"
+    }
+  }
+
+  assert {
+    condition = alltrue(concat(
+      [for r in aws_iam_role.this : r.permissions_boundary == "arn:aws:iam::123456789012:policy/test-boundary"],
+      [for r in aws_iam_role.filetask_objectstore : r.permissions_boundary == "arn:aws:iam::123456789012:policy/test-boundary"],
+      [for r in aws_iam_role.trident_operator : r.permissions_boundary == "arn:aws:iam::123456789012:policy/test-boundary"],
+      [for r in aws_iam_role.trident_configurator : r.permissions_boundary == "arn:aws:iam::123456789012:policy/test-boundary"],
+    ))
+    error_message = "Every IAM role in the irsa module must carry var.permissions_boundary."
+  }
+
+  assert {
+    condition     = length(aws_iam_role.filetask_objectstore) == 1 && length(aws_iam_role.trident_operator) == 1 && length(aws_iam_role.trident_configurator) == 1
+    error_message = "The boundary assertion must actually cover the optional roles."
+  }
 }
 
 run "skips_presets_without_inputs_and_honors_disabled" {

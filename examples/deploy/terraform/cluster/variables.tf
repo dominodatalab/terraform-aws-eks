@@ -26,6 +26,7 @@ variable "eks" {
     ssm_log_group_name = CloudWatch log group to send the SSM session logs to.
     identity_providers = Configuration for IDP(Identity Provider).
     oidc_provider = Configuration for OIDC provider.
+    separate_platform_node_role = Overrides the infra `eks.separate_platform_node_role` setting (minimal IAM role for platform node groups).
   }
   EOF
 
@@ -47,9 +48,10 @@ variable "eks" {
       username = string
       groups   = list(string)
     })))
-    master_role_names  = optional(list(string))
-    cluster_addons     = optional(list(string))
-    ssm_log_group_name = optional(string)
+    master_role_names           = optional(list(string))
+    cluster_addons              = optional(list(string))
+    ssm_log_group_name          = optional(string)
+    separate_platform_node_role = optional(bool)
     vpc_cni = optional(object({
       prefix_delegation = optional(bool)
       annotate_pod_ip   = optional(bool)

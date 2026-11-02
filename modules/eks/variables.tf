@@ -4,7 +4,7 @@ variable "deploy_id" {
 
   validation {
     condition     = can(regex("^[a-zA-Z0-9-]{3,32}$", var.deploy_id))
-    error_message = "Argument deploy_id must: start with a letter, contain lowercase alphanumeric characters(can contain hyphens[-]) with length between 3 and 32 characters."
+    error_message = "Argument deploy_id must: be 3-32 characters long and contain only alphanumeric characters and hyphens[-]. Names that require lowercase (S3, ECR, Glue) are lower-cased automatically."
   }
 }
 
@@ -26,6 +26,9 @@ variable "network_info" {
     }
     s3_endpoint = {
       security_group_id = S3 Endpoint security group id.
+    }
+    sts_endpoint = {
+      security_group_id = STS Endpoint security group id.
     }
     subnets = {
       public = List of public Subnets.
@@ -57,6 +60,9 @@ variable "network_info" {
       security_group_id = optional(string, null)
     }), null)
     s3_endpoint = optional(object({
+      security_group_id = optional(string, null)
+    }), null)
+    sts_endpoint = optional(object({
       security_group_id = optional(string, null)
     }), null)
     subnets = object({
@@ -207,7 +213,7 @@ variable "eks" {
     vpc_cni = optional(object({
       prefix_delegation = optional(bool, false)
       annotate_pod_ip   = optional(bool, true)
-      network_policy    = optional(bool, false)
+      network_policy    = optional(bool)
     }))
     identity_providers = optional(list(object({
       client_id                     = string

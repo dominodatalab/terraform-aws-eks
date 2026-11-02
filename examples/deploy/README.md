@@ -201,6 +201,12 @@ export AWS_ENDPOINT_URL_IAM="https://<vpce-id>.iam.us-east-1.vpce.amazonaws.com"
 
 To make it persistent, add the `export` to the shell profile of the user that runs `tf.sh`. Services without a VPC endpoint can be handled the same way with `AWS_ENDPOINT_URL_<SERVICE>`.
 
+Other settings for networks with no internet access:
+
+* `network.create_sts_endpoint = true` (`infra.tfvars`) creates an STS interface endpoint with private DNS. The `cluster` component opens 443 on it from the node security group.
+* `eks.oidc_provider.fetch_thumbprint = false` skips the live lookup of the OIDC issuer certificate, which needs a route to `oidc.eks.<region>.amazonaws.com`. A static AWS root CA thumbprint is used instead, or `eks.oidc_provider.thumbprint_list` if set.
+* `bastion.use_private_ip_for_tunnel = true` skips the bastion's Elastic IP and uses its private IP for SSH and tunnel access.
+
 ### Network policy without Calico
 
 To enforce Kubernetes `NetworkPolicy` with the VPC CNI's built-in network policy agent instead of Calico, set the following:
@@ -241,3 +247,13 @@ Roles are named `<deploy_id>-<service account preset>` and carry `permissions_bo
 * An association is unique per namespace and service account. Remove any existing Pod Identity association for the same service accounts (for example ones created by hand) before applying.
 * Pods pick up the new credentials only after a restart.
 * This does not remove the node role's policies. Trim them separately once the workloads are confirmed running on their Pod Identity roles.
+* Role names longer than IAM's 64-character limit (possible with a 31–32 character `deploy_id`) are truncated and given a short hash suffix.
+
+### Minimal IAM role for platform nodes
+
+`eks.separate_platform_node_role = true` (in `infra.tfvars`, or overridden in `cluster.tfvars`) gives node groups labelled `dominodatalab.com/node-pool: platform` their own instance role with only `AmazonEKSWorkerNodePolicy`, `AmazonEKS_CNI_Policy` and `AmazonEC2ContainerRegistryReadOnly`. Platform pods lose every other node-role permission, so `platform_pod_identity` must already be applied. The `cluster` plan fails a `check` if it is not enabled.
+
+On an existing deployment, changing a node group's role forces Terraform to **replace** the node group. The replacement keeps the same name, so the old group is destroyed before the new one exists and platform pods cannot be scheduled in the meantime. Either:
+
+1. Apply `platform_pod_identity.enabled = true`, restart the platform pods, and confirm they work on their Pod Identity roles.
+2. Then enable `separate_platform_node_role` in a maintenance window, or add new platform node groups under new names, let the workloads move, and remove the old groups.

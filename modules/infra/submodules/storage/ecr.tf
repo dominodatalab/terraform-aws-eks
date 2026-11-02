@@ -30,7 +30,7 @@ resource "aws_ecr_repository" "this" {
 
 resource "aws_ecr_pull_through_cache_rule" "quay" {
   count                 = local.create_ecr && local.supports_pull_through_cache ? 1 : 0
-  ecr_repository_prefix = "${substr(var.deploy_id, 0, 24)}/quay"
+  ecr_repository_prefix = "${lower(substr(var.deploy_id, 0, 24))}/quay"
   upstream_registry_url = "quay.io"
 }
 

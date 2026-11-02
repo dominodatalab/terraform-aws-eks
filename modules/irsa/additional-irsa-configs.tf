@@ -4,12 +4,23 @@ locals {
   oidc_issuer = try(trimprefix(local.oidc_provider_url, "https://"), null)
 
   configs = { for c in concat(var.additional_irsa_configs, local.platform_pod_identity_configs) : c.name => c }
+
+  # IAM role names are capped at 64 characters. A 32-character deploy id plus the longest preset
+  # ("-nucleus-ecr-credential-refresher") is 65, so over-long names are truncated with a stable
+  # hash suffix. Names that already fit are unchanged, so existing roles are not replaced.
+  role_names = {
+    for k, c in local.configs : k => (
+      length("${local.name_prefix}-${c.name}") <= 64
+      ? "${local.name_prefix}-${c.name}"
+      : "${substr("${local.name_prefix}-${c.name}", 0, 55)}-${substr(sha1("${local.name_prefix}-${c.name}"), 0, 8)}"
+    )
+  }
 }
 
 resource "aws_iam_role" "this" {
   for_each = local.configs
 
-  name = "${local.name_prefix}-${each.value.name}"
+  name = local.role_names[each.key]
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

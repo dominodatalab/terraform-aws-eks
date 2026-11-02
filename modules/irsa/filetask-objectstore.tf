@@ -18,7 +18,8 @@ resource "aws_iam_policy" "filetask_objectstore" {
 resource "aws_iam_role" "filetask_objectstore" {
   count = var.filetask_objectstore.enabled ? 1 : 0
 
-  name = "${local.name_prefix}-filetask-objectstore"
+  name                 = "${local.name_prefix}-filetask-objectstore"
+  permissions_boundary = var.permissions_boundary
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

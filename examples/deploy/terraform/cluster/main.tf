@@ -9,6 +9,17 @@ data "terraform_remote_state" "infra" {
 locals {
   infra = data.terraform_remote_state.infra.outputs.infra
   kms   = var.kms_info != null ? var.kms_info : local.infra.kms
+
+  # separate_platform_node_role is documented on the infra `eks` variable, but module.eks takes
+  # this component's own var.eks, so carry the infra value through unless it is overridden here.
+  separate_platform_node_role = coalesce(var.eks.separate_platform_node_role, try(local.infra.eks.separate_platform_node_role, null), false)
+}
+
+check "platform_node_role_requires_pod_identity" {
+  assert {
+    condition     = !local.separate_platform_node_role || var.platform_pod_identity.enabled
+    error_message = "eks.separate_platform_node_role removes the node-role permissions platform pods rely on; set platform_pod_identity.enabled = true (and apply it) first."
+  }
 }
 
 module "eks" {
@@ -19,7 +30,7 @@ module "eks" {
   ssh_key              = local.infra.ssh_key
   node_iam_policies    = local.infra.node_iam_policies
   storage_info         = local.infra.storage
-  eks                  = var.eks
+  eks                  = merge(var.eks, { separate_platform_node_role = local.separate_platform_node_role })
   network_info         = local.infra.network
   kms_info             = local.kms
   bastion_info         = local.infra.bastion

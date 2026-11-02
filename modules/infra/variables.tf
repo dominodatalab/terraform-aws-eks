@@ -21,7 +21,7 @@ variable "deploy_id" {
       1. Length must be between 3 and 32 characters.
       2. Start with a letter.
       3. End with a letter or digit.
-      4. Contain lowercase Alphanumeric characters and hyphens.
+      4. Contain only alphanumeric characters and hyphens. Names that require lowercase (S3, ECR, Glue) are lower-cased automatically.
     EOF
   }
 }
