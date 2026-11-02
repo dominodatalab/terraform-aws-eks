@@ -37,7 +37,7 @@ locals {
     thumbprint_list = try(aws_iam_openid_connect_provider.oidc_provider[0].thumbprint_list, null)
   } : var.eks.oidc_provider.oidc != null ? var.eks.oidc_provider.oidc : null
 
-  eks_cluster_security_group_rules = {
+  eks_cluster_security_group_rules = merge({
     ingress_nodes_443 = {
       description              = "Private subnets to ${local.eks_cluster_name} EKS cluster API"
       protocol                 = "tcp"
@@ -46,7 +46,16 @@ locals {
       type                     = "ingress"
       source_security_group_id = aws_security_group.eks_nodes.id
     }
-  }
+    }, {
+    for cidr in var.eks.api_ingress_cidrs : "ingress_api_${replace(replace(cidr, ".", "_"), "/", "_")}" => {
+      description = "${cidr} to ${local.eks_cluster_name} EKS cluster API"
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      type        = "ingress"
+      cidr_blocks = [cidr]
+    }
+  })
 
   node_security_group_rules = merge({
     egress_all = {

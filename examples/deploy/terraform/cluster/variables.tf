@@ -14,6 +14,7 @@ variable "eks" {
       enabled = Enable EKS API public endpoint.
       cidrs   = List of CIDR ranges permitted for accessing the EKS public endpoint.
     }
+    api_ingress_cidrs = Additional CIDR ranges allowed to reach the private EKS API on 443, e.g. the VPC CIDR when the host running terraform/kubectl is inside the VPC and there is no bastion.
     Custom role maps for aws auth configmap
     custom_role_maps = {
       rolearn  = string
@@ -42,6 +43,7 @@ variable "eks" {
       enabled = optional(bool)
       cidrs   = optional(list(string))
     }), {})
+    api_ingress_cidrs = optional(list(string))
     custom_role_maps = optional(list(object({
       rolearn  = string
       username = string
