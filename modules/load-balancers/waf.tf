@@ -188,6 +188,12 @@ resource "aws_wafv2_web_acl_association" "alb_association" {
 
   resource_arn = aws_lb.load_balancers[each.key].arn
   web_acl_arn  = aws_wafv2_web_acl.waf[0].arn
+
+  # AssociateWebACL can return WAFUnavailableEntityException for more than the provider's
+  # 10m default while a just-created ALB/web ACL propagates (DOM-81930).
+  timeouts {
+    create = "30m"
+  }
 }
 
 resource "aws_s3_bucket" "waf_logs" {
