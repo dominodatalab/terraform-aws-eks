@@ -200,6 +200,7 @@ _install_karpenter_chart() {
     --set settings.clusterName="${cluster_name}" \
     --set settings.featureGates.nodeRepair=true \
     --set settings.vmMemoryOverheadPercent="${karpenter_vm_memory_overhead_percent}" \
+    --set-string settings.reservedENIs="${karpenter_reserved_enis}" \
     --set controller.resources.requests.cpu=1 \
     --set controller.resources.requests.memory=1Gi \
     --set controller.resources.limits.cpu=1 \
