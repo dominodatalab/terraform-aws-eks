@@ -135,6 +135,7 @@ variable "eks" {
     service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
+    kube_scheduler_scoring_strategy = EKS kube-scheduler scoring strategy. Accepts MostAllocated or LeastAllocated. When unset, defaults to MostAllocated with Karpenter enabled and otherwise leaves the cluster's current scheduler configuration untouched. A strategy already applied stays until LeastAllocated is set explicitly.
     nodes_master  Grants the nodes role system:master access. NOT recomended
     soci_snapshotter = SOCI snapshotter configuration for fast image pulling. {
       enabled = Enable SOCI snapshotter and FastImagePull feature gate.
@@ -171,11 +172,12 @@ variable "eks" {
   EOF
 
   type = object({
-    run_k8s_setup      = optional(bool, true)
-    service_ipv4_cidr  = optional(string, "172.20.0.0/16")
-    creation_role_name = optional(string, null)
-    k8s_version        = optional(string, "1.36")
-    nodes_master       = optional(bool, false)
+    run_k8s_setup                   = optional(bool, true)
+    service_ipv4_cidr               = optional(string, "172.20.0.0/16")
+    creation_role_name              = optional(string, null)
+    k8s_version                     = optional(string, "1.36")
+    kube_scheduler_scoring_strategy = optional(string)
+    nodes_master                    = optional(bool, false)
     soci_snapshotter = optional(object({
       enabled                            = optional(bool, true)
       max_concurrent_downloads_per_image = optional(number, 10)
@@ -226,6 +228,11 @@ variable "eks" {
       }), null)
     }), {})
   })
+
+  validation {
+    condition     = var.eks.kube_scheduler_scoring_strategy == null ? true : contains(["MostAllocated", "LeastAllocated"], var.eks.kube_scheduler_scoring_strategy)
+    error_message = "EKS kube_scheduler_scoring_strategy must be null, MostAllocated or LeastAllocated."
+  }
 
   default = {}
 }

@@ -13,6 +13,9 @@ locals {
     for az_id in slice(sort(keys(local.eks_supported_subnets)), 0, local.eks_number_of_subnets) :
     local.eks_supported_subnets[az_id].subnet_id
   ]
+
+  # Pack replacement pods onto occupied nodes so zone-bound StatefulSet pods can fit after Karpenter consolidation.
+  kube_scheduler_scoring_strategy = var.eks.kube_scheduler_scoring_strategy != null ? var.eks.kube_scheduler_scoring_strategy : (var.karpenter.enabled ? "MostAllocated" : null)
 }
 
 resource "aws_security_group" "eks_cluster" {
@@ -71,6 +74,28 @@ resource "aws_eks_cluster" "this" {
   kubernetes_network_config {
     ip_family         = "ipv4"
     service_ipv4_cidr = var.eks.service_ipv4_cidr
+  }
+
+  dynamic "kube_scheduler_config" {
+    for_each = local.kube_scheduler_scoring_strategy == null ? [] : [local.kube_scheduler_scoring_strategy]
+
+    content {
+      node_resources_fit {
+        scoring_strategy {
+          type = kube_scheduler_config.value
+
+          resource {
+            name   = "cpu"
+            weight = 1
+          }
+
+          resource {
+            name   = "memory"
+            weight = 1
+          }
+        }
+      }
+    }
   }
 
   vpc_config {

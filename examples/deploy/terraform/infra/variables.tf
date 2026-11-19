@@ -533,6 +533,7 @@ variable "eks" {
     service_ipv4_cidr = CIDR for EKS cluster kubernetes_network_config.
     creation_role_name = Name of the role to import.
     k8s_version = EKS cluster k8s version.
+    kube_scheduler_scoring_strategy = EKS kube-scheduler scoring strategy. Accepts MostAllocated or LeastAllocated. When unset, defaults to MostAllocated with Karpenter enabled and otherwise leaves the cluster's current scheduler configuration untouched. A strategy already applied stays until LeastAllocated is set explicitly.
     nodes_master  Grants the nodes role system:master access. NOT recomended
     kubeconfig = {
       extra_args = Optional extra args when generating kubeconfig.
@@ -558,11 +559,12 @@ variable "eks" {
   EOF
 
   type = object({
-    run_k8s_setup      = optional(bool)
-    service_ipv4_cidr  = optional(string)
-    creation_role_name = optional(string, null)
-    k8s_version        = optional(string)
-    nodes_master       = optional(bool, false)
+    run_k8s_setup                   = optional(bool)
+    service_ipv4_cidr               = optional(string)
+    creation_role_name              = optional(string, null)
+    k8s_version                     = optional(string)
+    kube_scheduler_scoring_strategy = optional(string)
+    nodes_master                    = optional(bool, false)
     kubeconfig = optional(object({
       extra_args = optional(string)
       path       = optional(string)
