@@ -1,6 +1,11 @@
 locals {
   run_setup             = try((var.eks.run_k8s_setup || var.bastion_info != null || var.eks.public_access.enabled) ? 1 : 0, 0)
   k8s_pre_setup_sh_file = local.run_setup != 0 ? try(module.k8s_setup[0].filepath, null) : null
+
+  # VPC CNI custom networking gives pods no IPs from the primary ENI, so Karpenter must leave that ENI out of
+  # max-pods or nodes admit more pods than they have IPs. Prefix delegation does not change this: instance
+  # types that cannot take prefixes fall back to single IPs.
+  karpenter_reserved_enis = contains(var.eks.cluster_addons, "vpc-cni") && length(var.network_info.subnets.pod) > 0 ? "1" : "0"
 }
 
 module "k8s_setup" {
@@ -12,7 +17,7 @@ module "k8s_setup" {
   eks_info          = local.eks_info
   use_fips_endpoint = var.use_fips_endpoint
   cluster_name      = var.deploy_id
-  karpenter         = var.karpenter
+  karpenter         = merge(var.karpenter, { reserved_enis = local.karpenter_reserved_enis })
   region            = var.region
   depends_on        = [null_resource.kubeconfig]
 }
